@@ -1,0 +1,21 @@
+# Build results
+bin/
+obj/
+out/
+[Bb]uild/
+[Ll]og/
+*.log
+*.env
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS Code / Visual Studio
+.vscode/
+.idea/
+*.csproj.user
+firebase-adminsdk.json
+# Dependency direc
+Migrations/

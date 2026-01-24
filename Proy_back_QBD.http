@@ -1,0 +1,6 @@
+@Proy_back_QBD_HostAddress = http://localhost:5051
+
+GET {{Proy_back_QBD_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
