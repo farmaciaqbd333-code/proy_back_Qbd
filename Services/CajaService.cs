@@ -36,6 +36,7 @@ namespace Proy_back_QBD.Services
                     .Include(i => i.Pedido.Paciente.Persona)
                     .Include(i => i.Pedido.Formulas)
                     .Include(i => i.Pedido.ProdTerms)
+                    .Include(i => i.Pedido.Cobros)
                     .Where(w =>
                         DateOnly.FromDateTime(w.FechaCreacion.AddMinutes(peruOffset.TotalMinutes)) >= request.FechaInicio
                         && DateOnly.FromDateTime(w.FechaCreacion.AddMinutes(peruOffset.TotalMinutes)) <= request.FechaFinal && w.SedeId == sedeId
