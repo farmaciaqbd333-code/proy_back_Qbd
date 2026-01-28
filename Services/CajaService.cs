@@ -154,7 +154,7 @@ namespace Proy_back_QBD.Services
             .Where(w => w.Pedido.Saldo == 0 && !string.IsNullOrWhiteSpace(w.Pedido.ComprobanteElectronico))
             .Select(s => s.PedidoId).ToList();
 
-            List<int> idMovsTerm = caja
+            List<int> listPedidosId = caja
                        .Where(w => w.Pedido.Estado != "DEVUELTO" && w.Pedido.Saldo == 0 && !string.IsNullOrWhiteSpace(w.Pedido.ComprobanteElectronico))
                        .Select(s => s.PedidoId)
                        .ToList();
@@ -164,7 +164,7 @@ namespace Proy_back_QBD.Services
                        .ToList();
 
             List<UltimosCobros?> UltimosCobros = await _context.Cobros
-.Where(w => idMovsTerm.Contains(w.PedidoId) && w.SedeId == sedeId)
+.Where(w => listPedidosId.Contains(w.PedidoId) && w.SedeId == sedeId)
 .GroupBy(gb => gb.PedidoId)
 .Select(s => new UltimosCobros
 {
@@ -248,7 +248,7 @@ namespace Proy_back_QBD.Services
             {
                 if (item.Modalidad.Trim().ToUpper() == "YAPE"
                 || item.Modalidad.Trim().ToUpper() == "PLIN"
-                || item.Modalidad.Trim().ToUpper() == "DEPOSITO"
+                || item.Modalidad.Trim().ToUpper() == "DEPÓSITO"
                 || item.Modalidad.Trim().ToUpper() == "TRANSFERENCIA"
                 || item.Modalidad.Trim().ToUpper() == "TARJETA DE CRÉDITO"
                 || item.Modalidad.Trim().ToUpper() == "TARJETA DE DÉBITO"
