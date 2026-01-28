@@ -209,7 +209,7 @@ namespace Proy_back_QBD.Services
             {
                 if (item.Modalidad.Trim().ToUpper() == "YAPE"
                 || item.Modalidad.Trim().ToUpper() == "PLIN"
-                || item.Modalidad.Trim().ToUpper() == "DEPOSITO"
+                || item.Modalidad.Trim().ToUpper() == "DEPÓSITO"
                 || item.Modalidad.Trim().ToUpper() == "TRANSFERENCIA"
                 || item.Modalidad.Trim().ToUpper() == "TARJETA DE CRÉDITO"
                 || item.Modalidad.Trim().ToUpper() == "TARJETA DE DÉBITO"
@@ -229,7 +229,7 @@ namespace Proy_back_QBD.Services
             {
                 if (item.Modalidad.Trim().ToUpper() == "YAPE"
                 || item.Modalidad.Trim().ToUpper() == "PLIN"
-                || item.Modalidad.Trim().ToUpper() == "DEPOSITO"
+                || item.Modalidad.Trim().ToUpper() == "DEPÓSITO"
                 || item.Modalidad.Trim().ToUpper() == "TRANSFERENCIA"
                 || item.Modalidad.Trim().ToUpper() == "TARJETA DE CRÉDITO"
                 || item.Modalidad.Trim().ToUpper() == "TARJETA DE DÉBITO"
