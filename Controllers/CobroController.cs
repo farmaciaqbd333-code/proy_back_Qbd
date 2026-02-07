@@ -58,16 +58,16 @@ public class CobroController : ControllerBase
         return Ok(response);
     }
 
-    // [HttpDelete("{id}")]
-    // [SwaggerResponse(200, "Creacion exitosa", typeof(Cobro))]
-    // public async Task<IActionResult> EliminarCobro(int id)
-    // {
-    //     if (id == null)
-    //     {
-    //         return BadRequest("Datos incorrectos");
-    //     }
-    //     Cobro? response = await _cobroService.Eliminar(id);
 
-    //     return Ok(response);
-    // }
+    [HttpDelete("{cobroId}/{sedeId}")]
+    [SwaggerResponse(200, "Creacion exitosa", typeof(Cobro))]
+    public async Task<IActionResult> EliminarCobro(int cobroId, int sedeId)
+    {
+        Cobro? response = await _cobroService.Eliminar(cobroId, sedeId);
+        if (response == null)
+        {
+            return NotFound();
+        }
+        return Ok(response);
+    }
 }

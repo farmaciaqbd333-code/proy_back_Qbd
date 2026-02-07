@@ -123,6 +123,24 @@ namespace Proy_back_QBD.Services
 
             return response;
         }
+        public async Task<Cobro> Eliminar(int cobroId, int sedeId)
+        {
+            Cobro? response = await _context.Cobros
+            .Where(w => w.Id == cobroId && w.SedeId == sedeId)
+           .FirstOrDefaultAsync();
+
+            if (response == null)
+            {
+                return null;
+            }
+
+            _context.Remove(response);
+            
+            await _context.SaveChangesAsync();
+
+            return response;
+        }
+
 
         // public async Task<List<CobroFindAllResponse?>> Obtener()
         // {
