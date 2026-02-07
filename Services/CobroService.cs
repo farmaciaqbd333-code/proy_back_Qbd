@@ -126,16 +126,21 @@ namespace Proy_back_QBD.Services
         public async Task<Cobro> Eliminar(int cobroId, int sedeId)
         {
             Cobro? response = await _context.Cobros
+            .Include(i => i.Pedido)
             .Where(w => w.Id == cobroId && w.SedeId == sedeId)
            .FirstOrDefaultAsync();
+
 
             if (response == null)
             {
                 return null;
             }
+            Pedido pedido = response.Pedido;
+            pedido.Adelanto = pedido.Adelanto - response.Importe;
+            pedido.Saldo = pedido.Adelanto + response.Importe;
 
             _context.Remove(response);
-            
+
             await _context.SaveChangesAsync();
 
             return response;
