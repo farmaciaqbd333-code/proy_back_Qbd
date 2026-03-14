@@ -144,11 +144,14 @@ public class FormulaController : ControllerBase
     [HttpPatch("tipo")]
     public async Task<IActionResult> CambiarTipo(FormulaCambiarTipo request)
     {
+
         string? respuesta = await _formulaService.CambiarTipo(request);
         if (respuesta == null)
         {
             return BadRequest();
         }
+
         return Ok("Se registró el cambio");
+        
     }
 }

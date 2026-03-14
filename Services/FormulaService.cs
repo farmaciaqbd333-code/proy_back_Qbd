@@ -397,10 +397,11 @@ namespace Proy_back_QBD.Services
             // Actualizar la columna Reportado
             foreach (var formula in formulas)
             {
-                formula.Reportado = request.Tipo; // o el valor que necesites asignar
+                formula.Reportado = request.Reportado;
+                formula.ModificadorId = request.ModificadorId;
             }
 
-            // Guardar cambios
+
             await _context.SaveChangesAsync();
 
             return "Cambios realizados";
