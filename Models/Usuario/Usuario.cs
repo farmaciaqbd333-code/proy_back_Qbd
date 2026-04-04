@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
+using proy_back_Qbd.Models;
 
 namespace Proy_back_QBD.Models
 {
@@ -133,6 +134,14 @@ namespace Proy_back_QBD.Models
         public List<FormulaR>? FormulaRsCreadas { get; set; }
         [JsonIgnore]
         public List<FormulaR>? FormulasRsModificadas { get; set; }
+        [JsonIgnore]
+        public List<OrdenCompra>? OrdenCompras { get; set; }
+        [JsonIgnore]
+        public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
+        [JsonIgnore]
+        public List<Compra>? Compras { get; set; }
+        [JsonIgnore]
+        public List<Proveedor>? Proveedores { get; set; }
     }
     [Table("tipos_usuario")]
     public class TipoUsuario

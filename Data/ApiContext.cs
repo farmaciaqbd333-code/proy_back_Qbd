@@ -1,4 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.ElaboracionBase;
+using proy_back_Qbd.Models.NotaSalida;
+using proy_back_Qbd.Models.Paquete;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
@@ -11,6 +15,16 @@ namespace Proy_back_QBD.Data
         {
         }
         // DbSets actualizados a las clases correctas
+        public DbSet<ElaboracionBase> ElaboracionBases { get; set; }
+        public DbSet<PaqueteSa> PaqueteSas { get; set; }
+        public DbSet<Paquete> Paquetes { get; set; }
+        public DbSet<DetalleNotaSalida> DetalleNotaSalidas { get; set; }
+        public DbSet<NotaSalida> NotaSalidas { get; set; }
+        public DbSet<DetalleCompra> DetalleCompras { get; set; }
+        public DbSet<Proveedor> Proveedores { get; set; }
+        public DbSet<DetalleOrdenCompra> DetalleOrdenesCompras { get; set; }
+        public DbSet<Compra> Compras { get; set; }
+        public DbSet<OrdenCompra> OrdenCompras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
         public DbSet<Sede> Sedes { get; set; }  // Para la tabla de secciones
         public DbSet<Persona> Personas { get; set; }  // Para la tabla de secciones
@@ -31,6 +45,15 @@ namespace Proy_back_QBD.Data
         public DbSet<InsumoR> InsumosR { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            ConfigureProveedor(modelBuilder);
+            ConfigureElaboracionBase(modelBuilder);
+            ConfigurePaqueteSa(modelBuilder);
+            ConfigurePaquete(modelBuilder);
+            ConfigureDetalleNotaSalida(modelBuilder);
+            ConfigureDetalleCompra(modelBuilder);
+            ConfigureDetalleOrdenCompra(modelBuilder);
+            ConfigureCompra(modelBuilder);
+            ConfigureOrdenCompra(modelBuilder);
             ConfigureAsistencia(modelBuilder);
             ConfigureEspecialidad(modelBuilder);
             ConfigureFormula(modelBuilder);
@@ -50,6 +73,83 @@ namespace Proy_back_QBD.Data
             ConfigureInsumo(modelBuilder);
             ConfigureInsumoR(modelBuilder);
             ConfigureFormulaR(modelBuilder);
+        }
+
+        private void ConfigureProveedor(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Proveedor>((e) =>
+           {
+               e.HasKey(hk => hk.IdProveedor);
+               e.HasOne(ho => ho.Creador).WithMany(wm => wm.Proveedores).HasForeignKey(hfk => hfk.IdCreador);
+           });
+        }
+
+        private void ConfigureElaboracionBase(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<ElaboracionBase>((e) =>
+           {
+               e.HasKey(hk => new { hk.Registro, hk.Lote, hk.IdInsumo });
+           });
+        }
+
+        private void ConfigurePaqueteSa(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PaqueteSa>((e) =>
+           {
+               e.HasKey(hk => hk.Id);
+           });
+        }
+
+        private void ConfigurePaquete(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Paquete>((e) =>
+           {
+               e.HasKey(hk => hk.Id);
+           });
+        }
+
+        private void ConfigureDetalleNotaSalida(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<DetalleNotaSalida>((e) =>
+           {
+               e.HasKey(hk => new { hk.IdNotaSalida, hk.IdInsumo });
+           });
+        }
+
+        private void ConfigureDetalleCompra(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<DetalleCompra>((e) =>
+            {
+                e.HasKey(hk => new { hk.IdCompra, hk.IdInsumo });
+            });
+        }
+
+        private void ConfigureDetalleOrdenCompra(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<DetalleOrdenCompra>((e) =>
+            {
+                e.HasKey(hk => new { hk.IdOrdenCompra, hk.IdInsumo });
+                e.HasOne(ho => ho.OrdenCompra).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdOrdenCompra);
+                e.HasOne(ho => ho.Usuario).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdInsumo);
+            });
+        }
+
+        private void ConfigureCompra(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Compra>((e) =>
+            {
+                e.HasOne(ho => ho.OrdenCompra).WithOne(wo => wo.Compra).HasForeignKey<Compra>(hfk => hfk.IdOrdenCompra);
+                e.HasOne(ho => ho.Usuario).WithMany(wo => wo.Compras).HasForeignKey(hfk => hfk.IdUsuario);
+            });
+        }
+
+        private void ConfigureOrdenCompra(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrdenCompra>((e) =>
+            {
+                e.HasOne(e => e.Proveedor).WithMany(e2 => e2.OrdenCompras).HasForeignKey(hfk => hfk.IdProveedor);
+            });
         }
 
         private void ConfigureInsumoR(ModelBuilder modelBuilder)
@@ -339,7 +439,7 @@ namespace Proy_back_QBD.Data
             modelBuilder.Entity<Medico>()
                             .HasOne(e => e.Sede)
                             .WithMany(e2 => e2.Medicos)
-                            .HasForeignKey(e => e.SedeId)                            ;
+                            .HasForeignKey(e => e.SedeId);
             modelBuilder.Entity<Medico>()
             .Property(p => p.FechaCreacion)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")  // Para asignar el valor al insertar
@@ -566,8 +666,11 @@ namespace Proy_back_QBD.Data
             modelBuilder.Entity<TipoUsuario>()
             .Property(p => p.FechaModificacion)
             .HasDefaultValueSql("CURRENT_TIMESTAMP")  // Para asignar el valor al insertar
-            .ValueGeneratedOnAdd();
+            .
+            ValueGeneratedOnAdd();
         }
+
+
     }
 
 }

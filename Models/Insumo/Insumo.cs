@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using proy_back_Qbd.Models;
 
 namespace Proy_back_QBD.Models
 {
@@ -28,14 +29,16 @@ namespace Proy_back_QBD.Models
         public DateTime FechaModificacion { get; set; }       // Fecha de la última modificación del pedido
         [Column("creador_id")]
         public int CreadorId { get; set; }
-        [JsonIgnore]
-        public Usuario? Creador { get; set; }
         [Column("modificador_id")]
         public int ModificadorId { get; set; }
+        [JsonIgnore]
+        public Usuario? Creador { get; set; }
         [JsonIgnore]
         public Usuario? Modificador { get; set; }
         [JsonIgnore]        
         public List<FormulaCC>? FormulasCC { get; set; }
+        [JsonIgnore]        
+        public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
 
     }
 
