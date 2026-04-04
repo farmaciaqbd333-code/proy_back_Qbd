@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using proy_back_Qbd.Models;
 
 namespace Proy_back_QBD.Models
 {
@@ -53,7 +54,7 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<Paciente>? Pacientes { get; set; }
         [JsonIgnore]
-        public List<Sede>? Sedes { get; set; }
+        public List<OrdenCompra>? OrdenCompras { get; set; }
     }
 
 }

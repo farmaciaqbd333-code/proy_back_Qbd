@@ -41,7 +41,7 @@ namespace proy_back_Qbd.Controllers
                     Familia = s.Familia,
                     Factura = s.Compra != null ? s.Compra.Factura : "",
                     EstadoOrdenCompra = s.Estado,
-                    Usuario = s.Usuario == null || s.Usuario.Persona == null ? "" : s.Usuario.Persona.NombreCompleto ?? ""
+                    Usuario = s.Creador == null || s.Creador.Persona == null ? "" : s.Creador.Persona.NombreCompleto ?? ""
                 })
                 .ToListAsync();
 
@@ -97,8 +97,9 @@ namespace proy_back_Qbd.Controllers
                 Familia = request.Familia,
                 IdSede = request.IdSede,
                 Estado = "PEN",
-                IdUsuario = request.IdCreador,
+                IdCreador = request.IdCreador,
                 FechaEmision = request.FechaEmision,
+                TipoTributario = request.TipoTributario,
             };
             _context.OrdenCompras.Add(ordenCompra);
             await _context.SaveChangesAsync();
@@ -112,6 +113,7 @@ namespace proy_back_Qbd.Controllers
                 CostoUnitario = s.CUnitario,
                 CostoTotal = s.CTotal,
                 IdOrdenCompra = ordenCompra.IdOrdenCompra,
+                FechaModificacion = ordenCompra.FechaCreacion,
                 IdCreador = request.IdCreador
 
             }).ToList();

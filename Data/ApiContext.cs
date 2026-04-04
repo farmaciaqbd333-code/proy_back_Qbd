@@ -130,7 +130,7 @@ namespace Proy_back_QBD.Data
             {
                 e.HasKey(hk => new { hk.IdOrdenCompra, hk.IdInsumo });
                 e.HasOne(ho => ho.OrdenCompra).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdOrdenCompra);
-                e.HasOne(ho => ho.Usuario).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Usuario).WithMany(wm => wm.DetalleOrdenComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdInsumo);
             });
         }
@@ -149,6 +149,8 @@ namespace Proy_back_QBD.Data
             modelBuilder.Entity<OrdenCompra>((e) =>
             {
                 e.HasOne(e => e.Proveedor).WithMany(e2 => e2.OrdenCompras).HasForeignKey(hfk => hfk.IdProveedor);
+                e.HasOne(e => e.Sede).WithMany(e2 => e2.OrdenCompras).HasForeignKey(hfk => hfk.IdSede);
+                e.HasOne(e => e.Creador).WithMany(e2 => e2.OrdenComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
             });
         }
 

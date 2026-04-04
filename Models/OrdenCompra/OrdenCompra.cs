@@ -24,14 +24,16 @@ namespace proy_back_Qbd.Models
         [Column("familia")] public required string Familia { get; set; }
         [Column("id_sede")] public required int IdSede { get; set; }
         [Column("estado")] public required string Estado { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [Column("id_usuario")] public required int IdUsuario { get; set; }
+        [Column("id_creador")] public required int IdCreador { get; set; }
+        [Column("tipo_tributario")] public required string TipoTributario { get; set; }
         [JsonIgnore]
         public Proveedor? Proveedor { get; set; }
         [JsonIgnore]
         public Sede? Sede { get; set; }
         [JsonIgnore]
-        public Usuario? Usuario { get; set; }
+        public Usuario? Creador { get; set; }
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
         [JsonIgnore]
         public Compra? Compra { get; set; }
@@ -64,6 +66,7 @@ namespace proy_back_Qbd.Models
         public required string Familia { get; set; }
         public required int IdSede { get; set; }
         public required int IdCreador { get; set; }
+        public required string TipoTributario { get; set; }
         public required List<OrdenCompraCreateReq2> Detalle { get; set; }
     }
     public class OrdenCompraCreateReq2

@@ -19,6 +19,7 @@ namespace proy_back_Qbd.Models
         [Column("um")] public required string Um { get; set; }
         [Column("costo_unitario")] public required decimal CostoUnitario { get; set; }
         [Column("costo_total")] public required decimal CostoTotal { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
