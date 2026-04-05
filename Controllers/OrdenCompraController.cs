@@ -156,5 +156,54 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al actualizar", error = ex.Message });
             }
         }
+        [HttpPatch("detalles/{id}")]
+        public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
+        {
+            var orden = await _context.OrdenCompras
+        .Include(o => o.DetalleOrdenCompras)
+        .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+            if (orden == null)
+                return NotFound(new { message = "Orden de compra no encontrada" });
+
+            if (orden.DetalleOrdenCompras == null || !orden.DetalleOrdenCompras.Any())
+                return NotFound(new { message = "No hay detalles para esta orden" });
+
+            foreach (var patch in detallesPatch)
+            {
+                var detalle = orden.DetalleOrdenCompras
+                    .FirstOrDefault(d => d.IdInsumo == patch.IdInsumo);
+
+                if (detalle == null)
+                    continue; // o puedes lanzar error si quieres obligar que exista
+
+                // PATCH: solo actualiza si viene valor
+                if (patch.DescripcionFac != null)
+                    detalle.DescripcionFac = patch.DescripcionFac;
+
+                if (patch.Cantidad.HasValue)
+                    detalle.Cantidad = patch.Cantidad.Value;
+
+                if (patch.Um != null)
+                    detalle.Um = patch.Um;
+
+                if (patch.CostoUnitario.HasValue)
+                    detalle.CostoUnitario = patch.CostoUnitario.Value;
+
+                if (patch.CostoTotal.HasValue)
+                    detalle.CostoTotal = patch.CostoTotal.Value;
+
+                detalle.IdModificador = patch.IdModificador;
+                detalle.FechaModificacion = DateTime.UtcNow;
+            }
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Detalles actualizados correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al actualizar detalles", error = ex.Message });
+            }
+        }
     }
 }

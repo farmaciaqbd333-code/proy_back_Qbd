@@ -13,9 +13,9 @@ namespace proy_back_Qbd.Models
     public class DetalleOrdenCompra
     {
         [Column("id_orden_compra")] public required int IdOrdenCompra { get; set; }
-        [Column("id_insumo")] public required  int IdInsumo { get; set; }
-        [Column("descripcion_fac")] public required  string DescripcionFac { get; set; }
-        [Column("cantidad")] public required  decimal Cantidad { get; set; }
+        [Column("id_insumo")] public required int IdInsumo { get; set; }
+        [Column("descripcion_fac")] public required string DescripcionFac { get; set; }
+        [Column("cantidad")] public required decimal Cantidad { get; set; }
         [Column("um")] public required string Um { get; set; }
         [Column("costo_unitario")] public required decimal CostoUnitario { get; set; }
         [Column("costo_total")] public required decimal CostoTotal { get; set; }
@@ -49,5 +49,15 @@ namespace proy_back_Qbd.Models
         public required string CUnitario { get; set; }
         public required string CTotal { get; set; }
     }
-    
+    public class DetalleOrdenCompraPatchReq
+    {
+        public int IdInsumo { get; set; }   
+
+        public string? DescripcionFac { get; set; }
+        public decimal? Cantidad { get; set; }
+        public string? Um { get; set; }
+        public decimal? CostoUnitario { get; set; }
+        public decimal? CostoTotal { get; set; }
+        public int IdModificador { get; set; }
+    }
 }
