@@ -117,12 +117,44 @@ namespace proy_back_Qbd.Controllers
                 IdCreador = request.IdCreador
 
             }).ToList();
-            
+
             _context.DetalleOrdenesCompras.AddRange(detalleOrdenCompras);
             await _context.SaveChangesAsync();
 
             ordenCompra.DetalleOrdenCompras = detalleOrdenCompras;
             return Ok(ordenCompra);
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateOrdenCompra(int id, [FromBody] OrdenCompraUpdateReq req)
+        {
+            OrdenCompra? orden = await _context.OrdenCompras.FindAsync(id);
+
+            if (orden == null)
+            {
+                return NotFound(new { message = "Orden de compra no encontrada" });
+            }
+
+            // Mapear campos
+            orden.IdProveedor = req.IdProveedor;
+            orden.Modalidad = req.Modalidad;
+            orden.Moneda = req.Moneda;
+            orden.TipoCambio = req.TipoCambio;
+            orden.Impuesto = req.Impuesto;
+            orden.FechaEmision = req.FechaEmision;
+            orden.Observaciones = req.Observaciones;
+            orden.Familia = req.Familia;
+            orden.IdSede = req.IdSede;
+            orden.TipoTributario = req.TipoTributario;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Orden de compra actualizada correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al actualizar", error = ex.Message });
+            }
         }
     }
 }

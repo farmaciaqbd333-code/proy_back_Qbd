@@ -34,6 +34,7 @@ namespace proy_back_Qbd.Models
         public Sede? Sede { get; set; }
         [JsonIgnore]
         public Usuario? Creador { get; set; }
+        [JsonIgnore]
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
         [JsonIgnore]
         public Compra? Compra { get; set; }
@@ -77,5 +78,18 @@ namespace proy_back_Qbd.Models
         public required string UM { get; set; }
         public required decimal CUnitario { get; set; }
         public required decimal CTotal { get; set; }
+    }
+    public class OrdenCompraUpdateReq
+    {
+        public required int IdProveedor { get; set; }
+        public required string Modalidad { get; set; }
+        public required string Moneda { get; set; }
+        public required decimal TipoCambio { get; set; }
+        public required decimal Impuesto { get; set; }
+        public required DateTime FechaEmision { get; set; }
+        public required string Observaciones { get; set; }
+        public required string Familia { get; set; }
+        public required int IdSede { get; set; }
+        public required string TipoTributario { get; set; }
     }
 }
