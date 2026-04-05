@@ -51,7 +51,7 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOrdenCompraPatchReq
     {
-        public int IdInsumo { get; set; }   
+        public int IdInsumo { get; set; }
 
         public string? DescripcionFac { get; set; }
         public decimal? Cantidad { get; set; }
@@ -59,5 +59,15 @@ namespace proy_back_Qbd.Models
         public decimal? CostoUnitario { get; set; }
         public decimal? CostoTotal { get; set; }
         public int IdModificador { get; set; }
+    }
+    public class DetalleOrdenCompraCreateReq
+    {
+        public int IdInsumo { get; set; }
+        public required string DescripcionFac { get; set; }
+        public decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }
+        public int IdCreador { get; set; }
     }
 }

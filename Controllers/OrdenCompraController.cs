@@ -235,5 +235,65 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al eliminar detalle", error = ex.Message });
             }
         }
+        [HttpPost("detalles/{id}")]
+        public async Task<IActionResult> CreateDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraCreateReq> detalles)
+        {
+            var orden = await _context.OrdenCompras
+                .Include(o => o.DetalleOrdenCompras)
+                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+
+            if (orden == null)
+                return NotFound(new { message = "Orden de compra no encontrada" });
+
+            var nuevosDetalles = new List<DetalleOrdenCompra>();
+
+            foreach (var item in detalles)
+            {
+                // Validación básica
+                if (item.Cantidad <= 0 || item.CostoUnitario < 0)
+                    return BadRequest(new { message = "Cantidad o costo inválido" });
+
+                // Validar duplicados (opcional)
+                if (orden.DetalleOrdenCompras != null)
+                {
+                    var existe = orden.DetalleOrdenCompras
+                    .Any(d => d.IdInsumo == item.IdInsumo);
+
+                    if (existe)
+                        return Ok(new { message = "Ya existe este Insumo" });
+                }
+
+                var detalle = new DetalleOrdenCompra
+                {
+                    IdOrdenCompra = id,
+                    IdInsumo = item.IdInsumo,
+                    DescripcionFac = item.DescripcionFac,
+                    Cantidad = item.Cantidad,
+                    Um = item.Um,
+                    CostoUnitario = item.CostoUnitario,
+                    CostoTotal = item.CostoTotal,
+                    IdCreador = item.IdCreador,
+                    IdModificador = item.IdCreador,
+                    FechaModificacion = DateTime.UtcNow
+                };
+
+                nuevosDetalles.Add(detalle);
+            }
+
+            if (!nuevosDetalles.Any())
+                return BadRequest(new { message = "No hay detalles válidos para insertar" });
+
+            await _context.DetalleOrdenesCompras.AddRangeAsync(nuevosDetalles);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Detalles creados correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al crear detalles", error = ex.Message });
+            }
+        }
     }
 }
