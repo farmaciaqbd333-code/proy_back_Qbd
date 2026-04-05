@@ -205,5 +205,35 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al actualizar detalles", error = ex.Message });
             }
         }
+        [HttpDelete("detalles/{idOrden}/{idInsumo}")]
+        public async Task<IActionResult> DeleteDetalleOrdenCompra(int idOrden, int idInsumo)
+        {
+            OrdenCompra? orden = await _context.OrdenCompras
+                .Include(o => o.DetalleOrdenCompras)
+                .FirstOrDefaultAsync(o => o.IdOrdenCompra == idOrden);
+
+            if (orden == null)
+                return NotFound(new { message = "Orden de compra no encontrada" });
+            if (orden.DetalleOrdenCompras == null)
+                return NotFound(new { message = "Orden de compra sin detalles" });
+
+            DetalleOrdenCompra? detalle = orden.DetalleOrdenCompras
+                .FirstOrDefault(d => d.IdInsumo == idInsumo);
+
+            if (detalle == null)
+                return NotFound(new { message = "Detalle no encontrado" });
+
+            _context.DetalleOrdenesCompras.Remove(detalle);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Detalle eliminado correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al eliminar detalle", error = ex.Message });
+            }
+        }
     }
 }
