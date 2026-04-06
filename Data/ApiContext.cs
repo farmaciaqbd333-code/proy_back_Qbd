@@ -120,7 +120,7 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<DetalleCompra>((e) =>
             {
-                e.HasKey(hk => new { hk.IdCompra, hk.IdInsumo });
+                e.HasKey(hk => new { hk.IdCompra,  });
             });
         }
 

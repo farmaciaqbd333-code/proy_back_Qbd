@@ -37,9 +37,9 @@ namespace proy_back_Qbd.Controllers
                     Total = s.DetalleOrdenCompras == null ? "" : s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString(),
                     Moneda = s.Moneda,
                     Estado = s.Compra != null ? "PRO" : "PEN",
-                    CodFac = s.Compra != null ? s.Compra.CodFac : "",
+                    CodFac = s.Compra != null ? s.Compra.CodFacturaQBD : "",
                     Familia = s.Familia,
-                    Factura = s.Compra != null ? s.Compra.Factura : "",
+                    Factura = s.Compra != null ? s.Compra.CodFactura : "",
                     EstadoOrdenCompra = s.Estado,
                     Usuario = s.Creador == null || s.Creador.Persona == null ? "" : s.Creador.Persona.NombreCompleto ?? ""
                 })
@@ -57,12 +57,15 @@ namespace proy_back_Qbd.Controllers
                 {
                     Modalidad = s.TipoCambio.ToString(),
                     TC = s.TipoCambio.ToString(),
+                    Familia = s.Familia.ToString(),
+                    FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
                     DetalleOrdenCompras = s.DetalleOrdenCompras == null
                                             ? null :
                                             s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
                                             {
+                                                IdInsumo = s2.IdInsumo,
                                                 Codigo = s2.IdInsumo.ToString(),
                                                 DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
                                                 DescripcionFactura = s2.DescripcionFac,
@@ -98,7 +101,7 @@ namespace proy_back_Qbd.Controllers
                 IdSede = request.IdSede,
                 Estado = "PEN",
                 IdCreador = request.IdCreador,
-                FechaEmision = request.FechaEmision,
+                FechaCotizacion = request.FechaEmision,
                 TipoTributario = request.TipoTributario,
             };
             _context.OrdenCompras.Add(ordenCompra);
@@ -140,7 +143,7 @@ namespace proy_back_Qbd.Controllers
             orden.Moneda = req.Moneda;
             orden.TipoCambio = req.TipoCambio;
             orden.Impuesto = req.Impuesto;
-            orden.FechaEmision = req.FechaEmision;
+            orden.FechaCotizacion = req.FechaEmision;
             orden.Observaciones = req.Observaciones;
             orden.Familia = req.Familia;
             orden.IdSede = req.IdSede;
@@ -295,5 +298,6 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al crear detalles", error = ex.Message });
             }
         }
+        
     }
 }

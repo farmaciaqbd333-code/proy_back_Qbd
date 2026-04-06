@@ -18,7 +18,7 @@ namespace proy_back_Qbd.Models
         [Column("moneda")] public required string Moneda { get; set; }
         [Column("tipo_cambio")] public required decimal TipoCambio { get; set; }
         [Column("impuesto")] public required decimal Impuesto { get; set; }
-        [Column("fecha_emision")] public required DateTime FechaEmision { get; set; }
+        [Column("fecha_cotizacion")] public required DateTime FechaCotizacion { get; set; }
         [Column("modalidad")] public required string Modalidad { get; set; }
         [Column("observaciones")] public required string Observaciones { get; set; }
         [Column("familia")] public required string Familia { get; set; }
@@ -92,4 +92,5 @@ namespace proy_back_Qbd.Models
         public required int IdSede { get; set; }
         public required string TipoTributario { get; set; }
     }
+    
 }

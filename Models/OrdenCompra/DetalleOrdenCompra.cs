@@ -34,6 +34,8 @@ namespace proy_back_Qbd.Models
     public class DetalleOrdenCompraRes
     {
         public required string Modalidad { get; set; }
+        public required string Familia { get; set; }
+        public required DateTime FechaCotizacion { get; set; }
         public required string TC { get; set; }
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
@@ -41,6 +43,7 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOrdenCompra2
     {
+        public required int IdInsumo { get; set; }
         public required string Codigo { get; set; }
         public required string DescripcionQBD { get; set; }
         public required string DescripcionFactura { get; set; }
