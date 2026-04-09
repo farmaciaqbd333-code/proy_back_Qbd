@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -11,6 +12,8 @@ namespace proy_back_Qbd.Models
     [Table("proveedores")]
     public class Proveedor
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id_proveedor")] public int IdProveedor { get; set; }
         [Column("numero_prov")] public required string CodigoProv { get; set; }
         [Column("datos")] public required string Datos { get; set; }

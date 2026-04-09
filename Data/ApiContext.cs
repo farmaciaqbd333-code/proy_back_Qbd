@@ -80,6 +80,7 @@ namespace Proy_back_QBD.Data
             modelBuilder.Entity<Proveedor>((e) =>
            {
                e.HasKey(hk => hk.IdProveedor);
+               e.Property(p => p.IdProveedor).ValueGeneratedOnAdd();
                e.HasOne(ho => ho.Creador).WithMany(wm => wm.Proveedores).HasForeignKey(hfk => hfk.IdCreador);
            });
         }
