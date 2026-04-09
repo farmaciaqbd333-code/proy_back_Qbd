@@ -12,11 +12,12 @@ namespace proy_back_Qbd.Models
     public class Proveedor
     {
         [Column("id_proveedor")] public int IdProveedor { get; set; }
-        [Column("codigo_prov")] public required string CodigoProv { get; set; }
+        [Column("numero_prov")] public required string CodigoProv { get; set; }
         [Column("datos")] public required string Datos { get; set; }
         [Column("direccion")] public string Direccion { get; set; } = "";
         [Column("telefono")] public string Telefono { get; set; } = "";
         [Column("referencia")] public string Referencia { get; set; } = "";
+        [Column("codigo_provedor")] public string? CodigoProvedor { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("creador")] public required int IdCreador { get; set; }
@@ -33,6 +34,7 @@ namespace proy_back_Qbd.Models
         public string Direccion { get; set; } = "";
         public string Telefono { get; set; } = "";
         public string Referencia { get; set; } = "";
+        public string? CodigoProvedor { get; set; }
         public required int IdCreador { get; set; }
     }
 
@@ -44,6 +46,7 @@ namespace proy_back_Qbd.Models
         public string Direccion { get; set; } = "";
         public string Telefono { get; set; } = "";
         public string Referencia { get; set; } = "";
+        public string? CodigoProvedor { get; set; }
     }
 
     // DTO para respuesta (lectura)
@@ -55,6 +58,7 @@ namespace proy_back_Qbd.Models
         public string Direccion { get; set; } = string.Empty;
         public string Telefono { get; set; } = string.Empty;
         public string Referencia { get; set; } = string.Empty;
+        public string? CodigoProvedor { get; set; }
         public DateTime FechaCreacion { get; set; }
         public required int IdCreador { get; set; }
     }
