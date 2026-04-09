@@ -31,6 +31,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<InsumoRMap>();
     cfg.AddProfile<InsumoMap>();
     cfg.AddProfile<EmpaqueMap>();
+    cfg.AddProfile<ProductoMap>();
 });
 builder.Configuration
     .AddEnvironmentVariables();

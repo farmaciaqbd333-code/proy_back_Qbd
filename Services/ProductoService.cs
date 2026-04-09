@@ -37,5 +37,44 @@ namespace Proy_back_QBD.Services
             }
             return response;
         }
+
+        public async Task<Producto?> Crear(ProductoReq request)
+        {
+            Producto producto = _mapper.Map<Producto>(request);
+            producto.ModificadorId = producto.CreadorId;
+
+            await _context.Productos.AddAsync(producto);
+            await _context.SaveChangesAsync();
+
+            return producto;
+        }
+
+        public async Task<Producto?> Actualizar(int id, ProductoReq request)
+        {
+            Producto? producto = await _context.Productos.FindAsync(id);
+            if (producto == null)
+            {
+                return null;
+            }
+
+            _mapper.Map(request, producto);
+            await _context.SaveChangesAsync();
+
+            return producto;
+        }
+
+        public async Task<bool> Eliminar(int id)
+        {
+            Producto? producto = await _context.Productos.FindAsync(id);
+            if (producto == null)
+            {
+                return false;
+            }
+
+            _context.Productos.Remove(producto);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

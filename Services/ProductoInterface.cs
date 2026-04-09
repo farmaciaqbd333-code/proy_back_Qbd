@@ -7,5 +7,8 @@ namespace Proy_back_QBD.Services
     public interface IProductoService
     {
         Task<List<ProductoRes>?> Obtener();
+        Task<Producto?> Crear(ProductoReq request);
+        Task<Producto?> Actualizar(int id, ProductoReq request);
+        Task<bool> Eliminar(int id);
     }
 }
