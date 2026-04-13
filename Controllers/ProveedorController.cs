@@ -35,6 +35,7 @@ namespace proy_back_Qbd.Controllers
                     Direccion = p.Direccion,
                     Telefono = p.Telefono,
                     Referencia = p.Referencia,
+                    CodigoProvedor = p.CodigoProvedor,
                     FechaCreacion = p.FechaCreacion,
                     IdCreador = p.IdCreador
                 })
@@ -60,6 +61,7 @@ namespace proy_back_Qbd.Controllers
                 Direccion = proveedor.Direccion,
                 Telefono = proveedor.Telefono,
                 Referencia = proveedor.Referencia,
+                CodigoProvedor = proveedor.CodigoProvedor,
                 FechaCreacion = proveedor.FechaCreacion,
                 IdCreador = proveedor.IdCreador
             };
@@ -81,7 +83,8 @@ namespace proy_back_Qbd.Controllers
                 Datos = dto.Datos,
                 Direccion = dto.Direccion,
                 Telefono = dto.Telefono,
-                Referencia = dto.Referencia,                
+                Referencia = dto.Referencia,
+                CodigoProvedor = dto.CodigoProvedor,
                 IdCreador = dto.IdCreador
             };
 
@@ -96,6 +99,7 @@ namespace proy_back_Qbd.Controllers
                 Direccion = proveedor.Direccion,
                 Telefono = proveedor.Telefono,
                 Referencia = proveedor.Referencia,
+                CodigoProvedor = proveedor.CodigoProvedor,
                 FechaCreacion = proveedor.FechaCreacion,
                 IdCreador = proveedor.IdCreador
             };
@@ -121,6 +125,7 @@ namespace proy_back_Qbd.Controllers
             proveedor.Direccion = dto.Direccion;
             proveedor.Telefono = dto.Telefono;
             proveedor.Referencia = dto.Referencia;
+            proveedor.CodigoProvedor = dto.CodigoProvedor;
             // NO actualizamos FechaCreacion ni IdCreador
 
             await _context.SaveChangesAsync();
