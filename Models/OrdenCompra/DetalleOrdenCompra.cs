@@ -12,6 +12,7 @@ namespace proy_back_Qbd.Models
     [Table("detalle_orden_compra")]
     public class DetalleOrdenCompra
     {
+        [Column("id")] public int Id { get; set; }
         [Column("id_orden_compra")] public required int IdOrdenCompra { get; set; }
         [Column("id_insumo")] public required int IdInsumo { get; set; }
         [Column("descripcion_fac")] public required string DescripcionFac { get; set; }

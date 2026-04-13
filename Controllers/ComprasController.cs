@@ -20,7 +20,7 @@ namespace proy_back_Qbd.Controllers
             _context = context;
         }
 
-        [HttpPost()]
+        [HttpPost]
         public async Task<ActionResult> CrearCompra(CompraCreateReq request)
         {
             Compra compra = new()
@@ -28,8 +28,8 @@ namespace proy_back_Qbd.Controllers
                 CodFactura = request.CodFactura,
                 Guia = request.Guia,
                 CodFacturaQBD = request.CodFacturaQBD,
-                IdOrdenCompra = request.IdOrdenCompra,
-                IdUsuario = request.IdUsuario,
+                IdCompra = request.IdOrdenCompra,
+                IdCreador = request.IdUsuario,
                 FechaFactura = request.FechaFactura,
                 ImgFactura = request.ImgFactura,
             };
@@ -39,7 +39,7 @@ namespace proy_back_Qbd.Controllers
             if (compra.IdCompra != null)
             {
                 List<DetalleCompra> detallesCompra = request.Detalle.Select(s => new DetalleCompra
-                {                    
+                {
                     Lote = s.Lote,
                     FechaFab = s.FechaFab,
                     FechaVec = s.FechaVec,

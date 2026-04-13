@@ -16,9 +16,8 @@ namespace proy_back_Qbd.Models
         [Column("cod_fac")] public required string CodFactura { get; set; }
         [Column("guia")] public required string Guia { get; set; }
         [Column("cod_fac_qbd")] public required string CodFacturaQBD { get; set; }
-        [Column("id_orden_compra")] public required int IdOrdenCompra { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [Column("id_usuario")] public required int IdUsuario { get; set; }
+        [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("fecha_factura")] public required DateTime FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
         public Usuario? Usuario { get; set; }

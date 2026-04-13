@@ -10,7 +10,8 @@ namespace proy_back_Qbd.Models
     [Table("detalle_compra")]
     public class DetalleCompra
     {
-        [Column("id_compra")] public int IdCompra { get; set; }
+        [Column("id")] public int Id { get; set; }
+        [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }
         [Column("cantidad_paquete")] public decimal? CantidadPaquete { get; set; }
         [Column("lote")] public required string Lote { get; set; }
         [Column("potencia")] public string? Potencia { get; set; }

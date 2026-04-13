@@ -13,6 +13,7 @@ namespace proy_back_Qbd.Models
     {
         [Column("id_proveedor")] public int IdProveedor { get; set; }
         [Column("codigo_prov")] public required string CodigoProv { get; set; }
+        [Column("numero_prov")] public required string NumeroProv { get; set; }
         [Column("datos")] public required string Datos { get; set; }
         [Column("direccion")] public string Direccion { get; set; } = "";
         [Column("telefono")] public string Telefono { get; set; } = "";
@@ -29,6 +30,7 @@ namespace proy_back_Qbd.Models
     public class ProveedorCreateDto
     {
         public required string CodigoProv { get; set; } 
+        public required string NumeroProv { get; set; } 
         public required string Datos { get; set; }
         public string Direccion { get; set; } = "";
         public string Telefono { get; set; } = "";
