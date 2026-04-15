@@ -51,6 +51,7 @@ namespace proy_back_Qbd.Controllers
                 CodFac = s.Compra?.CodFactura ?? "",
                 Familia = s.Familia != null ? (s.Familia.Nombre == "Insumos" ? "MP" : s.Familia.Nombre) : "N/A",
                 Factura = s.Compra != null ? "SI" : "NO",
+                Modalidad = s.Modalidad,
                 EstadoOrdenCompra = s.Estado ?? "PEN",
                 Usuario = s.Sede != null ? s.Sede.Nombre : "N/A"
             }).ToList();
@@ -71,7 +72,12 @@ namespace proy_back_Qbd.Controllers
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                    Responsable = s.Sede != null ? s.Sede.Encargado : "",
+                    Responsable = s.Sede != null ? (
+                        _context.Personas
+                        .Where(p => p.Id.ToString() == s.Sede.Encargado)
+                        .Select(p => p.NombreCompleto)
+                        .FirstOrDefault() ?? s.Sede.Encargado
+                    ) : "",
                     TipoOperacion = s.TipoOperacion,
                     IncluyeImpuesto = s.IncluyeImpuesto,
                     CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
