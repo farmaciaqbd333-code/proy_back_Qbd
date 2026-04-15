@@ -47,9 +47,9 @@ namespace proy_back_Qbd.Controllers
                 Total = s.DetalleOrdenCompras != null ? s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString("F2") : "0.00",
                 Moneda = s.Moneda ?? "PEN",
                 Estado = s.Estado ?? "PEN",
-                CodFac = s.Compra?.CodFactura ?? "",
-                Familia = s.Familia == "Insumos" ? "MP" : s.Familia, // Mapeo de "Insumos" a "MP"
-                Factura = s.Compra != null ? "SI" : "NO",
+                CodFac = s.CodFactura ?? "",
+                Familia = s.FamiliaNombre == "Insumos" ? "MP" : (s.FamiliaNombre ?? ""),
+                Factura = !string.IsNullOrEmpty(s.CodFactura) ? "SI" : "NO",
                 EstadoOrdenCompra = s.Estado ?? "PEN",
                 Usuario = s.Sede != null ? s.Sede.Nombre : "N/A"
             }).ToList();
@@ -66,7 +66,7 @@ namespace proy_back_Qbd.Controllers
                 {
                     Modalidad = s.Modalidad,
                     TC = s.TipoCambio.ToString(),
-                    Familia = s.Familia.ToString(),
+                    Familia = s.Familia != null ? s.Familia.Nombre : "N/A",
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
@@ -107,7 +107,7 @@ namespace proy_back_Qbd.Controllers
                 TipoCambio = request.TipoCambio,
                 Impuesto = request.Impuesto,
                 Observaciones = request.Observaciones,
-                Familia = request.Familia,
+                IdFamilia = request.IdFamilia,
                 IdSede = request.IdSede,
                 Estado = "PEN",
                 IdCreador = request.IdCreador,
@@ -155,7 +155,7 @@ namespace proy_back_Qbd.Controllers
             orden.Impuesto = req.Impuesto;
             orden.FechaCotizacion = req.FechaEmision;
             orden.Observaciones = req.Observaciones;
-            orden.Familia = req.Familia;
+            orden.IdFamilia = req.IdFamilia;
             orden.IdSede = req.IdSede;
             orden.TipoTributario = req.TipoTributario;
 

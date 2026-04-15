@@ -43,6 +43,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Empaque> Empaques { get; set; }
         public DbSet<FormulaR> FormulasR { get; set; }
         public DbSet<InsumoR> InsumosR { get; set; }
+        public DbSet<Familia> Familias { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ConfigureProveedor(modelBuilder);
@@ -73,6 +74,7 @@ namespace Proy_back_QBD.Data
             ConfigureInsumo(modelBuilder);
             ConfigureInsumoR(modelBuilder);
             ConfigureFormulaR(modelBuilder);
+            ConfigureFamilia(modelBuilder);
         }
 
         private void ConfigureProveedor(ModelBuilder modelBuilder)
@@ -151,6 +153,7 @@ namespace Proy_back_QBD.Data
             {
                 e.HasOne(e => e.Proveedor).WithMany(e2 => e2.OrdenCompras).HasForeignKey(hfk => hfk.IdProveedor);
                 e.HasOne(e => e.Sede).WithMany(e2 => e2.OrdenCompras).HasForeignKey(hfk => hfk.IdSede);
+                e.HasOne(e => e.Familia).WithMany().HasForeignKey(hfk => hfk.IdFamilia);
                 e.HasOne(e => e.Creador).WithMany(e2 => e2.OrdenComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
             });
         }
@@ -673,7 +676,13 @@ namespace Proy_back_QBD.Data
             ValueGeneratedOnAdd();
         }
 
-
+        private void ConfigureFamilia(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Familia>((e) =>
+            {
+                e.HasKey(hk => hk.Id);
+                e.HasOne(ho => ho.Creador).WithMany().HasForeignKey(hfk => hfk.IdCreador);
+            });
+        }
     }
-
 }

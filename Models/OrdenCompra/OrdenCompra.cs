@@ -21,7 +21,7 @@ namespace proy_back_Qbd.Models
         [Column("fecha_cotizacion")] public required DateTime FechaCotizacion { get; set; }
         [Column("modalidad")] public required string Modalidad { get; set; }
         [Column("observaciones")] public required string Observaciones { get; set; }
-        [Column("familia")] public required string Familia { get; set; }
+        [Column("id_familia")] public int? IdFamilia { get; set; }
         [Column("id_sede")] public required int IdSede { get; set; }
         [Column("estado")] public required string Estado { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
@@ -38,6 +38,8 @@ namespace proy_back_Qbd.Models
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
         [JsonIgnore]
         public Compra? Compra { get; set; }
+        [JsonIgnore]
+        public Familia? Familia { get; set; }
     }
     public class ListadoOrdenCompra
     {
@@ -66,7 +68,7 @@ namespace proy_back_Qbd.Models
         public required decimal Impuesto { get; set; }
         public required DateTime FechaEmision { get; set; }
         public required string Observaciones { get; set; }
-        public required string Familia { get; set; }
+        public int IdFamilia { get; set; }
         public required int IdSede { get; set; }
         public required int IdCreador { get; set; }
         public required string TipoTributario { get; set; }
@@ -90,7 +92,7 @@ namespace proy_back_Qbd.Models
         public required decimal Impuesto { get; set; }
         public required DateTime FechaEmision { get; set; }
         public required string Observaciones { get; set; }
-        public required string Familia { get; set; }
+        public int IdFamilia { get; set; }
         public required int IdSede { get; set; }
         public required string TipoTributario { get; set; }
     }
