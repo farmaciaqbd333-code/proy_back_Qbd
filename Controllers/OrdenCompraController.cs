@@ -31,6 +31,7 @@ namespace proy_back_Qbd.Controllers
                 .Include(i => i.Compra)
                 .Include(i => i.DetalleOrdenCompras)
                 .Include(i => i.Sede)
+                .Include(i => i.Familia)
                 .OrderByDescending(o => o.IdOrdenCompra)
                 .ToListAsync();
 
@@ -47,9 +48,9 @@ namespace proy_back_Qbd.Controllers
                 Total = s.DetalleOrdenCompras != null ? s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString("F2") : "0.00",
                 Moneda = s.Moneda ?? "PEN",
                 Estado = s.Estado ?? "PEN",
-                CodFac = s.CodFactura ?? "",
-                Familia = s.FamiliaNombre == "Insumos" ? "MP" : (s.FamiliaNombre ?? ""),
-                Factura = !string.IsNullOrEmpty(s.CodFactura) ? "SI" : "NO",
+                CodFac = s.Compra?.CodFactura ?? "",
+                Familia = s.Familia != null ? (s.Familia.Nombre == "Insumos" ? "MP" : s.Familia.Nombre) : "N/A",
+                Factura = s.Compra != null ? "SI" : "NO",
                 EstadoOrdenCompra = s.Estado ?? "PEN",
                 Usuario = s.Sede != null ? s.Sede.Nombre : "N/A"
             }).ToList();
