@@ -117,8 +117,8 @@ namespace proy_back_Qbd.Controllers
                 CostoTotal = s.CTotal,
                 IdOrdenCompra = ordenCompra.IdOrdenCompra,
                 FechaModificacion = ordenCompra.FechaCreacion,
-                IdCreador = request.IdCreador
-
+                IdCreador = request.IdCreador,
+                IdModificador = request.IdCreador // Asignar el mismo creador como modificador inicial
             }).ToList();
 
             _context.DetalleOrdenesCompras.AddRange(detalleOrdenCompras);
