@@ -58,6 +58,11 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(ordenes);
         }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<DetalleOrdenCompraRes>> GetOrdenCompraById(int id)
+        {
+            return await GetDetalleOrdenesCompra(id);
+        }
         [HttpGet("detalle/{id}")]
         public async Task<ActionResult<DetalleOrdenCompraRes>> GetDetalleOrdenesCompra(int id)
         {
