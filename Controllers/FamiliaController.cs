@@ -10,6 +10,7 @@ namespace proy_back_Qbd.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class FamiliaController : ControllerBase
     {
         private readonly ApiContext _context;
