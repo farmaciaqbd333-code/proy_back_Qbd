@@ -79,7 +79,6 @@ namespace proy_back_Qbd.Controllers
             var proveedor = new Proveedor
             {
                 CodigoProv = dto.CodigoProv,
-                NumeroProv = dto.NumeroProv,
                 Datos = dto.Datos,
                 Direccion = dto.Direccion,
                 Telefono = dto.Telefono,
