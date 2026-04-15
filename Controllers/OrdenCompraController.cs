@@ -72,15 +72,12 @@ namespace proy_back_Qbd.Controllers
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                    Responsable = s.Sede != null ? (
-                        _context.Personas
-                        .Where(p => p.Id.ToString() == s.Sede.Encargado)
-                        .Select(p => p.NombreCompleto)
-                        .FirstOrDefault() ?? s.Sede.Encargado
-                    ) : "",
+                    Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
+                    CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
+                    Ruc = s.Proveedor != null ? s.Proveedor.CodigoProv : "",
+                    RazonSocial = s.Proveedor != null ? s.Proveedor.Datos : "",
                     TipoOperacion = s.TipoOperacion,
                     IncluyeImpuesto = s.IncluyeImpuesto,
-                    CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
                     DetalleOrdenCompras = s.DetalleOrdenCompras == null
                                             ? null :
                                             s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
@@ -172,6 +169,11 @@ namespace proy_back_Qbd.Controllers
             orden.TipoOperacion = req.TipoOperacion;
             orden.IncluyeImpuesto = req.IncluyeImpuesto;
             orden.TipoTributario = req.TipoTributario;
+            orden.Modalidad = req.Modalidad;
+            orden.Moneda = req.Moneda;
+            orden.TipoCambio = req.TipoCambio;
+            orden.IdProveedor = req.IdProveedor;
+            orden.Impuesto = req.Impuesto;
 
             try
             {

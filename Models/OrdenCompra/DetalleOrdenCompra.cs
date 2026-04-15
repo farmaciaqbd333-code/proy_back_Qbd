@@ -41,6 +41,8 @@ namespace proy_back_Qbd.Models
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
         public required string CodigoProveedor { get; set; }
+        public string? Ruc { get; set; }
+        public string? RazonSocial { get; set; }
         public string? Responsable { get; set; }
         public string? TipoOperacion { get; set; }
         public bool IncluyeImpuesto { get; set; }
