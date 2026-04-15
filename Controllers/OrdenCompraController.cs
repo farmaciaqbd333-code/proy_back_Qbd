@@ -36,8 +36,9 @@ namespace proy_back_Qbd.Controllers
 
             var ordenes = data.Select(s => new ListadoOrdenCompra
             {
-                CUO = "BDOC-" + s.IdOrdenCompra,
+                CUO = "OC-" + s.IdOrdenCompra,
                 Fecha = s.FechaCreacion.ToString("dd/MM/yyyy"),
+
                 Serie = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) && s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[0] : "",
                 Numero = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) ? (s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[1] : s.Compra.CodFactura) : "",
                 RUC = s.Proveedor?.CodigoProv ?? "",
