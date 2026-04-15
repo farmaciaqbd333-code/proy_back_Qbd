@@ -40,6 +40,7 @@ namespace proy_back_Qbd.Models
         public required string TC { get; set; }
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
+        public required string CodigoProveedor { get; set; }
         public List<DetalleOrdenCompra2>? DetalleOrdenCompras { get; set; }
     }
     public class DetalleOrdenCompra2

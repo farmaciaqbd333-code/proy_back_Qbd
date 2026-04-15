@@ -64,12 +64,13 @@ namespace proy_back_Qbd.Controllers
                 .Where(w => w.IdOrdenCompra == id)
                 .Select(s => new DetalleOrdenCompraRes
                 {
-                    Modalidad = s.TipoCambio.ToString(),
+                    Modalidad = s.Modalidad,
                     TC = s.TipoCambio.ToString(),
                     Familia = s.Familia.ToString(),
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
+                    CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
                     DetalleOrdenCompras = s.DetalleOrdenCompras == null
                                             ? null :
                                             s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
