@@ -41,6 +41,9 @@ namespace proy_back_Qbd.Models
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
         public required string CodigoProveedor { get; set; }
+        public string? Responsable { get; set; }
+        public string? TipoOperacion { get; set; }
+        public bool IncluyeImpuesto { get; set; }
         public List<DetalleOrdenCompra2>? DetalleOrdenCompras { get; set; }
     }
     public class DetalleOrdenCompra2

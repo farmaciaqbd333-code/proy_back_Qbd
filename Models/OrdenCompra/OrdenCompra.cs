@@ -23,6 +23,8 @@ namespace proy_back_Qbd.Models
         [Column("observaciones")] public required string Observaciones { get; set; }
         [Column("id_familia")] public int? IdFamilia { get; set; }
         [Column("id_sede")] public required int IdSede { get; set; }
+        [Column("tipo_operacion")] public string? TipoOperacion { get; set; }
+        [Column("incluye_impuesto")] public bool IncluyeImpuesto { get; set; }
         [Column("estado")] public required string Estado { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
@@ -72,6 +74,8 @@ namespace proy_back_Qbd.Models
         public required int IdSede { get; set; }
         public required int IdCreador { get; set; }
         public required string TipoTributario { get; set; }
+        public string? TipoOperacion { get; set; }
+        public bool IncluyeImpuesto { get; set; }
         public required List<OrdenCompraCreateReq2> Detalle { get; set; }
     }
     public class OrdenCompraCreateReq2
@@ -94,6 +98,8 @@ namespace proy_back_Qbd.Models
         public required string Observaciones { get; set; }
         public int IdFamilia { get; set; }
         public required int IdSede { get; set; }
+        public string? TipoOperacion { get; set; }
+        public bool IncluyeImpuesto { get; set; }
         public required string TipoTributario { get; set; }
     }
     

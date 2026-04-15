@@ -71,6 +71,9 @@ namespace proy_back_Qbd.Controllers
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
+                    Responsable = s.Sede != null ? s.Sede.Encargado : "",
+                    TipoOperacion = s.TipoOperacion,
+                    IncluyeImpuesto = s.IncluyeImpuesto,
                     CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
                     DetalleOrdenCompras = s.DetalleOrdenCompras == null
                                             ? null :
@@ -110,6 +113,8 @@ namespace proy_back_Qbd.Controllers
                 Observaciones = request.Observaciones,
                 IdFamilia = request.IdFamilia,
                 IdSede = request.IdSede,
+                TipoOperacion = request.TipoOperacion ?? "GRAVADO",
+                IncluyeImpuesto = request.IncluyeImpuesto,
                 Estado = "PEN",
                 IdCreador = request.IdCreador,
                 FechaCotizacion = request.FechaEmision,
@@ -158,6 +163,8 @@ namespace proy_back_Qbd.Controllers
             orden.Observaciones = req.Observaciones;
             orden.IdFamilia = req.IdFamilia;
             orden.IdSede = req.IdSede;
+            orden.TipoOperacion = req.TipoOperacion;
+            orden.IncluyeImpuesto = req.IncluyeImpuesto;
             orden.TipoTributario = req.TipoTributario;
 
             try
