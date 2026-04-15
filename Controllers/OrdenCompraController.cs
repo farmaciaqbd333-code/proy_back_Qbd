@@ -26,24 +26,32 @@ namespace proy_back_Qbd.Controllers
         public async Task<ActionResult<IEnumerable<ListadoOrdenCompra>>> GetOrdenesCompra()
         {
 
-            List<ListadoOrdenCompra> ordenes = await _context.OrdenCompras
-                .Select(s => new ListadoOrdenCompra
-                {
-                    CUO = "BDOC-" + s.IdOrdenCompra,
-                    Fecha = s.FechaCreacion.ToString("d"),
-                    RUC = s.Proveedor == null || s.Proveedor.CodigoProv == null ? "" : s.Proveedor.CodigoProv,
-                    Denominacion = s.Proveedor == null || s.Proveedor.Datos == null ? "" : s.Proveedor.Datos,
-                    Valor = s.DetalleOrdenCompras == null ? "" : (s.DetalleOrdenCompras.Sum(sm => sm.Cantidad) * s.DetalleOrdenCompras.Sum(sm => sm.CostoUnitario)).ToString(),
-                    Total = s.DetalleOrdenCompras == null ? "" : s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString(),
-                    Moneda = s.Moneda,
-                    Estado = s.Compra != null ? "PRO" : "PEN",
-                    CodFac = s.Compra != null ? s.Compra.CodFacturaQBD : "",
-                    Familia = s.Familia,
-                    Factura = s.Compra != null ? s.Compra.CodFactura : "",
-                    EstadoOrdenCompra = s.Estado,
-                    Usuario = s.Creador == null || s.Creador.Persona == null ? "" : s.Creador.Persona.NombreCompleto ?? ""
-                })
+            var data = await _context.OrdenCompras
+                .Include(i => i.Proveedor)
+                .Include(i => i.Compra)
+                .Include(i => i.DetalleOrdenCompras)
+                .Include(i => i.Sede)
+                .OrderByDescending(o => o.IdOrdenCompra)
                 .ToListAsync();
+
+            var ordenes = data.Select(s => new ListadoOrdenCompra
+            {
+                CUO = "BDOC-" + s.IdOrdenCompra,
+                Fecha = s.FechaCreacion.ToString("dd/MM/yyyy"),
+                Serie = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) && s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[0] : "",
+                Numero = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) ? (s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[1] : s.Compra.CodFactura) : "",
+                RUC = s.Proveedor?.CodigoProv ?? "",
+                Denominacion = s.Proveedor?.Datos ?? "",
+                Valor = s.DetalleOrdenCompras != null ? (s.DetalleOrdenCompras.Sum(sm => sm.Cantidad) * s.DetalleOrdenCompras.Sum(sm => sm.CostoUnitario)).ToString("F2") : "0.00",
+                Total = s.DetalleOrdenCompras != null ? s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString("F2") : "0.00",
+                Moneda = s.Moneda ?? "PEN",
+                Estado = s.Estado ?? "PEN",
+                CodFac = s.Compra?.CodFactura ?? "",
+                Familia = s.Familia == "Insumos" ? "MP" : s.Familia, // Mapeo de "Insumos" a "MP"
+                Factura = s.Compra != null ? "SI" : "NO",
+                EstadoOrdenCompra = s.Estado ?? "PEN",
+                Usuario = s.Sede != null ? s.Sede.Nombre : "N/A"
+            }).ToList();
 
             return Ok(ordenes);
         }

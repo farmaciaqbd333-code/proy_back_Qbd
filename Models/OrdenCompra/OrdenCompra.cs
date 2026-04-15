@@ -43,6 +43,8 @@ namespace proy_back_Qbd.Models
     {
         public required string CUO { get; set; }
         public required string Fecha { get; set; }
+        public required string Serie { get; set; }
+        public required string Numero { get; set; }
         public required string RUC { get; set; }
         public required string Denominacion { get; set; }
         public required string Valor { get; set; }
