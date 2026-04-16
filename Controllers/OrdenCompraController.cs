@@ -190,6 +190,42 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al actualizar", error = ex.Message });
             }
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrdenCompra(int id)
+        {
+            var orden = await _context.OrdenCompras
+                .Include(o => o.DetalleOrdenCompras)
+                .Include(o => o.Compra)
+                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+
+            if (orden == null)
+            {
+                return NotFound(new { message = "Orden de compra no encontrada" });
+            }
+
+            if (orden.Compra != null)
+            {
+                return BadRequest(new { message = "No se puede eliminar una orden que ya tiene una factura registrada" });
+            }
+
+            if (orden.DetalleOrdenCompras != null && orden.DetalleOrdenCompras.Any())
+            {
+                _context.DetalleOrdenesCompras.RemoveRange(orden.DetalleOrdenCompras);
+            }
+
+            _context.OrdenCompras.Remove(orden);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Orden de compra eliminada correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al eliminar la orden", error = ex.Message });
+            }
+        }
         [HttpPatch("detalles/{id}")]
         public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
         {
