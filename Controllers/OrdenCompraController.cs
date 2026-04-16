@@ -242,17 +242,8 @@ namespace proy_back_Qbd.Controllers
         [HttpDelete("detalles/{idOrden}/{idInsumo}")]
         public async Task<IActionResult> DeleteDetalleOrdenCompra(int idOrden, int idInsumo)
         {
-            OrdenCompra? orden = await _context.OrdenCompras
-                .Include(o => o.DetalleOrdenCompras)
-                .FirstOrDefaultAsync(o => o.IdOrdenCompra == idOrden);
-
-            if (orden == null)
-                return NotFound(new { message = "Orden de compra no encontrada" });
-            if (orden.DetalleOrdenCompras == null)
-                return NotFound(new { message = "Orden de compra sin detalles" });
-
-            DetalleOrdenCompra? detalle = orden.DetalleOrdenCompras
-                .FirstOrDefault(d => d.IdInsumo == idInsumo);
+            var detalle = await _context.DetalleOrdenesCompras
+                .FirstOrDefaultAsync(d => d.IdOrdenCompra == idOrden && d.IdInsumo == idInsumo);
 
             if (detalle == null)
                 return NotFound(new { message = "Detalle no encontrado" });
