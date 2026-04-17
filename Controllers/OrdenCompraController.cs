@@ -87,6 +87,7 @@ namespace proy_back_Qbd.Controllers
                                             ? null :
                                             s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
                                             {
+                                                Id = s2.Id,
                                                 IdInsumo = s2.IdInsumo,
                                                 Codigo = s2.IdInsumo.ToString(),
                                                 DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,

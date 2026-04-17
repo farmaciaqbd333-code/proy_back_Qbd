@@ -50,6 +50,7 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOrdenCompra2
     {
+        public int Id { get; set; } // ID primario de la fila
         public required int IdInsumo { get; set; }
         public required string Codigo { get; set; }
         public required string DescripcionQBD { get; set; }
