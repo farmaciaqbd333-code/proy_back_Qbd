@@ -61,7 +61,8 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOrdenCompraPatchReq
     {
-        public int IdInsumo { get; set; }
+        public int Id { get; set; } // ID primario de la fila en la DB
+        public int? IdInsumo { get; set; } // ID del insumo (opcional si se quiere cambiar)
 
         public string? DescripcionQbd { get; set; }
         public string? DescripcionFac { get; set; }

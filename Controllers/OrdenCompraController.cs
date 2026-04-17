@@ -242,11 +242,18 @@ namespace proy_back_Qbd.Controllers
 
             foreach (var patch in detallesPatch)
             {
+                // Buscar por ID primario de la fila, no por el insumo
                 var detalle = orden.DetalleOrdenCompras
-                    .FirstOrDefault(d => d.IdInsumo == patch.IdInsumo);
+                    .FirstOrDefault(d => d.Id == patch.Id);
 
                 if (detalle == null)
                     continue;
+
+                // CAMBIAR EL INSUMO (si se seleccionó otro)
+                if (patch.IdInsumo.HasValue && patch.IdInsumo.Value > 0)
+                {
+                    detalle.IdInsumo = patch.IdInsumo.Value;
+                }
 
                 // Actualizar Descripción QBD (Maestro de Insumos)
                 if (patch.DescripcionQbd != null && detalle.Insumo != null)
