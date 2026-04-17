@@ -73,6 +73,7 @@ namespace proy_back_Qbd.Controllers
                 {
                     Modalidad = s.Modalidad,
                     TC = s.TipoCambio.ToString(),
+                    Moneda = s.Moneda ?? "PEN",
                     Familia = s.Familia != null ? s.Familia.Nombre : "N/A",
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
@@ -83,6 +84,7 @@ namespace proy_back_Qbd.Controllers
                     RazonSocial = s.Proveedor != null ? s.Proveedor.Datos : "",
                     TipoOperacion = s.TipoOperacion,
                     IncluyeImpuesto = s.IncluyeImpuesto,
+                    Observaciones = s.Observaciones,
                     DetalleOrdenCompras = s.DetalleOrdenCompras == null
                                             ? null :
                                             s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
