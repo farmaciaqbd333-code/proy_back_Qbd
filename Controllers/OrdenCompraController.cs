@@ -230,8 +230,10 @@ namespace proy_back_Qbd.Controllers
         public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
         {
             var orden = await _context.OrdenCompras
-        .Include(o => o.DetalleOrdenCompras)
-        .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+                .Include(o => o.DetalleOrdenCompras)
+                    .ThenInclude(d => d.Insumo)
+                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+
             if (orden == null)
                 return NotFound(new { message = "Orden de compra no encontrada" });
 
@@ -244,11 +246,19 @@ namespace proy_back_Qbd.Controllers
                     .FirstOrDefault(d => d.IdInsumo == patch.IdInsumo);
 
                 if (detalle == null)
-                    continue; // o puedes lanzar error si quieres obligar que exista
+                    continue;
 
-                // PATCH: solo actualiza si viene valor
+                // Actualizar Descripción QBD (Maestro de Insumos)
+                if (patch.DescripcionQbd != null && detalle.Insumo != null)
+                {
+                    detalle.Insumo.Descripcion = patch.DescripcionQbd;
+                }
+
+                // Actualizar Descripción Factura (Local de la Orden)
                 if (patch.DescripcionFac != null)
+                {
                     detalle.DescripcionFac = patch.DescripcionFac;
+                }
 
                 if (patch.Cantidad.HasValue)
                     detalle.Cantidad = patch.Cantidad.Value;

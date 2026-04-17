@@ -63,6 +63,7 @@ namespace proy_back_Qbd.Models
     {
         public int IdInsumo { get; set; }
 
+        public string? DescripcionQbd { get; set; }
         public string? DescripcionFac { get; set; }
         public decimal? Cantidad { get; set; }
         public string? Um { get; set; }
