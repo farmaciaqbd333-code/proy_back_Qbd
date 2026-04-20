@@ -47,7 +47,7 @@ namespace proy_back_Qbd.Controllers
                 Valor = s.DetalleOrdenCompras != null ? (s.DetalleOrdenCompras.Sum(sm => sm.Cantidad) * s.DetalleOrdenCompras.Sum(sm => sm.CostoUnitario)).ToString("F2") : "0.00",
                 Total = s.DetalleOrdenCompras != null ? s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString("F2") : "0.00",
                 Moneda = s.Moneda ?? "PEN",
-                Estado = s.Estado ?? "PEN",
+                Estado = s.Modalidad,
                 CodFac = s.Compra?.CodFactura ?? "",
                 Familia = s.Familia != null ? (s.Familia.Nombre == "Insumos" ? "MP" : s.Familia.Nombre) : "N/A",
                 Factura = s.Compra != null ? "SI" : "NO",
