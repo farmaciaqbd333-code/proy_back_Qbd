@@ -37,8 +37,10 @@ namespace proy_back_Qbd.Models
         [JsonIgnore]
         public Sede? Sede { get; set; }
         [JsonIgnore]
+        [ForeignKey("IdCreador")]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
+        [ForeignKey("IdModificador")]
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
