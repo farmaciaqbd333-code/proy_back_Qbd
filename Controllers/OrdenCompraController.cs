@@ -128,6 +128,8 @@ namespace proy_back_Qbd.Controllers
                 IncluyeImpuesto = request.IncluyeImpuesto,
                 Estado = "PEN",
                 IdCreador = request.IdCreador,
+                IdModificador = request.IdCreador,
+                FechaModificacion = DateTime.Now,
                 FechaCotizacion = request.FechaEmision,
                 TipoTributario = request.TipoTributario,
             };
@@ -177,11 +179,8 @@ namespace proy_back_Qbd.Controllers
             orden.TipoOperacion = req.TipoOperacion;
             orden.IncluyeImpuesto = req.IncluyeImpuesto;
             orden.TipoTributario = req.TipoTributario;
-            orden.Modalidad = req.Modalidad;
-            orden.Moneda = req.Moneda;
-            orden.TipoCambio = req.TipoCambio;
-            orden.IdProveedor = req.IdProveedor;
-            orden.Impuesto = req.Impuesto;
+            orden.IdModificador = req.IdModificador;
+            orden.FechaModificacion = DateTime.Now;
 
             try
             {

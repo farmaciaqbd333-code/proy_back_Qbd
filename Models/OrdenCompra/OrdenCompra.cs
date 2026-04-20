@@ -29,6 +29,8 @@ namespace proy_back_Qbd.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
+        [Column("id_modificador")] public int? IdModificador { get; set; }
+        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("tipo_tributario")] public required string TipoTributario { get; set; }
         [JsonIgnore]
         public Proveedor? Proveedor { get; set; }
@@ -102,6 +104,7 @@ namespace proy_back_Qbd.Models
         public string? TipoOperacion { get; set; }
         public bool IncluyeImpuesto { get; set; }
         public required string TipoTributario { get; set; }
+        public int IdModificador { get; set; }
     }
     
 }
