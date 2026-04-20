@@ -128,7 +128,7 @@ namespace proy_back_Qbd.Controllers
                 IncluyeImpuesto = request.IncluyeImpuesto,
                 Estado = "PEN",
                 IdCreador = request.IdCreador,
-                IdModificador = request.IdCreador,
+                IdModificador = request.IdModificador,
                 FechaModificacion = DateTime.Now,
                 FechaCotizacion = request.FechaEmision,
                 TipoTributario = request.TipoTributario,
@@ -147,7 +147,7 @@ namespace proy_back_Qbd.Controllers
                 IdOrdenCompra = ordenCompra.IdOrdenCompra,
                 FechaModificacion = ordenCompra.FechaCreacion,
                 IdCreador = request.IdCreador,
-                IdModificador = request.IdCreador // Asignar el mismo creador como modificador inicial
+                IdModificador = request.IdModificador // Asignar el modificador desde el request
             }).ToList();
 
             _context.DetalleOrdenesCompras.AddRange(detalleOrdenCompras);

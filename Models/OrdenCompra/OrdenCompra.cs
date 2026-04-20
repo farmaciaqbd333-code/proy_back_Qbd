@@ -79,6 +79,7 @@ namespace proy_back_Qbd.Models
         public required string TipoTributario { get; set; }
         public string? TipoOperacion { get; set; }
         public bool IncluyeImpuesto { get; set; }
+        public required int IdModificador { get; set; }
         public required List<OrdenCompraCreateReq2> Detalle { get; set; }
     }
     public class OrdenCompraCreateReq2
