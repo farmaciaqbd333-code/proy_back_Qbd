@@ -32,6 +32,7 @@ namespace proy_back_Qbd.Controllers
                 .Include(i => i.DetalleOrdenCompras)
                 .Include(i => i.Sede)
                 .Include(i => i.Familia)
+                .Include(i => i.Modificador)
                 .OrderByDescending(o => o.IdOrdenCompra)
                 .ToListAsync();
 
@@ -53,7 +54,7 @@ namespace proy_back_Qbd.Controllers
                 Factura = s.Compra != null ? "SI" : "NO",
                 Modalidad = s.Modalidad,
                 EstadoOrdenCompra = s.Estado ?? "PEN",
-                Usuario = s.Sede != null ? s.Sede.Nombre : "N/A"
+                Usuario = s.Modificador != null ? (s.Modificador.Codigo ?? s.IdModificador.ToString()) : "N/A"
             }).ToList();
 
             return Ok(ordenes);

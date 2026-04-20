@@ -39,6 +39,8 @@ namespace proy_back_Qbd.Models
         [JsonIgnore]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
+        public Usuario? Modificador { get; set; }
+        [JsonIgnore]
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
         [JsonIgnore]
         public Compra? Compra { get; set; }
