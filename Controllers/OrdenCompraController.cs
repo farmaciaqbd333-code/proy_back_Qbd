@@ -26,26 +26,43 @@ namespace proy_back_Qbd.Controllers
         public async Task<ActionResult<IEnumerable<ListadoOrdenCompra>>> GetOrdenesCompra()
         {
 
-            List<ListadoOrdenCompra> ordenes = await _context.OrdenCompras
-                .Select(s => new ListadoOrdenCompra
-                {
-                    CUO = "BDOC-" + s.IdOrdenCompra,
-                    Fecha = s.FechaCreacion.ToString("d"),
-                    RUC = s.Proveedor == null || s.Proveedor.CodigoProv == null ? "" : s.Proveedor.CodigoProv,
-                    Denominacion = s.Proveedor == null || s.Proveedor.Datos == null ? "" : s.Proveedor.Datos,
-                    Valor = s.DetalleOrdenCompras == null ? "" : (s.DetalleOrdenCompras.Sum(sm => sm.Cantidad) * s.DetalleOrdenCompras.Sum(sm => sm.CostoUnitario)).ToString(),
-                    Total = s.DetalleOrdenCompras == null ? "" : s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString(),
-                    Moneda = s.Moneda,
-                    Estado = s.Compra != null ? "PRO" : "PEN",
-                    CodFac = s.Compra != null ? s.Compra.CodFacturaQBD : "",
-                    Familia = s.Familia,
-                    Factura = s.Compra != null ? s.Compra.CodFactura : "",
-                    EstadoOrdenCompra = s.Estado,
-                    Usuario = s.Creador == null || s.Creador.Persona == null ? "" : s.Creador.Persona.NombreCompleto ?? ""
-                })
+            var data = await _context.OrdenCompras
+                .Include(i => i.Proveedor)
+                .Include(i => i.Compra)
+                .Include(i => i.DetalleOrdenCompras)
+                .Include(i => i.Sede)
+                .Include(i => i.Familia)
+                .Include(i => i.Modificador)
+                .OrderByDescending(o => o.IdOrdenCompra)
                 .ToListAsync();
 
+            var ordenes = data.Select(s => new ListadoOrdenCompra
+            {
+                CUO = "OC-" + s.IdOrdenCompra,
+                Fecha = s.FechaCreacion.ToString("dd/MM/yyyy"),
+
+                Serie = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) && s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[0] : "",
+                Numero = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) ? (s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[1] : s.Compra.CodFactura) : "",
+                RUC = s.Proveedor?.CodigoProv ?? "",
+                Denominacion = s.Proveedor?.Datos ?? "",
+                Valor = s.DetalleOrdenCompras != null ? (s.DetalleOrdenCompras.Sum(sm => sm.Cantidad) * s.DetalleOrdenCompras.Sum(sm => sm.CostoUnitario)).ToString("F2") : "0.00",
+                Total = s.DetalleOrdenCompras != null ? s.DetalleOrdenCompras.Sum(sm => sm.CostoTotal).ToString("F2") : "0.00",
+                Moneda = s.Moneda ?? "PEN",
+                Estado = s.Modalidad,
+                CodFac = s.Compra?.CodFactura ?? "",
+                Familia = s.Familia != null ? (s.Familia.Nombre == "Insumos" ? "MP" : s.Familia.Nombre) : "N/A",
+                Factura = s.Compra != null ? "SI" : "NO",
+                Modalidad = s.Modalidad,
+                EstadoOrdenCompra = s.Estado ?? "PEN",
+                Usuario = s.Modificador != null ? (s.Modificador.Codigo ?? s.IdModificador.ToString()) : "N/A"
+            }).ToList();
+
             return Ok(ordenes);
+        }
+        [HttpGet("{id}")]
+        public async Task<ActionResult<DetalleOrdenCompraRes>> GetOrdenCompraById(int id)
+        {
+            return await GetDetalleOrdenesCompra(id);
         }
         [HttpGet("detalle/{id}")]
         public async Task<ActionResult<DetalleOrdenCompraRes>> GetDetalleOrdenesCompra(int id)
@@ -55,16 +72,25 @@ namespace proy_back_Qbd.Controllers
                 .Where(w => w.IdOrdenCompra == id)
                 .Select(s => new DetalleOrdenCompraRes
                 {
-                    Modalidad = s.TipoCambio.ToString(),
+                    Modalidad = s.Modalidad,
                     TC = s.TipoCambio.ToString(),
-                    Familia = s.Familia.ToString(),
+                    Moneda = s.Moneda ?? "PEN",
+                    Familia = s.Familia != null ? s.Familia.Nombre : "N/A",
                     FechaCotizacion = s.FechaCotizacion,
                     Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                     Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
+                    Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
+                    CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
+                    Ruc = s.Proveedor != null ? s.Proveedor.CodigoProv : "",
+                    RazonSocial = s.Proveedor != null ? s.Proveedor.Datos : "",
+                    TipoOperacion = s.TipoOperacion,
+                    IncluyeImpuesto = s.IncluyeImpuesto,
+                    Observaciones = s.Observaciones,
                     DetalleOrdenCompras = s.DetalleOrdenCompras == null
                                             ? null :
                                             s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
                                             {
+                                                Id = s2.Id,
                                                 IdInsumo = s2.IdInsumo,
                                                 Codigo = s2.IdInsumo.ToString(),
                                                 DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
@@ -97,11 +123,15 @@ namespace proy_back_Qbd.Controllers
                 TipoCambio = request.TipoCambio,
                 Impuesto = request.Impuesto,
                 Observaciones = request.Observaciones,
-                Familia = request.Familia,
+                IdFamilia = request.IdFamilia,
                 IdSede = request.IdSede,
+                TipoOperacion = request.TipoOperacion ?? "GRAVADO",
+                IncluyeImpuesto = request.IncluyeImpuesto,                
                 EstadoPago = "PEN",
                 Estado = "",
                 IdCreador = request.IdCreador,
+                IdModificador = request.IdModificador,
+                FechaModificacion = DateTime.Now,
                 FechaCotizacion = request.FechaEmision,
                 TipoTributario = request.TipoTributario,
             };
@@ -118,8 +148,8 @@ namespace proy_back_Qbd.Controllers
                 CostoTotal = s.CTotal,
                 IdOrdenCompra = ordenCompra.IdOrdenCompra,
                 FechaModificacion = ordenCompra.FechaCreacion,
-                IdCreador = request.IdCreador
-
+                IdCreador = request.IdCreador,
+                IdModificador = request.IdModificador // Asignar el modificador desde el request
             }).ToList();
 
             _context.DetalleOrdenesCompras.AddRange(detalleOrdenCompras);
@@ -146,9 +176,13 @@ namespace proy_back_Qbd.Controllers
             orden.Impuesto = req.Impuesto;
             orden.FechaCotizacion = req.FechaEmision;
             orden.Observaciones = req.Observaciones;
-            orden.Familia = req.Familia;
+            orden.IdFamilia = req.IdFamilia;
             orden.IdSede = req.IdSede;
+            orden.TipoOperacion = req.TipoOperacion;
+            orden.IncluyeImpuesto = req.IncluyeImpuesto;
             orden.TipoTributario = req.TipoTributario;
+            orden.IdModificador = req.IdModificador;
+            orden.FechaModificacion = DateTime.Now;
 
             try
             {
@@ -160,12 +194,50 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al actualizar", error = ex.Message });
             }
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrdenCompra(int id)
+        {
+            var orden = await _context.OrdenCompras
+                .Include(o => o.DetalleOrdenCompras)
+                .Include(o => o.Compra)
+                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+
+            if (orden == null)
+            {
+                return NotFound(new { message = "Orden de compra no encontrada" });
+            }
+
+            if (orden.Compra != null)
+            {
+                return BadRequest(new { message = "No se puede eliminar una orden que ya tiene una factura registrada" });
+            }
+
+            if (orden.DetalleOrdenCompras != null && orden.DetalleOrdenCompras.Any())
+            {
+                _context.DetalleOrdenesCompras.RemoveRange(orden.DetalleOrdenCompras);
+            }
+
+            _context.OrdenCompras.Remove(orden);
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Orden de compra eliminada correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al eliminar la orden", error = ex.Message });
+            }
+        }
         [HttpPatch("detalles/{id}")]
         public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
         {
             var orden = await _context.OrdenCompras
-        .Include(o => o.DetalleOrdenCompras)
-        .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+                .Include(o => o.DetalleOrdenCompras)
+                    .ThenInclude(d => d.Insumo)
+                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+
             if (orden == null)
                 return NotFound(new { message = "Orden de compra no encontrada" });
 
@@ -174,15 +246,30 @@ namespace proy_back_Qbd.Controllers
 
             foreach (var patch in detallesPatch)
             {
+                // Buscar por ID primario de la fila, no por el insumo
                 var detalle = orden.DetalleOrdenCompras
-                    .FirstOrDefault(d => d.IdInsumo == patch.IdInsumo);
+                    .FirstOrDefault(d => d.Id == patch.Id);
 
                 if (detalle == null)
-                    continue; // o puedes lanzar error si quieres obligar que exista
+                    continue;
 
-                // PATCH: solo actualiza si viene valor
+                // CAMBIAR EL INSUMO (si se seleccionó otro)
+                if (patch.IdInsumo.HasValue && patch.IdInsumo.Value > 0)
+                {
+                    detalle.IdInsumo = patch.IdInsumo.Value;
+                }
+
+                // Actualizar Descripción QBD (Maestro de Insumos)
+                if (patch.DescripcionQbd != null && detalle.Insumo != null)
+                {
+                    detalle.Insumo.Descripcion = patch.DescripcionQbd;
+                }
+
+                // Actualizar Descripción Factura (Local de la Orden)
                 if (patch.DescripcionFac != null)
+                {
                     detalle.DescripcionFac = patch.DescripcionFac;
+                }
 
                 if (patch.Cantidad.HasValue)
                     detalle.Cantidad = patch.Cantidad.Value;
@@ -212,17 +299,8 @@ namespace proy_back_Qbd.Controllers
         [HttpDelete("detalles/{idOrden}/{idInsumo}")]
         public async Task<IActionResult> DeleteDetalleOrdenCompra(int idOrden, int idInsumo)
         {
-            OrdenCompra? orden = await _context.OrdenCompras
-                .Include(o => o.DetalleOrdenCompras)
-                .FirstOrDefaultAsync(o => o.IdOrdenCompra == idOrden);
-
-            if (orden == null)
-                return NotFound(new { message = "Orden de compra no encontrada" });
-            if (orden.DetalleOrdenCompras == null)
-                return NotFound(new { message = "Orden de compra sin detalles" });
-
-            DetalleOrdenCompra? detalle = orden.DetalleOrdenCompras
-                .FirstOrDefault(d => d.IdInsumo == idInsumo);
+            var detalle = await _context.DetalleOrdenesCompras
+                .FirstOrDefaultAsync(d => d.IdOrdenCompra == idOrden && d.IdInsumo == idInsumo);
 
             if (detalle == null)
                 return NotFound(new { message = "Detalle no encontrado" });

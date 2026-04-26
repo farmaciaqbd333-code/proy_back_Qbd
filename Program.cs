@@ -11,6 +11,7 @@ using Proy_back_QBD.Services.Interfaces;
 using Proy_back_QBD.Models;
 using Microsoft.OpenApi.Models;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAutoMapper(cfg =>

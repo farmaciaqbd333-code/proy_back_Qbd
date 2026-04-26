@@ -21,12 +21,16 @@ namespace proy_back_Qbd.Models
         [Column("fecha_cotizacion")] public required DateTime FechaCotizacion { get; set; }
         [Column("modalidad")] public required string Modalidad { get; set; }
         [Column("observaciones")] public required string Observaciones { get; set; }
-        [Column("familia")] public required string Familia { get; set; }
+        [Column("id_familia")] public int? IdFamilia { get; set; }
         [Column("id_sede")] public required int IdSede { get; set; }
+        [Column("tipo_operacion")] public string? TipoOperacion { get; set; }
+        [Column("incluye_impuesto")] public bool IncluyeImpuesto { get; set; }
         [Column("estado")] public required string Estado { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
+        [Column("id_modificador")] public int? IdModificador { get; set; }
+        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("tipo_tributario")] public required string TipoTributario { get; set; }
         [Column("estado_pago")] public required string EstadoPago { get; set; }
         [JsonIgnore]
@@ -34,16 +38,24 @@ namespace proy_back_Qbd.Models
         [JsonIgnore]
         public Sede? Sede { get; set; }
         [JsonIgnore]
+        [ForeignKey("IdCreador")]
         public Usuario? Creador { get; set; }
+        [JsonIgnore]
+        [ForeignKey("IdModificador")]
+        public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
         [JsonIgnore]
         public Compra? Compra { get; set; }
+        [JsonIgnore]
+        public Familia? Familia { get; set; }
     }
     public class ListadoOrdenCompra
     {
         public required string CUO { get; set; }
         public required string Fecha { get; set; }
+        public required string Serie { get; set; }
+        public required string Numero { get; set; }
         public required string RUC { get; set; }
         public required string Denominacion { get; set; }
         public required string Valor { get; set; }
@@ -53,6 +65,7 @@ namespace proy_back_Qbd.Models
         public required string CodFac { get; set; }
         public required string Familia { get; set; }
         public required string Factura { get; set; }
+        public string? Modalidad { get; set; }
         public required string EstadoOrdenCompra { get; set; }
         public required string Usuario { get; set; }
     }
@@ -65,10 +78,13 @@ namespace proy_back_Qbd.Models
         public required decimal Impuesto { get; set; }
         public required DateTime FechaEmision { get; set; }
         public required string Observaciones { get; set; }
-        public required string Familia { get; set; }
+        public int IdFamilia { get; set; }
         public required int IdSede { get; set; }
         public required int IdCreador { get; set; }
         public required string TipoTributario { get; set; }
+        public string? TipoOperacion { get; set; }
+        public bool IncluyeImpuesto { get; set; }
+        public required int IdModificador { get; set; }
         public required List<OrdenCompraCreateReq2> Detalle { get; set; }
     }
     public class OrdenCompraCreateReq2
@@ -89,9 +105,12 @@ namespace proy_back_Qbd.Models
         public required decimal Impuesto { get; set; }
         public required DateTime FechaEmision { get; set; }
         public required string Observaciones { get; set; }
-        public required string Familia { get; set; }
+        public int IdFamilia { get; set; }
         public required int IdSede { get; set; }
+        public string? TipoOperacion { get; set; }
+        public bool IncluyeImpuesto { get; set; }
         public required string TipoTributario { get; set; }
+        public int IdModificador { get; set; }
     }
     
 }

@@ -38,12 +38,21 @@ namespace proy_back_Qbd.Models
         public required string Familia { get; set; }
         public required DateTime FechaCotizacion { get; set; }
         public required string TC { get; set; }
+        public required string Moneda { get; set; } // Nuevo campo
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
+        public required string CodigoProveedor { get; set; }
+        public string? Ruc { get; set; }
+        public string? RazonSocial { get; set; }
+        public string? Responsable { get; set; }
+        public string? TipoOperacion { get; set; }
+        public string? Observaciones { get; set; } // Nuevo campo requerido por el usuario
+        public bool IncluyeImpuesto { get; set; }
         public List<DetalleOrdenCompra2>? DetalleOrdenCompras { get; set; }
     }
     public class DetalleOrdenCompra2
     {
+        public int Id { get; set; } // ID primario de la fila
         public required int IdInsumo { get; set; }
         public required string Codigo { get; set; }
         public required string DescripcionQBD { get; set; }
@@ -55,8 +64,10 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOrdenCompraPatchReq
     {
-        public int IdInsumo { get; set; }
+        public int Id { get; set; } // ID primario de la fila en la DB
+        public int? IdInsumo { get; set; } // ID del insumo (opcional si se quiere cambiar)
 
+        public string? DescripcionQbd { get; set; }
         public string? DescripcionFac { get; set; }
         public decimal? Cantidad { get; set; }
         public string? Um { get; set; }
