@@ -28,6 +28,7 @@ namespace proy_back_Qbd.Models
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("tipo_tributario")] public required string TipoTributario { get; set; }
+        [Column("estado_pago")] public required string EstadoPago { get; set; }
         [JsonIgnore]
         public Proveedor? Proveedor { get; set; }
         [JsonIgnore]

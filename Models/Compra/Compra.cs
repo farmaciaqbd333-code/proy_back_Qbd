@@ -20,7 +20,7 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("fecha_factura")] public required DateTime FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
-        public Usuario? Usuario { get; set; }
+        public Usuario? Creador { get; set; }
         public OrdenCompra? OrdenCompra { get; set; }
     }
     public class CompraCreateReq
@@ -33,6 +33,21 @@ namespace proy_back_Qbd.Models
         public DateTime FechaFactura { get; set; }
         public string? ImgFactura { get; set; }
         public required List<CompraCreateReq2> Detalle { get; set; }
+    }
+    public class CompraGetRes
+    {
+        public required int IdCompra { get; set; }
+        public required string CodCompra { get; set; }
+        public required string FechaCreacion { get; set; }
+        public required string CodFactura { get; set; }
+        public required string Guia { get; set; }
+        public required string CodFacturaQBD { get; set; }
+        public required string RUC { get; set; }
+        public required string Proveedor { get; set; }
+        public required string Estado { get; set; }
+        public required string OrdenCompra { get; set; }
+        public required string Usuario { get; set; }
+        public required string Familia { get; set; }
     }
     public class CompraCreateReq2
     {

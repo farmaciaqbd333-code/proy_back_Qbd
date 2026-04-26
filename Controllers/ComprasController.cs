@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Data;
@@ -52,6 +53,27 @@ namespace proy_back_Qbd.Controllers
             }
 
             return Ok();
+        }
+        [HttpGet]
+        public async Task<ActionResult<List<CompraGetRes>>> ListarCompra()
+        {
+            List<CompraGetRes> lista = await _context.Compras.Select(s => new CompraGetRes
+            {
+                IdCompra = s.IdCompra ?? 0,
+                CodCompra = "BDCO-" + s.IdCompra,
+                FechaCreacion = s.FechaCreacion.ToString(),
+                CodFactura = s.CodFactura,
+                Guia = s.Guia,
+                CodFacturaQBD = s.CodFacturaQBD,
+                RUC = s.OrdenCompra.Proveedor.NumeroProv,
+                Proveedor = s.OrdenCompra.Proveedor.Datos,
+                Estado = "LABORATORIO",
+                OrdenCompra = "OC01-" + s.OrdenCompra.IdOrdenCompra,
+                Usuario = s.Creador.Persona.NombreCompleto,
+                Familia = s.OrdenCompra.Familia,
+            }).ToListAsync();
+
+            return lista;
         }
     }
 }
