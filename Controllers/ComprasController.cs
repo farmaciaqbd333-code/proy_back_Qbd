@@ -65,12 +65,12 @@ namespace proy_back_Qbd.Controllers
                 CodFactura = s.CodFactura,
                 Guia = s.Guia,
                 CodFacturaQBD = s.CodFacturaQBD,
-                RUC = s.OrdenCompra.Proveedor.NumeroProv,
+                RUC = s.OrdenCompra.Proveedor.CodigoProv,
                 Proveedor = s.OrdenCompra.Proveedor.Datos,
                 Estado = "LABORATORIO",
                 OrdenCompra = "OC01-" + s.OrdenCompra.IdOrdenCompra,
                 Usuario = s.Creador.Persona.NombreCompleto,
-                Familia = s.OrdenCompra.Familia,
+                Familia = s.OrdenCompra.Familia.Nombre,
             }).ToListAsync();
 
             return lista;
