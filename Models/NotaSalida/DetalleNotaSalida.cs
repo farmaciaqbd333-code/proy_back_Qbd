@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +10,9 @@ namespace proy_back_Qbd.Models.NotaSalida
     [Table("detalle_nota_salida")]
     public class DetalleNotaSalida
     {
-        [Column("id_nota_salida")] public int IdNotaSalida { get; set; }
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")] public int Id { get; set; }
         [Column("familia")] public string Familia { get; set; }
         [Column("registro")] public string Registro { get; set; }
         [Column("id_insumo")] public int IdInsumo { get; set; }

@@ -12,6 +12,8 @@ namespace proy_back_Qbd.Models
     [Table("detalle_orden_compra")]
     public class DetalleOrdenCompra
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")] public int Id { get; set; }
         [Column("id_orden_compra")] public required int IdOrdenCompra { get; set; }
         [Column("id_insumo")] public required int IdInsumo { get; set; }
@@ -26,7 +28,9 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int IdModificador { get; set; }
         [JsonIgnore]
-        public Usuario? Usuario { get; set; }
+        public Usuario? Creador { get; set; }
+        [JsonIgnore]
+        public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public Insumo? Insumo { get; set; }
         [JsonIgnore]
@@ -84,5 +88,10 @@ namespace proy_back_Qbd.Models
         public decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
         public int IdCreador { get; set; }
+    }
+    public class OrdenCompraMesonReq
+    {
+        public required string Estado { get; set; }
+        public int IdModificador { get; set; }
     }
 }

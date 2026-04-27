@@ -14,7 +14,7 @@ namespace proy_back_Qbd.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("id_proveedor")] public int IdProveedor { get; set; }
+        [Column("id")] public int Id { get; set; }
         [Column("numero_prov")] public required string CodigoProv { get; set; }
         [Column("datos")] public required string Datos { get; set; }
         [Column("direccion")] public string Direccion { get; set; } = "";

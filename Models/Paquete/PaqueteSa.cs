@@ -11,6 +11,7 @@ namespace proy_back_Qbd.Models.Paquete
     public class PaqueteSa
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public int Id { get; set; }
 

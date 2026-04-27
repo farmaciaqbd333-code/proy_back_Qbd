@@ -29,15 +29,16 @@ namespace proy_back_Qbd.Controllers
                 CodFactura = request.CodFactura,
                 Guia = request.Guia,
                 CodFacturaQBD = request.CodFacturaQBD,
-                IdCompra = request.IdOrdenCompra,
+                Id = request.IdOrdenCompra,
                 IdCreador = request.IdUsuario,
+                IdModificador = request.IdUsuario,
                 FechaFactura = request.FechaFactura,
                 ImgFactura = request.ImgFactura,
             };
             _context.Compras.Add(compra);
             await _context.SaveChangesAsync();
 
-            if (compra.IdCompra != null)
+            if (compra.Id != null)
             {
                 List<DetalleCompra> detallesCompra = request.Detalle.Select(s => new DetalleCompra
                 {
@@ -59,8 +60,8 @@ namespace proy_back_Qbd.Controllers
         {
             List<CompraGetRes> lista = await _context.Compras.Select(s => new CompraGetRes
             {
-                IdCompra = s.IdCompra ?? 0,
-                CodCompra = "BDCO-" + s.IdCompra,
+                IdCompra = s.Id ?? 0,
+                CodCompra = "BDCO-" + s.Id,
                 FechaCreacion = s.FechaCreacion.ToString(),
                 CodFactura = s.CodFactura,
                 Guia = s.Guia,
@@ -68,12 +69,17 @@ namespace proy_back_Qbd.Controllers
                 RUC = s.OrdenCompra.Proveedor.CodigoProv,
                 Proveedor = s.OrdenCompra.Proveedor.Datos,
                 Estado = "LABORATORIO",
-                OrdenCompra = "OC01-" + s.OrdenCompra.IdOrdenCompra,
+                OrdenCompra = "OC01-" + s.OrdenCompra.Id,
                 Usuario = s.Creador.Persona.NombreCompleto,
                 Familia = s.OrdenCompra.Familia.Nombre,
             }).ToListAsync();
 
             return lista;
         }
+        // [HttpPatch]
+        // public async Task<ActionResult> EditarDetalleCompra()
+        // {
+            
+        // }
     }
 }

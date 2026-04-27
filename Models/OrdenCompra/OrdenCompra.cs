@@ -13,7 +13,8 @@ namespace proy_back_Qbd.Models
     public class OrdenCompra
     {
         [Key]
-        [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")] public int Id { get; set; }
         [Column("id_proveedor")] public int IdProveedor { get; set; }
         [Column("moneda")] public required string Moneda { get; set; }
         [Column("tipo_cambio")] public required decimal TipoCambio { get; set; }

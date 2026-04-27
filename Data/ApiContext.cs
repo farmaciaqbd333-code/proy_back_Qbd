@@ -81,8 +81,7 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<Proveedor>((e) =>
            {
-               e.HasKey(hk => hk.IdProveedor);
-               e.Property(p => p.IdProveedor).ValueGeneratedOnAdd();
+               e.Property(p => p.Id).ValueGeneratedOnAdd();
                e.HasOne(ho => ho.Creador).WithMany(wm => wm.Proveedores).HasForeignKey(hfk => hfk.IdCreador);
            });
         }
@@ -115,7 +114,7 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<DetalleNotaSalida>((e) =>
            {
-               e.HasKey(hk => new { hk.IdNotaSalida, hk.IdInsumo });
+               e.HasKey(hk => new { hk.Id, hk.IdInsumo });
            });
         }
 
@@ -123,7 +122,6 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<DetalleCompra>((e) =>
             {
-                e.HasKey(hk => hk.Id);
             });
         }
 
@@ -131,9 +129,9 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<DetalleOrdenCompra>((e) =>
             {
-                e.HasKey(hk => hk.Id);
                 e.HasOne(ho => ho.OrdenCompra).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdOrdenCompra);
-                e.HasOne(ho => ho.Usuario).WithMany(wm => wm.DetalleOrdenComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleOrdenComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleOrdenComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleOrdenCompras).HasForeignKey(hfk => hfk.IdInsumo);
             });
         }
@@ -142,8 +140,9 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<Compra>((e) =>
             {
-                e.HasOne(ho => ho.OrdenCompra).WithOne(wo => wo.Compra).HasForeignKey<Compra>(hfk => hfk.IdCompra);
-                e.HasOne(ho => ho.Creador).WithMany(wo => wo.Compras).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.OrdenCompra).WithOne(wo => wo.Compra).HasForeignKey<Compra>(hfk => hfk.IdOrdenCompra);
+                e.HasOne(ho => ho.Creador).WithMany(wo => wo.ComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wo => wo.ComprasCreadas).HasForeignKey(hfk => hfk.IdModificador);
             });
         }
 

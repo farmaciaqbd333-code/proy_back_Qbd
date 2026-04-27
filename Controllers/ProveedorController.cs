@@ -29,7 +29,7 @@ namespace proy_back_Qbd.Controllers
             var proveedores = await _context.Proveedores
                 .Select(p => new ProveedorDto
                 {
-                    IdProveedor = p.IdProveedor,
+                    IdProveedor = p.Id,
                     CodigoProv = p.CodigoProv,
                     Datos = p.Datos,
                     Direccion = p.Direccion,
@@ -55,7 +55,7 @@ namespace proy_back_Qbd.Controllers
 
             var dto = new ProveedorDto
             {
-                IdProveedor = proveedor.IdProveedor,
+                IdProveedor = proveedor.Id,
                 CodigoProv = proveedor.CodigoProv,
                 Datos = proveedor.Datos,
                 Direccion = proveedor.Direccion,
@@ -92,7 +92,7 @@ namespace proy_back_Qbd.Controllers
 
             var responseDto = new ProveedorDto
             {
-                IdProveedor = proveedor.IdProveedor,
+                IdProveedor = proveedor.Id,
                 CodigoProv = proveedor.CodigoProv,
                 Datos = proveedor.Datos,
                 Direccion = proveedor.Direccion,
@@ -103,7 +103,7 @@ namespace proy_back_Qbd.Controllers
                 IdCreador = proveedor.IdCreador
             };
 
-            return CreatedAtAction(nameof(GetById), new { id = proveedor.IdProveedor }, responseDto);
+            return CreatedAtAction(nameof(GetById), new { id = proveedor.Id }, responseDto);
         }
 
         // PUT: api/proveedores/5

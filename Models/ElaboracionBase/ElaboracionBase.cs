@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +10,9 @@ namespace proy_back_Qbd.Models.ElaboracionBase
     [Table("elaboracion_base")]
     public class ElaboracionBase
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("id")] public int Id { get; set; }
         [Column("registro")] public string Registro { get; set; }
         [Column("lote")] public string Lote { get; set; }
         [Column("id_insumo")] public int IdInsumo { get; set; }

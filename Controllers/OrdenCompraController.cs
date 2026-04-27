@@ -33,12 +33,12 @@ namespace proy_back_Qbd.Controllers
                 .Include(i => i.Sede)
                 .Include(i => i.Familia)
                 .Include(i => i.Modificador)
-                .OrderByDescending(o => o.IdOrdenCompra)
+                .OrderByDescending(o => o.Id)
                 .ToListAsync();
 
             var ordenes = data.Select(s => new ListadoOrdenCompra
             {
-                CUO = "OC-" + s.IdOrdenCompra,
+                CUO = "OC-" + s.Id,
                 Fecha = s.FechaCreacion.ToString("dd/MM/yyyy"),
 
                 Serie = s.Compra != null && !string.IsNullOrEmpty(s.Compra.CodFactura) && s.Compra.CodFactura.Contains('-') ? s.Compra.CodFactura.Split('-')[0] : "",
@@ -69,7 +69,7 @@ namespace proy_back_Qbd.Controllers
         {
 
             DetalleOrdenCompraRes? orden = await _context.OrdenCompras
-                .Where(w => w.IdOrdenCompra == id)
+                .Where(w => w.Id == id)
                 .Select(s => new DetalleOrdenCompraRes
                 {
                     Modalidad = s.Modalidad,
@@ -126,7 +126,7 @@ namespace proy_back_Qbd.Controllers
                 IdFamilia = request.IdFamilia,
                 IdSede = request.IdSede,
                 TipoOperacion = request.TipoOperacion ?? "GRAVADO",
-                IncluyeImpuesto = request.IncluyeImpuesto,                
+                IncluyeImpuesto = request.IncluyeImpuesto,
                 EstadoPago = "PEN",
                 Estado = "",
                 IdCreador = request.IdCreador,
@@ -146,7 +146,7 @@ namespace proy_back_Qbd.Controllers
                 Um = s.UM,
                 CostoUnitario = s.CUnitario,
                 CostoTotal = s.CTotal,
-                IdOrdenCompra = ordenCompra.IdOrdenCompra,
+                IdOrdenCompra = ordenCompra.Id,
                 FechaModificacion = ordenCompra.FechaCreacion,
                 IdCreador = request.IdCreador,
                 IdModificador = request.IdModificador // Asignar el modificador desde el request
@@ -201,7 +201,7 @@ namespace proy_back_Qbd.Controllers
             var orden = await _context.OrdenCompras
                 .Include(o => o.DetalleOrdenCompras)
                 .Include(o => o.Compra)
-                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (orden == null)
             {
@@ -236,7 +236,7 @@ namespace proy_back_Qbd.Controllers
             var orden = await _context.OrdenCompras
                 .Include(o => o.DetalleOrdenCompras)
                     .ThenInclude(d => d.Insumo)
-                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (orden == null)
                 return NotFound(new { message = "Orden de compra no encontrada" });
@@ -322,7 +322,7 @@ namespace proy_back_Qbd.Controllers
         {
             var orden = await _context.OrdenCompras
                 .Include(o => o.DetalleOrdenCompras)
-                .FirstOrDefaultAsync(o => o.IdOrdenCompra == id);
+                .FirstOrDefaultAsync(o => o.Id == id);
 
             if (orden == null)
                 return NotFound(new { message = "Orden de compra no encontrada" });
@@ -377,6 +377,31 @@ namespace proy_back_Qbd.Controllers
                 return StatusCode(500, new { message = "Error al crear detalles", error = ex.Message });
             }
         }
-        
+
+        [HttpPatch("meson/{id}")]
+        public async Task<IActionResult> PatchMesonOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
+        {
+            var orden = await _context.OrdenCompras
+                .Include(o => o.DetalleOrdenCompras)
+                    .ThenInclude(d => d.Insumo)
+                .FirstOrDefaultAsync(o => o.Id == id);
+
+            if (orden == null)
+                return NotFound(new { message = "Orden de compra no encontrada" });
+
+            if (orden.DetalleOrdenCompras == null || !orden.DetalleOrdenCompras.Any())
+                return NotFound(new { message = "No hay detalles para esta orden" });
+
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Detalles actualizados correctamente" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al actualizar orden_compra", error = ex.Message });
+            }
+        }
     }
 }

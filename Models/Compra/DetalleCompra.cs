@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace proy_back_Qbd.Models
     [Table("detalle_compra")]
     public class DetalleCompra
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")] public int Id { get; set; }
         [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }
         [Column("cantidad_paquete")] public decimal? CantidadPaquete { get; set; }
