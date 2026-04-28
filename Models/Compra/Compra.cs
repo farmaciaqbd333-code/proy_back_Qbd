@@ -13,7 +13,7 @@ namespace proy_back_Qbd.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("id")] public int? Id { get; set; }
+        [Column("id")] public int Id { get; set; }
         [Column("cod_fac")] public required string CodFactura { get; set; }
         [Column("guia")] public required string Guia { get; set; }
         [Column("cod_fac_qbd")] public required string CodFacturaQBD { get; set; }

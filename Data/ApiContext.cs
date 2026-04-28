@@ -81,7 +81,6 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<Proveedor>((e) =>
            {
-               e.Property(p => p.Id).ValueGeneratedOnAdd();
                e.HasOne(ho => ho.Creador).WithMany(wm => wm.Proveedores).HasForeignKey(hfk => hfk.IdCreador);
            });
         }
@@ -90,7 +89,6 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<ElaboracionBase>((e) =>
            {
-               e.HasKey(hk => new { hk.Registro, hk.Lote, hk.IdInsumo });
            });
         }
 
@@ -98,7 +96,6 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<PaqueteSa>((e) =>
            {
-               e.HasKey(hk => hk.Id);
            });
         }
 
@@ -106,7 +103,6 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<Paquete>((e) =>
            {
-               e.HasKey(hk => hk.Id);
            });
         }
 
@@ -114,7 +110,6 @@ namespace Proy_back_QBD.Data
         {
             modelBuilder.Entity<DetalleNotaSalida>((e) =>
            {
-               e.HasKey(hk => new { hk.Id, hk.IdInsumo });
            });
         }
 
