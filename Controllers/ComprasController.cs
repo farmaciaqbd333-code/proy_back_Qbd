@@ -60,7 +60,7 @@ namespace proy_back_Qbd.Controllers
         {
             List<CompraGetRes> lista = await _context.Compras.Select(s => new CompraGetRes
             {
-                IdCompra = s.Id ?? 0,
+                IdCompra = s.Id,
                 CodCompra = "BDCO-" + s.Id,
                 FechaCreacion = s.FechaCreacion.ToString(),
                 CodFactura = s.CodFactura,

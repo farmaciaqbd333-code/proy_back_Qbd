@@ -18,12 +18,12 @@ namespace proy_back_Qbd.Models
         [Column("guia")] public required string Guia { get; set; }
         [Column("cod_fac_qbd")] public required string CodFacturaQBD { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [Column("fecha_creacion")] public DateTime FechaModificacion { get; set; }
+        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public required int IdModificador { get; set; }
         [Column("fecha_factura")] public required DateTime FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
-        [Column("id_orden_compra")] public string? IdOrdenCompra { get; set; }
+        [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public OrdenCompra? OrdenCompra { get; set; }
