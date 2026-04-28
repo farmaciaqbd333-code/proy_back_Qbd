@@ -17,7 +17,9 @@ namespace proy_back_Qbd.Models
         [Column("cod_fac")] public required string CodFactura { get; set; }
         [Column("guia")] public required string Guia { get; set; }
         [Column("cod_fac_qbd")] public required string CodFacturaQBD { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public required int IdModificador { get; set; }

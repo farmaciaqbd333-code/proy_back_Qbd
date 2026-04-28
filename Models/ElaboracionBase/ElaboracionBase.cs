@@ -36,6 +36,9 @@ namespace proy_back_Qbd.Models.ElaboracionBase
         [Column("olor")] public string Olor { get; set; }
         [Column("ph")] public string Ph { get; set; }
         [Column("usuario")] public string Usuario { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
     }
 }

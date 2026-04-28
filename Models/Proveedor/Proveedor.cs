@@ -23,6 +23,8 @@ namespace proy_back_Qbd.Models
         [Column("codigo_provedor")] public string? CodigoProvedor { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("creador")] public required int IdCreador { get; set; }
         [JsonIgnore]
         public List<OrdenCompra>? OrdenCompras { get; set; }

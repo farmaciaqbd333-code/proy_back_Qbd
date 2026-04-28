@@ -33,8 +33,10 @@ namespace proy_back_Qbd.Models.Paquete
         [Column("lote")]
         public string Lote { get; set; }
 
-        [Column("fecha_creacion")]
-        public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
 
         [Column("usuario")]
         public string Usuario { get; set; }

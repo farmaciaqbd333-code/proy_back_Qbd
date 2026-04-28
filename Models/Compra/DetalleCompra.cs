@@ -23,7 +23,9 @@ namespace proy_back_Qbd.Models
         [Column("coa")] public string? Coa { get; set; }
         [Column("registro_sanitario")] public string? RegistroSanitario { get; set; }
         [Column("conformidad")] public string? Conformidad { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         public Usuario? Creador { get; set; }

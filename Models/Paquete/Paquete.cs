@@ -19,7 +19,10 @@ namespace proy_back_Qbd.Models.Paquete
         [Column("cantidad")] public decimal Cantidad { get; set; }
         [Column("tara")] public decimal Tara { get; set; }
         [Column("lote")] public string Lote { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("usuario")] public string Usuario { get; set; }
     }
 }
