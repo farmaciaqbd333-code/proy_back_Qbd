@@ -30,9 +30,30 @@ namespace proy_back_Qbd.Models
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int IdModificador { get; set; }
+        [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; }
         [JsonIgnore]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
         public Usuario? Modificador { get; set; }
+    }
+    public class PatchDetalleCompraReq
+    {
+        public string? Coa { get; set; }
+
+        public string? Lote { get; set; }
+
+        public decimal? Cantidad { get; set; }
+
+        public string? PotenciaPorcentaje { get; set; } // %pot
+
+        public DateTime? FechaFabricacion { get; set; }
+
+        public DateTime? FechaVencimiento { get; set; }
+
+        public string? CondicionAlmacenamiento { get; set; }
+
+        public int? TotalPaq { get; set; }
+
+        public decimal? TotalPeso { get; set; } // reemplaza tt_cant
     }
 }
