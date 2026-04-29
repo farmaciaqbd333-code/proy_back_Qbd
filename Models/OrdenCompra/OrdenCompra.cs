@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
-namespace proy_back_Qbd.Models
+namespace Proy_back_QBD.Models
 {
     [Table("orden_compra")]
     public class OrdenCompra
@@ -30,8 +30,8 @@ namespace proy_back_Qbd.Models
         [Column("estado_meson")] public string? EstadoMeson { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [Column("id_creador")] public required int IdCreador { get; set; }
-        [Column("id_modificador")] public int? IdModificador { get; set; }
+        [Column("id_creador")] public required int CreadorId { get; set; }
+        [Column("id_modificador")] public int? ModificadorId { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("tipo_tributario")] public required string TipoTributario { get; set; }
         [Column("estado_pago")] public string? EstadoPago { get; set; }
@@ -40,10 +40,10 @@ namespace proy_back_Qbd.Models
         [JsonIgnore]
         public Sede? Sede { get; set; }
         [JsonIgnore]
-        [ForeignKey("IdCreador")]
+        [ForeignKey("CreadorId")]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
-        [ForeignKey("IdModificador")]
+        [ForeignKey("ModificadorId")]
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
@@ -82,11 +82,11 @@ namespace proy_back_Qbd.Models
         public required string Observaciones { get; set; }
         public int IdFamilia { get; set; }
         public required int IdSede { get; set; }
-        public required int IdCreador { get; set; }
+        public required int CreadorId { get; set; }
         public required string TipoTributario { get; set; }
         public string? TipoOperacion { get; set; }
         public bool IncluyeImpuesto { get; set; }
-        public required int IdModificador { get; set; }
+        public required int ModificadorId { get; set; }
         public required List<OrdenCompraCreateReq2> Detalle { get; set; }
     }
     public class OrdenCompraCreateReq2
@@ -112,7 +112,7 @@ namespace proy_back_Qbd.Models
         public string? TipoOperacion { get; set; }
         public bool IncluyeImpuesto { get; set; }
         public required string TipoTributario { get; set; }
-        public int IdModificador { get; set; }
+        public int ModificadorId { get; set; }
     }
     public class PatchMesonDto
     {

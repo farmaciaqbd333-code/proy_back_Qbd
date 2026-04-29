@@ -26,7 +26,9 @@ namespace proy_back_Qbd.Models
         [Column("fecha_factura")] public required DateTime FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
         [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }
+        [ForeignKey("IdCreador")]
         public Usuario? Creador { get; set; }
+        [ForeignKey("IdModificador")]
         public Usuario? Modificador { get; set; }
         public OrdenCompra? OrdenCompra { get; set; }
     }

@@ -30,8 +30,10 @@ namespace proy_back_Qbd.Models
         [JsonIgnore]
         public List<OrdenCompra>? OrdenCompras { get; set; }
         [JsonIgnore]
+        [ForeignKey("IdCreador")]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
+        [ForeignKey("IdModificador")]
         public Usuario? Modificador { get; set; }
 
     }

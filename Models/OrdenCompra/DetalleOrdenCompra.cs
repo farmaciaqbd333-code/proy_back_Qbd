@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
-namespace proy_back_Qbd.Models
+namespace Proy_back_QBD.Models
 {
     [Table("detalle_orden_compra")]
     public class DetalleOrdenCompra
@@ -26,11 +26,13 @@ namespace proy_back_Qbd.Models
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
-        [Column("id_creador")] public required int IdCreador { get; set; }
-        [Column("id_modificador")] public int IdModificador { get; set; }
+        [Column("id_creador")] public required int CreadorId { get; set; }
+        [Column("id_modificador")] public int ModificadorId { get; set; }
         [JsonIgnore]
+        [ForeignKey("CreadorId")]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
+        [ForeignKey("ModificadorId")]
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public Insumo? Insumo { get; set; }
@@ -78,7 +80,7 @@ namespace proy_back_Qbd.Models
         public string? Um { get; set; }
         public decimal? CostoUnitario { get; set; }
         public decimal? CostoTotal { get; set; }
-        public int IdModificador { get; set; }
+        public int ModificadorId { get; set; }
     }
     public class DetalleOrdenCompraCreateReq
     {
@@ -88,11 +90,11 @@ namespace proy_back_Qbd.Models
         public required string Um { get; set; }
         public decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
-        public int IdCreador { get; set; }
+        public int CreadorId { get; set; }
     }
     public class OrdenCompraMesonReq
     {
         public required string Estado { get; set; }
-        public int IdModificador { get; set; }
+        public int ModificadorId { get; set; }
     }
 }
