@@ -25,9 +25,9 @@ namespace proy_back_Qbd.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
+        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("id_creador")] public required int CreadorId { get; set; }
-        [Column("id_modificador")] public int ModificadorId { get; set; }
+        [Column("id_modificador")] public int? ModificadorId { get; set; }
         [JsonIgnore]
         [ForeignKey("CreadorId")]
         public Usuario? Creador { get; set; }
