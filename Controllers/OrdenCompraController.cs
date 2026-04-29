@@ -38,6 +38,7 @@ namespace proy_back_Qbd.Controllers
 
             var ordenes = data.Select(s => new ListadoOrdenCompra
             {
+                Id = s.Id,
                 CUO = "OC-" + s.Id,
                 Fecha = s.FechaCreacion.ToString("dd/MM/yyyy"),
 
@@ -54,7 +55,8 @@ namespace proy_back_Qbd.Controllers
                 Factura = s.Compra != null ? "SI" : "NO",
                 Modalidad = s.Modalidad,
                 EstadoOrdenCompra = s.Estado ?? "PEN",
-                Usuario = s.Modificador != null ? (s.Modificador.Codigo ?? s.ModificadorId.ToString()) : "N/A"
+                Usuario = s.Modificador != null ? (s.Modificador.Codigo ?? s.ModificadorId.ToString()) : "N/A",
+                EstadoMeson = s.EstadoMeson
             }).ToList();
 
             return Ok(ordenes);

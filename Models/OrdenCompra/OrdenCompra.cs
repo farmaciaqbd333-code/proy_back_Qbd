@@ -54,6 +54,7 @@ namespace proy_back_Qbd.Models
     }
     public class ListadoOrdenCompra
     {
+        public int Id { get; set; }
         public required string CUO { get; set; }
         public required string Fecha { get; set; }
         public required string Serie { get; set; }
@@ -70,6 +71,7 @@ namespace proy_back_Qbd.Models
         public string? Modalidad { get; set; }
         public required string EstadoOrdenCompra { get; set; }
         public required string Usuario { get; set; }
+        public string? EstadoMeson { get; set; }
     }
     public class OrdenCompraCreateReq
     {
