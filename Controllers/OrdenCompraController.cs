@@ -384,27 +384,23 @@ namespace proy_back_Qbd.Controllers
         [HttpPatch("meson/{id}")]
         public async Task<IActionResult> PatchMesonOrdenCompra(int id, [FromBody] PatchMesonDto request)
         {
-            var ordenCompra = await _context.OrdenCompras
-                .FirstOrDefaultAsync(o => o.Id == id);
+            var orden = await _context.OrdenCompras.FindAsync(id);
+            if (orden == null) return NotFound(new { message = "Orden no encontrada" });
 
+            orden.EstadoMeson = request.EstadoMeson;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Estado mesón actualizado" });
+        }
 
-            if (string.IsNullOrWhiteSpace(request.EstadoMeson))
-                return BadRequest(new { message = "EstadoMeson es requerido" });
+        [HttpPatch("pago/{id}")]
+        public async Task<IActionResult> PatchEstadoPago(int id, [FromBody] PatchPagoDto request)
+        {
+            var orden = await _context.OrdenCompras.FindAsync(id);
+            if (orden == null) return NotFound(new { message = "Orden no encontrada" });
 
-            if (ordenCompra == null)
-                return NotFound(new { message = "Orden de compra no encontrada" });
-            if (ordenCompra.EstadoMeson == request.EstadoMeson)
-                return Ok(new { message = "No hubo cambios" });
-            ordenCompra.EstadoMeson = request.EstadoMeson;
-            try
-            {
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Estado meson actualizado correctamente" });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error al actualizar orden_compra", error = ex.Message });
-            }
+            orden.Modalidad = request.EstadoPago;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Estado de pago actualizado" });
         }
     }
 }
