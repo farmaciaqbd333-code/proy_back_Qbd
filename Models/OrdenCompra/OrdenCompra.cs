@@ -120,4 +120,8 @@ namespace proy_back_Qbd.Models
     {
         public string EstadoMeson { get; set; }
     }
+    public class PatchPagoDto
+    {
+        public string EstadoPago { get; set; }
+    }
 }
