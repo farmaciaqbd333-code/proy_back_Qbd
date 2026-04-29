@@ -10,6 +10,7 @@ using Proy_back_QBD.Util;
 using Proy_back_QBD.Services.Interfaces;
 using Proy_back_QBD.Models;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -56,7 +57,11 @@ builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
 builder.Services.AddScoped<ICobroService, CobroService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -103,7 +108,7 @@ Console.WriteLine($"Connection String: {connectionString}");
 builder.Services.AddDbContext<ApiContext>(options =>
     options.UseNpgsql(connectionString)
            .EnableSensitiveDataLogging()
-           .EnableDetailedErrors()    
+           .EnableDetailedErrors()
     );
 // Configurar CORS
 builder.Services.AddCors(options =>
@@ -132,5 +137,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("\nSwagger disponible en:".PadRight(30,' ') + " http://localhost:5051/swagger" + "\n" + "API KEY:".PadRight(30, ' ') + "4554654654754");
+logger.LogInformation("\nSwagger disponible en:".PadRight(30, ' ') + " http://localhost:5051/swagger" + "\n" + "API KEY:".PadRight(30, ' ') + "4554654654754");
 app.Run();

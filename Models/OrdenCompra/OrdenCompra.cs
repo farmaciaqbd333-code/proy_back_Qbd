@@ -27,13 +27,14 @@ namespace proy_back_Qbd.Models
         [Column("tipo_operacion")] public string? TipoOperacion { get; set; }
         [Column("incluye_impuesto")] public bool IncluyeImpuesto { get; set; }
         [Column("estado")] public required string Estado { get; set; }
+        [Column("estado_meson")] public string? EstadoMeson { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("tipo_tributario")] public required string TipoTributario { get; set; }
-        [Column("estado_pago")] public required string EstadoPago { get; set; }
+        [Column("estado_pago")] public string? EstadoPago { get; set; }
         [JsonIgnore]
         public Proveedor? Proveedor { get; set; }
         [JsonIgnore]
@@ -113,5 +114,8 @@ namespace proy_back_Qbd.Models
         public required string TipoTributario { get; set; }
         public int IdModificador { get; set; }
     }
-    
+    public class PatchMesonDto
+    {
+        public string EstadoMeson { get; set; }
+    }
 }

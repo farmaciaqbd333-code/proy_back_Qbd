@@ -379,24 +379,24 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpPatch("meson/{id}")]
-        public async Task<IActionResult> PatchMesonOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
+        public async Task<IActionResult> PatchMesonOrdenCompra(int id, [FromBody] PatchMesonDto request)
         {
-            var orden = await _context.OrdenCompras
-                .Include(o => o.DetalleOrdenCompras)
-                    .ThenInclude(d => d.Insumo)
+            var ordenCompra = await _context.OrdenCompras
                 .FirstOrDefaultAsync(o => o.Id == id);
 
-            if (orden == null)
+
+            if (string.IsNullOrWhiteSpace(request.EstadoMeson))
+                return BadRequest(new { message = "EstadoMeson es requerido" });
+
+            if (ordenCompra == null)
                 return NotFound(new { message = "Orden de compra no encontrada" });
-
-            if (orden.DetalleOrdenCompras == null || !orden.DetalleOrdenCompras.Any())
-                return NotFound(new { message = "No hay detalles para esta orden" });
-
-
+            if (ordenCompra.EstadoMeson == request.EstadoMeson)
+                return Ok(new { message = "No hubo cambios" });
+            ordenCompra.EstadoMeson = request.EstadoMeson;
             try
             {
                 await _context.SaveChangesAsync();
-                return Ok(new { message = "Detalles actualizados correctamente" });
+                return Ok(new { message = "Estado meson actualizado correctamente" });
             }
             catch (Exception ex)
             {
