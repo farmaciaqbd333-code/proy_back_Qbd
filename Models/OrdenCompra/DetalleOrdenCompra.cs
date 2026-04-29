@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
-namespace Proy_back_QBD.Models
+namespace proy_back_Qbd.Models
 {
     [Table("detalle_orden_compra")]
     public class DetalleOrdenCompra
