@@ -25,11 +25,14 @@ namespace proy_back_Qbd.Models
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
-        [Column("creador")] public required int IdCreador { get; set; }
+        [Column("id_creador")] public required int IdCreador { get; set; }
+        [Column("id_modificador")] public int IdModificador { get; set; }
         [JsonIgnore]
         public List<OrdenCompra>? OrdenCompras { get; set; }
         [JsonIgnore]
         public Usuario? Creador { get; set; }
+        [JsonIgnore]
+        public Usuario? Modificador { get; set; }
 
     }
     public class ProveedorCreateDto

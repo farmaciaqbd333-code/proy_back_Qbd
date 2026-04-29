@@ -22,7 +22,7 @@ namespace proy_back_Qbd.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
-        [Column("id_modificador")] public required int IdModificador { get; set; }
+        [Column("id_modificador")] public int IdModificador { get; set; }
         [Column("fecha_factura")] public required DateTime FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
         [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }

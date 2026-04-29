@@ -75,48 +75,70 @@ namespace Proy_back_QBD.Data
             ConfigureInsumoR(modelBuilder);
             ConfigureFormulaR(modelBuilder);
             ConfigureFamilia(modelBuilder);
+            ConfigureNotaSalida(modelBuilder);
+        }
+
+        private void ConfigureNotaSalida(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<NotaSalida>((e) =>
+           {
+               e.HasOne(ho => ho.Creador).WithMany(wm => wm.NotaSalidaCreadas).HasForeignKey(hfk => hfk.IdCreador);
+               e.HasOne(ho => ho.Modificador).WithMany(wm => wm.NotaSalidaModificadas).HasForeignKey(hfk => hfk.IdModificador);
+           });
+
         }
 
         private void ConfigureProveedor(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Proveedor>((e) =>
            {
-               e.HasOne(ho => ho.Creador).WithMany(wm => wm.Proveedores).HasForeignKey(hfk => hfk.IdCreador);
+               e.HasOne(ho => ho.Creador).WithMany(wm => wm.ProveedoresCreados).HasForeignKey(hfk => hfk.IdCreador);
+               e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ProveedoresModificados).HasForeignKey(hfk => hfk.IdModificador);
            });
         }
 
-        private void ConfigureElaboracionBase(ModelBuilder modelBuilder)
+        private void ConfigureElaboracionBase(ModelBuilder modelBuilder) 
         {
             modelBuilder.Entity<ElaboracionBase>((e) =>
-           {
-           });
+            {
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.ElaboracionBaseCreados).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ElaboracionBaseModificados).HasForeignKey(hfk => hfk.IdModificador);
+            });
         }
 
         private void ConfigurePaqueteSa(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<PaqueteSa>((e) =>
-           {
-           });
+            {
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.PaquetesSACreados).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.PaquetesSAModificados).HasForeignKey(hfk => hfk.IdModificador);
+            });
         }
 
         private void ConfigurePaquete(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Paquete>((e) =>
-           {
-           });
+            {
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.PaquetesCreados).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.PaquetesModificados).HasForeignKey(hfk => hfk.IdModificador);
+            });
         }
 
         private void ConfigureDetalleNotaSalida(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DetalleNotaSalida>((e) =>
-           {
-           });
+            {
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleNotaSalidaCreadas).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleNotaSalidaModificadas).HasForeignKey(hfk => hfk.IdModificador);
+            });
         }
 
         private void ConfigureDetalleCompra(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<DetalleCompra>((e) =>
             {
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
         }
 

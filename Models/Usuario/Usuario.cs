@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.ElaboracionBase;
+using proy_back_Qbd.Models.NotaSalida;
+using proy_back_Qbd.Models.Paquete;
 
 namespace Proy_back_QBD.Models
 {
@@ -147,7 +150,33 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<Compra>? ComprasModificadas { get; set; }
         [JsonIgnore]
-        public List<Proveedor>? Proveedores { get; set; }
+        public List<DetalleCompra>? DetalleComprasCreadas { get; set; }
+        [JsonIgnore]
+        public List<DetalleCompra>? DetalleComprasModificadas { get; set; }
+        [JsonIgnore]
+        public List<Proveedor>? ProveedoresCreados { get; set; }
+        [JsonIgnore]
+        public List<Proveedor>? ProveedoresModificados { get; set; }
+        [JsonIgnore]
+        public List<NotaSalida>? NotaSalidaCreadas { get; set; }
+        [JsonIgnore]
+        public List<NotaSalida>? NotaSalidaModificadas { get; set; }
+        [JsonIgnore]
+        public List<DetalleNotaSalida>? DetalleNotaSalidaCreadas { get; set; }
+        [JsonIgnore]
+        public List<DetalleNotaSalida>? DetalleNotaSalidaModificadas { get; set; }
+        [JsonIgnore]
+        public List<Paquete>? PaquetesCreados { get; set; }
+        [JsonIgnore]
+        public List<Paquete>? PaquetesModificados { get; set; }
+        [JsonIgnore]
+        public List<PaqueteSa>? PaquetesSACreados { get; set; }
+        [JsonIgnore]
+        public List<PaqueteSa>? PaquetesSAModificados { get; set; }
+        [JsonIgnore]
+        public List<ElaboracionBase>? ElaboracionBaseCreados { get; set; }
+        [JsonIgnore]
+        public List<ElaboracionBase>? ElaboracionBaseModificados { get; set; }
     }
     [Table("tipos_usuario")]
     public class TipoUsuario

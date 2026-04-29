@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models.ElaboracionBase
 {
@@ -35,10 +37,15 @@ namespace proy_back_Qbd.Models.ElaboracionBase
         [Column("color")] public string Color { get; set; }
         [Column("olor")] public string Olor { get; set; }
         [Column("ph")] public string Ph { get; set; }
-        [Column("usuario")] public string Usuario { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
+        [Column("id_creador")] public int IdCreador { get; set; }
+        [Column("id_modificador")] public int IdModificador { get; set; }
+        [JsonIgnore]
+        public Usuario? Creador { get; set; }
+        [JsonIgnore]
+        public Usuario? Modificador { get; set; }
     }
 }
