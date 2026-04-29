@@ -136,6 +136,7 @@ namespace proy_back_Qbd.Controllers
                 FechaModificacion = DateTime.Now,
                 FechaCotizacion = request.FechaEmision,
                 TipoTributario = request.TipoTributario,
+                EstadoMeson = "PENDIENTE"
             };
             _context.OrdenCompras.Add(ordenCompra);
             await _context.SaveChangesAsync();
