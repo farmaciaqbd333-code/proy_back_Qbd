@@ -54,7 +54,7 @@ namespace proy_back_Qbd.Controllers
                 Factura = s.Compra != null ? "SI" : "NO",
                 Modalidad = s.Modalidad,
                 EstadoOrdenCompra = s.Estado ?? "PEN",
-                Usuario = s.Modificador != null ? (s.Modificador.Codigo ?? s.ModificadorId.ToString()) : "N/A"
+                Usuario = s.Modificador != null ? (s.Modificador.Codigo ?? s.IdModificador.ToString()) : "N/A"
             }).ToList();
 
             return Ok(ordenes);
@@ -129,8 +129,8 @@ namespace proy_back_Qbd.Controllers
                 IncluyeImpuesto = request.IncluyeImpuesto,
                 EstadoPago = "PEN",
                 Estado = "",
-                CreadorId = request.CreadorId,
-                ModificadorId = request.ModificadorId,
+                IdCreador = request.IdCreador,
+                IdModificador = request.IdModificador,
                 FechaModificacion = DateTime.Now,
                 FechaCotizacion = request.FechaEmision,
                 TipoTributario = request.TipoTributario,
@@ -148,8 +148,8 @@ namespace proy_back_Qbd.Controllers
                 CostoTotal = s.CTotal,
                 IdOrdenCompra = ordenCompra.Id,
                 FechaModificacion = ordenCompra.FechaCreacion,
-                CreadorId = request.CreadorId,
-                ModificadorId = request.ModificadorId // Asignar el modificador desde el request
+                IdCreador = request.IdCreador,
+                IdModificador = request.IdModificador // Asignar el modificador desde el request
             }).ToList();
 
             _context.DetalleOrdenesCompras.AddRange(detalleOrdenCompras);
@@ -181,7 +181,7 @@ namespace proy_back_Qbd.Controllers
             orden.TipoOperacion = req.TipoOperacion;
             orden.IncluyeImpuesto = req.IncluyeImpuesto;
             orden.TipoTributario = req.TipoTributario;
-            orden.ModificadorId = req.ModificadorId;
+            orden.IdModificador = req.IdModificador;
             orden.FechaModificacion = DateTime.Now;
 
             try
@@ -283,7 +283,7 @@ namespace proy_back_Qbd.Controllers
                 if (patch.CostoTotal.HasValue)
                     detalle.CostoTotal = patch.CostoTotal.Value;
 
-                detalle.ModificadorId = patch.ModificadorId;
+                detalle.IdModificador = patch.IdModificador;
                 detalle.FechaModificacion = DateTime.UtcNow;
             }
             try
@@ -354,8 +354,8 @@ namespace proy_back_Qbd.Controllers
                     Um = item.Um,
                     CostoUnitario = item.CostoUnitario,
                     CostoTotal = item.CostoTotal,
-                    CreadorId = item.CreadorId,
-                    ModificadorId = item.CreadorId,
+                    IdCreador = item.IdCreador,
+                    IdModificador = item.IdCreador,
                     FechaModificacion = DateTime.UtcNow
                 };
 
