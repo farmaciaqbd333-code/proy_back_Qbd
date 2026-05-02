@@ -54,7 +54,7 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<Paciente>? Pacientes { get; set; }
         [JsonIgnore]
-        public List<OrdenCompra>? OrdenCompras { get; set; }
+        public List<Compra>? OrdenCompras { get; set; }
     }
 
 }

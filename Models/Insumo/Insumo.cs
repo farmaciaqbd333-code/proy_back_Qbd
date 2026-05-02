@@ -38,7 +38,7 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]        
         public List<FormulaCC>? FormulasCC { get; set; }
         [JsonIgnore]        
-        public List<DetalleOrdenCompra>? DetalleOrdenCompras { get; set; }
+        public List<DetalleCompra>? DetalleOrdenCompras { get; set; }
 
     }
 

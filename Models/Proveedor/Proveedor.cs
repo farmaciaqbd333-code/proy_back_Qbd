@@ -28,7 +28,7 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [JsonIgnore]
-        public List<OrdenCompra>? OrdenCompras { get; set; }
+        public List<Compra>? OrdenCompras { get; set; }
         [JsonIgnore]
         [ForeignKey("IdCreador")]
         public Usuario? Creador { get; set; }

@@ -12,48 +12,86 @@ namespace proy_back_Qbd.Models
     [Table("detalle_compra")]
     public class DetalleCompra
     {
-        [Key]
+        
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("id")] public int Id { get; set; }
-        [Column("id_orden_compra")] public int IdOrdenCompra { get; set; }
-        [Column("cantidad_paquete")] public decimal? CantidadPaquete { get; set; }
-        [Column("lote")] public required string Lote { get; set; }
-        [Column("potencia")] public string? Potencia { get; set; }
-        [Column("fechafab")] public required DateTime FechaFab { get; set; }
-        [Column("fechavec")] public required DateTime FechaVec { get; set; }
-        [Column("coa")] public string? Coa { get; set; }
-        [Column("registro_sanitario")] public string? RegistroSanitario { get; set; }
-        [Column("conformidad")] public string? Conformidad { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Key] [Column("id")] public int Id { get; set; }
+        [Column("id_compra")] public required int IdCompra { get; set; }
+        [Column("id_insumo")] public required int IdInsumo { get; set; }
+        [Column("descripcion_fac")] public required string DescripcionFac { get; set; }
+        [Column("cantidad_paquete")] public required decimal Cantidad { get; set; }
+        [Column("um")] public required string Um { get; set; }
+        [Column("costo_unitario")] public required decimal CostoUnitario { get; set; }
+        [Column("costo_total")] public required decimal CostoTotal { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
+        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
-        [Column("id_modificador")] public int IdModificador { get; set; }
-        [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; }
+        [Column("id_modificador")] public int? IdModificador { get; set; }
+
         [JsonIgnore]
         public Usuario? Creador { get; set; }
         [JsonIgnore]
         public Usuario? Modificador { get; set; }
+        [JsonIgnore]
+        public Insumo? Insumo { get; set; }
+        [JsonIgnore]
+        public Compra? OrdenCompra { get; set; }
     }
-    public class PatchDetalleCompraReq
+    public class DetalleOrdenCompraRes
     {
-        public string? Coa { get; set; }
+        public required string Modalidad { get; set; }
+        public required string Familia { get; set; }
+        public required DateTime FechaCotizacion { get; set; }
+        public required string TC { get; set; }
+        public required string Moneda { get; set; } // Nuevo campo
+        public required string Destino { get; set; }
+        public required string Direccion { get; set; }
+        public required string CodigoProveedor { get; set; }
+        public string? Ruc { get; set; }
+        public string? RazonSocial { get; set; }
+        public string? Responsable { get; set; }
+        public string? TipoOperacion { get; set; }
+        public string? Observaciones { get; set; } // Nuevo campo requerido por el usuario
+        public bool IncluyeImpuesto { get; set; }
+        public List<DetalleOrdenCompra2>? DetalleOrdenCompras { get; set; }
+    }
+    public class DetalleOrdenCompra2
+    {
+        public int Id { get; set; } // ID primario de la fila
+        public required int IdInsumo { get; set; }
+        public required string Codigo { get; set; }
+        public required string DescripcionQBD { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public required string Cantidad { get; set; }
+        public required string UM { get; set; }
+        public required string CUnitario { get; set; }
+        public required string CTotal { get; set; }
+    }
+    public class DetalleOrdenCompraPatchReq
+    {
+        public int Id { get; set; } // ID primario de la fila en la DB
+        public int? IdInsumo { get; set; } // ID del insumo (opcional si se quiere cambiar)
 
-        public string? Lote { get; set; }
-
+        public string? DescripcionQbd { get; set; }
+        public string? DescripcionFac { get; set; }
         public decimal? Cantidad { get; set; }
-
-        public string? PotenciaPorcentaje { get; set; } // %pot
-
-        public DateTime? FechaFabricacion { get; set; }
-
-        public DateTime? FechaVencimiento { get; set; }
-
-        public string? CondicionAlmacenamiento { get; set; }
-
-        public int? TotalPaq { get; set; }
-
-        public decimal? TotalPeso { get; set; } // reemplaza tt_cant
+        public string? Um { get; set; }
+        public decimal? CostoUnitario { get; set; }
+        public decimal? CostoTotal { get; set; }
+        public int ModificadorId { get; set; }
+    }
+    public class DetalleOrdenCompraCreateReq
+    {
+        public int IdInsumo { get; set; }
+        public required string DescripcionFac { get; set; }
+        public decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }
+        public int CreadorId { get; set; }
+    }
+    public class OrdenCompraMesonReq
+    {
+        public required string Estado { get; set; }
+        public int ModificadorId { get; set; }
     }
 }

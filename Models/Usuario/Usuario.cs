@@ -138,13 +138,13 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<FormulaR>? FormulasRsModificadas { get; set; }
         [JsonIgnore]
-        public List<OrdenCompra>? OrdenComprasCreadas { get; set; }
+        public List<Compra>? OrdenComprasCreadas { get; set; }
         [JsonIgnore]
-        public List<OrdenCompra>? OrdenComprasModificadas { get; set; }
+        public List<Compra>? OrdenComprasModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleOrdenCompra>? DetalleOrdenComprasCreadas { get; set; }
+        public List<DetalleCompra>? DetalleOrdenComprasCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleOrdenCompra>? DetalleOrdenComprasModificadas { get; set; }
+        public List<DetalleCompra>? DetalleOrdenComprasModificadas { get; set; }
         [JsonIgnore]
         public List<Compra>? ComprasCreadas { get; set; }
         [JsonIgnore]

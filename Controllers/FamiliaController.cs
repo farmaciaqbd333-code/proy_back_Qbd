@@ -69,8 +69,8 @@ namespace proy_back_Qbd.Controllers
             if (familia == null) return NotFound();
 
             // Verificar si hay órdenes que usan esta familia antes de borrar
-            var tieneOrdenes = await _context.OrdenCompras.AnyAsync(o => o.IdFamilia == id);
-            if (tieneOrdenes) return BadRequest("No se puede eliminar la familia porque tiene órdenes de compra asociadas.");
+            // var tieneOrdenes = await _context.Compras.AnyAsync(o => o.IdFamilia == id);
+            // if (tieneOrdenes) return BadRequest("No se puede eliminar la familia porque tiene órdenes de compra asociadas.");
 
             _context.Familias.Remove(familia);
             await _context.SaveChangesAsync();
