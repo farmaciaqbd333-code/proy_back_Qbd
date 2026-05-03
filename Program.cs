@@ -35,9 +35,10 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<EmpaqueMap>();
     cfg.AddProfile<ProductoMap>();
 });
+
 builder.Configuration
     .AddEnvironmentVariables();
-builder.Logging.ClearProviders(); // Limpia los proveedores de logging por defecto
+builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ISedeService, SedeService>();

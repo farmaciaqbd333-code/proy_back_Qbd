@@ -25,7 +25,7 @@ namespace proy_back_Qbd.Models
         [Column("conformidad")] public bool? Conformidad { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
-        [Key][Column("id")] public int Id { get; set; }
+        [Key] [Column("id")] public int Id { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; }
@@ -35,73 +35,11 @@ namespace proy_back_Qbd.Models
         [Column("id_familia")] public int? IdFamilia { get; set; }
         [Column("descripcion_fac")] public required string DescripcionFac { get; set; }
 
-        [JsonIgnore]
-        public Familia? Familia { get; set; }
-        [JsonIgnore]
-        public Usuario? Creador { get; set; }
-        [JsonIgnore]
-        public Usuario? Modificador { get; set; }
-        [JsonIgnore]
-        public Insumo? Insumo { get; set; }
-        [JsonIgnore]
-        public Compra? OrdenCompra { get; set; }
+        [JsonIgnore] public Familia? Familia { get; set; }
+        [JsonIgnore] public Usuario? Creador { get; set; }
+        [JsonIgnore] public Usuario? Modificador { get; set; }
+        [JsonIgnore] public Insumo? Insumo { get; set; }
+        [JsonIgnore] public Compra? OrdenCompra { get; set; }
     }
-    public class DetalleOrdenCompraRes
-    {
-        public required string Modalidad { get; set; }
-        public required string Familia { get; set; }
-        public required DateTime FechaCotizacion { get; set; }
-        public required string TC { get; set; }
-        public required string Moneda { get; set; } // Nuevo campo
-        public required string Destino { get; set; }
-        public required string Direccion { get; set; }
-        public required string CodigoProveedor { get; set; }
-        public string? Ruc { get; set; }
-        public string? RazonSocial { get; set; }
-        public string? Responsable { get; set; }
-        public string? TipoOperacion { get; set; }
-        public string? Observaciones { get; set; } // Nuevo campo requerido por el usuario
-        public bool IncluyeImpuesto { get; set; }
-        public List<DetalleOrdenCompra2>? DetalleOrdenCompras { get; set; }
-    }
-    public class DetalleOrdenCompra2
-    {
-        public int Id { get; set; } // ID primario de la fila
-        public required int IdInsumo { get; set; }
-        public required string Codigo { get; set; }
-        public required string DescripcionQBD { get; set; }
-        public required string DescripcionFactura { get; set; }
-        public required string Cantidad { get; set; }
-        public required string UM { get; set; }
-        public required string CUnitario { get; set; }
-        public required string CTotal { get; set; }
-    }
-    public class DetalleOrdenCompraPatchReq
-    {
-        public int Id { get; set; } // ID primario de la fila en la DB
-        public int? IdInsumo { get; set; } // ID del insumo (opcional si se quiere cambiar)
-
-        public string? DescripcionQbd { get; set; }
-        public string? DescripcionFac { get; set; }
-        public decimal? Cantidad { get; set; }
-        public string? Um { get; set; }
-        public decimal? CostoUnitario { get; set; }
-        public decimal? CostoTotal { get; set; }
-        public int ModificadorId { get; set; }
-    }
-    public class DetalleOrdenCompraCreateReq
-    {
-        public int IdInsumo { get; set; }
-        public required string DescripcionFac { get; set; }
-        public decimal Cantidad { get; set; }
-        public required string Um { get; set; }
-        public decimal CostoUnitario { get; set; }
-        public required decimal CostoTotal { get; set; }
-        public int CreadorId { get; set; }
-    }
-    public class OrdenCompraMesonReq
-    {
-        public required string Estado { get; set; }
-        public int ModificadorId { get; set; }
-    }
+   
 }
