@@ -45,10 +45,10 @@ namespace Proy_back_QBD.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            ConfigureNotaSalida(modelBuilder);
+            Configure(modelBuilder);
         }
 
-        private void ConfigureNotaSalida(ModelBuilder modelBuilder)
+        private void Configure(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<NotaSalida>((e) =>
            {
@@ -86,6 +86,7 @@ namespace Proy_back_QBD.Data
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasModificadas).HasForeignKey(hfk => hfk.IdModificador);
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
