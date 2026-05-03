@@ -1,5 +1,5 @@
 using Proy_back_QBD.Request;
-using Proy_back_QBD.Response.Proy_back_QBD.Dto.Response;
+using Proy_back_QBD.Response;
 
 namespace Proy_back_QBD.Services
 {

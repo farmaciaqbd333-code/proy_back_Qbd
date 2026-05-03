@@ -9,25 +9,12 @@ namespace proy_back_Qbd.Models
     [Table("familias")]
     public class Familia
     {
-        [Key]
-        [Column("id")]
-        public int Id { get; set; }
-
-        [Column("nombre")]
-        public required string Nombre { get; set; }
-
-        [Column("abreviatura")]
-        public required string Abreviatura { get; set; }
-
-        [JsonIgnore]
-        [Column("fecha_creacion")]
-        public DateTime FechaCreacion { get; set; }
-
-        [Column("id_creador")]
-        public int IdCreador { get; set; }
-
-        [JsonIgnore]
-        [ForeignKey("IdCreador")]
+        [Key][Column("id")]public int Id { get; set; }
+        [Column("nombre")]public required string Nombre { get; set; }
+        [Column("abreviatura")]public required string Abreviatura { get; set; }        
+        [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [Column("id_creador")] public int IdCreador { get; set; }
         public Usuario? Creador { get; set; }
+        public List<DetalleCompra>? DetalleCompras { get; set; }
     }
 }

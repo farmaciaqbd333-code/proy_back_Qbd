@@ -5,27 +5,7 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models
 {
-    public class ListaOrdenesYComprasRes
-    {
-        public int Id { get; set; }
-        public required string CUO { get; set; }
-        public required string Fecha { get; set; }
-        public required string Serie { get; set; }
-        public required string Numero { get; set; }
-        public required string RUC { get; set; }
-        public required string Denominacion { get; set; }
-        public required string Valor { get; set; }
-        public required string Total { get; set; }
-        public required string Moneda { get; set; }
-        public required string Estado { get; set; }
-        public required string CodFac { get; set; }
-        public required string Familia { get; set; }
-        public required string Factura { get; set; }
-        public string? Modalidad { get; set; }
-        public required string EstadoOrdenCompra { get; set; }
-        public required string Usuario { get; set; }
-        public string? EstadoMeson { get; set; }
-    }
+    
     public class OrdenCompraCreateReq
     {
         public required int IdProveedor { get; set; }

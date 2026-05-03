@@ -1,16 +1,15 @@
 using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Proy_back_QBD.Data;
-using Microsoft.Extensions.DependencyInjection;
-using AutoMapper;
 using Proy_back_QBD.Profiles;
 using Proy_back_QBD.Services;
 using System.Reflection;
-using Proy_back_QBD.Util;
 using Proy_back_QBD.Services.Interfaces;
-using Proy_back_QBD.Models;
 using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
+using proy_back_Qbd.Services;
+using proy_back_Qbd.Services.Interfaces;
+using proy_back_Qbd.Models;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
@@ -34,6 +33,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<InsumoMap>();
     cfg.AddProfile<EmpaqueMap>();
     cfg.AddProfile<ProductoMap>();
+    cfg.AddProfile<CompraMap>();
 });
 
 builder.Configuration
@@ -58,6 +58,7 @@ builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
 builder.Services.AddScoped<ICobroService, CobroService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
+builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

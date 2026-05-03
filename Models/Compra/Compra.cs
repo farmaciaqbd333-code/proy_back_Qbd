@@ -1,10 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
@@ -22,13 +17,12 @@ namespace proy_back_Qbd.Models
         [Column("modalidad_pago")] public required string Modalidad { get; set; }
         [Column("observaciones")] public required string Observaciones { get; set; }
         [Column("id_sede")] public required int IdSede { get; set; }
-        [Column("estado_compra")] public required decimal EstadoCompra { get; set; }
+        [Column("estado_compra")] public required string EstadoCompra { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("igv")] public required decimal Igv { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
-        [Column("estado_meson")] public string? EstadoMeson { get; set; }
         [Column("serie_comprobante")] public string? SerieComprobante { get; set; }
         [Column("numero_comprobante")] public string? NumeroComprobante { get; set; }
         [Column("guia")] public string? Guia { get; set; }
@@ -40,16 +34,14 @@ namespace proy_back_Qbd.Models
         [Column("icbp")] public int Icbp { get; set; }
         [Column("valor")] public int Valor { get; set; }
         [Column("total")] public int Total { get; set; }
+        [Column("familia")] public required string Familia { get; set; }
+        [Column("factura")] public string? Factura { get; set; }
 
         public Proveedor? Proveedor { get; set; }
         public Sede? Sede { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
-        public List<DetalleCompra>? DetalleOrdenCompras { get; set; }
+        public List<DetalleCompra>? DetalleCompras { get; set; }
     }
 
-
-  
-
-    
 }

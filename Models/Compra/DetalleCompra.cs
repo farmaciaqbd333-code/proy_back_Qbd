@@ -25,7 +25,7 @@ namespace proy_back_Qbd.Models
         [Column("conformidad")] public bool? Conformidad { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
-        [Key] [Column("id")] public int Id { get; set; }
+        [Key][Column("id")] public int Id { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; }
@@ -35,11 +35,11 @@ namespace proy_back_Qbd.Models
         [Column("id_familia")] public int? IdFamilia { get; set; }
         [Column("descripcion_fac")] public required string DescripcionFac { get; set; }
 
-        [JsonIgnore] public Familia? Familia { get; set; }
-        [JsonIgnore] public Usuario? Creador { get; set; }
-        [JsonIgnore] public Usuario? Modificador { get; set; }
-        [JsonIgnore] public Insumo? Insumo { get; set; }
-        [JsonIgnore] public Compra? OrdenCompra { get; set; }
+        public Familia? Familia { get; set; }
+        public Usuario? Creador { get; set; }
+        public Usuario? Modificador { get; set; }
+        public Insumo? Insumo { get; set; }
+        public Compra? Compra { get; set; }
     }
-   
+
 }

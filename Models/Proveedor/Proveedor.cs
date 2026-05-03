@@ -12,34 +12,25 @@ namespace proy_back_Qbd.Models
     [Table("proveedores")]
     public class Proveedor
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("id")] public int Id { get; set; }
-        [Column("numero_prov")] public required string CodigoProv { get; set; }
+        [Key][Column("id")] public int Id { get; set; }
+        [Column("numero_prov")] public required string NumeroProv { get; set; }
         [Column("datos")] public required string Datos { get; set; }
         [Column("direccion")] public string Direccion { get; set; } = "";
         [Column("telefono")] public string Telefono { get; set; } = "";
         [Column("referencia")] public string Referencia { get; set; } = "";
-        [Column("codigo_provedor")] public string? CodigoProvedor { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [Column("codigo_provedor")] public string? CodigoProvedor { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
-        [JsonIgnore]
-        public List<Compra>? OrdenCompras { get; set; }
-        [JsonIgnore]
-        [ForeignKey("IdCreador")]
+        public List<Compra>? Compras { get; set; }
         public Usuario? Creador { get; set; }
-        [JsonIgnore]
-        [ForeignKey("IdModificador")]
         public Usuario? Modificador { get; set; }
 
     }
     public class ProveedorCreateDto
     {
-        public required string CodigoProv { get; set; } 
+        public required string CodigoProv { get; set; }
         public required string Datos { get; set; }
         public string Direccion { get; set; } = "";
         public string Telefono { get; set; } = "";

@@ -30,7 +30,7 @@ namespace proy_back_Qbd.Controllers
                 .Select(p => new ProveedorDto
                 {
                     IdProveedor = p.Id,
-                    CodigoProv = p.CodigoProv,
+                    CodigoProv = p.NumeroProv,
                     Datos = p.Datos,
                     Direccion = p.Direccion,
                     Telefono = p.Telefono,
@@ -56,7 +56,7 @@ namespace proy_back_Qbd.Controllers
             var dto = new ProveedorDto
             {
                 IdProveedor = proveedor.Id,
-                CodigoProv = proveedor.CodigoProv,
+                CodigoProv = proveedor.NumeroProv,
                 Datos = proveedor.Datos,
                 Direccion = proveedor.Direccion,
                 Telefono = proveedor.Telefono,
@@ -78,7 +78,7 @@ namespace proy_back_Qbd.Controllers
 
             var proveedor = new Proveedor
             {
-                CodigoProv = dto.CodigoProv,
+                NumeroProv = dto.CodigoProv,
                 Datos = dto.Datos,
                 Direccion = dto.Direccion,
                 Telefono = dto.Telefono,
@@ -93,7 +93,7 @@ namespace proy_back_Qbd.Controllers
             var responseDto = new ProveedorDto
             {
                 IdProveedor = proveedor.Id,
-                CodigoProv = proveedor.CodigoProv,
+                CodigoProv = proveedor.NumeroProv,
                 Datos = proveedor.Datos,
                 Direccion = proveedor.Direccion,
                 Telefono = proveedor.Telefono,
@@ -119,7 +119,7 @@ namespace proy_back_Qbd.Controllers
                 return NotFound($"Proveedor con ID {id} no encontrado.");
 
             // Actualizamos los campos
-            proveedor.CodigoProv = dto.CodigoProv;
+            proveedor.NumeroProv = dto.CodigoProv;
             proveedor.Datos = dto.Datos;
             proveedor.Direccion = dto.Direccion;
             proveedor.Telefono = dto.Telefono;

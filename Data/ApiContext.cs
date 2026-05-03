@@ -60,6 +60,9 @@ namespace Proy_back_QBD.Data
            {
                e.HasOne(ho => ho.Creador).WithMany(wm => wm.ProveedoresCreados).HasForeignKey(hfk => hfk.IdCreador);
                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ProveedoresModificados).HasForeignKey(hfk => hfk.IdModificador);
+               e.Property(p => p.Id).ValueGeneratedOnAdd();
+               e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
+               e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();               
            });
 
             modelBuilder.Entity<ElaboracionBase>((e) =>
@@ -89,6 +92,9 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra);
+                e.HasOne(ho => ho.Familia).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFamilia);
+                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo);
             });
 
             modelBuilder.Entity<Compra>((e) =>
@@ -97,6 +103,8 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Modificador).WithMany(wo => wo.ComprasModificadas).HasForeignKey(hfk => hfk.IdModificador);
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
+                e.HasOne(ho => ho.Proveedor).WithMany(wo => wo.Compras).HasForeignKey(hfk => hfk.IdProveedor);
+                e.HasOne(ho => ho.Sede).WithMany(wo => wo.Compras).HasForeignKey(hfk => hfk.IdSede);
             });
             modelBuilder.Entity<InsumoR>((e) =>
             {
