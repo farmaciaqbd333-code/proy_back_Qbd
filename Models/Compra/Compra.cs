@@ -20,7 +20,7 @@ namespace proy_back_Qbd.Models
         [Column("estado_compra")] public required string EstadoCompra { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
-        [Column("igv")] public required decimal Igv { get; set; }
+        [Column("igv")] public required bool Igv { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("serie_comprobante")] public string? SerieComprobante { get; set; }
@@ -35,7 +35,6 @@ namespace proy_back_Qbd.Models
         [Column("valor")] public int Valor { get; set; }
         [Column("total")] public int Total { get; set; }
         [Column("familia")] public required string Familia { get; set; }
-        [Column("factura")] public string? Factura { get; set; }
 
         public Proveedor? Proveedor { get; set; }
         public Sede? Sede { get; set; }

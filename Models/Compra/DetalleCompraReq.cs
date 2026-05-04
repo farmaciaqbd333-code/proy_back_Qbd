@@ -24,9 +24,9 @@ namespace proy_back_Qbd.Models
         public required string DescripcionFac { get; set; }
         public decimal Cantidad { get; set; }
         public required string Um { get; set; }
-        public decimal CostoUnitario { get; set; }
+        public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
-        public int CreadorId { get; set; }
+        public required int IdCreador { get; set; }
     }
     public class OrdenCompraMesonReq
     {

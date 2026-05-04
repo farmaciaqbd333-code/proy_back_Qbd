@@ -15,13 +15,15 @@ namespace proy_back_Qbd.Controllers
                 {
                         _service = service;
                 }
-
+                /// <summary>
+                /// Listar ordenes de compra y compras
+                /// </summary>
                 [HttpGet]
-                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(IEnumerable<ListaOrdenesYComprasRes>))]
-                public async Task<ActionResult<IEnumerable<ListaOrdenesYComprasRes>>> ListarComprasYOrdenes()
+                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
+                public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarComprasYOrdenes()
                 {
 
-                        IEnumerable<ListaOrdenesYComprasRes> response = await _service.ListarOrdenesYCompras();
+                        IEnumerable<OrdenesYComprasRes> response = await _service.ListaOrdenesYCompras();
 
                         if (!response.Any())
                                 return NotFound("No se han encontrado ordenes de compra y compras");
@@ -29,105 +31,36 @@ namespace proy_back_Qbd.Controllers
                         return Ok(response);
                 }
 
-                // [HttpGet("{id}")]
-                // public async Task<ActionResult<DetalleOrdenCompraRes>> GetOrdenCompraById(int id)
-                // {
-                //     return await GetDetalleOrdenesCompra(id);
-                // }
-                // [HttpGet("detalle/{id}")]
-                // public async Task<ActionResult<DetalleOrdenCompraRes>> GetDetalleOrdenesCompra(int id)
-                // {
+                /// <summary>
+                /// Obtener detalle de orden de compra o compra
+                /// </summary>
+                [HttpGet("detalle/{id}")]
+                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(ObtenerOrdenOCompraRes))]
+                public async Task<ActionResult<ObtenerOrdenOCompraRes>> ObtenerOrdenCompra(int id)
+                {
 
-                //     DetalleOrdenCompraRes? orden = await _context.Compras
-                //         .Where(w => w.Id == id)
-                //         .Select(s => new DetalleOrdenCompraRes
-                //         {
-                //             Modalidad = s.Modalidad,
-                //             TC = s.TipoCambio.ToString(),
-                //             Moneda = s.Moneda ?? "PEN",
-                //             FechaCotizacion = s.FechaCotizacion,
-                //             Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
-                //             Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                //             Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
-                //             CodigoProveedor = s.Proveedor == null || s.Proveedor.CodigoProvedor == null ? "" : s.Proveedor.CodigoProvedor,
-                //             Ruc = s.Proveedor != null ? s.Proveedor.CodigoProv : "",
-                //             RazonSocial = s.Proveedor != null ? s.Proveedor.Datos : "",
-                //             TipoOperacion = s.TipoOperacion,
-                //             IncluyeImpuesto = s.IncluyeImpuesto,
-                //             Observaciones = s.Observaciones,
-                //             DetalleOrdenCompras = s.DetalleOrdenCompras == null
-                //                                     ? null :
-                //                                     s.DetalleOrdenCompras.Select(s2 => new DetalleOrdenCompra2
-                //                                     {
-                //                                         Id = s2.Id,
-                //                                         IdInsumo = s2.IdInsumo,
-                //                                         Codigo = s2.IdInsumo.ToString(),
-                //                                         DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
-                //                                         DescripcionFactura = s2.DescripcionFac,
-                //                                         Cantidad = s2.CantidadSolicitada.ToString(),
-                //                                         UM = s2.Um,
-                //                                         CUnitario = s2.CostoUnitario.ToString(),
-                //                                         CTotal = s2.CostoTotal.ToString()
-                //                                     })
-                //                                     .ToList()
+                        ObtenerOrdenOCompraRes? response = await _service.ObtenerDetalleOrdenOCompra(id);
 
-                //         }).FirstOrDefaultAsync();
-                //     if (orden == null)
-                //     {
-                //         return NotFound("No encontrado");
+                        if (response == null)
+                                return NotFound("No se ha encontrado la orden de compra o compra");
 
-                //     }
+                        return Ok(response);
+                }
 
-                //     return Ok(orden);
-                // }
+                /// <summary>
+                /// Crear orden de compra
+                /// </summary>
+                [HttpPost]
+                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(OrdenesYComprasRes))]
+                public async Task<ActionResult<OrdenesYComprasRes>> CrearOrdenesCompra(OrdenCompraCreateReq request)
+                {
+                        OrdenesYComprasRes? response = await _service.CrearOrdenDeCompra(request);
+                        if (response == null)
+                                return NotFound("No se ha encontrado la orden de compra o compra");
 
-                // [HttpPost]
-                // public async Task<ActionResult> CrearDetalleOrdenesCompra(OrdenCompraCreateReq request)
-                // {
-                //     Compra ordenCompra = new Compra
-                //     {
-                //         IdProveedor = request.IdProveedor,
-                //         Modalidad = request.Modalidad,
-                //         Moneda = request.Moneda,
-                //         TipoCambio = request.TipoCambio,
-                //         Igv = request.Impuesto,
-                //         Observaciones = request.Observaciones,
-                //         IdFamilia = request.IdFamilia,
-                //         IdSede = request.IdSede,
-                //         TipoOperacion = request.TipoOperacion ?? "GRAVADO",
-                //         IncluyeImpuesto = request.IncluyeImpuesto,
-                //         EstadoPago = "PEN",
-                //         Estado = "",
-                //         IdCreador = request.CreadorId,
-                //         IdModificador = request.ModificadorId,
-                //         FechaModificacion = DateTime.Now,
-                //         FechaCotizacion = request.FechaEmision,
-                //         TipoTributario = request.TipoTributario,
-                //         EstadoMeson = "PENDIENTE"
-                //     };
-                //     _context.Compras.Add(ordenCompra);
-                //     await _context.SaveChangesAsync();
+                        return Created("Se ha creado la orden de compra", response);
+                }
 
-                //     List<DetalleCompra> detalleOrdenCompras = request.Detalle.Select(s => new DetalleCompra
-                //     {
-                //         IdInsumo = s.IdInsumo,
-                //         DescripcionFac = s.DescripcionFac,
-                //         CantidadSolicitada = s.Cantidad,
-                //         Um = s.UM,
-                //         CostoUnitario = s.CUnitario,
-                //         CostoTotal = s.CTotal,
-                //         IdCompra = ordenCompra.Id,
-                //         FechaModificacion = ordenCompra.FechaCreacion,
-                //         IdCreador = request.CreadorId,
-                //         IdModificador = request.ModificadorId // Asignar el modificador desde el request
-                //     }).ToList();
-
-                //     _context.DetalleOrdenesCompras.AddRange(detalleOrdenCompras);
-                //     await _context.SaveChangesAsync();
-
-                //     ordenCompra.DetalleOrdenCompras = detalleOrdenCompras;
-                //     return Ok(ordenCompra);
-                // }
                 // [HttpPut("{id}")]
                 // public async Task<IActionResult> UpdateOrdenCompra(int id, [FromBody] OrdenCompraUpdateReq req)
                 // {
