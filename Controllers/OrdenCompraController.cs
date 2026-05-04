@@ -98,41 +98,19 @@ namespace proy_back_Qbd.Controllers
                 //     }
                 // }
 
-                // [HttpDelete("{id}")]
-                // public async Task<IActionResult> DeleteOrdenCompra(int id)
-                // {
-                //     var orden = await _context.Compras
-                //         .Include(o => o.DetalleOrdenCompras)
-                //         .Include(o => o.Compra)
-                //         .FirstOrDefaultAsync(o => o.Id == id);
+                /// <summary>
+                /// Eliminar orden de compra o compra
+                /// </summary>
+                [HttpDelete("{id}")]
+                public async Task<IActionResult> DeleteOrdenCompra(int id)
+                {
+                        string? response = await _service.EliminarOrdenOCompraOCompra(id);
+                        if (response == null)
+                                return NotFound("Orden no encontrado");
 
-                //     if (orden == null)
-                //     {
-                //         return NotFound(new { message = "Orden de compra no encontrada" });
-                //     }
+                        return Ok(response);
 
-                //     if (orden.Compra != null)
-                //     {
-                //         return BadRequest(new { message = "No se puede eliminar una orden que ya tiene una factura registrada" });
-                //     }
-
-                //     if (orden.DetalleOrdenCompras != null && orden.DetalleOrdenCompras.Any())
-                //     {
-                //         _context.DetalleOrdenesCompras.RemoveRange(orden.DetalleOrdenCompras);
-                //     }
-
-                //     _context.Compras.Remove(orden);
-
-                //     try
-                //     {
-                //         await _context.SaveChangesAsync();
-                //         return Ok(new { message = "Orden de compra eliminada correctamente" });
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         return StatusCode(500, new { message = "Error al eliminar la orden", error = ex.Message });
-                //     }
-                // }
+                }
                 // [HttpPatch("detalles/{id}")]
                 // public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
                 // {

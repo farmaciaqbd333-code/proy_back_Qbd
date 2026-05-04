@@ -99,7 +99,7 @@ namespace proy_back_Qbd.Services
                                 Total = s.DetalleCompras != null ? s.Total : 0,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
-                                Familia = s.Familia,                                
+                                Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
                                 EstadoPago = s.Modalidad,
                                 Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
@@ -126,12 +126,24 @@ namespace proy_back_Qbd.Services
                 _context.DetalleCompras.Add(detalleCompra);
             }
             await _context.SaveChangesAsync();
-            
+
             OrdenesYComprasRes? response = await ObtenerOrdenOCompra(compra.Id);
             if (response == null)
                 return null;
 
             return response;
+        }
+
+        public async Task<string?> EliminarOrdenOCompraOCompra(int id)
+        {
+            Compra? compra = await _context.Compras.FindAsync(id);
+            if (compra == null)
+                return null;
+
+            _context.Remove(compra);
+            await _context.SaveChangesAsync();
+
+            return "Orden compra eliminado exitosamente";
         }
     }
 }
