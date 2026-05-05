@@ -14,11 +14,13 @@ namespace proy_back_Qbd.Services
     public class OrdenCompraService : IOrdenCompraService
     {
         private readonly ApiContext _context;
+        private readonly IDetalleOrdenCompraService _serviceDOC;
         private readonly IMapper _mapper;
-        public OrdenCompraService(ApiContext context, IMapper mapper)
+        public OrdenCompraService(ApiContext context, IMapper mapper, IDetalleOrdenCompraService serviceDOC)
         {
             _context = context;
             _mapper = mapper;
+            _serviceDOC = serviceDOC;
         }
 
         public async Task<ObtenerOrdenOCompraRes?> ObtenerDetalleOrdenOCompra(int id)
@@ -113,25 +115,29 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
-        public async Task<OrdenesYComprasRes?> CrearOrdenDeCompra(OrdenCompraCreateReq request)
+        public async Task<int?> CrearOrdenDeCompra(OrdenCompraCreateReq request)
         {
-            Compra compra = _mapper.Map<Compra>(request);
-            _context.Compras.Add(compra);
-            await _context.SaveChangesAsync();
-
-            foreach (var item in request.Detalle)
+            try
             {
-                DetalleCompra detalleCompra = _mapper.Map<DetalleCompra>(item);
-                detalleCompra.IdCompra = compra.Id;
-                _context.DetalleCompras.Add(detalleCompra);
+                Compra compra = _mapper.Map<Compra>(request);
+                _context.Compras.Add(compra);
+                await _context.SaveChangesAsync();
+
+                foreach (var item in request.Detalle)
+                {
+                    DetalleCompra detalleCompra = _mapper.Map<DetalleCompra>(item);
+                    detalleCompra.IdCompra = compra.Id;
+                    _context.DetalleCompras.Add(detalleCompra);
+                }
+                await _context.SaveChangesAsync();
+
+                return compra.Id;
             }
-            await _context.SaveChangesAsync();
-
-            OrdenesYComprasRes? response = await ObtenerOrdenOCompra(compra.Id);
-            if (response == null)
+            catch (Exception)
+            {
                 return null;
+            }
 
-            return response;
         }
 
         public async Task<string?> EliminarOrdenOCompraOCompra(int id)
@@ -144,6 +150,40 @@ namespace proy_back_Qbd.Services
             await _context.SaveChangesAsync();
 
             return "Orden compra eliminado exitosamente";
+        }
+
+        public async Task<OrdenesYComprasRes?> ActualizarOrdenDeCompra(int idOC, OrdenCompraUpdateReq request)
+        {
+
+            using var tx = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                if (request.DetallesNuevos != null)
+                    await _serviceDOC.CrearDetalleOrdenDeCompra(idOC, request.IdModificadorCreador, request.DetallesNuevos);
+                if (request.DetallesEliminados != null)
+                    await _serviceDOC.EliminarDetalleOrdenDeCompra(request.DetallesEliminados);
+                Compra? compra = await _context.Compras.FindAsync(idOC);
+                _mapper.Map(request, compra);
+                if (request.Detalles != null)
+                    foreach (var item in request.Detalles)
+                    {
+                        DetalleCompra? detalleCompra = await _context.DetalleCompras.FindAsync(item.Id);
+                        _mapper.Map(request.Detalles, detalleCompra);
+                    }
+
+
+                await tx.CommitAsync();
+                OrdenesYComprasRes? response = await ObtenerOrdenOCompra(idOC);
+                return response;
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+
+
         }
     }
 }

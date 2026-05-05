@@ -60,6 +60,7 @@ builder.Services.AddScoped<ICobroService, CobroService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
 builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
+builder.Services.AddScoped<IDetalleOrdenCompraService, DetalleOrdenCompraService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

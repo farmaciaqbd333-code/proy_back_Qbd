@@ -22,11 +22,21 @@ namespace proy_back_Qbd.Models
     {
         public int IdInsumo { get; set; }
         public required string DescripcionFac { get; set; }
-        public decimal Cantidad { get; set; }
+        public required decimal Cantidad { get; set; }
         public required string Um { get; set; }
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
         public required int IdCreador { get; set; }
+    }
+    public class DetalleOrdenCompraUpdateReq
+    {
+        public int? Id { get; set; }
+        public int IdInsumo { get; set; }
+        public required string DescripcionFac { get; set; }
+        public required decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public required decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }        
     }
     public class OrdenCompraMesonReq
     {

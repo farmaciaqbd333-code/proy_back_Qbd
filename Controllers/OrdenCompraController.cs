@@ -10,20 +10,20 @@ namespace proy_back_Qbd.Controllers
         public class OrdenCompraController : ControllerBase
         {
 
-                private readonly IOrdenCompraService _service;
+                private readonly IOrdenCompraService _serviceOC;
                 public OrdenCompraController(IOrdenCompraService service)
                 {
-                        _service = service;
+                        _serviceOC = service;
                 }
                 /// <summary>
                 /// Listar ordenes de compra y compras
                 /// </summary>
                 [HttpGet]
-                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
+                [SwaggerResponse(200, "Obtención exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
                 public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarComprasYOrdenes()
                 {
 
-                        IEnumerable<OrdenesYComprasRes> response = await _service.ListaOrdenesYCompras();
+                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaOrdenesYCompras();
 
                         if (!response.Any())
                                 return NotFound("No se han encontrado ordenes de compra y compras");
@@ -35,14 +35,14 @@ namespace proy_back_Qbd.Controllers
                 /// Obtener detalle de orden de compra o compra
                 /// </summary>
                 [HttpGet("detalle/{id}")]
-                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(ObtenerOrdenOCompraRes))]
+                [SwaggerResponse(200, "Obtención de detalle exitosa", typeof(ObtenerOrdenOCompraRes))]
                 public async Task<ActionResult<ObtenerOrdenOCompraRes>> ObtenerOrdenCompra(int id)
                 {
 
-                        ObtenerOrdenOCompraRes? response = await _service.ObtenerDetalleOrdenOCompra(id);
+                        ObtenerOrdenOCompraRes? response = await _serviceOC.ObtenerDetalleOrdenOCompra(id);
 
                         if (response == null)
-                                return NotFound("No se ha encontrado la orden de compra o compra");
+                                return NotFound("No se ha encontrado el detalle de la orden o compra");
 
                         return Ok(response);
                 }
@@ -51,52 +51,31 @@ namespace proy_back_Qbd.Controllers
                 /// Crear orden de compra
                 /// </summary>
                 [HttpPost]
-                [SwaggerResponse(200, "Obtención exitosa exitosa", typeof(OrdenesYComprasRes))]
+                [SwaggerResponse(200, "Creación exitosa", typeof(OrdenesYComprasRes))]
                 public async Task<ActionResult<OrdenesYComprasRes>> CrearOrdenesCompra(OrdenCompraCreateReq request)
                 {
-                        OrdenesYComprasRes? response = await _service.CrearOrdenDeCompra(request);
+                        int? id = await _serviceOC.CrearOrdenDeCompra(request);
+                        if (id == null)
+                                return StatusCode(500, "Hubo un error al crear la orden de compra");
+
+                        OrdenesYComprasRes? response = await _serviceOC.ObtenerOrdenOCompra(id.Value);
                         if (response == null)
-                                return NotFound("No se ha encontrado la orden de compra o compra");
+                                return NotFound("No se ha encontrado la orden de compra");
 
                         return Created("Se ha creado la orden de compra", response);
                 }
 
-                // [HttpPut("{id}")]
-                // public async Task<IActionResult> UpdateOrdenCompra(int id, [FromBody] OrdenCompraUpdateReq req)
-                // {
-                //     Compra? orden = await _context.Compras.FindAsync(id);
+                [HttpPatch("{id}")]
+                [SwaggerResponse(200, "Actualización exitosa", typeof(OrdenesYComprasRes))]
+                public async Task<ActionResult<OrdenesYComprasRes>> ActualizarOrdenCompra(int id, [FromBody] OrdenCompraUpdateReq request)
+                {
+                        OrdenesYComprasRes? response = await _serviceOC.ActualizarOrdenDeCompra(id, request);
 
-                //     if (orden == null)
-                //     {
-                //         return NotFound(new { message = "Orden de compra no encontrada" });
-                //     }
+                        if (response == null)
+                                return NotFound("No se ha encontrado la orden de compra o compra");
 
-                //     Mapear campos
-                //     orden.IdProveedor = req.IdProveedor;
-                //     orden.Modalidad = req.Modalidad;
-                //     orden.Moneda = req.Moneda;
-                //     orden.TipoCambio = req.TipoCambio;
-                //     orden.Igv = req.Impuesto;
-                //     orden.FechaCotizacion = req.FechaEmision;
-                //     orden.Observaciones = req.Observaciones;
-                //     orden.IdFamilia = req.IdFamilia;
-                //     orden.IdSede = req.IdSede;
-                //     orden.TipoOperacion = req.TipoOperacion;
-                //     orden.IncluyeImpuesto = req.IncluyeImpuesto;
-                //     orden.TipoTributario = req.TipoTributario;
-                //     orden.IdModificador = req.ModificadorId;
-                //     orden.FechaModificacion = DateTime.Now;
-
-                //     try
-                //     {
-                //         await _context.SaveChangesAsync();
-                //         return Ok(new { message = "Orden de compra actualizada correctamente" });
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         return StatusCode(500, new { message = "Error al actualizar", error = ex.Message });
-                //     }
-                // }
+                        return Ok(response);
+                }
 
                 /// <summary>
                 /// Eliminar orden de compra o compra
@@ -104,7 +83,7 @@ namespace proy_back_Qbd.Controllers
                 [HttpDelete("{id}")]
                 public async Task<IActionResult> DeleteOrdenCompra(int id)
                 {
-                        string? response = await _service.EliminarOrdenOCompraOCompra(id);
+                        string? response = await _serviceOC.EliminarOrdenOCompraOCompra(id);
                         if (response == null)
                                 return NotFound("Orden no encontrado");
 
