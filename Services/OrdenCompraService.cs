@@ -169,10 +169,10 @@ namespace proy_back_Qbd.Services
                     foreach (var item in request.Detalles)
                     {
                         DetalleCompra? detalleCompra = await _context.DetalleCompras.FindAsync(item.Id);
-                        _mapper.Map(request.Detalles, detalleCompra);
+                        _mapper.Map(item, detalleCompra);
                     }
 
-
+                await _context.SaveChangesAsync();
                 await tx.CommitAsync();
                 OrdenesYComprasRes? response = await ObtenerOrdenOCompra(idOC);
                 return response;
