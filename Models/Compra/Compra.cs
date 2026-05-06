@@ -32,8 +32,8 @@ namespace proy_back_Qbd.Models
         [Column("tipo_comprobante")] public string? TipoComprobante { get; set; }
         [Column("isc")] public int Isc { get; set; }
         [Column("icbp")] public int Icbp { get; set; }
-        [Column("valor")] public int Valor { get; set; }
-        [Column("total")] public int Total { get; set; }
+        [Column("valor")] public decimal Valor { get; set; }
+        [Column("total")] public decimal Total { get; set; }
         [Column("familia")] public required string Familia { get; set; }
 
         public Proveedor? Proveedor { get; set; }

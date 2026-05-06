@@ -28,6 +28,8 @@ namespace proy_back_Qbd.Models
         public required string Moneda { get; set; }
         public required decimal TipoCambio { get; set; }
         public required bool Igv { get; set; }
+        public required decimal Isc { get; set; }
+        public required decimal Icbp { get; set; }
         public required DateTime FechaCotizacion { get; set; }
         public required string Observaciones { get; set; }
         public required string Familia { get; set; }

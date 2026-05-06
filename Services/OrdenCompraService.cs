@@ -159,19 +159,39 @@ namespace proy_back_Qbd.Services
 
             try
             {
+                decimal valor = 0;
+                decimal total = 0;
                 if (request.DetallesNuevos != null)
+                {
+                    valor = request.DetallesNuevos.Sum(s => s.CostoTotal);
                     await _serviceDOC.CrearDetalleOrdenDeCompra(idOC, request.IdModificadorCreador, request.DetallesNuevos);
+                }
                 if (request.DetallesEliminados != null)
                     await _serviceDOC.EliminarDetalleOrdenDeCompra(request.DetallesEliminados);
-                Compra? compra = await _context.Compras.FindAsync(idOC);
-                _mapper.Map(request, compra);
+
                 if (request.Detalles != null)
+                {
+
                     foreach (var item in request.Detalles)
                     {
                         DetalleCompra? detalleCompra = await _context.DetalleCompras.FindAsync(item.Id);
-                        _mapper.Map(item, detalleCompra);
+                        if (detalleCompra != null)
+                        {
+                            _mapper.Map(item, detalleCompra);
+                        }
                     }
+                    valor += request.Detalles.Sum(s => s.CostoTotal);
+                }
 
+                total = request.Igv == true ? valor * 1.18m : valor;
+
+                Compra? compra = await _context.Compras.FindAsync(idOC);
+                if (compra != null)
+                {
+                    _mapper.Map(request, compra);
+                    compra.Valor = valor;
+                    compra.Total = total;
+                }
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
                 OrdenesYComprasRes? response = await ObtenerOrdenOCompra(idOC);
@@ -180,9 +200,8 @@ namespace proy_back_Qbd.Services
             catch
             {
                 await tx.RollbackAsync();
-                throw;
+                return null;
             }
-
 
         }
     }
