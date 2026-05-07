@@ -37,4 +37,8 @@ namespace proy_back_Qbd.Models
         public int ICBP { get; set; }
         public string? Guia { get; set; }
     }
+    public class DescripcionFacturaRes
+    {
+        public required string[] DescripcionFactura { get; set; }
+    }
 }

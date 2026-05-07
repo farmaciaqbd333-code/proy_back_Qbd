@@ -14,9 +14,12 @@ namespace proy_back_Qbd.Models
         public string? DescripcionFac { get; set; }
         public decimal? Cantidad { get; set; }
         public string? Um { get; set; }
-        public decimal? CostoUnitario { get; set; }
-        public decimal? CostoTotal { get; set; }
+        public DateTime? FechaElaboracion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
         public int ModificadorId { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
     }
     public class DetalleOrdenCompraCreateReq
     {
@@ -31,7 +34,7 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOrdenCompraUpdateReq
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public int IdInsumo { get; set; }
         public required string DescripcionFac { get; set; }
         public required decimal Cantidad { get; set; }

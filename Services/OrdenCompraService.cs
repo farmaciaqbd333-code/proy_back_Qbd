@@ -204,5 +204,18 @@ namespace proy_back_Qbd.Services
             }
 
         }
+
+        public async Task<DescripcionFacturaRes> DescripcionFactura(int idProveedor)
+        {
+            DescripcionFacturaRes response = new()
+            {
+                DescripcionFactura = await _context.DetalleCompras
+                .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
+                .Select(s => s.DescripcionFac)
+                .ToArrayAsync()
+            };
+
+            return response;
+        }
     }
 }

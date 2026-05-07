@@ -93,68 +93,7 @@ namespace proy_back_Qbd.Controllers
                 // [HttpPatch("detalles/{id}")]
                 // public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
                 // {
-                //     var orden = await _context.Compras
-                //         .Include(o => o.DetalleOrdenCompras)
-                //             .ThenInclude(d => d.Insumo)
-                //         .FirstOrDefaultAsync(o => o.Id == id);
 
-                //     if (orden == null)
-                //         return NotFound(new { message = "Orden de compra no encontrada" });
-
-                //     if (orden.DetalleOrdenCompras == null || !orden.DetalleOrdenCompras.Any())
-                //         return NotFound(new { message = "No hay detalles para esta orden" });
-
-                //     foreach (var patch in detallesPatch)
-                //     {
-                //         Buscar por ID primario de la fila, no por el insumo
-                //         var detalle = orden.DetalleOrdenCompras
-                //             .FirstOrDefault(d => d.Id == patch.Id);
-
-                //         if (detalle == null)
-                //             continue;
-
-                //         CAMBIAR EL INSUMO (si se seleccionó otro)
-                //         if (patch.IdInsumo.HasValue && patch.IdInsumo.Value > 0)
-                //         {
-                //             detalle.IdInsumo = patch.IdInsumo.Value;
-                //         }
-
-                //         Actualizar Descripción QBD (Maestro de Insumos)
-                //         if (patch.DescripcionQbd != null && detalle.Insumo != null)
-                //         {
-                //             detalle.Insumo.Descripcion = patch.DescripcionQbd;
-                //         }
-
-                //         Actualizar Descripción Factura (Local de la Orden)
-                //         if (patch.DescripcionFac != null)
-                //         {
-                //             detalle.DescripcionFac = patch.DescripcionFac;
-                //         }
-
-                //         if (patch.Cantidad.HasValue)
-                //             detalle.CantidadSolicitada = patch.Cantidad.Value;
-
-                //         if (patch.Um != null)
-                //             detalle.Um = patch.Um;
-
-                //         if (patch.CostoUnitario.HasValue)
-                //             detalle.CostoUnitario = patch.CostoUnitario.Value;
-
-                //         if (patch.CostoTotal.HasValue)
-                //             detalle.CostoTotal = patch.CostoTotal.Value;
-
-                //         detalle.IdModificador = patch.ModificadorId;
-                //         detalle.FechaModificacion = DateTime.UtcNow;
-                //     }
-                //     try
-                //     {
-                //         await _context.SaveChangesAsync();
-                //         return Ok(new { message = "Detalles actualizados correctamente" });
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         return StatusCode(500, new { message = "Error al actualizar detalles", error = ex.Message });
-                //     }
                 // }
                 // [HttpDelete("detalles/{idOrden}/{idInsumo}")]
                 // public async Task<IActionResult> DeleteDetalleOrdenCompra(int idOrden, int idInsumo)
@@ -259,6 +198,15 @@ namespace proy_back_Qbd.Controllers
                 //     await _context.SaveChangesAsync();
                 //     return Ok(new { message = "Estado de pago actualizado" });
                 // }
+                [HttpGet("descripciones/{proveedorId}")]
+                public async Task<ActionResult<DescripcionFacturaRes>> DescripcionFactura(int proveedorId)
+                {
+                        DescripcionFacturaRes response = await _serviceOC.DescripcionFactura(proveedorId);
+                        if (!response.DescripcionFactura.Any())
+                                return NotFound(new { message = "No se encontro alguna descripcion" });
+
+                        return Ok(response);
+                }
 
         }
 }
