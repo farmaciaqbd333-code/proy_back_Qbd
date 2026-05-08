@@ -255,5 +255,17 @@ namespace proy_back_Qbd.Services
 
             return response;
         }
+
+        public async Task<bool> ActualizarEstadoCompra(int OrdenCompraId, CambiarEstadoReq response)
+        {
+
+            Compra? compra = await _context.Compras.FindAsync(OrdenCompraId);
+            if (compra == null) return false;
+
+            compra.EstadoCompra = response.Estado;
+            compra.IdModificador = response.IdModificador;
+            await _context.SaveChangesAsync();
+            return true;
+        }
     }
 }

@@ -16,7 +16,7 @@ namespace proy_back_Qbd.Controllers
                         _serviceOC = service;
                 }
                 /// <summary>
-                /// Listar ordenes de compra y compras
+                /// Listar ordenes de compra
                 /// </summary>
                 [HttpGet]
                 [SwaggerResponse(200, "Obtención exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
@@ -32,7 +32,7 @@ namespace proy_back_Qbd.Controllers
                 }
 
                 /// <summary>
-                /// Obtener detalle de orden de compra o compra
+                /// Obtener detalle de orden de compra
                 /// </summary>
                 [HttpGet("detalle/{id}")]
                 [SwaggerResponse(200, "Obtención de detalle exitosa", typeof(ObtenerOrdenOCompraRes))]
@@ -80,7 +80,7 @@ namespace proy_back_Qbd.Controllers
                 }
 
                 /// <summary>
-                /// Eliminar orden de compra o compra
+                /// Eliminar orden de compra
                 /// </summary>
                 [HttpDelete("{id}")]
                 public async Task<IActionResult> DeleteOrdenCompra(int id)
@@ -106,30 +106,21 @@ namespace proy_back_Qbd.Controllers
                         return Ok(response);
                 }
 
-                // [HttpPatch("meson/{id}")]
-                // public async Task<IActionResult> PatchMesonOrdenCompra(int id, [FromBody] PatchMesonDto request)
-                // {
-                //     var orden = await _context.Compras.FindAsync(id);
-                //     if (orden == null) return NotFound(new { message = "Orden no encontrada" });
-
-                //     orden.EstadoMeson = request.EstadoMeson;
-                //     await _context.SaveChangesAsync();
-                //     return Ok(new { message = "Estado mesón actualizado" });
-                // }
-
-                // [HttpPatch("pago/{id}")]
-                // public async Task<IActionResult> PatchEstadoPago(int id, [FromBody] PatchPagoDto request)
-                // {
-                //     var orden = await _context.Compras.FindAsync(id);
-                //     if (orden == null) return NotFound(new { message = "Orden no encontrada" });
-
-                //     orden.Modalidad = request.EstadoPago;
-                //     await _context.SaveChangesAsync();
-                //     return Ok(new { message = "Estado de pago actualizado" });
-                // }
 
                 /// <summary>
-                /// Jalar descripcion de factura segun proveedor
+                /// Actualizar estado de compra
+                /// </summary>
+                [HttpPatch("estado/{idOrdenCompra}")]
+                public async Task<IActionResult> CambiarEstadoCompra(int idOrdenCompra, CambiarEstadoReq request)
+                {
+                        bool response = await _serviceOC.ActualizarEstadoCompra(idOrdenCompra, request);
+                        if (!response) return StatusCode(500, "No se actualizo");
+
+                        return Ok(new { message = "Estado de compra actualizado" });
+                }
+
+                /// <summary>
+                /// Jalar descripciones de los insumos segun el proveedor
                 /// </summary>
                 [HttpGet("descripciones/{proveedorId}")]
                 public async Task<ActionResult<DescripcionFacturaRes>> DescripcionFactura(int proveedorId)

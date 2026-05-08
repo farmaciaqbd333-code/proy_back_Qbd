@@ -52,13 +52,11 @@ namespace proy_back_Qbd.Models
     }
 
 
-    public class PatchMesonDto
+
+    public class CambiarEstadoReq
     {
-        public string EstadoMeson { get; set; }
-    }
-    public class PatchPagoDto
-    {
-        public string EstadoPago { get; set; }
+        public required string Estado { get; set; }
+        public int IdModificador { get; set; }
     }
 
 }
