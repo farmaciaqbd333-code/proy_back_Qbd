@@ -31,6 +31,18 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
             ;
+            CreateMap<ConvertirDetalleCompraReq, DetalleCompra>(MemberList.None)
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.DescripcionFac, opt => opt.MapFrom(src => src.DescripcionFactura))
+            .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
+            .ForMember(dest => dest.FechaFabricacion, opt => opt.MapFrom(src => src.FechaFabricacion))
+            .ForMember(dest => dest.FechaVencimiento, opt => opt.MapFrom(src => src.FechaVencimiento))
+            .ForMember(dest => dest.Coa, opt => opt.MapFrom(src => src.Coa))
+            .ForMember(dest => dest.Lote, opt => opt.MapFrom(src => src.Lote))
+            .ForMember(dest => dest.RegistroSanitario, opt => opt.MapFrom(src => src.RegistroSanitario))
+            .ForMember(dest => dest.Conformidad, opt => opt.MapFrom(src => src.Conformidad))
+            ;
 
         }
     }

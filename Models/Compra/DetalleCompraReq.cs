@@ -48,4 +48,17 @@ namespace proy_back_Qbd.Models
         public required string Estado { get; set; }
         public int ModificadorId { get; set; }
     }
+    public class ConvertirDetalleCompraReq
+    {
+        public int IdDetalleCompra { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public required int Cantidad { get; set; }
+        public required string Um { get; set; }
+        public required DateTime FechaFabricacion { get; set; }
+        public required DateTime FechaVencimiento { get; set; }
+        public required bool Coa { get; set; }
+        public required string Lote { get; set; }
+        public required string RegistroSanitario { get; set; }
+        public required bool Conformidad { get; set; }
+    }
 }

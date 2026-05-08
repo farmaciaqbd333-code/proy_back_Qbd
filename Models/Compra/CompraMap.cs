@@ -36,6 +36,17 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.IdModificador, opt => opt.MapFrom(src => src.IdModificadorCreador))
             .ForMember(dest => dest.Familia, opt => opt.MapFrom(src => src.Familia))
             ;
+            CreateMap<ConvertirCompraReq, Compra>(MemberList.None)
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.FechaFactura, opt => opt.MapFrom(src => src.FechaFactura))
+            .ForMember(dest => dest.SerieComprobante, opt => opt.MapFrom(src => src.SerieComprobante))
+            .ForMember(dest => dest.NumeroComprobante, opt => opt.MapFrom(src => src.NumeroComprobante))
+            .ForMember(dest => dest.Guia, opt => opt.MapFrom(src => src.Guia))
+            .ForMember(dest => dest.CodFacQBD, opt => opt.MapFrom(src => src.CodFacQBD))
+            .ForMember(dest => dest.ImgFactura, opt => opt.MapFrom(src => src.RutaFactura))
+            .ForMember(dest => dest.IdModificador, opt => opt.MapFrom(src => src.IdModificador))
+            .ForMember(dest => dest.EstadoCompra, opt => opt.MapFrom(src => "Procesado"));
+            ;
 
         }
     }

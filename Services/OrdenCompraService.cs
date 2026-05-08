@@ -108,7 +108,7 @@ namespace proy_back_Qbd.Services
                                 EstadoCompra = s.EstadoCompra
                             })
                             .OrderByDescending(o => o.Id)
-                            .FirstOrDefaultAsync();
+                            .FirstOrDefaultAsync(f => f.Id == id);
             if (response == null)
                 return null;
 
@@ -214,6 +214,44 @@ namespace proy_back_Qbd.Services
                 .Select(s => s.DescripcionFac)
                 .ToArrayAsync()
             };
+
+            return response;
+        }
+
+        public async Task<OrdenesYComprasRes?> ConvertirCompra(int ordenCompraId, ConvertirCompraReq request)
+        {
+            Compra? compra = await _context.Compras.FindAsync(ordenCompraId);
+            if (compra == null) return null;
+            _mapper.Map(request, compra);
+
+            List<DetalleCompra> detalleCompras = await _context.DetalleCompras
+            .Where(w => request.Detalles.Select(s => s.IdDetalleCompra).ToList().Contains(w.Id))
+            .ToListAsync();
+
+            decimal sumaTotal = 0m;
+            foreach (var item in detalleCompras)
+            {
+
+                ConvertirDetalleCompraReq? item2 = request.Detalles.FirstOrDefault(w => w.IdDetalleCompra == item.Id);
+                if (item2 != null)
+                {
+                    _mapper.Map(item2, item);
+                    item.IdModificador = request.IdModificador;
+                    item.CostoTotal = item.CostoUnitario * item2.Cantidad;
+                    sumaTotal += item.CostoTotal;
+                }
+
+            }
+            compra.Valor = sumaTotal;
+            if (compra.Igv)
+            {
+                compra.Total = sumaTotal * 1.18m;
+            }
+            await _context.SaveChangesAsync();
+
+            OrdenesYComprasRes? response = await ObtenerOrdenOCompra(ordenCompraId);
+            if (response == null)
+                return null;
 
             return response;
         }

@@ -64,7 +64,9 @@ namespace proy_back_Qbd.Controllers
 
                         return Created("Se ha creado la orden de compra", response);
                 }
-
+                /// <summary>
+                /// Actualizar orden de compra
+                /// </summary>
                 [HttpPatch("{id}")]
                 [SwaggerResponse(200, "Actualización exitosa", typeof(OrdenesYComprasRes))]
                 public async Task<ActionResult<OrdenesYComprasRes>> ActualizarOrdenCompra(int id, [FromBody] OrdenCompraUpdateReq request)
@@ -90,92 +92,19 @@ namespace proy_back_Qbd.Controllers
                         return Ok(response);
 
                 }
-                // [HttpPatch("detalles/{id}")]
-                // public async Task<IActionResult> PatchDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraPatchReq> detallesPatch)
-                // {
 
-                // }
-                // [HttpDelete("detalles/{idOrden}/{idInsumo}")]
-                // public async Task<IActionResult> DeleteDetalleOrdenCompra(int idOrden, int idInsumo)
-                // {
-                //     var detalle = await _context.DetalleOrdenesCompras
-                //         .FirstOrDefaultAsync(d => d.IdCompra == idOrden && d.IdInsumo == idInsumo);
+                /// <summary>
+                /// Convertir a compra
+                /// </summary>
+                [HttpPatch("meson/{ordenCompraId}")]
+                [SwaggerResponse(200, "Creación exitosa", typeof(OrdenesYComprasRes))]
+                public async Task<ActionResult<OrdenesYComprasRes>> ConvertirCompra(int ordenCompraId, ConvertirCompraReq request)
+                {
+                        OrdenesYComprasRes? response = await _serviceOC.ConvertirCompra(ordenCompraId, request);
+                        if (response == null) return NotFound(new { message = "Compra no encontrada" });
 
-                //     if (detalle == null)
-                //         return NotFound(new { message = "Detalle no encontrado" });
-
-                //     _context.DetalleOrdenesCompras.Remove(detalle);
-
-                //     try
-                //     {
-                //         await _context.SaveChangesAsync();
-                //         return Ok(new { message = "Detalle eliminado correctamente" });
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         return StatusCode(500, new { message = "Error al eliminar detalle", error = ex.Message });
-                //     }
-                // }
-                // [HttpPost("detalles/{id}")]
-                // public async Task<IActionResult> CreateDetallesOrdenCompra(int id, [FromBody] List<DetalleOrdenCompraCreateReq> detalles)
-                // {
-                //     var orden = await _context.Compras
-                //         .Include(o => o.DetalleOrdenCompras)
-                //         .FirstOrDefaultAsync(o => o.Id == id);
-
-                //     if (orden == null)
-                //         return NotFound(new { message = "Orden de compra no encontrada" });
-
-                //     var nuevosDetalles = new List<DetalleCompra>();
-
-                //     foreach (var item in detalles)
-                //     {
-                //         Validación básica
-                //         if (item.Cantidad <= 0 || item.CostoUnitario < 0)
-                //             return BadRequest(new { message = "Cantidad o costo inválido" });
-
-                //         Validar duplicados (opcional)
-                //         if (orden.DetalleOrdenCompras != null)
-                //         {
-                //             var existe = orden.DetalleOrdenCompras
-                //             .Any(d => d.IdInsumo == item.IdInsumo);
-
-                //             if (existe)
-                //                 return Ok(new { message = "Ya existe este Insumo" });
-                //         }
-
-                //         var detalle = new DetalleCompra
-                //         {
-                //             IdCompra = id,
-                //             IdInsumo = item.IdInsumo,
-                //             DescripcionFac = item.DescripcionFac,
-                //             CantidadSolicitada = item.Cantidad,
-                //             Um = item.Um,
-                //             CostoUnitario = item.CostoUnitario,
-                //             CostoTotal = item.CostoTotal,
-                //             IdCreador = item.CreadorId,
-                //             IdModificador = item.CreadorId,
-                //             FechaModificacion = DateTime.UtcNow
-                //         };
-
-                //         nuevosDetalles.Add(detalle);
-                //     }
-
-                //     if (!nuevosDetalles.Any())
-                //         return BadRequest(new { message = "No hay detalles válidos para insertar" });
-
-                //     await _context.DetalleOrdenesCompras.AddRangeAsync(nuevosDetalles);
-
-                //     try
-                //     {
-                //         await _context.SaveChangesAsync();
-                //         return Ok(new { message = "Detalles creados correctamente" });
-                //     }
-                //     catch (Exception ex)
-                //     {
-                //         return StatusCode(500, new { message = "Error al crear detalles", error = ex.Message });
-                //     }
-                // }
+                        return Ok(response);
+                }
 
                 // [HttpPatch("meson/{id}")]
                 // public async Task<IActionResult> PatchMesonOrdenCompra(int id, [FromBody] PatchMesonDto request)
@@ -198,6 +127,10 @@ namespace proy_back_Qbd.Controllers
                 //     await _context.SaveChangesAsync();
                 //     return Ok(new { message = "Estado de pago actualizado" });
                 // }
+
+                /// <summary>
+                /// Jalar descripcion de factura segun proveedor
+                /// </summary>
                 [HttpGet("descripciones/{proveedorId}")]
                 public async Task<ActionResult<DescripcionFacturaRes>> DescripcionFactura(int proveedorId)
                 {
