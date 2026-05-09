@@ -116,7 +116,7 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
-        public async Task<int?> CrearOrdenDeCompra(OrdenCompraCreateReq request)
+        public async Task<int?> CrearOrdenDeCompra(OrdenCreateReq request)
         {
             try
             {
@@ -153,7 +153,7 @@ namespace proy_back_Qbd.Services
             return "Orden compra eliminado exitosamente";
         }
 
-        public async Task<OrdenesYComprasRes?> ActualizarOrdenDeCompra(int idOC, OrdenCompraUpdateReq request)
+        public async Task<OrdenesYComprasRes?> ActualizarOrdenDeCompra(int idOC, OrdenUpdateReq request)
         {
 
             using var tx = await _context.Database.BeginTransactionAsync();
@@ -219,7 +219,7 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
-        public async Task<OrdenesYComprasRes?> ConvertirCompra(int ordenCompraId, ConvertirCompraReq request)
+        public async Task<OrdenesYComprasRes?> ConvertirCompra(int ordenCompraId, ConvertirACompraReq request)
         {
             //Actualizar a compra
             Compra? compra = await _context.Compras.FindAsync(ordenCompraId);
@@ -275,7 +275,7 @@ namespace proy_back_Qbd.Services
         }
 
         public async Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId)
-        {            
+        {
             OrdenMesonRes? response = await _context.Compras
             .Where(w => w.Id == ordenCompraId)
             .Select(s => new OrdenMesonRes

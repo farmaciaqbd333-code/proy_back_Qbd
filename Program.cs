@@ -33,8 +33,8 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<InsumoMap>();
     cfg.AddProfile<EmpaqueMap>();
     cfg.AddProfile<ProductoMap>();
-    cfg.AddProfile<CompraMap>();
-    cfg.AddProfile<DetalleCompraMap>();
+    cfg.AddProfile<OrdenCompraMap>();
+    cfg.AddProfile<DetalleOrdenCompraMap>();
 });
 
 builder.Configuration
@@ -61,6 +61,7 @@ builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
 builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
 builder.Services.AddScoped<IDetalleOrdenCompraService, DetalleOrdenCompraService>();
+builder.Services.AddScoped<ICompraService, CompraService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models
 {
-    public class DetalleOrdenCompraPatchReq
+    public class DetalleOrdenPatchReq
     {
         public int Id { get; set; } // ID primario de la fila en la DB
         public int? IdInsumo { get; set; } // ID del insumo (opcional si se quiere cambiar)
@@ -21,7 +21,7 @@ namespace proy_back_Qbd.Models
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
     }
-    public class DetalleOrdenCompraCreateReq
+    public class DetalleOrdenCreateReq
     {
         public int IdInsumo { get; set; }
         public required string DescripcionFac { get; set; }
@@ -32,7 +32,7 @@ namespace proy_back_Qbd.Models
         public required int IdCreador { get; set; }
         public required int IdFamilia { get; set; }
     }
-    public class DetalleOrdenCompraUpdateReq
+    public class DetalleOrdenUpdateReq
     {
         public int Id { get; set; }
         public int IdInsumo { get; set; }

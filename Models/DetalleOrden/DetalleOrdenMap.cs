@@ -6,12 +6,12 @@ using AutoMapper;
 
 namespace proy_back_Qbd.Models
 {
-    public class DetalleCompraMap : Profile
+    public class DetalleOrdenCompraMap : Profile
     {
-        public DetalleCompraMap()
+        public DetalleOrdenCompraMap()
         {
             // Mapeo entre ApoderadoCreate y Apoderado
-            CreateMap<DetalleOrdenCompraCreateReq, DetalleCompra>(MemberList.None)
+            CreateMap<DetalleOrdenCreateReq, DetalleCompra>(MemberList.None)
             .ForMember(dest => dest.IdInsumo, opt => opt.MapFrom(src => src.IdInsumo))
             .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.IdFamilia))
             .ForMember(dest => dest.DescripcionFac, opt => opt.MapFrom(src => src.DescripcionFac))
@@ -21,7 +21,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
             .ForMember(dest => dest.IdCreador, opt => opt.MapFrom(src => src.IdCreador))
             ;
-            CreateMap<DetalleOrdenCompraUpdateReq, DetalleCompra>(MemberList.None)
+            CreateMap<DetalleOrdenUpdateReq, DetalleCompra>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdInsumo, opt => opt.MapFrom(src => src.IdInsumo))
             .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.IdFamilia))

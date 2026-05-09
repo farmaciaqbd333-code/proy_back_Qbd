@@ -41,6 +41,20 @@ namespace proy_back_Qbd.Models
     {
         public required string[] DescripcionFactura { get; set; }
     }
+    public class OrdenesEnviadasRes
+    {
+        public int Id { get; set; }
+        public required string CUO { get; set; }
+        public required DateTime FechaCotizacion { get; set; }
+        public string? Factura { get; set; }
+        public required string Guia { get; set; }
+        public string? CodFacQbd { get; set; }
+        public required string NumProvedor { get; set; }
+        public required string NombreProveedor { get; set; }
+        public required string EstadoCompra { get; set; }
+        public required string Usuario { get; set; }
+        public required string Familia { get; set; }
+    }
     public class OrdenMesonRes
     {
         public int Id { get; set; }
@@ -53,4 +67,5 @@ namespace proy_back_Qbd.Models
         public required string Familia { get; set; }
         public List<DetalleOrdenMesonRes>? Lista { get; set; }
     }
+
 }

@@ -52,7 +52,7 @@ namespace proy_back_Qbd.Controllers
                 /// </summary>
                 [HttpPost]
                 [SwaggerResponse(200, "Creación exitosa", typeof(OrdenesYComprasRes))]
-                public async Task<ActionResult<OrdenesYComprasRes>> CrearOrdenesCompra(OrdenCompraCreateReq request)
+                public async Task<ActionResult<OrdenesYComprasRes>> CrearOrdenesCompra(OrdenCreateReq request)
                 {
                         int? id = await _serviceOC.CrearOrdenDeCompra(request);
                         if (id == null)
@@ -69,7 +69,7 @@ namespace proy_back_Qbd.Controllers
                 /// </summary>
                 [HttpPatch("{id}")]
                 [SwaggerResponse(200, "Actualización exitosa", typeof(OrdenesYComprasRes))]
-                public async Task<ActionResult<OrdenesYComprasRes>> ActualizarOrdenCompra(int id, [FromBody] OrdenCompraUpdateReq request)
+                public async Task<ActionResult<OrdenesYComprasRes>> ActualizarOrdenCompra(int id, [FromBody] OrdenUpdateReq request)
                 {
                         OrdenesYComprasRes? response = await _serviceOC.ActualizarOrdenDeCompra(id, request);
 
@@ -98,7 +98,7 @@ namespace proy_back_Qbd.Controllers
                 /// </summary>
                 [HttpPatch("meson/{ordenCompraId}")]
                 [SwaggerResponse(200, "Creación exitosa", typeof(OrdenesYComprasRes))]
-                public async Task<ActionResult<OrdenesYComprasRes>> ConvertirCompra(int ordenCompraId, ConvertirCompraReq request)
+                public async Task<ActionResult<OrdenesYComprasRes>> ConvertirCompra(int ordenCompraId, ConvertirACompraReq request)
                 {
                         OrdenesYComprasRes? response = await _serviceOC.ConvertirCompra(ordenCompraId, request);
                         if (response == null) return NotFound(new { message = "Compra no encontrada" });
