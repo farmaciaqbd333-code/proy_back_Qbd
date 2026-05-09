@@ -18,5 +18,6 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<OrdenesYComprasRes?> ConvertirCompra(int ordenCompraId, ConvertirCompraReq request);
         Task<DescripcionFacturaRes> DescripcionFactura(int proveedorI);
         Task<bool> ActualizarEstadoCompra(int OrdenCompraId, CambiarEstadoReq estado);
+        Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId);
     }
 }

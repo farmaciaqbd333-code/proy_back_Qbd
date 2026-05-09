@@ -35,6 +35,7 @@ namespace proy_back_Qbd.Models
         [Column("valor")] public decimal Valor { get; set; }
         [Column("total")] public decimal Total { get; set; }
         [Column("familia")] public required string Familia { get; set; }
+        
 
         public Proveedor? Proveedor { get; set; }
         public Sede? Sede { get; set; }

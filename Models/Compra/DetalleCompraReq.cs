@@ -61,4 +61,17 @@ namespace proy_back_Qbd.Models
         public required string RegistroSanitario { get; set; }
         public required bool Conformidad { get; set; }
     }
+    public class DetalleOrdenMesonRes
+    {
+        public int Id { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public bool? Conformidad { get; set; }
+    }
 }

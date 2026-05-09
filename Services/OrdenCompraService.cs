@@ -7,6 +7,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces;
+using proy_back_Qbd.Util;
 using Proy_back_QBD.Data;
 
 namespace proy_back_Qbd.Services
@@ -220,35 +221,41 @@ namespace proy_back_Qbd.Services
 
         public async Task<OrdenesYComprasRes?> ConvertirCompra(int ordenCompraId, ConvertirCompraReq request)
         {
+            //Actualizar a compra
             Compra? compra = await _context.Compras.FindAsync(ordenCompraId);
             if (compra == null) return null;
             _mapper.Map(request, compra);
 
+            //Actualizar detalles de la compra
             List<DetalleCompra> detalleCompras = await _context.DetalleCompras
             .Where(w => request.Detalles.Select(s => s.IdDetalleCompra).ToList().Contains(w.Id))
             .ToListAsync();
-
             decimal sumaTotal = 0m;
             foreach (var item in detalleCompras)
             {
-
                 ConvertirDetalleCompraReq? item2 = request.Detalles.FirstOrDefault(w => w.IdDetalleCompra == item.Id);
                 if (item2 != null)
                 {
+                    var count = await _context.DetalleCompras
+                                .Where(w => w.IdFamilia == item.IdFamilia)
+                                .CountAsync();
+
                     _mapper.Map(item2, item);
+                    item.Reg = Alfanumerico.ConvertToBase36(count + 1);
                     item.IdModificador = request.IdModificador;
                     item.CostoTotal = item.CostoUnitario * item2.Cantidad;
                     sumaTotal += item.CostoTotal;
                 }
-
             }
+
+            //Actualizar total de la compra
             compra.Valor = sumaTotal;
             if (compra.Igv)
             {
                 compra.Total = sumaTotal * 1.18m;
             }
             await _context.SaveChangesAsync();
-
+            //Devolver datos actualizados de la compra
             OrdenesYComprasRes? response = await ObtenerOrdenOCompra(ordenCompraId);
             if (response == null)
                 return null;
@@ -261,11 +268,45 @@ namespace proy_back_Qbd.Services
 
             Compra? compra = await _context.Compras.FindAsync(OrdenCompraId);
             if (compra == null) return false;
-
             compra.EstadoCompra = response.Estado;
             compra.IdModificador = response.IdModificador;
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId)
+        {
+            
+            OrdenMesonRes? response = await _context.Compras
+            .Where(w => w.Id == ordenCompraId)
+            .Select(s => new OrdenMesonRes
+            {
+                Id = s.Id,
+                CUO = "BDCO" + s.Id,
+                FechaEmision = s.FechaFactura,
+                SerieComprobante = s.SerieComprobante,
+                NumeroComprobante = s.NumeroComprobante,
+                Guia = s.Guia,
+                CodFacQBD = s.CodFacQBD,
+                Familia = s.Familia,
+                Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
+                {
+                    Id = s.Id,
+                    Codigo = "MP-QBD-" + s.IdInsumo,
+                    Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                    DescripcionFactura = s.DescripcionFac,
+                    Cantidad = s.CantidadSolicitada,
+                    Um = s.Um,
+                    Coa = s.Coa,
+                    Lote = s.Lote,
+                    RegistroSanitario = s.RegistroSanitario,
+                    Conformidad = s.Conformidad
+                }).ToList() : null
+            }).FirstOrDefaultAsync();
+
+            if (response == null) return null;
+
+            return response;
         }
     }
 }

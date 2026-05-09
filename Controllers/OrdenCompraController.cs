@@ -131,6 +131,19 @@ namespace proy_back_Qbd.Controllers
 
                         return Ok(response);
                 }
+                /// <summary>
+                /// Obtener datos para meson
+                /// </summary>
+                [HttpGet("meson/{ordenId}")]
+                public async Task<ActionResult<OrdenMesonRes>> ObtenerDatosMeson(int ordenId)
+                {
+                        OrdenMesonRes? response = await _serviceOC.ObtenerCompraMeson(ordenId);
+
+                        if (response == null)
+                                return NotFound(new { message = "No se encontro alguna descripcion" });
+
+                        return Ok(response);
+                }
 
         }
 }
