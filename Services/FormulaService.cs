@@ -258,18 +258,16 @@ namespace Proy_back_QBD.Services
         }
         public async Task<Formula?> ActualizarLab(int formulaId, int sedeId, FormulaUpdLabReq request)
         {
-
             Formula? formula = await _context.Formulas
             .Include(i => i.Laboratorio)
             .Include(i => i.Pedido)
             .FirstOrDefaultAsync(foda => foda.Id == formulaId && foda.SedeId == sedeId);
 
-            if (formula == null)
-            {
-                return null;
-            }
+            if (formula == null || formula.Pedido == null || formula.Laboratorio == null) return null;
+
             Pedido pedido = formula.Pedido;
             pedido.Total -= formula.Costo * formula.Cantidad;
+            pedido.Saldo -= formula.Costo * formula.Cantidad;
 
             formula.Costo = request.Costo;
             formula.Cantidad = request.Cantidad;
@@ -286,6 +284,7 @@ namespace Proy_back_QBD.Services
             formula.ModificadorId = request.ModificadorId;
 
             pedido.Total += formula.Costo * formula.Cantidad;
+            pedido.Saldo += formula.Costo * formula.Cantidad;
             await _context.SaveChangesAsync();
 
             return formula;

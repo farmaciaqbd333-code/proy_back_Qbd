@@ -275,8 +275,7 @@ namespace proy_back_Qbd.Services
         }
 
         public async Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId)
-        {
-            
+        {            
             OrdenMesonRes? response = await _context.Compras
             .Where(w => w.Id == ordenCompraId)
             .Select(s => new OrdenMesonRes
