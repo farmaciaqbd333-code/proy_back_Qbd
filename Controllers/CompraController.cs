@@ -24,10 +24,19 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar para tabla meson
         /// </summary>
-        [HttpGet()]
+        [HttpGet("meson")]
         public async Task<ActionResult<List<OrdenesEnviadasRes>>> ListarOrdenesEnviadasRes()
         {
-            List<OrdenesEnviadasRes> response = await _service.ListaOrdenesEnviadas();
+            List<OrdenesEnviadasRes> response = await _service.ListaOrdenesEnviadas("ENVIADO");
+            if (response.Count == 0)
+                return NotFound(new { message = "No se encontro ordenes" });
+
+            return Ok(response);
+        }
+        [HttpGet("laboratorio")]
+        public async Task<ActionResult<List<OrdenesEnviadasRes>>> ListarOrdenesLaboratorioRes()
+        {
+            List<OrdenesEnviadasRes> response = await _service.ListaOrdenesEnviadas("LABORATORIO");
             if (response.Count == 0)
                 return NotFound(new { message = "No se encontro ordenes" });
 

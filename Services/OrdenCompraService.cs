@@ -241,7 +241,6 @@ namespace proy_back_Qbd.Services
                                 .CountAsync();
 
                     _mapper.Map(item2, item);
-                    item.Reg = Alfanumerico.ConvertToBase36(count + 1);
                     item.IdModificador = request.IdModificador;
                     item.CostoTotal = item.CostoUnitario * item2.Cantidad;
                     sumaTotal += item.CostoTotal;

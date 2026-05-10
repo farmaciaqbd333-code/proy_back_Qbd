@@ -22,10 +22,10 @@ namespace proy_back_Qbd.Services
             _mapper = mapper;
         }
 
-        public async Task<List<OrdenesEnviadasRes>> ListaOrdenesEnviadas()
+        public async Task<List<OrdenesEnviadasRes>> ListaOrdenesEnviadas(string cadena)
         {
             List<OrdenesEnviadasRes> ordenesEnviadasRes = await _context.Compras
-            .Where(w => w.EstadoCompra == "ENVIADO")
+            .Where(w => w.EstadoCompra == cadena)
             .Select(s => new OrdenesEnviadasRes
             {
                 Id = s.Id,
