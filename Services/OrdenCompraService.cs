@@ -227,9 +227,36 @@ namespace proy_back_Qbd.Services
             _mapper.Map(request, compra);
 
             //Actualizar detalles de la compra
+            var idsDetalleCompra = request.Detalles
+                                    .Select(s => s.IdDetalleCompra);
+
             List<DetalleCompra> detalleCompras = await _context.DetalleCompras
-            .Where(w => request.Detalles.Select(s => s.IdDetalleCompra).ToList().Contains(w.Id))
+                .Where(w => idsDetalleCompra.Contains(w.Id))
+                .ToListAsync();
+
+            // Agrupacion por familias
+            List<IdFamiliasRes> idFamilias = detalleCompras
+            .Where(w => w.IdFamilia != null)
+            .GroupBy(g => g.IdFamilia).Select(s => new IdFamiliasRes()
+            {
+                IdFamilia = s.Key ?? 0,
+                Cantidad = s.Count()
+            }).ToList();
+
+            IEnumerable<IdFamiliasMaxRes> ultimosId = await _context.DetalleCompras
+            .GroupBy(g => g.IdFamilia)
+            .Select(s => new IdFamiliasMaxRes
+            {
+                IdFamilia = s.Key ?? 0,
+                Valor = s.Max(x => x.Reg) ?? 0
+            })
             .ToListAsync();
+
+            Console.WriteLine("GRUPO ID FAMILIAS");
+            foreach (var item in idFamilias)
+            {
+                Console.WriteLine($"IdFamilia: {item.IdFamilia}, Cantidad: {item.Cantidad}");
+            }
             decimal sumaTotal = 0m;
             foreach (var item in detalleCompras)
             {

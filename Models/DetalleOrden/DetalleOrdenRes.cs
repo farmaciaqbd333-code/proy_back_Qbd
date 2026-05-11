@@ -22,4 +22,14 @@ namespace proy_back_Qbd.Models
         public string? RegistroSanitario { get; set; }
         public bool Conforme { get; set; }
     }
+    public class IdFamiliasRes
+    {
+        public int IdFamilia { get; set; } // ID primario de la fila
+        public int Cantidad { get; set; }
+    }
+    public class IdFamiliasMaxRes
+    {
+        public int IdFamilia { get; set; } // ID primario de la fila
+        public int Valor { get; set; }
+    }
 }
