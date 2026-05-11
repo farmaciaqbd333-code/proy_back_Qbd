@@ -79,6 +79,7 @@ namespace proy_back_Qbd.Services
                                 CodFacQbd = s.CodFacQBD,
                                 Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
+                                RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
                                 Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
                                 EstadoCompra = s.EstadoCompra
@@ -104,6 +105,7 @@ namespace proy_back_Qbd.Services
                                 CodFacQbd = s.CodFacQBD,
                                 Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
+                                RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
                                 Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
                                 EstadoCompra = s.EstadoCompra
@@ -287,6 +289,15 @@ namespace proy_back_Qbd.Services
                 return null;
 
             return response;
+        }
+
+        public async Task<bool> ActualizarRutaFactura(int id, UpdateRutaFacturaReq request)
+        {
+            Compra? compra = await _context.Compras.FindAsync(id);
+            if (compra == null) return false;
+            compra.ImgFactura = request.RutaFactura;
+            await _context.SaveChangesAsync();
+            return true;
         }
 
         public async Task<bool> ActualizarEstadoCompra(int OrdenCompraId, CambiarEstadoReq response)

@@ -31,7 +31,9 @@ namespace proy_back_Qbd.Services
                 Id = s.Id,
                 CUO = "BDCO" + s.Id,
                 FechaCotizacion = s.FechaCotizacion,
-                Factura = s.SerieComprobante + s.NumeroComprobante,
+                SerieComprobante = s.SerieComprobante,
+                NumeroComprobante = s.NumeroComprobante,
+                Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
                 Guia = s.Guia ?? "",
                 CodFacQbd = s.CodFacQBD,
                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
@@ -39,6 +41,7 @@ namespace proy_back_Qbd.Services
                 EstadoCompra = s.EstadoCompra,
                 Familia = s.Familia,
                 Usuario = s.Creador != null && s.Creador.Codigo != null ? s.Creador.Codigo : "",
+                RutaFactura = s.ImgFactura,
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();

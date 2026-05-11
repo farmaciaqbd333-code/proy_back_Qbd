@@ -120,6 +120,18 @@ namespace proy_back_Qbd.Controllers
                 }
 
                 /// <summary>
+                /// Actualizar ruta de la factura
+                /// </summary>
+                [HttpPatch("ruta-factura/{id}")]
+                public async Task<IActionResult> ActualizarRutaFactura(int id, UpdateRutaFacturaReq request)
+                {
+                        bool response = await _serviceOC.ActualizarRutaFactura(id, request);
+                        if (!response) return NotFound(new { message = "Orden no encontrada" });
+
+                        return Ok(new { message = "Ruta de factura actualizada" });
+                }
+
+                /// <summary>
                 /// Jalar descripciones de los insumos segun el proveedor
                 /// </summary>
                 [HttpGet("descripciones/{proveedorId}")]

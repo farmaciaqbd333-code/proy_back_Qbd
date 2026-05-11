@@ -30,7 +30,7 @@ namespace proy_back_Qbd.Models
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
         public required int IdCreador { get; set; }
-        public required int IdFamilia { get; set; }
+        public int? IdFamilia { get; set; }
     }
     public class DetalleOrdenUpdateReq
     {
@@ -41,7 +41,7 @@ namespace proy_back_Qbd.Models
         public required string Um { get; set; }
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
-        public required int IdFamilia { get; set; }
+        public int? IdFamilia { get; set; }
     }
     public class OrdenCompraMesonReq
     {
