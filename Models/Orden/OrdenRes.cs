@@ -19,6 +19,7 @@ namespace proy_back_Qbd.Models
         public string? CodFacQbd { get; set; }
         public required string Familia { get; set; }
         public string? Factura { get; set; }
+        public string? RutaFactura { get; set; }
         public required string EstadoPago { get; set; }
         public required string Usuario { get; set; }
     }

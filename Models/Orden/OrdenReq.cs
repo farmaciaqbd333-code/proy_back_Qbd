@@ -45,7 +45,6 @@ namespace proy_back_Qbd.Models
         public required string NumeroComprobante { get; set; }
         public required string Guia { get; set; }
         public required string CodFacQBD { get; set; }
-        public required string RutaFactura { get; set; }
         public required DateTime FechaFactura { get; set; }
         public required int IdModificador { get; set; }
         public required IEnumerable<ConvertirDetalleCompraReq> Detalles { get; set; }
@@ -56,6 +55,9 @@ namespace proy_back_Qbd.Models
         public required string Estado { get; set; }
         public int IdModificador { get; set; }
     }
-    
 
+    public class UpdateRutaFacturaReq
+    {
+        public required string RutaFactura { get; set; }
+    }
 }
