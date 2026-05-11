@@ -55,6 +55,7 @@ namespace proy_back_Qbd.Models
         public required string EstadoCompra { get; set; }
         public required string Usuario { get; set; }
         public required string Familia { get; set; }
+        public string? RutaFactura { get; set; }
     }
     public class OrdenMesonRes
     {
