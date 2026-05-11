@@ -39,6 +39,7 @@ namespace proy_back_Qbd.Services
                 EstadoCompra = s.EstadoCompra,
                 Familia = s.Familia,
                 Usuario = s.Creador != null && s.Creador.Codigo != null ? s.Creador.Codigo : "",
+                RutaFactura = s.ImgFactura,
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();
