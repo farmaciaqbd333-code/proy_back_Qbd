@@ -309,6 +309,8 @@ namespace proy_back_Qbd.Services
                     Coa = s.Coa,
                     Lote = s.Lote,
                     RegistroSanitario = s.RegistroSanitario,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
                     Conformidad = s.Conformidad
                 }).ToList() : null
             }).FirstOrDefaultAsync();

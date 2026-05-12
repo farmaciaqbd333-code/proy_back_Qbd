@@ -72,6 +72,8 @@ namespace proy_back_Qbd.Models
         public bool Coa { get; set; }
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
         public bool? Conformidad { get; set; }
     }
 }
