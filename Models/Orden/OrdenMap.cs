@@ -14,6 +14,8 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Moneda, opt => opt.MapFrom(src => src.Moneda))
             .ForMember(dest => dest.TipoCambio, opt => opt.MapFrom(src => src.TipoCambio))
             .ForMember(dest => dest.Igv, opt => opt.MapFrom(src => src.Igv))
+            .ForMember(dest => dest.Isc, opt => opt.MapFrom(src => src.Isc))
+            .ForMember(dest => dest.Icbp, opt => opt.MapFrom(src => src.Icbp))
             .ForMember(dest => dest.FechaCotizacion, opt => opt.MapFrom(src => src.FechaCotizacion))
             .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Observaciones))
             .ForMember(dest => dest.IdSede, opt => opt.MapFrom(src => src.IdSede))
@@ -44,7 +46,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Guia, opt => opt.MapFrom(src => src.Guia))
             .ForMember(dest => dest.CodFacQBD, opt => opt.MapFrom(src => src.CodFacQBD))
             .ForMember(dest => dest.IdModificador, opt => opt.MapFrom(src => src.IdModificador))
-            .ForMember(dest => dest.EstadoCompra, opt => opt.MapFrom(src => "Procesado"));
+            .ForMember(dest => dest.EstadoCompra, opt => opt.MapFrom(src => "Laboratorio"));
             ;
 
         }

@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.ElaboracionBase;
 using proy_back_Qbd.Models.NotaSalida;
-using proy_back_Qbd.Models.Paquete;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
@@ -62,7 +61,7 @@ namespace Proy_back_QBD.Data
                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ProveedoresModificados).HasForeignKey(hfk => hfk.IdModificador);
                e.Property(p => p.Id).ValueGeneratedOnAdd();
                e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
-               e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();               
+               e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
            });
 
             modelBuilder.Entity<ElaboracionBase>((e) =>
@@ -79,6 +78,10 @@ namespace Proy_back_QBD.Data
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.PaquetesCreados).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.PaquetesModificados).HasForeignKey(hfk => hfk.IdModificador);
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
+                e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
+                e.HasOne(ho => ho.DetalleCompra).WithOne(wm => wm.Paquete).HasForeignKey<Paquete>(hfk => hfk.IdDetalleCompra).IsRequired(false);
             });
             modelBuilder.Entity<DetalleNotaSalida>((e) =>
             {
@@ -92,9 +95,10 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Familia).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFamilia);
-                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo);
+                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
+                e.HasOne(ho => ho.Paquete).WithOne(wm => wm.DetalleCompra).HasForeignKey<DetalleCompra>(hfk => hfk.IdPaquete).IsRequired(false);
             });
 
             modelBuilder.Entity<Compra>((e) =>

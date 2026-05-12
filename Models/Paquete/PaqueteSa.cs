@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
-namespace proy_back_Qbd.Models.Paquete
+namespace proy_back_Qbd.Models
 {
     [Table("paquete_sa")]
     public class PaqueteSa

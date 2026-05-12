@@ -18,6 +18,8 @@ namespace proy_back_Qbd.Models
         public required string Familia { get; set; }
         public required int IdSede { get; set; }
         public required int IdCreador { get; set; }
+        public required decimal Isc { get; set; }
+        public required decimal Icbp { get; set; }
         public required IEnumerable<DetalleOrdenCreateReq> Detalle { get; set; }
     }
 

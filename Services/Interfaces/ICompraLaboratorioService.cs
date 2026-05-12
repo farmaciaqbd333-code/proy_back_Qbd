@@ -6,8 +6,8 @@ using proy_back_Qbd.Models;
 
 namespace proy_back_Qbd.Services.Interfaces
 {
-    public interface ICompraService
+    public interface ICompraLaboratorioService
     {
-        Task<List<OrdenesEnviadasRes>> ListaOrdenesEnviadas(string[] cadena);
+        Task<ObtenerCompraLabRes?> ObtenerCompraLaboratorio(int IdCompra);
     }
 }
