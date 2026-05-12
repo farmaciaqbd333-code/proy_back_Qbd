@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.ElaboracionBase;
 using proy_back_Qbd.Models.NotaSalida;
-using proy_back_Qbd.Models.Paquete;
 
 namespace Proy_back_QBD.Models
 {
