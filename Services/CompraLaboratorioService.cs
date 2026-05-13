@@ -32,7 +32,7 @@ namespace proy_back_Qbd.Services
                 Detalles = s.DetalleCompras != null ? s.DetalleCompras.Select(s2 => new ObtenerDetalleCompraLabRes()
                 {
                     Id = s2.Id,
-                    Reg = s2.Reg != null ? s2.Reg.Value : 0,
+                    Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4,'0'): "",
                     Codigo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     Coa = s2.Coa,
