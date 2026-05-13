@@ -11,12 +11,12 @@ using proy_back_Qbd.Services.Interfaces;
 namespace proy_back_Qbd.Controllers
 {
     [Route("api/[controller]")]
-    public class CompraLaboratorioController : Controller
+    public class CompraLabController : Controller
     {
         private readonly ICompraService _service;
         private readonly ICompraLaboratorioService _serviceCompraLab;
 
-        public CompraLaboratorioController(ICompraService service, ICompraLaboratorioService serviceCompraLab)
+        public CompraLabController(ICompraService service, ICompraLaboratorioService serviceCompraLab)
         {
             _service = service;
             _serviceCompraLab = serviceCompraLab;
@@ -42,6 +42,18 @@ namespace proy_back_Qbd.Controllers
             ObtenerCompraLabRes? response = await _serviceCompraLab.ObtenerCompraLaboratorio(idCompra);
             if (response == null)
                 return NotFound(new { message = "No se encontro detalles" });
+
+            return Ok(response);
+        }
+        /// <summary>
+        /// Actualizar detalle de laboratorio
+        /// </summary>
+        [HttpPatch("{idCompra}")]
+        public async Task<ActionResult<ObtenerCompraLabRes>> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
+        {
+            int? response = await _serviceCompraLab.ActualizarDetalleLab(idCompra, request);
+            if (response == null)
+                return NotFound(new { message = "No se encontro Compra" });
 
             return Ok(response);
         }

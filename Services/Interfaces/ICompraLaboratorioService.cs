@@ -9,5 +9,6 @@ namespace proy_back_Qbd.Services.Interfaces
     public interface ICompraLaboratorioService
     {
         Task<ObtenerCompraLabRes?> ObtenerCompraLaboratorio(int IdCompra);
+        Task<int?> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request);
     }
 }

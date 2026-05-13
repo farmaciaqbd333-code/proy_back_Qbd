@@ -12,7 +12,7 @@ public class ObtenerCompraLabRes
 public class ObtenerDetalleCompraLabRes
 {
     public required int Id { get; set; }
-    public required int Reg { get; set; }
+    public required string Reg { get; set; }
     public required string Codigo { get; set; }
     public required string DescripcionQBD { get; set; }
     public required bool Coa { get; set; }

@@ -249,7 +249,8 @@ namespace proy_back_Qbd.Services
                 Cantidad = s.Count()
             }).ToList();
 
-            IEnumerable<IdFamiliasMaxRes> ultimosId = await _context.DetalleCompras
+            List<IdFamiliasMaxRes> ultimosId = await _context.DetalleCompras
+            .Where(w => idFamilias.Contains(w.IdFamilia))
             .GroupBy(g => g.IdFamilia)
             .Select(s => new IdFamiliasMaxRes
             {
@@ -258,24 +259,20 @@ namespace proy_back_Qbd.Services
             })
             .ToListAsync();
 
-            Console.WriteLine("GRUPO ID FAMILIAS");
-            foreach (var item in idFamilias)
-            {
-                Console.WriteLine($"IdFamilia: {item.IdFamilia}, Cantidad: {item.Cantidad}");
-            }
             decimal sumaTotal = 0m;
+
             foreach (var item in detalleCompras)
             {
                 ConvertirDetalleCompraReq? item2 = request.Detalles.FirstOrDefault(w => w.IdDetalleCompra == item.Id);
                 if (item2 != null)
                 {
-                    var count = await _context.DetalleCompras
-                                .Where(w => w.IdFamilia == item.IdFamilia)
-                                .CountAsync();
-
                     _mapper.Map(item2, item);
                     item.IdModificador = request.IdModificador;
                     item.CostoTotal = item.CostoUnitario * item2.Cantidad;
+                    IdFamiliasMaxRes? idFamilia = ultimosId.FirstOrDefault(w => w.IdFamilia == item.IdFamilia);
+                    if (idFamilia == null) return null;
+                    idFamilia.Ultimo++;
+                    item.Reg = idFamilia.Ultimo;
                     sumaTotal += item.CostoTotal;
                 }
             }

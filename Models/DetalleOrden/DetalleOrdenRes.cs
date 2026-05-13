@@ -31,6 +31,6 @@ namespace proy_back_Qbd.Models
     public class IdFamiliasMaxRes
     {
         public int IdFamilia { get; set; } // ID primario de la fila
-        public int Valor { get; set; }
+        public int Ultimo { get; set; }
     }
 }
