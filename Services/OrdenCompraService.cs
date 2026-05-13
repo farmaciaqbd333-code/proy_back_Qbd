@@ -57,7 +57,8 @@ namespace proy_back_Qbd.Services
                             Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
                             ISC = s.Isc,
                             ICBP = s.Icbp,
-                            Guia = s.Guia
+                            Guia = s.Guia,
+                            Modalidad = s.Modalidad
 
                         }).FirstOrDefaultAsync();
 
