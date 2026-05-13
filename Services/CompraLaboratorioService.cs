@@ -22,6 +22,22 @@ namespace proy_back_Qbd.Services
             _mapper = mapper;
         }
 
+        public async Task<int?> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
+        {
+            IEnumerable<int> ids = request.Select(s => s.IdDetalle).ToList();
+            List<DetalleCompra> detalleCompras = await _context.DetalleCompras
+            .Where(w => w.IdCompra == idCompra && ids.Contains(w.Id)).ToListAsync();
+            if (detalleCompras.Count == 0) return null;
+
+            foreach (var item in detalleCompras)
+            {
+                ActualizarDetCompraLabReq? req = request.FirstOrDefault(f => f.IdDetalle == item.Id);
+                if (req != null)
+                    _mapper.Map(req, item);
+            }
+            return 1;
+        }
+
         public async Task<ObtenerCompraLabRes?> ObtenerCompraLaboratorio(int idCompra)
         {
             ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
@@ -32,7 +48,7 @@ namespace proy_back_Qbd.Services
                 Detalles = s.DetalleCompras != null ? s.DetalleCompras.Select(s2 => new ObtenerDetalleCompraLabRes()
                 {
                     Id = s2.Id,
-                    Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4,'0'): "",
+                    Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4, '0') : "",
                     Codigo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     Coa = s2.Coa,
