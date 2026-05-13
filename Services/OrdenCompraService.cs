@@ -43,7 +43,12 @@ namespace proy_back_Qbd.Services
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 UM = s2.Um,
                                 CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal
+                                CTotal = s2.CostoTotal,
+                                Coa = s2.Coa,
+                                Lote = s2.Lote,
+                                RegistroSanitario = s2.RegistroSanitario,
+                                Conforme = s2.Conformidad ?? false,
+                                Familia = s2.Familia != null ? s2.Familia.Nombre : ""
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
@@ -238,10 +243,9 @@ namespace proy_back_Qbd.Services
 
             // Agrupacion por familias
             List<IdFamiliasRes> idFamilias = detalleCompras
-            .Where(w => w.IdFamilia != null)
             .GroupBy(g => g.IdFamilia).Select(s => new IdFamiliasRes()
             {
-                IdFamilia = s.Key ?? 0,
+                IdFamilia = s.Key,
                 Cantidad = s.Count()
             }).ToList();
 
@@ -249,7 +253,7 @@ namespace proy_back_Qbd.Services
             .GroupBy(g => g.IdFamilia)
             .Select(s => new IdFamiliasMaxRes
             {
-                IdFamilia = s.Key ?? 0,
+                IdFamilia = s.Key,
                 Valor = s.Max(x => x.Reg) ?? 0
             })
             .ToListAsync();
