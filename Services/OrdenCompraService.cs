@@ -48,7 +48,7 @@ namespace proy_back_Qbd.Services
                                 Lote = s2.Lote,
                                 RegistroSanitario = s2.RegistroSanitario,
                                 Conforme = s2.Conformidad ?? false,
-                                Familia = s2.Familia != null ? s2.Familia.Nombre : ""
+                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : ""
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
