@@ -249,13 +249,15 @@ namespace proy_back_Qbd.Services
                 Cantidad = s.Count()
             }).ToList();
 
+            var idsFamiliasKeys = idFamilias.Select(f => f.IdFamilia).ToList();
+
             List<IdFamiliasMaxRes> ultimosId = await _context.DetalleCompras
-            .Where(w => idFamilias.Contains(w.IdFamilia))
+            .Where(w => idsFamiliasKeys.Contains(w.IdFamilia))
             .GroupBy(g => g.IdFamilia)
             .Select(s => new IdFamiliasMaxRes
             {
                 IdFamilia = s.Key,
-                Valor = s.Max(x => x.Reg) ?? 0
+                Ultimo = s.Max(x => x.Reg) ?? 0
             })
             .ToListAsync();
 
