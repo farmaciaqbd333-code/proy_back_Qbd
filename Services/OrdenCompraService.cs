@@ -78,8 +78,8 @@ namespace proy_back_Qbd.Services
                                 FechaCotizacion = s.FechaCotizacion,
                                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
-                                Valor = s.DetalleCompras != null ? s.Valor : 0,
-                                Total = s.DetalleCompras != null ? s.Total : 0,
+                                Valor = s.Valor,
+                                Total = s.Total,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
                                 Familia = s.Familia,
@@ -104,8 +104,8 @@ namespace proy_back_Qbd.Services
                                 FechaCotizacion = s.FechaCotizacion,
                                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
-                                Valor = s.DetalleCompras != null ? s.Valor : 0,
-                                Total = s.DetalleCompras != null ? s.Total : 0,
+                                Valor = s.Valor,
+                                Total = s.Total,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
                                 Familia = s.Familia,
@@ -128,6 +128,9 @@ namespace proy_back_Qbd.Services
             try
             {
                 Compra compra = _mapper.Map<Compra>(request);
+                compra.Valor = request.Detalle.Sum(s => s.CostoTotal);
+                compra.Total = request.Igv ? (compra.Valor * 1.18m) + request.Isc + request.Icbp : compra.Valor + request.Isc + request.Icbp;
+
                 _context.Compras.Add(compra);
                 await _context.SaveChangesAsync();
 
@@ -191,7 +194,7 @@ namespace proy_back_Qbd.Services
                     valor += request.Detalles.Sum(s => s.CostoTotal);
                 }
 
-                total = request.Igv == true ? valor * 1.18m : valor;
+                total = (request.Igv == true ? valor * 1.18m : valor) + request.Isc + request.Icbp;
 
                 Compra? compra = await _context.Compras.FindAsync(idOC);
                 if (compra != null)
@@ -281,10 +284,8 @@ namespace proy_back_Qbd.Services
 
             //Actualizar total de la compra
             compra.Valor = sumaTotal;
-            if (compra.Igv)
-            {
-                compra.Total = sumaTotal * 1.18m;
-            }
+            compra.Total = (compra.Igv ? sumaTotal * 1.18m : sumaTotal) + compra.Isc + compra.Icbp;
+            
             await _context.SaveChangesAsync();
             //Devolver datos actualizados de la compra
             OrdenesYComprasRes? response = await ObtenerOrdenOCompra(ordenCompraId);
