@@ -35,7 +35,7 @@ namespace proy_back_Qbd.Models
         [Column("id_familia")] public int IdFamilia { get; set; }
         [Column("descripcion_fac")] public required string DescripcionFac { get; set; }
         [Column("reg")] public int? Reg { get; set; }
-        [Column("id_paquete")] public int IdPaquete { get; set; }
+        [Column("id_paquete")] public int? IdPaquete { get; set; }
 
         public Familia? Familia { get; set; }
         public Usuario? Creador { get; set; }
