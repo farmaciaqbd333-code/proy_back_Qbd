@@ -53,7 +53,7 @@ namespace proy_back_Qbd.Services
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
                             Observaciones = s.Observaciones,
-                            Familia = s.Familia,
+                            Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
                             Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
                             ISC = s.Isc,
                             ICBP = s.Icbp,
@@ -83,7 +83,7 @@ namespace proy_back_Qbd.Services
                                 Total = s.Total,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
-                                Familia = s.Familia,
+                                Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
                                 RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
@@ -109,7 +109,7 @@ namespace proy_back_Qbd.Services
                                 Total = s.Total,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
-                                Familia = s.Familia,
+                                Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
                                 RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
@@ -131,6 +131,13 @@ namespace proy_back_Qbd.Services
                 Compra compra = _mapper.Map<Compra>(request);
                 compra.Valor = request.Detalle.Sum(s => s.CostoTotal);
                 compra.Total = request.Igv ? (compra.Valor * 1.18m) + request.Isc + request.Icbp : compra.Valor + request.Isc + request.Icbp;
+
+                var idsFamilias = request.Detalle.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
+                var nombresFamilias = await _context.Familias
+                    .Where(f => idsFamilias.Contains(f.Id))
+                    .Select(f => f.Abreviatura)
+                    .ToListAsync();
+                compra.Familia = string.Join(", ", nombresFamilias);
 
                 _context.Compras.Add(compra);
                 await _context.SaveChangesAsync();
@@ -203,6 +210,16 @@ namespace proy_back_Qbd.Services
                     _mapper.Map(request, compra);
                     compra.Valor = valor;
                     compra.Total = total;
+
+                    var idsFamilias = new List<int>();
+                    if (request.Detalles != null) idsFamilias.AddRange(request.Detalles.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
+                    if (request.DetallesNuevos != null) idsFamilias.AddRange(request.DetallesNuevos.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
+                    
+                    var nombresFamilias = await _context.Familias
+                        .Where(f => idsFamilias.Distinct().Contains(f.Id))
+                        .Select(f => f.Abreviatura)
+                        .ToListAsync();
+                    compra.Familia = string.Join(", ", nombresFamilias);
                 }
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
@@ -287,6 +304,12 @@ namespace proy_back_Qbd.Services
             compra.Valor = sumaTotal;
             compra.Total = (compra.Igv ? sumaTotal * 1.18m : sumaTotal) + compra.Isc + compra.Icbp;
             
+            var nombresFamiliasConvert = await _context.Familias
+                .Where(f => idsFamiliasKeys.Contains(f.Id))
+                .Select(f => f.Abreviatura)
+                .ToListAsync();
+            compra.Familia = string.Join(", ", nombresFamiliasConvert);
+
             await _context.SaveChangesAsync();
             //Devolver datos actualizados de la compra
             OrdenesYComprasRes? response = await ObtenerOrdenOCompra(ordenCompraId);
@@ -329,7 +352,7 @@ namespace proy_back_Qbd.Services
                 NumeroComprobante = s.NumeroComprobante,
                 Guia = s.Guia,
                 CodFacQBD = s.CodFacQBD,
-                Familia = s.Familia,
+                Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
                 Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
                 {
                     Id = s.Id,
