@@ -101,11 +101,34 @@ namespace proy_back_Qbd.Services
                             .OrderByDescending(o => o.Id)
                             .ToListAsync();
 
+            if (response.Any())
+            {
+                var ids = response.Select(r => r.Id).ToList();
+                var familiasPorCompra = await _context.DetalleCompras
+                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Familia != null)
+                    .Select(dc => new { dc.IdCompra, dc.Familia!.Abreviatura })
+                    .Distinct()
+                    .ToListAsync();
+
+                var dict = familiasPorCompra
+                    .GroupBy(x => x.IdCompra)
+                    .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
+
+                foreach (var item in response)
+                {
+                    if (dict.TryGetValue(item.Id, out var fams))
+                    {
+                        item.Familia = fams;
+                    }
+                }
+            }
+
             return response;
         }
         public async Task<OrdenesYComprasRes?> ObtenerOrdenOCompra(int id)
         {
             OrdenesYComprasRes? response = await _context.Compras
+                            .Where(w => w.Id == id)
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
@@ -124,10 +147,21 @@ namespace proy_back_Qbd.Services
                                 Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
                                 EstadoCompra = s.EstadoCompra
                             })
-                            .OrderByDescending(o => o.Id)
-                            .FirstOrDefaultAsync(f => f.Id == id);
-            if (response == null)
-                return null;
+                            .FirstOrDefaultAsync();
+
+            if (response != null)
+            {
+                var familias = await _context.DetalleCompras
+                    .Where(dc => dc.IdCompra == response.Id && dc.Familia != null)
+                    .Select(dc => dc.Familia!.Abreviatura)
+                    .Distinct()
+                    .ToListAsync();
+
+                if (familias.Any())
+                {
+                    response.Familia = string.Join(", ", familias);
+                }
+            }
 
             return response;
         }
