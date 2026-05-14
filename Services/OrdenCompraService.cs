@@ -53,7 +53,7 @@ namespace proy_back_Qbd.Services
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
                             Observaciones = s.Observaciones,
-                            Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
+                            Familia = s.Familia,
                             Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
                             ISC = s.Isc,
                             ICBP = s.Icbp,
@@ -61,6 +61,14 @@ namespace proy_back_Qbd.Services
                             Modalidad = s.Modalidad
 
                         }).FirstOrDefaultAsync();
+
+            if (response != null && response.DetalleOrdenCompras != null)
+            {
+                response.Familia = string.Join(", ", response.DetalleOrdenCompras
+                    .Select(d => d.Familia)
+                    .Where(f => !string.IsNullOrEmpty(f))
+                    .Distinct());
+            }
 
             if (response == null)
             {
@@ -83,7 +91,7 @@ namespace proy_back_Qbd.Services
                                 Total = s.Total,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
-                                Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
+                                Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
                                 RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
@@ -109,7 +117,7 @@ namespace proy_back_Qbd.Services
                                 Total = s.Total,
                                 Moneda = s.Moneda,
                                 CodFacQbd = s.CodFacQBD,
-                                Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
+                                Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
                                 RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
@@ -352,7 +360,7 @@ namespace proy_back_Qbd.Services
                 NumeroComprobante = s.NumeroComprobante,
                 Guia = s.Guia,
                 CodFacQBD = s.CodFacQBD,
-                Familia = string.Join(", ", s.DetalleCompras.Select(dc => dc.Familia != null ? dc.Familia.Abreviatura : "").Distinct()),
+                Familia = s.Familia,
                 Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
                 {
                     Id = s.Id,
