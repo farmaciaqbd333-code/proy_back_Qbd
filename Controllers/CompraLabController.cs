@@ -34,17 +34,29 @@ namespace proy_back_Qbd.Controllers
             return Ok(response);
         }
         /// <summary>
-        /// Obtener detalle para Actualizar datos de laboratorio
+        /// Obtener datos para actualizar datos de laboratorio
         /// </summary>
         [HttpGet("{idCompra}")]
-        public async Task<ActionResult<ObtenerCompraLabRes>> ObtenerDetalleCompraLaboratorio(int idCompra)
+        public async Task<ActionResult<ObtenerCompraLabRes>> DatosCompraLaboratorio(int idCompra)
         {
-            ObtenerCompraLabRes? response = await _serviceCompraLab.ObtenerCompraLaboratorio(idCompra);
+            ObtenerCompraLabRes? response = await _serviceCompraLab.DatosCompraLaboratorio(idCompra);
             if (response == null)
                 return NotFound(new { message = "No se encontro detalles" });
 
             return Ok(response);
         }
+        
+        /// <summary>
+        /// Obtener detalle de compra laboratorio
+        /// </summary>
+        [HttpGet("detalle/{idCompra}")]
+        public async Task<ActionResult<ObtenerCompraLab2Res>> DetalleCompraLaboratorio(int idCompra)
+        {
+            ObtenerCompraLab2Res response = await _serviceCompraLab.DetalleCompraLaboratorio(idCompra);
+
+            return Ok(response);
+        }
+
         /// <summary>
         /// Actualizar detalle de laboratorio
         /// </summary>

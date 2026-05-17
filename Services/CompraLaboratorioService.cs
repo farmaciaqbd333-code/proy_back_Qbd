@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
@@ -38,7 +39,7 @@ namespace proy_back_Qbd.Services
             return 1;
         }
 
-        public async Task<ObtenerCompraLabRes?> ObtenerCompraLaboratorio(int idCompra)
+        public async Task<ObtenerCompraLabRes?> DatosCompraLaboratorio(int idCompra)
         {
             ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
             .Where(w => w.Id == idCompra)
@@ -67,6 +68,34 @@ namespace proy_back_Qbd.Services
             if (obtenerDetalleCompraLabReq == null) return null;
 
             return obtenerDetalleCompraLabReq;
+        }
+
+        public async Task<ObtenerCompraLab2Res> DetalleCompraLaboratorio(int IdCompra)
+        {
+            ObtenerCompraLab2Res? response = await _context.Compras
+           .Where(w => w.Id == IdCompra)
+           .Select(s => new ObtenerCompraLab2Res()
+           {
+               CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
+               Detalles = s.DetalleCompras != null ? s.DetalleCompras.Select(s2 => new ObtenerDetalleCompraLab2Res()
+               {
+                   Conformidad = s2.Conformidad == true ? "SI" : "NO",
+                   Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4, '0') : "",
+                   CodigoInsumo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
+                   DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
+                   Coa = s2.Coa,
+                   Lote = s2.Lote ?? "",
+                   Um = s2.Um,
+                   CantidadSolicitada = s2.CantidadSolicitada,
+                   Potencia = s2.Potencia,
+                   FechaFabricacion = s2.FechaFabricacion,
+                   FechaVencimiento = s2.FechaVencimiento,
+                   CantidadPaquetes = s2.Paquete != null ? s2.Paquete.CantidadPaquete : 0m,
+                   CantidadRecibida = s2.Paquete != null ? s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario : 0m,
+               }).ToList() : null
+           }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra");
+
+            return response;
         }
     }
 }
