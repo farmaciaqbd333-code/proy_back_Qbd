@@ -21,6 +21,7 @@ namespace proy_back_Qbd.Models
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
         public bool Conforme { get; set; }
+        public string? Familia { get; set; }
     }
     public class IdFamiliasRes
     {
