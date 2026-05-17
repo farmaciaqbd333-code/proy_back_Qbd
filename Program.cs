@@ -12,8 +12,8 @@ using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Models;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
-
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<PersonaMappingProfile>();  // Registra tu perfil explícitamente
@@ -36,6 +36,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<OrdenCompraMap>();
     cfg.AddProfile<DetalleOrdenCompraMap>();
     cfg.AddProfile<DetalleCompraLabMap>();
+    cfg.AddProfile<PaqueteMap>();
 });
 
 builder.Configuration
@@ -64,6 +65,7 @@ builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
 builder.Services.AddScoped<IDetalleOrdenCompraService, DetalleOrdenCompraService>();
 builder.Services.AddScoped<ICompraService, CompraService>();
 builder.Services.AddScoped<ICompraLaboratorioService, CompraLaboratorioService>();
+builder.Services.AddScoped<IPaqueteService, PaqueteService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -133,7 +135,6 @@ app.UseDeveloperExceptionPage();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
 });
 app.UseHttpsRedirection();

@@ -12,10 +12,10 @@ namespace proy_back_Qbd.Models
         [Column("cantidad_paquete")] public decimal CantidadPaquete { get; set; }
         [Column("peso_unitario")] public decimal PesoUnitario { get; set; }
         [Column("tara")] public decimal Tara { get; set; }
-        [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [Column("fecha_creacion")] public DateTime? FechaCreacion { get; set; }
         [Column("id_creador")] public int IdCreador { get; set; }
-        [Column("id_modificador")] public int IdModificador { get; set; }
-        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
+        [Column("id_modificador")] public int? IdModificador { get; set; } = null;
+        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("id_detalle_compra")] public int IdDetalleCompra { get; set; }
 
         public Usuario? Creador { get; set; }

@@ -16,12 +16,10 @@ public class AsistenciaController : ControllerBase
 {
 
     private readonly IAsistenciaService _asistenciaService;
-    private readonly IMapper _mapper;
 
-    public AsistenciaController(IAsistenciaService userService, IMapper mapper)
+    public AsistenciaController(IAsistenciaService userService)
     {
         _asistenciaService = userService;
-        _mapper = mapper;
     }
 
     [HttpPost]
