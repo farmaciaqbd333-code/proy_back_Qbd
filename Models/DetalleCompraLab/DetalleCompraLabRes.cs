@@ -47,3 +47,8 @@ public class ObtenerDetalleCompraLab2Res
     public required decimal CantidadPaquetes { get; set; }
     public required decimal CantidadRecibida { get; set; }
 }
+public class EtiquetaCompraLabRes
+{
+    public required string Familia { get; set; }
+    public decimal? Tara { get; set; }
+}

@@ -45,7 +45,7 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(response);
         }
-        
+
         /// <summary>
         /// Obtener detalle de compra laboratorio
         /// </summary>
@@ -66,6 +66,16 @@ namespace proy_back_Qbd.Controllers
             int? response = await _serviceCompraLab.ActualizarDetalleLab(idCompra, request);
             if (response == null)
                 return NotFound(new { message = "No se encontro Compra" });
+
+            return Ok(response);
+        }
+        /// <summary>
+        /// Obtener datos para etiqueta
+        /// </summary>
+        [HttpGet("etiqueta/{idCompra}")]
+        public async Task<ActionResult<EtiquetaCompraLabRes>> EtiquetaCompraLaboratorio(int idCompra)
+        {
+            EtiquetaCompraLabRes response = await _serviceCompraLab.EtiquetaCompraLaboratorio(idCompra);
 
             return Ok(response);
         }

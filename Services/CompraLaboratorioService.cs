@@ -97,5 +97,19 @@ namespace proy_back_Qbd.Services
 
             return response;
         }
+
+        public async Task<EtiquetaCompraLabRes> EtiquetaCompraLaboratorio(int idCompra)
+        {
+            EtiquetaCompraLabRes? response = await _context.DetalleCompras
+            .Where(w => w.Id == idCompra)
+            .Select(s => new EtiquetaCompraLabRes()
+            {
+                Familia = s.Familia != null ? s.Familia.Abreviatura : "",
+                Tara = s.Paquete != null ? s.Paquete.Tara : 0m
+            })
+            .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Detalle Compra");
+
+            return response;
+        }
     }
 }

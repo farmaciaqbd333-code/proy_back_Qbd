@@ -11,5 +11,6 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<ObtenerCompraLabRes?> DatosCompraLaboratorio(int IdCompra);
         Task<ObtenerCompraLab2Res> DetalleCompraLaboratorio(int IdCompra);
         Task<int?> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request);
+        Task<EtiquetaCompraLabRes> EtiquetaCompraLaboratorio(int IdCompra);
     }
 }
