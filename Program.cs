@@ -10,6 +10,8 @@ using System.Text.Json.Serialization;
 using proy_back_Qbd.Services;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Models;
+using Microsoft.AspNetCore.Diagnostics;
+using proy_back_Qbd.Exceptions;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
@@ -131,7 +133,40 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-app.UseDeveloperExceptionPage();
+app.UseExceptionHandler(appError =>
+{
+    appError.Run(async context =>
+    {
+        var error = context.Features
+            .Get<IExceptionHandlerFeature>()?.Error;
+
+        context.Response.ContentType = "application/json";
+
+        switch (error)
+        {
+            case BadRequestException:
+                context.Response.StatusCode = 400;
+                break;
+
+            case NotFoundException:
+                context.Response.StatusCode = 404;
+                break;
+
+            default:
+                context.Response.StatusCode = 500;
+                break;
+        }
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            message = error?.Message
+        });
+    });
+});
+// if (app.Environment.IsDevelopment())
+// {
+//     app.UseDeveloperExceptionPage();
+// }
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {

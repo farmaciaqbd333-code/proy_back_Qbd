@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
@@ -24,7 +25,10 @@ namespace proy_back_Qbd.Services
         public async Task<int> CrearPaquete(CrearPaqueteReq req)
         {
             bool validar = await _context.Paquetes.Where(w => w.IdDetalleCompra == req.IdDetalleCompra).AnyAsync();
-
+            if (validar)
+            {
+                throw new BadRequestException("Este Detalle de compra ya tiene un Paquete");
+            }
 
             Paquete paquete = _mapper.Map<Paquete>(req);
             _context.Paquetes.Add(paquete);
