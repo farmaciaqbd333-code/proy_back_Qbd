@@ -33,7 +33,17 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(response);
         }
-        
 
+        /// <summary>
+        /// Obtener detalle de orden de compra
+        /// </summary>
+        [HttpGet("detalle/{id}")]
+        public async Task<ActionResult<ObtenerOrdenOCompraRes2>> ObtenerOrdenCompra(int id)
+        {
+
+            ObtenerOrdenOCompraRes2? response = await _service.ObtenerDetalleOrdenOCompra(id);
+
+            return Ok(response);
+        }
     }
 }

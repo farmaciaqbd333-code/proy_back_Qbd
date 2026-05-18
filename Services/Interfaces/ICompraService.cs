@@ -9,5 +9,6 @@ namespace proy_back_Qbd.Services.Interfaces
     public interface ICompraService
     {
         Task<List<OrdenesEnviadasRes>> ListaOrdenesEnviadas(string[] cadena);
+        Task<ObtenerOrdenOCompraRes2> ObtenerDetalleOrdenOCompra(int id);
     }
 }
