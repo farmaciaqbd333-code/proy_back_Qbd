@@ -27,7 +27,7 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("meson")]
         public async Task<ActionResult<List<OrdenesEnviadasRes>>> ListarOrdenesEnviadasRes()
         {
-            List<OrdenesEnviadasRes> response = await _service.ListaOrdenesEnviadas(["ENVIADO", "LABORATORIO"]);
+            List<OrdenesEnviadasRes> response = await _service.ListaOrdenesEnviadas(["ENVIADO", "MESON", "MESÓN", "LABORATORIO"]);
             if (response.Count == 0)
                 return NotFound(new { message = "No se encontro ordenes" });
 

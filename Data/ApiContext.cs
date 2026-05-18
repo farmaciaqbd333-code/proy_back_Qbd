@@ -41,6 +41,7 @@ namespace Proy_back_QBD.Data
         public DbSet<FormulaR> FormulasR { get; set; }
         public DbSet<InsumoR> InsumosR { get; set; }
         public DbSet<Familia> Familias { get; set; }
+        public DbSet<Fabricante> Fabricantes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
@@ -99,6 +100,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Familia).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFamilia);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
                 e.HasOne(ho => ho.Paquete).WithOne(wm => wm.DetalleCompra).HasForeignKey<DetalleCompra>(hfk => hfk.IdPaquete).IsRequired(false);
+                e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante).IsRequired(false);
             });
 
             modelBuilder.Entity<Compra>((e) =>
@@ -288,6 +290,23 @@ namespace Proy_back_QBD.Data
             {
                 e.HasKey(hk => hk.Id);
                 e.HasOne(ho => ho.Creador).WithMany().HasForeignKey(hfk => hfk.IdCreador);
+            });
+
+            modelBuilder.Entity<Fabricante>((e) =>
+            {
+                e.HasKey(hk => hk.Id);
+                e.HasOne(ho => ho.Creador).WithMany().HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany().HasForeignKey(hfk => hfk.IdModificador);
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
+                e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
+                e.HasMany(hm => hm.Proveedores)
+                    .WithMany(wm => wm.Fabricantes)
+                    .UsingEntity<Dictionary<string, object>>(
+                        "fabricantes_proveedores",
+                        j => j.HasOne<Proveedor>().WithMany().HasForeignKey("id_proveedor"),
+                        j => j.HasOne<Fabricante>().WithMany().HasForeignKey("id_fabricante")
+                    );
             });
         }
     }

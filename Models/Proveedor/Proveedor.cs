@@ -24,6 +24,7 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         public List<Compra>? Compras { get; set; }
+        public List<Fabricante>? Fabricantes { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
 

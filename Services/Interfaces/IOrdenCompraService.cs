@@ -20,5 +20,6 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<bool> ActualizarEstadoCompra(int OrdenCompraId, CambiarEstadoReq estado);
         Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId);
         Task<bool> ActualizarRutaFactura(int id, UpdateRutaFacturaReq request);
+        Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia);
     }
 }

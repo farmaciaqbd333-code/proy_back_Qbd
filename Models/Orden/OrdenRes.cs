@@ -38,16 +38,19 @@ namespace proy_back_Qbd.Models
         public int ICBP { get; set; }
         public string? Guia { get; set; }
         public string? Modalidad { get; set; }
+        public string? EstadoCompra { get; set; }
     }
     public class DescripcionFacturaRes
     {
         public required string[] DescripcionFactura { get; set; }
+        public Dictionary<int, string>? DescripcionPorInsumo { get; set; }
     }
     public class OrdenesEnviadasRes
     {
         public int Id { get; set; }
         public required string CUO { get; set; }
         public required DateTime FechaCotizacion { get; set; }
+        public DateTime? FechaFactura { get; set; }
         public string? SerieComprobante { get; set; }
         public string? NumeroComprobante { get; set; }
         public string? Factura { get; set; }
@@ -69,8 +72,9 @@ namespace proy_back_Qbd.Models
         public string? NumeroComprobante { get; set; }
         public string? Guia { get; set; }
         public string? CodFacQBD { get; set; }
+        public string? NombreProveedor { get; set; }
+        public int? IdProveedor { get; set; }
         public required string Familia { get; set; }
         public List<DetalleOrdenMesonRes>? Lista { get; set; }
     }
-
 }

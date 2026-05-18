@@ -48,7 +48,9 @@ namespace proy_back_Qbd.Services
                                 Lote = s2.Lote,
                                 RegistroSanitario = s2.RegistroSanitario,
                                 Conforme = s2.Conformidad ?? false,
-                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : ""
+                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
+                                IdFabricante = s2.IdFabricante,
+                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : ""
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
@@ -58,7 +60,8 @@ namespace proy_back_Qbd.Services
                             ISC = s.Isc,
                             ICBP = s.Icbp,
                             Guia = s.Guia,
-                            Modalidad = s.Modalidad
+                            Modalidad = s.Modalidad,
+                            EstadoCompra = s.EstadoCompra
 
                         }).FirstOrDefaultAsync();
 
@@ -278,12 +281,20 @@ namespace proy_back_Qbd.Services
 
         public async Task<DescripcionFacturaRes> DescripcionFactura(int idProveedor)
         {
+            var detalles = await _context.DetalleCompras
+                .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
+                .OrderBy(w => w.Id)
+                .ToListAsync();
+
+            var dict = detalles
+                .Where(d => d.IdInsumo > 0 && !string.IsNullOrEmpty(d.DescripcionFac))
+                .GroupBy(d => d.IdInsumo)
+                .ToDictionary(g => g.Key, g => g.Last().DescripcionFac);
+
             DescripcionFacturaRes response = new()
             {
-                DescripcionFactura = await _context.DetalleCompras
-                .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
-                .Select(s => s.DescripcionFac)
-                .ToArrayAsync()
+                DescripcionFactura = detalles.Select(s => s.DescripcionFac).Distinct().ToArray(),
+                DescripcionPorInsumo = dict
             };
 
             return response;
@@ -381,6 +392,62 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
+        public async Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia)
+        {
+            // Normalizar búsqueda: ignorar mayúsculas/minúsculas y espacios extra
+            string familiaNorm = familia.Trim().ToUpper();
+
+            // Traer solo compras que ya son facturas (tienen NumeroComprobante)
+            // y cuya columna Familia contenga la abreviatura buscada
+            List<OrdenesYComprasRes> response = await _context.Compras
+                .Where(w => !string.IsNullOrEmpty(w.NumeroComprobante)
+                         && w.Familia != null
+                         && w.Familia.ToUpper().Contains(familiaNorm))
+                .Select(s => new OrdenesYComprasRes
+                {
+                    Id = s.Id,
+                    CUO = "OC-" + s.Id,
+                    FechaCotizacion = s.FechaCotizacion,
+                    NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                    NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
+                    Valor = s.Valor,
+                    Total = s.Total,
+                    Moneda = s.Moneda,
+                    CodFacQbd = s.CodFacQBD,
+                    Familia = s.Familia,
+                    Factura = s.SerieComprobante + s.NumeroComprobante,
+                    RutaFactura = s.ImgFactura,
+                    EstadoPago = s.Modalidad,
+                    Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
+                    EstadoCompra = s.EstadoCompra
+                })
+                .OrderByDescending(o => o.Id)
+                .ToListAsync();
+
+            // Enriquecer la columna Familia con los datos reales de DetalleCompras
+            if (response.Any())
+            {
+                var ids = response.Select(r => r.Id).ToList();
+                var familiasPorCompra = await _context.DetalleCompras
+                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Familia != null)
+                    .Select(dc => new { dc.IdCompra, dc.Familia!.Abreviatura })
+                    .Distinct()
+                    .ToListAsync();
+
+                var dict = familiasPorCompra
+                    .GroupBy(x => x.IdCompra)
+                    .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
+
+                foreach (var item in response)
+                {
+                    if (dict.TryGetValue(item.Id, out var fams))
+                        item.Familia = fams;
+                }
+            }
+
+            return response;
+        }
+
         public async Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId)
         {
             OrdenMesonRes? response = await _context.Compras
@@ -394,6 +461,8 @@ namespace proy_back_Qbd.Services
                 NumeroComprobante = s.NumeroComprobante,
                 Guia = s.Guia,
                 CodFacQBD = s.CodFacQBD,
+                NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
+                IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
                 Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
                 {
@@ -408,7 +477,9 @@ namespace proy_back_Qbd.Services
                     RegistroSanitario = s.RegistroSanitario,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
-                    Conformidad = s.Conformidad
+                    Conformidad = s.Conformidad,
+                    IdFabricante = s.IdFabricante,
+                    NombreFabricante = s.Fabricante != null ? s.Fabricante.Nombre : ""
                 }).ToList() : null
             }).FirstOrDefaultAsync();
 

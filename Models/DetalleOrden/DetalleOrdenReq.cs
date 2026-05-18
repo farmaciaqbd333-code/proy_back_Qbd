@@ -20,6 +20,7 @@ namespace proy_back_Qbd.Models
         public bool Coa { get; set; }
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class DetalleOrdenCreateReq
     {
@@ -31,6 +32,7 @@ namespace proy_back_Qbd.Models
         public required decimal CostoTotal { get; set; }
         public required int IdCreador { get; set; }
         public int? IdFamilia { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class DetalleOrdenUpdateReq
     {
@@ -42,6 +44,7 @@ namespace proy_back_Qbd.Models
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
         public int? IdFamilia { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class OrdenCompraMesonReq
     {
@@ -60,6 +63,7 @@ namespace proy_back_Qbd.Models
         public required string Lote { get; set; }
         public required string RegistroSanitario { get; set; }
         public required bool Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class DetalleOrdenMesonRes
     {
@@ -75,5 +79,7 @@ namespace proy_back_Qbd.Models
         public DateTime? FechaFabricacion { get; set; }
         public DateTime? FechaVencimiento { get; set; }
         public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
     }
 }
