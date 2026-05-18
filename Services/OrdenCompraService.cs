@@ -48,7 +48,9 @@ namespace proy_back_Qbd.Services
                                 Lote = s2.Lote,
                                 RegistroSanitario = s2.RegistroSanitario,
                                 Conforme = s2.Conformidad ?? false,
-                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : ""
+                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
+                                IdFabricante = s2.IdFabricante,
+                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : ""
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
@@ -474,7 +476,9 @@ namespace proy_back_Qbd.Services
                     RegistroSanitario = s.RegistroSanitario,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
-                    Conformidad = s.Conformidad
+                    Conformidad = s.Conformidad,
+                    IdFabricante = s.IdFabricante,
+                    NombreFabricante = s.Fabricante != null ? s.Fabricante.Nombre : ""
                 }).ToList() : null
             }).FirstOrDefaultAsync();
 

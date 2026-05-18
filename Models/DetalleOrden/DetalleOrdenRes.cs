@@ -22,6 +22,8 @@ namespace proy_back_Qbd.Models
         public string? RegistroSanitario { get; set; }
         public bool Conforme { get; set; }
         public string? Familia { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
     }
     public class IdFamiliasRes
     {

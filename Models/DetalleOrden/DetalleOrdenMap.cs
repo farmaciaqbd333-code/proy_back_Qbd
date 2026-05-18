@@ -20,6 +20,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
             .ForMember(dest => dest.IdCreador, opt => opt.MapFrom(src => src.IdCreador))
+            .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
             CreateMap<DetalleOrdenUpdateReq, DetalleCompra>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -30,6 +31,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
+            .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
             CreateMap<ConvertirDetalleCompraReq, DetalleCompra>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -42,6 +44,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Lote, opt => opt.MapFrom(src => src.Lote))
             .ForMember(dest => dest.RegistroSanitario, opt => opt.MapFrom(src => src.RegistroSanitario))
             .ForMember(dest => dest.Conformidad, opt => opt.MapFrom(src => src.Conformidad))
+            .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
 
         }
