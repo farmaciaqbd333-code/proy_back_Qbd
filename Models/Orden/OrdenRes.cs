@@ -72,6 +72,7 @@ namespace proy_back_Qbd.Models
         public string? NumeroComprobante { get; set; }
         public string? Guia { get; set; }
         public string? CodFacQBD { get; set; }
+        public string? NombreProveedor { get; set; }
         public required string Familia { get; set; }
         public List<DetalleOrdenMesonRes>? Lista { get; set; }
     }
