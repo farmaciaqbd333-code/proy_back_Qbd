@@ -31,6 +31,7 @@ namespace proy_back_Qbd.Services
                 Id = s.Id,
                 CUO = "BDCO" + s.Id,
                 FechaCotizacion = s.FechaCotizacion,
+                FechaFactura = s.FechaFactura,
                 SerieComprobante = s.SerieComprobante,
                 NumeroComprobante = s.NumeroComprobante,
                 Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),

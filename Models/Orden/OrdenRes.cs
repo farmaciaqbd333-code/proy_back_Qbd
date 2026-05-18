@@ -50,6 +50,7 @@ namespace proy_back_Qbd.Models
         public int Id { get; set; }
         public required string CUO { get; set; }
         public required DateTime FechaCotizacion { get; set; }
+        public DateTime? FechaFactura { get; set; }
         public string? SerieComprobante { get; set; }
         public string? NumeroComprobante { get; set; }
         public string? Factura { get; set; }
