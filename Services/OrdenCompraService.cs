@@ -462,6 +462,7 @@ namespace proy_back_Qbd.Services
                 Guia = s.Guia,
                 CodFacQBD = s.CodFacQBD,
                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
+                IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
                 Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
                 {
