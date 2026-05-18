@@ -81,5 +81,6 @@ namespace proy_back_Qbd.Models
         public bool? Conformidad { get; set; }
         public int? IdFabricante { get; set; }
         public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
     }
 }

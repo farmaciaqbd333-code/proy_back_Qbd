@@ -50,7 +50,8 @@ namespace proy_back_Qbd.Services
                                 Conforme = s2.Conformidad ?? false,
                                 Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
                                 IdFabricante = s2.IdFabricante,
-                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : ""
+                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
+                                CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
@@ -479,7 +480,8 @@ namespace proy_back_Qbd.Services
                     FechaVencimiento = s.FechaVencimiento,
                     Conformidad = s.Conformidad,
                     IdFabricante = s.IdFabricante,
-                    NombreFabricante = s.Fabricante != null ? s.Fabricante.Nombre : ""
+                    NombreFabricante = s.Fabricante != null ? s.Fabricante.Nombre : "",
+                    CodigoFabricante = s.Fabricante != null ? s.Fabricante.Codigo : ""
                 }).ToList() : null
             }).FirstOrDefaultAsync();
 
