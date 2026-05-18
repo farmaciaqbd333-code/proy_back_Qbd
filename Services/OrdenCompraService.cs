@@ -58,7 +58,8 @@ namespace proy_back_Qbd.Services
                             ISC = s.Isc,
                             ICBP = s.Icbp,
                             Guia = s.Guia,
-                            Modalidad = s.Modalidad
+                            Modalidad = s.Modalidad,
+                            EstadoCompra = s.EstadoCompra
 
                         }).FirstOrDefaultAsync();
 
