@@ -157,5 +157,23 @@ namespace proy_back_Qbd.Controllers
                         return Ok(response);
                 }
 
+                /// <summary>
+                /// Listar facturas por familia (ej: MP, PT, etc.)
+                /// </summary>
+                [HttpGet("facturas-por-familia/{familia}")]
+                [SwaggerResponse(200, "Obtención exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
+                public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarFacturasPorFamilia(string familia)
+                {
+                        if (string.IsNullOrWhiteSpace(familia))
+                                return BadRequest(new { message = "Debe indicar una familia" });
+
+                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaFacturasPorFamilia(familia);
+
+                        if (!response.Any())
+                                return NotFound(new { message = $"No se encontraron facturas para la familia '{familia}'" });
+
+                        return Ok(response);
+                }
+
         }
 }

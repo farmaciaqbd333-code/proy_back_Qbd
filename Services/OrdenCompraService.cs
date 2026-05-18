@@ -390,6 +390,62 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
+        public async Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia)
+        {
+            // Normalizar búsqueda: ignorar mayúsculas/minúsculas y espacios extra
+            string familiaNorm = familia.Trim().ToUpper();
+
+            // Traer solo compras que ya son facturas (tienen NumeroComprobante)
+            // y cuya columna Familia contenga la abreviatura buscada
+            List<OrdenesYComprasRes> response = await _context.Compras
+                .Where(w => !string.IsNullOrEmpty(w.NumeroComprobante)
+                         && w.Familia != null
+                         && w.Familia.ToUpper().Contains(familiaNorm))
+                .Select(s => new OrdenesYComprasRes
+                {
+                    Id = s.Id,
+                    CUO = "OC-" + s.Id,
+                    FechaCotizacion = s.FechaCotizacion,
+                    NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                    NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
+                    Valor = s.Valor,
+                    Total = s.Total,
+                    Moneda = s.Moneda,
+                    CodFacQbd = s.CodFacQBD,
+                    Familia = s.Familia,
+                    Factura = s.SerieComprobante + s.NumeroComprobante,
+                    RutaFactura = s.ImgFactura,
+                    EstadoPago = s.Modalidad,
+                    Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
+                    EstadoCompra = s.EstadoCompra
+                })
+                .OrderByDescending(o => o.Id)
+                .ToListAsync();
+
+            // Enriquecer la columna Familia con los datos reales de DetalleCompras
+            if (response.Any())
+            {
+                var ids = response.Select(r => r.Id).ToList();
+                var familiasPorCompra = await _context.DetalleCompras
+                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Familia != null)
+                    .Select(dc => new { dc.IdCompra, dc.Familia!.Abreviatura })
+                    .Distinct()
+                    .ToListAsync();
+
+                var dict = familiasPorCompra
+                    .GroupBy(x => x.IdCompra)
+                    .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
+
+                foreach (var item in response)
+                {
+                    if (dict.TryGetValue(item.Id, out var fams))
+                        item.Familia = fams;
+                }
+            }
+
+            return response;
+        }
+
         public async Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId)
         {
             OrdenMesonRes? response = await _context.Compras
