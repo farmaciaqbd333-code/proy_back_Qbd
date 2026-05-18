@@ -181,4 +181,19 @@ app.MapControllers();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("\nSwagger disponible en:".PadRight(30, ' ') + " http://localhost:5051/swagger" + "\n" + "API KEY:".PadRight(30, ' ') + "4554654654754");
+
+// Asegurar la columna 'codigo' en la tabla 'fabricantes'
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApiContext>();
+    try
+    {
+        context.Database.ExecuteSqlRaw("ALTER TABLE fabricantes ADD COLUMN IF NOT EXISTS codigo VARCHAR(100);");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error al alterar tabla fabricantes para agregar la columna codigo: {ex.Message}");
+    }
+}
+
 app.Run();

@@ -5,6 +5,7 @@ namespace proy_back_Qbd.Models
 {
     public class FabricanteCreateDto
     {
+        public string? Codigo { get; set; }
         public required string Nombre { get; set; }
         public string? Pais { get; set; }
         public string? Descripcion { get; set; }
@@ -16,6 +17,7 @@ namespace proy_back_Qbd.Models
 
     public class FabricanteUpdateDto
     {
+        public string? Codigo { get; set; }
         public required string Nombre { get; set; }
         public string? Pais { get; set; }
         public string? Descripcion { get; set; }
@@ -28,6 +30,7 @@ namespace proy_back_Qbd.Models
     public class FabricanteResponseDto
     {
         public int Id { get; set; }
+        public string? Codigo { get; set; }
         public required string Nombre { get; set; }
         public string? Pais { get; set; }
         public string? Descripcion { get; set; }

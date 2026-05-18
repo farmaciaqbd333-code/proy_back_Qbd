@@ -37,6 +37,7 @@ namespace proy_back_Qbd.Controllers
             var response = fabricantes.Select(f => new FabricanteResponseDto
             {
                 Id = f.Id,
+                Codigo = f.Codigo,
                 Nombre = f.Nombre,
                 Pais = f.Pais,
                 Descripcion = f.Descripcion,
@@ -72,6 +73,7 @@ namespace proy_back_Qbd.Controllers
             var response = new FabricanteResponseDto
             {
                 Id = f.Id,
+                Codigo = f.Codigo,
                 Nombre = f.Nombre,
                 Pais = f.Pais,
                 Descripcion = f.Descripcion,
@@ -108,6 +110,7 @@ namespace proy_back_Qbd.Controllers
             var response = fabricantes.Select(f => new FabricanteResponseDto
             {
                 Id = f.Id,
+                Codigo = f.Codigo,
                 Nombre = f.Nombre,
                 Pais = f.Pais,
                 Descripcion = f.Descripcion,
@@ -132,6 +135,7 @@ namespace proy_back_Qbd.Controllers
             {
                 var fabricante = new Fabricante
                 {
+                    Codigo = dto.Codigo,
                     Nombre = dto.Nombre,
                     Pais = dto.Pais,
                     Descripcion = dto.Descripcion,
@@ -159,6 +163,7 @@ namespace proy_back_Qbd.Controllers
                 var response = new FabricanteResponseDto
                 {
                     Id = fabricante.Id,
+                    Codigo = fabricante.Codigo,
                     Nombre = fabricante.Nombre,
                     Pais = fabricante.Pais,
                     Descripcion = fabricante.Descripcion,
@@ -198,6 +203,7 @@ namespace proy_back_Qbd.Controllers
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
+                fabricante.Codigo = dto.Codigo;
                 fabricante.Nombre = dto.Nombre;
                 fabricante.Pais = dto.Pais;
                 fabricante.Descripcion = dto.Descripcion;

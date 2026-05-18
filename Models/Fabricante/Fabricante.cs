@@ -13,6 +13,9 @@ namespace proy_back_Qbd.Models
         [Column("id")]
         public int Id { get; set; }
 
+        [Column("codigo")]
+        public string? Codigo { get; set; }
+
         [Column("nombre")]
         public required string Nombre { get; set; }
 
