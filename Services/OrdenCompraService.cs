@@ -278,12 +278,20 @@ namespace proy_back_Qbd.Services
 
         public async Task<DescripcionFacturaRes> DescripcionFactura(int idProveedor)
         {
+            var detalles = await _context.DetalleCompras
+                .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
+                .OrderBy(w => w.Id)
+                .ToListAsync();
+
+            var dict = detalles
+                .Where(d => d.IdInsumo > 0 && !string.IsNullOrEmpty(d.DescripcionFac))
+                .GroupBy(d => d.IdInsumo)
+                .ToDictionary(g => g.Key, g => g.Last().DescripcionFac);
+
             DescripcionFacturaRes response = new()
             {
-                DescripcionFactura = await _context.DetalleCompras
-                .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
-                .Select(s => s.DescripcionFac)
-                .ToArrayAsync()
+                DescripcionFactura = detalles.Select(s => s.DescripcionFac).Distinct().ToArray(),
+                DescripcionPorInsumo = dict
             };
 
             return response;

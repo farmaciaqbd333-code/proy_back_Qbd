@@ -42,6 +42,7 @@ namespace proy_back_Qbd.Models
     public class DescripcionFacturaRes
     {
         public required string[] DescripcionFactura { get; set; }
+        public Dictionary<int, string>? DescripcionPorInsumo { get; set; }
     }
     public class OrdenesEnviadasRes
     {
