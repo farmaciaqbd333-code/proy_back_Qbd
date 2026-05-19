@@ -260,7 +260,7 @@ namespace proy_back_Qbd.Services
                     var idsFamilias = new List<int>();
                     if (request.Detalles != null) idsFamilias.AddRange(request.Detalles.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
                     if (request.DetallesNuevos != null) idsFamilias.AddRange(request.DetallesNuevos.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
-                    
+
                     var nombresFamilias = await _context.Familias
                         .Where(f => idsFamilias.Distinct().Contains(f.Id))
                         .Select(f => f.Abreviatura)
@@ -357,7 +357,7 @@ namespace proy_back_Qbd.Services
             //Actualizar total de la compra
             compra.Valor = sumaTotal;
             compra.Total = (compra.Igv ? sumaTotal * 1.18m : sumaTotal) + compra.Isc + compra.Icbp;
-            
+
             var nombresFamiliasConvert = await _context.Familias
                 .Where(f => idsFamiliasKeys.Contains(f.Id))
                 .Select(f => f.Abreviatura)
@@ -468,6 +468,7 @@ namespace proy_back_Qbd.Services
                 Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
                 {
                     Id = s.Id,
+                    Reg = s.Reg != null ? Alfanumerico.ConvertToBase36(s.Reg.Value).PadLeft(4, '0') : "",
                     Codigo = "MP-QBD-" + s.IdInsumo,
                     Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
                     DescripcionFactura = s.DescripcionFac,
