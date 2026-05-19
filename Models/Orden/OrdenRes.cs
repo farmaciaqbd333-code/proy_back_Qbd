@@ -75,7 +75,6 @@ namespace proy_back_Qbd.Models
         public string? NombreProveedor { get; set; }
         public int? IdProveedor { get; set; }
         public required string Familia { get; set; }
-        public required string Sede { get; set; }
         public List<DetalleOrdenMesonRes>? Lista { get; set; }
     }
 }
