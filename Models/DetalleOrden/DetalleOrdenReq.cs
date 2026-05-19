@@ -68,6 +68,7 @@ namespace proy_back_Qbd.Models
     public class DetalleOrdenMesonRes
     {
         public int Id { get; set; }
+        public string? Reg { get; set; }
         public required string Codigo { get; set; }
         public required string Descripcion { get; set; }
         public required string DescripcionFactura { get; set; }

@@ -64,7 +64,7 @@ namespace proy_back_Qbd.Services
                             DetalleOrdenCompras = s.DetalleCompras == null ? null : s.DetalleCompras.Select(s2 => new ObtenerDetalleOrdenOCompraRes2
                             {
                                 Id = s2.Id,
-                                Reg = Alfanumerico.ConvertToBase36(s2.Reg.Value),
+                                Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4, '0') : "",
                                 IdInsumo = s2.IdInsumo,
                                 Codigo = s2.IdInsumo.ToString(),
                                 DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
