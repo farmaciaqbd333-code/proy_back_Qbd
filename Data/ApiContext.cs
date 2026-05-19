@@ -82,7 +82,7 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
-                e.HasOne(ho => ho.DetalleCompra).WithOne(wm => wm.Paquete).HasForeignKey<Paquete>(hfk => hfk.IdDetalleCompra).IsRequired(false);
+                e.HasOne(ho => ho.DetalleCompra).WithMany(wm => wm.Paquetes).HasForeignKey(hfk => hfk.IdDetalleCompra).IsRequired(false);
             });
             modelBuilder.Entity<DetalleNotaSalida>((e) =>
             {
@@ -99,7 +99,6 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Familia).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFamilia);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
-                e.HasOne(ho => ho.Paquete).WithOne(wm => wm.DetalleCompra).HasForeignKey<DetalleCompra>(hfk => hfk.IdPaquete).IsRequired(false);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante).IsRequired(false);
             });
 

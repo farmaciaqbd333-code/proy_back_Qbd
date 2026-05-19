@@ -39,7 +39,7 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("{idCompra}")]
         public async Task<ActionResult<ObtenerCompraLabRes>> DatosCompraLaboratorio(int idCompra)
         {
-            ObtenerCompraLabRes? response = await _serviceCompraLab.DatosCompraLaboratorio(idCompra);
+            ObtenerCompraLabRes? response = await _serviceCompraLab.GetCompraLab(idCompra);
             if (response == null)
                 return NotFound(new { message = "No se encontro detalles" });
 
@@ -52,7 +52,7 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{idCompra}")]
         public async Task<ActionResult<ObtenerCompraLab2Res>> DetalleCompraLaboratorio(int idCompra)
         {
-            ObtenerCompraLab2Res response = await _serviceCompraLab.DetalleCompraLaboratorio(idCompra);
+            ObtenerCompraLab2Res response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
 
             return Ok(response);
         }
@@ -63,7 +63,7 @@ namespace proy_back_Qbd.Controllers
         [HttpPatch("{idCompra}")]
         public async Task<ActionResult<ObtenerCompraLabRes>> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
         {
-            int? response = await _serviceCompraLab.ActualizarDetalleLab(idCompra, request);
+            int? response = await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
             if (response == null)
                 return NotFound(new { message = "No se encontro Compra" });
 
@@ -75,7 +75,7 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("etiqueta/{idCompra}")]
         public async Task<ActionResult<EtiquetaCompraLabRes>> EtiquetaCompraLaboratorio(int idCompra)
         {
-            EtiquetaCompraLabRes response = await _serviceCompraLab.EtiquetaCompraLaboratorio(idCompra);
+            EtiquetaCompraLabRes response = await _serviceCompraLab.GetEtiquetaCompraLab(idCompra);
 
             return Ok(response);
         }

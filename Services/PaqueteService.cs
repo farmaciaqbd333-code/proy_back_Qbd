@@ -25,10 +25,6 @@ namespace proy_back_Qbd.Services
         public async Task<int> CrearPaquete(CrearPaqueteReq req)
         {
             bool validar = await _context.Paquetes.Where(w => w.IdDetalleCompra == req.IdDetalleCompra).AnyAsync();
-            if (validar)
-            {
-                throw new BadRequestException("Este Detalle de compra ya tiene un Paquete");
-            }
 
             Paquete paquete = _mapper.Map<Paquete>(req);
             _context.Paquetes.Add(paquete);
