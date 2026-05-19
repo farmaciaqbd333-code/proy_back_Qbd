@@ -77,6 +77,8 @@ namespace proy_back_Qbd.Services
                 Tara = s.Tara,
                 Lista = _context.Paquetes.Where(w => w.IdDetalleCompra == idDetalleCompra).Select(s => new ListaDetallePaqueteRes
                 {
+                    Id = s.Id,
+                    CantidadPaquete = s.CantidadPaquete,
                     PesoUnitario = s.PesoUnitario,
                     Tara = s.Tara
                 }).ToList()

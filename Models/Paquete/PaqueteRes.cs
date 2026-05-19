@@ -13,6 +13,8 @@ namespace proy_back_Qbd.Models
     }
     public class ListaDetallePaqueteRes
     {
+        public int Id { get; set; }
+        public decimal CantidadPaquete { get; set; }
         public decimal PesoUnitario { get; set; }
         public decimal Tara { get; set; }
     }
