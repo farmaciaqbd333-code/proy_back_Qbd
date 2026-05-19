@@ -87,7 +87,7 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
-        public async Task<DetallePaqueteRes?> ObtenerDetallePaquete(int idDetalleCompra)
+        public async Task<DetallePaqueteRes?> GetDetallePaquete(int idDetalleCompra)
         {
             DetallePaqueteRes? response = await _context.Paquetes
             .Where(w => w.IdDetalleCompra == idDetalleCompra)
@@ -97,7 +97,7 @@ namespace proy_back_Qbd.Services
                 Tara = s.Tara,
                 Lista = _context.Paquetes.Where(w => w.IdDetalleCompra == idDetalleCompra).Select(s => new ListaDetallePaqueteRes
                 {
-                    Id = s.Id,
+                    IdInsumo = "MP-QbD-" + (s.DetalleCompra != null ? s.DetalleCompra.IdInsumo.ToString("D4") : ""),
                     CantidadPaquete = s.CantidadPaquete,
                     PesoUnitario = s.PesoUnitario,
                     Tara = s.Tara
