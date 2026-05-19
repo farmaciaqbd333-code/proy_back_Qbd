@@ -26,7 +26,7 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{detalleCompraId}")]
         public async Task<IActionResult> ObtenerDetallePaquete(int detalleCompraId)
         {
-            DetallePaqueteRes? response = await _servicePaquete.ObtenerDetallePaquete(detalleCompraId);
+            DetallePaqueteRes? response = await _servicePaquete.GetDetallePaquete(detalleCompraId);
             if (response == null) return NotFound("No se encontro paquete");
             return Ok(response);
         }

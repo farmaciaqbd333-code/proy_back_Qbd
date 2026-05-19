@@ -24,11 +24,20 @@ namespace proy_back_Qbd.Services
 
         public async Task<int> CrearPaquete(CrearPaqueteReq req)
         {
-            bool validar = await _context.Paquetes.Where(w => w.IdDetalleCompra == req.IdDetalleCompra).AnyAsync();
-            if (validar)
+
+            var validar = await _context.Paquetes.Where(w => w.IdDetalleCompra == req.IdDetalleCompra)
+            .GroupBy(g => g.IdDetalleCompra)
+            .Select(s => new
             {
-                throw new BadRequestException("Este Detalle de compra ya tiene un Paquete");
-            }
+                PesoTotalPaquete = s.Sum(s2 => s2.CantidadPaquete * s2.PesoUnitario),
+                PesoTotalSolicitado = s.Sum(s3 => s3.DetalleCompra != null ? s3.DetalleCompra.CantidadSolicitada * 1000 : 0m)
+            }).FirstOrDefaultAsync()
+            ;
+            if (validar == null)
+                throw new NotFoundException("No se encontró el detalle compra");
+            decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
+            if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete))
+                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = _mapper.Map<Paquete>(req);
             _context.Paquetes.Add(paquete);
@@ -52,22 +61,33 @@ namespace proy_back_Qbd.Services
 
         public async Task<bool> ModificarPaquete(int idPaquete, ModificarPaqueteReq req)
         {
-            Paquete? paquete = await _context.Paquetes.FindAsync(idPaquete);
-            if (paquete == null) return false;
-            _mapper.Map(req, paquete);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (System.Exception)
-            {
 
-                return false;
-            }
+            Paquete? paquete = await _context.Paquetes.FindAsync(idPaquete);
+
+            if (paquete == null)
+                throw new NotFoundException("No se encontró el paquete");
+
+            decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
+            var validar = await _context.Paquetes.Where(w => w.IdDetalleCompra == paquete.IdDetalleCompra)
+                                    .GroupBy(g => g.IdDetalleCompra)
+                                    .Select(s => new
+                                    {
+                                        PesoTotalPaquete = s.Sum(s2 => s2.CantidadPaquete * s2.PesoUnitario),
+                                        PesoTotalSolicitado = s.Sum(s3 => s3.DetalleCompra != null ? s3.DetalleCompra.CantidadSolicitada * 1000 : 0m)
+                                    }).FirstOrDefaultAsync()
+                                    ;
+            if (validar == null)
+                throw new NotFoundException("No se encontró el detalle compra");
+            decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
+            if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete - paquetePesoActual))
+                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            _mapper.Map(req, paquete);
+            await _context.SaveChangesAsync();
+
             return true;
         }
 
-        public async Task<DetallePaqueteRes?> ObtenerDetallePaquete(int idDetalleCompra)
+        public async Task<DetallePaqueteRes?> GetDetallePaquete(int idDetalleCompra)
         {
             DetallePaqueteRes? response = await _context.Paquetes
             .Where(w => w.IdDetalleCompra == idDetalleCompra)
@@ -77,7 +97,7 @@ namespace proy_back_Qbd.Services
                 Tara = s.Tara,
                 Lista = _context.Paquetes.Where(w => w.IdDetalleCompra == idDetalleCompra).Select(s => new ListaDetallePaqueteRes
                 {
-                    Id = s.Id,
+                    IdInsumo = "MP-QbD-" + (s.DetalleCompra != null ? s.DetalleCompra.IdInsumo.ToString("D4") : ""),
                     CantidadPaquete = s.CantidadPaquete,
                     PesoUnitario = s.PesoUnitario,
                     Tara = s.Tara

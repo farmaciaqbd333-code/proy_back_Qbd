@@ -23,7 +23,7 @@ namespace proy_back_Qbd.Services
             _mapper = mapper;
         }
 
-        public async Task<int?> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
+        public async Task<int?> UpdateDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
         {
             IEnumerable<int> ids = request.Select(s => s.IdDetalle).ToList();
             List<DetalleCompra> detalleCompras = await _context.DetalleCompras
@@ -39,7 +39,7 @@ namespace proy_back_Qbd.Services
             return 1;
         }
 
-        public async Task<ObtenerCompraLabRes?> DatosCompraLaboratorio(int idCompra)
+        public async Task<ObtenerCompraLabRes?> GetCompraLab(int idCompra)
         {
             ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
             .Where(w => w.Id == idCompra)
@@ -54,14 +54,14 @@ namespace proy_back_Qbd.Services
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     Coa = s2.Coa,
                     Lote = s2.Lote ?? "",
-                    Um = s2.Um,
-                    CantidadSolicitada = s2.CantidadSolicitada,
+                    Um = "g",
+                    CantidadSolicitada = s2.CantidadSolicitada * 1000,
                     Potencia = s2.Potencia,
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
                     CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
-                    TotalPaquetes = s2.Paquete != null ? s2.Paquete.CantidadPaquete : 0,
-                    TotalPeso = s2.Paquete != null ? s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario : 0
+                    TotalPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0,
+                    TotalPeso = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0
                 }).ToList() : null
             }).FirstOrDefaultAsync();
 
@@ -70,7 +70,7 @@ namespace proy_back_Qbd.Services
             return obtenerDetalleCompraLabReq;
         }
 
-        public async Task<ObtenerCompraLab2Res> DetalleCompraLaboratorio(int IdCompra)
+        public async Task<ObtenerCompraLab2Res> GetDetalleCompraLab(int IdCompra)
         {
             ObtenerCompraLab2Res? response = await _context.Compras
            .Where(w => w.Id == IdCompra)
@@ -85,27 +85,27 @@ namespace proy_back_Qbd.Services
                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                    Coa = s2.Coa,
                    Lote = s2.Lote ?? "",
-                   Um = s2.Um,
-                   CantidadSolicitada = s2.CantidadSolicitada,
+                   Um = "g",
+                   CantidadSolicitada = s2.CantidadSolicitada * 1000,
                    Potencia = s2.Potencia,
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
-                   CantidadPaquetes = s2.Paquete != null ? s2.Paquete.CantidadPaquete : 0m,
-                   CantidadRecibida = s2.Paquete != null ? s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario : 0m,
+                   CantidadPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0m,
+                   CantidadRecibida = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0m,
                }).ToList() : null
            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra");
 
             return response;
         }
 
-        public async Task<EtiquetaCompraLabRes> EtiquetaCompraLaboratorio(int idCompra)
+        public async Task<EtiquetaCompraLabRes> GetEtiquetaCompraLab(int idCompra)
         {
             EtiquetaCompraLabRes? response = await _context.DetalleCompras
             .Where(w => w.Id == idCompra)
             .Select(s => new EtiquetaCompraLabRes()
             {
                 Familia = s.Familia != null ? s.Familia.Abreviatura : "",
-                Tara = s.Paquete != null ? s.Paquete.Tara : 0m
+                Tara = s.Paquetes != null ? s.Paquetes.Sum(s => s.Tara) : 0m
             })
             .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Detalle Compra");
 
