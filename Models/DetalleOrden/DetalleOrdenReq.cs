@@ -55,7 +55,7 @@ namespace proy_back_Qbd.Models
     {
         public int IdDetalleCompra { get; set; }
         public required string DescripcionFactura { get; set; }
-        public required int Cantidad { get; set; }
+        public required decimal Cantidad { get; set; }
         public required string Um { get; set; }
         public required DateTime FechaFabricacion { get; set; }
         public required DateTime FechaVencimiento { get; set; }
