@@ -30,7 +30,7 @@ namespace proy_back_Qbd.Services
             .Select(s => new OrdenesEnviadasRes
             {
                 Id = s.Id,
-                CUO = "BDCO" + s.Id,
+                CUO = "OC" + s.Id,
                 FechaCotizacion = s.FechaCotizacion,
                 FechaFactura = s.FechaFactura,
                 SerieComprobante = s.SerieComprobante,

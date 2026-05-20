@@ -87,7 +87,7 @@ namespace proy_back_Qbd.Services
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
-                                CUO = "OC-" + s.Id,
+                                CUO = "OC" + s.Id,
                                 FechaCotizacion = s.FechaCotizacion,
                                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
@@ -136,7 +136,7 @@ namespace proy_back_Qbd.Services
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
-                                CUO = "OC-" + s.Id,
+                                CUO = "OC" + s.Id,
                                 FechaCotizacion = s.FechaCotizacion,
                                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
@@ -407,7 +407,7 @@ namespace proy_back_Qbd.Services
                 .Select(s => new OrdenesYComprasRes
                 {
                     Id = s.Id,
-                    CUO = "OC-" + s.Id,
+                    CUO = "OC" + s.Id,
                     FechaCotizacion = s.FechaCotizacion,
                     NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                     NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
@@ -456,7 +456,7 @@ namespace proy_back_Qbd.Services
             .Select(s => new OrdenMesonRes
             {
                 Id = s.Id,
-                CUO = "BDCO" + s.Id,
+                CUO = "OC" + s.Id,
                 FechaEmision = s.FechaFactura,
                 SerieComprobante = s.SerieComprobante,
                 NumeroComprobante = s.NumeroComprobante,
