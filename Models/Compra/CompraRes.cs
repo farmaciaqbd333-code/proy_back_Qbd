@@ -10,7 +10,7 @@ namespace proy_back_Qbd.Models
         public required string TC { get; set; }
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
-        public List<ObtenerDetalleOrdenOCompraRes2>? DetalleOrdenCompras { get; set; }
+        public List<DetInsumoRes2>? DetalleOrdenCompras { get; set; }
         public required int IdProveedor { get; set; }
         public bool IncluyeImpuesto { get; set; }
         public string? Observaciones { get; set; }

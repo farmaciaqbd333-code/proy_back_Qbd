@@ -25,7 +25,7 @@ namespace proy_back_Qbd.Services
             {
                 foreach (var item in request)
                 {
-                    DetalleCompra detalleCompra = _mapper.Map<DetalleCompra>(item);
+                    DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
                     detalleCompra.IdCompra = idCompra;
                     detalleCompra.IdCreador = idCreador;
                     _context.DetalleCompras.Add(detalleCompra);

@@ -33,26 +33,26 @@ namespace proy_back_Qbd.Services
                             TC = s.TipoCambio.ToString(),
                             Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                             Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                            DetalleOrdenCompras = s.DetalleCompras == null ? null : s.DetalleCompras.Select(s2 => new ObtenerDetalleOrdenOCompraRes
-                            {
-                                Id = s2.Id,
-                                IdInsumo = s2.IdInsumo,
-                                Codigo = s2.IdInsumo.ToString(),
-                                DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
-                                DescripcionFactura = s2.DescripcionFac,
-                                CantidadSolicitada = s2.CantidadSolicitada,
-                                UM = s2.Um,
-                                CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal,
-                                Coa = s2.Coa,
-                                Lote = s2.Lote,
-                                RegistroSanitario = s2.RegistroSanitario,
-                                Conforme = s2.Conformidad ?? false,
-                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
-                                IdFabricante = s2.IdFabricante,
-                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
-                                CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
-                            }).ToList(),
+                            // DetalleOrdenCompras = s.DetalleCompras == null ? null : s.DetalleCompras.Select(s2 => new ObtenerDetalleOrdenOCompraRes
+                            // {
+                            //     Id = s2.Id,
+                            //     IdInsumo = s2.IdInsumo,
+                            //     Codigo = s2.IdInsumo.ToString(),
+                            //     DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
+                            //     DescripcionFactura = s2.DescripcionFac,
+                            //     CantidadSolicitada = s2.CantidadSolicitada,
+                            //     UM = s2.Um,
+                            //     CUnitario = s2.CostoUnitario,
+                            //     CTotal = s2.CostoTotal,
+                            //     Coa = s2.Coa,
+                            //     Lote = s2.Lote,
+                            //     RegistroSanitario = s2.RegistroSanitario,
+                            //     Conforme = s2.Conformidad ?? false,
+                            //     Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
+                            //     IdFabricante = s2.IdFabricante,
+                            //     NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
+                            //     CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
+                            // }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
                             Observaciones = s.Observaciones,
@@ -190,7 +190,7 @@ namespace proy_back_Qbd.Services
 
                 foreach (var item in request.Detalle)
                 {
-                    DetalleCompra detalleCompra = _mapper.Map<DetalleCompra>(item);
+                    DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
                     detalleCompra.IdCompra = compra.Id;
                     _context.DetalleCompras.Add(detalleCompra);
                 }
@@ -239,7 +239,7 @@ namespace proy_back_Qbd.Services
 
                     foreach (var item in request.Detalles)
                     {
-                        DetalleCompra? detalleCompra = await _context.DetalleCompras.FindAsync(item.Id);
+                        DetalleCompraInsumo? detalleCompra = await _context.DetalleCompras.FindAsync(item.Id);
                         if (detalleCompra != null)
                         {
                             _mapper.Map(item, detalleCompra);
@@ -312,7 +312,7 @@ namespace proy_back_Qbd.Services
             var idsDetalleCompra = request.Detalles
                                     .Select(s => s.IdDetalleCompra);
 
-            List<DetalleCompra> detalleCompras = await _context.DetalleCompras
+            List<DetalleCompraInsumo> detalleCompras = await _context.DetalleCompras
                 .Where(w => idsDetalleCompra.Contains(w.Id))
                 .ToListAsync();
 
@@ -332,7 +332,6 @@ namespace proy_back_Qbd.Services
             .Select(s => new IdFamiliasMaxRes
             {
                 IdFamilia = s.Key,
-                Ultimo = s.Max(x => x.Reg) ?? 0
             })
             .ToListAsync();
 
@@ -349,7 +348,6 @@ namespace proy_back_Qbd.Services
                     IdFamiliasMaxRes? idFamilia = ultimosId.FirstOrDefault(w => w.IdFamilia == item.IdFamilia);
                     if (idFamilia == null) return null;
                     idFamilia.Ultimo++;
-                    item.Reg = idFamilia.Ultimo;
                     sumaTotal += item.CostoTotal;
                 }
             }
@@ -465,25 +463,25 @@ namespace proy_back_Qbd.Services
                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
-                Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
-                {
-                    Id = s.Id,
-                    Reg = s.Reg != null ? Alfanumerico.ConvertToBase36(s.Reg.Value).PadLeft(4, '0') : "",
-                    Codigo = "MP-QBD-" + s.IdInsumo,
-                    Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
-                    DescripcionFactura = s.DescripcionFac,
-                    Cantidad = s.CantidadSolicitada,
-                    Um = s.Um,
-                    Coa = s.Coa,
-                    Lote = s.Lote,
-                    RegistroSanitario = s.RegistroSanitario,
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Conformidad = s.Conformidad,
-                    IdFabricante = s.IdFabricante,
-                    NombreFabricante = s.Fabricante != null ? s.Fabricante.Nombre : "",
-                    CodigoFabricante = s.Fabricante != null ? s.Fabricante.Codigo : ""
-                }).ToList() : null
+                // Lista = s.DetalleCompras != null ? s.DetalleCompras.Select(s => new DetalleOrdenMesonRes
+                // {
+                //     Id = s.Id,
+                //     Reg = s.Reg != null ? Alfanumerico.ConvertToBase36(s.Reg.Value).PadLeft(4, '0') : "",
+                //     Codigo = "MP-QBD-" + s.IdInsumo,
+                //     Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                //     DescripcionFactura = s.DescripcionFac,
+                //     Cantidad = s.CantidadSolicitada,
+                //     Um = s.Um,
+                //     Coa = s.Coa,
+                //     Lote = s.Lote,
+                //     RegistroSanitario = s.RegistroSanitario,
+                //     FechaFabricacion = s.FechaFabricacion,
+                //     FechaVencimiento = s.FechaVencimiento,
+                //     Conformidad = s.Conformidad,
+                //     IdFabricante = s.IdFabricante,
+                //     NombreFabricante = s.Fabricante != null ? s.Fabricante.Nombre : "",
+                //     CodigoFabricante = s.Fabricante != null ? s.Fabricante.Codigo : ""
+                // }).ToList() : null
             }).FirstOrDefaultAsync();
 
             if (response == null) return null;

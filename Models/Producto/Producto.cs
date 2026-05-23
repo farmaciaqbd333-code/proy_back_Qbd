@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
+using proy_back_Qbd.Models;
 
 namespace Proy_back_QBD.Models
 {
@@ -32,6 +33,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<ProdTerm>? ProdTerm { get; set; }
+        public List<DetalleCompraProducto>? DetalleCompraProductos { get; set; }
     }
 
 }

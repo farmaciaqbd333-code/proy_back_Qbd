@@ -20,7 +20,7 @@ namespace Proy_back_QBD.Data
         public DbSet<DetalleNotaSalida> DetalleNotaSalidas { get; set; }
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
-        public DbSet<DetalleCompra> DetalleCompras { get; set; }
+        public DbSet<DetalleCompraInsumo> DetalleCompras { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
         public DbSet<Sede> Sedes { get; set; }  // Para la tabla de secciones
@@ -91,15 +91,39 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<DetalleCompra>((e) =>
             {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+            });
+            modelBuilder.Entity<DetalleCompraInsumo>((e) =>
+            {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasModificadas).HasForeignKey(hfk => hfk.IdModificador);
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraInsumos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Familia).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFamilia);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante).IsRequired(false);
+            });
+
+            modelBuilder.Entity<DetalleCompraEconomato>((e) =>
+            {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraEconomatos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Economato).WithMany(wm => wm.DetalleCompraEconomatos).HasForeignKey(hfk => hfk.IdEconomato).IsRequired(false);
+            });
+            modelBuilder.Entity<DetalleCompraEmpaque>((e) =>
+            {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Empaque).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdEmpaque).IsRequired(false);
+            });
+            modelBuilder.Entity<DetalleCompraProducto>((e) =>
+            {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraProductos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Producto).WithMany(wm => wm.DetalleCompraProductos).HasForeignKey(hfk => hfk.IdProducto).IsRequired(false);
             });
 
             modelBuilder.Entity<Compra>((e) =>

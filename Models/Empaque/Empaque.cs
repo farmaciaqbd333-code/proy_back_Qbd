@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using proy_back_Qbd.Models;
 
 namespace Proy_back_QBD.Models
 {
@@ -52,5 +53,6 @@ namespace Proy_back_QBD.Models
         public int ModificadorId { get; set; }
         [JsonIgnore]
         public Usuario? Modificador { get; set; }
+        public List<DetalleCompraEmpaque>? DetalleCompraEmpaques { get; set; }
     }
 }

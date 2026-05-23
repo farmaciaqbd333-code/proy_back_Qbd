@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models
 {
-    public class ObtenerDetalleOrdenOCompraRes2
+    public class DetInsumoRes2
     {
         public int Id { get; set; } // ID primario de la fila
         public required string Reg { get; set; }

@@ -44,6 +44,6 @@ namespace proy_back_Qbd.Models
         public List<Proveedor>? Proveedores { get; set; }
 
         // Relación con los productos/detalles registrados
-        public List<DetalleCompra>? DetalleCompras { get; set; }
+        public List<DetalleCompraInsumo>? DetalleCompras { get; set; }
     }
 }

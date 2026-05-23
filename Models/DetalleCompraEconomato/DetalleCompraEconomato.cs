@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models
 {
-    [Table("detalle_compra")]
-    public class DetalleCompra
+    [Table("detalle_compra_economato")]
+    public class DetalleCompraEconomato
     {
         [Column("id")] public int Id { get; set; }
-        [Column("clasificacion")] public string Clasificacion { get; set; } = string.Empty;
+        [Column("id_economato")] public int IdEconomato { get; set; }
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
         [Column("id_compra")] public int IdCompra { get; set; }
         public Compra? Compra { get; set; }
+        public Economato? Economato { get; set; }
     }
 }

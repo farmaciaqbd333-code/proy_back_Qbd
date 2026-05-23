@@ -15,6 +15,6 @@ namespace proy_back_Qbd.Models
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public int IdCreador { get; set; }
         public Usuario? Creador { get; set; }
-        public List<DetalleCompra>? DetalleCompras { get; set; }
+        public List<DetalleCompraInsumo>? DetalleCompras { get; set; }
     }
 }

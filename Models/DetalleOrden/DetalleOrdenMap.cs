@@ -11,7 +11,7 @@ namespace proy_back_Qbd.Models
         public DetalleOrdenCompraMap()
         {
             // Mapeo entre ApoderadoCreate y Apoderado
-            CreateMap<DetalleOrdenCreateReq, DetalleCompra>(MemberList.None)
+            CreateMap<DetalleOrdenCreateReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.IdInsumo, opt => opt.MapFrom(src => src.IdInsumo))
             .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.IdFamilia))
             .ForMember(dest => dest.DescripcionFac, opt => opt.MapFrom(src => src.DescripcionFac))
@@ -22,7 +22,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.IdCreador, opt => opt.MapFrom(src => src.IdCreador))
             .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
-            CreateMap<DetalleOrdenUpdateReq, DetalleCompra>(MemberList.None)
+            CreateMap<DetalleOrdenUpdateReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdInsumo, opt => opt.MapFrom(src => src.IdInsumo))
             .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.IdFamilia))
@@ -33,7 +33,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
             .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
-            CreateMap<ConvertirDetalleCompraReq, DetalleCompra>(MemberList.None)
+            CreateMap<ConvertirDetalleCompraReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.DescripcionFac, opt => opt.MapFrom(src => src.DescripcionFactura))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
