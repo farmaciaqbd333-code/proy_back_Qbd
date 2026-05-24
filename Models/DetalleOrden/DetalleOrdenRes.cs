@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace proy_back_Qbd.Models
 {
 
-    public class ObtenerDetalleOrdenOCompraRes
+    public class DetalleInsumosRes
     {
         public int Id { get; set; } // ID primario de la fila
         public required int IdInsumo { get; set; }
@@ -25,6 +25,46 @@ namespace proy_back_Qbd.Models
         public int? IdFabricante { get; set; }
         public string? NombreFabricante { get; set; }
         public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleEmpaquesRes
+    {
+        public int Id { get; set; } // ID primario de la fila
+        public required int IdEmpaque { get; set; }
+        public required string Codigo { get; set; }
+        public required string DescripcionQBD { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
+        public required decimal CUnitario { get; set; }
+        public required decimal CTotal { get; set; }
+    }
+    public class DetalleProductosRes
+    {
+        public int Id { get; set; }
+        public required int IdProducto { get; set; }
+        public required string Codigo { get; set; }
+        public required string DescripcionQBD { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
+        public required decimal CUnitario { get; set; }
+        public required decimal CTotal { get; set; }
+    }
+    public class DetalleEconomatosRes
+    {
+        public int Id { get; set; } // ID primario de la fila
+        public required int IdEconomato { get; set; }
+        public required string Codigo { get; set; }
+        public required string DescripcionQBD { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
+        public required decimal CUnitario { get; set; }
+        public required decimal CTotal { get; set; }
+    }
+    public class DetalleComprasRes
+    {
+        public int Id { get; set; } // ID primario de la fila
+        public required string Clasificacion { get; set; }
+        public required string Codigo { get; set; }
+        public required string DescripcionQBD { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
+        public required decimal CUnitario { get; set; }
+        public required decimal CTotal { get; set; }
     }
     public class IdFamiliasRes
     {

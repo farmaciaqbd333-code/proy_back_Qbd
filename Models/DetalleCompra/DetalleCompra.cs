@@ -15,6 +15,7 @@ namespace proy_back_Qbd.Models
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
         [Column("id_compra")] public int IdCompra { get; set; }
+        [Column("um")] public required string UnidadMedida { get; set; }
         public Compra? Compra { get; set; }
     }
 }

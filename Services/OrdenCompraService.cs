@@ -24,35 +24,35 @@ namespace proy_back_Qbd.Services
             _serviceDOC = serviceDOC;
         }
 
-        public async Task<ObtenerOrdenOCompraRes?> ObtenerDetalleOrdenOCompra(int id)
+        public async Task<OrdenCompraGetRes?> ObtenerOrdenCompra(int id)
         {
-            ObtenerOrdenOCompraRes? response = await _context.Compras
+            OrdenCompraGetRes? response = await _context.Compras
                         .Where(w => w.Id == id)
-                        .Select(s => new ObtenerOrdenOCompraRes
+                        .Select(s => new OrdenCompraGetRes
                         {
                             TC = s.TipoCambio.ToString(),
                             Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                             Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                            // DetalleOrdenCompras = s.DetalleCompras == null ? null : s.DetalleCompras.Select(s2 => new ObtenerDetalleOrdenOCompraRes
-                            // {
-                            //     Id = s2.Id,
-                            //     IdInsumo = s2.IdInsumo,
-                            //     Codigo = s2.IdInsumo.ToString(),
-                            //     DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
-                            //     DescripcionFactura = s2.DescripcionFac,
-                            //     CantidadSolicitada = s2.CantidadSolicitada,
-                            //     UM = s2.Um,
-                            //     CUnitario = s2.CostoUnitario,
-                            //     CTotal = s2.CostoTotal,
-                            //     Coa = s2.Coa,
-                            //     Lote = s2.Lote,
-                            //     RegistroSanitario = s2.RegistroSanitario,
-                            //     Conforme = s2.Conformidad ?? false,
-                            //     Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
-                            //     IdFabricante = s2.IdFabricante,
-                            //     NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
-                            //     CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
-                            // }).ToList(),
+                            DetalleInsumos = s.DetalleCompraInsumos == null ? null : s.DetalleCompraInsumos.Select(s2 => new DetalleInsumosRes
+                            {
+                                Id = s2.Id,
+                                IdInsumo = s2.IdInsumo,
+                                Codigo = s2.IdInsumo.ToString(),
+                                DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
+                                DescripcionFactura = s2.DescripcionFac,
+                                CantidadSolicitada = s2.CantidadSolicitada,
+                                UM = s2.Um,
+                                CUnitario = s2.CostoUnitario,
+                                CTotal = s2.CostoTotal,
+                                Coa = s2.Coa,
+                                Lote = s2.Lote,
+                                RegistroSanitario = s2.RegistroSanitario,
+                                Conforme = s2.Conformidad ?? false,
+                                Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
+                                IdFabricante = s2.IdFabricante,
+                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
+                                CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
+                            }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
                             Observaciones = s.Observaciones,
@@ -66,9 +66,9 @@ namespace proy_back_Qbd.Services
 
                         }).FirstOrDefaultAsync();
 
-            if (response != null && response.DetalleOrdenCompras != null)
+            if (response != null && response.DetalleInsumos != null)
             {
-                response.Familia = string.Join(", ", response.DetalleOrdenCompras
+                response.Familia = string.Join(", ", response.DetalleInsumos
                     .Select(d => d.Familia)
                     .Where(f => !string.IsNullOrEmpty(f))
                     .Distinct());

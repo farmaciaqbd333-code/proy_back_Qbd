@@ -35,11 +35,11 @@ namespace proy_back_Qbd.Controllers
                 /// Obtener detalle de orden de compra
                 /// </summary>
                 [HttpGet("detalle/{id}")]
-                [SwaggerResponse(200, "Obtención de detalle exitosa", typeof(ObtenerOrdenOCompraRes))]
-                public async Task<ActionResult<ObtenerOrdenOCompraRes>> ObtenerOrdenCompra(int id)
+                [SwaggerResponse(200, "Obtención de detalle exitosa", typeof(OrdenCompraGetRes))]
+                public async Task<ActionResult<OrdenCompraGetRes>> ObtenerOrdenCompra(int id)
                 {
 
-                        ObtenerOrdenOCompraRes? response = await _serviceOC.ObtenerDetalleOrdenOCompra(id);
+                        OrdenCompraGetRes? response = await _serviceOC.ObtenerOrdenCompra(id);
 
                         if (response == null)
                                 return NotFound("No se ha encontrado el detalle de la orden o compra");

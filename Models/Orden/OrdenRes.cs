@@ -23,12 +23,16 @@ namespace proy_back_Qbd.Models
         public required string EstadoPago { get; set; }
         public required string Usuario { get; set; }
     }
-    public class ObtenerOrdenOCompraRes
+    public class OrdenCompraGetRes
     {
         public required string TC { get; set; }
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
-        public List<ObtenerDetalleOrdenOCompraRes>? DetalleOrdenCompras { get; set; }
+        public List<DetalleInsumosRes>? DetalleInsumos { get; set; }
+        public List<DetalleEmpaquesRes>? DetalleEmpaques { get; set; }
+        public List<DetalleProductosRes>? DetalleProductos { get; set; }
+        public List<DetalleEconomatosRes>? DetalleEconomatos { get; set; }
+        public List<DetalleComprasRes>? DetalleCompras { get; set; }
         public required int IdProveedor { get; set; }
         public bool IncluyeImpuesto { get; set; }
         public string? Observaciones { get; set; }
