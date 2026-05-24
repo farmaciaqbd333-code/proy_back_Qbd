@@ -23,11 +23,7 @@ namespace proy_back_Qbd.Controllers
                 public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarComprasYOrdenes()
                 {
 
-                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaOrdenesYCompras();
-
-                        if (!response.Any())
-                                return NotFound("No se han encontrado ordenes de compra y compras");
-
+                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaOrdenesDeCompras();
                         return Ok(response);
                 }
 

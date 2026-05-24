@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
@@ -81,7 +82,7 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
-        public async Task<List<OrdenesYComprasRes>> ListaOrdenesYCompras()
+        public async Task<List<OrdenesYComprasRes>> ListaOrdenesDeCompras()
         {
             List<OrdenesYComprasRes> response = await _context.Compras
                             .Select(s => new OrdenesYComprasRes
@@ -104,28 +105,28 @@ namespace proy_back_Qbd.Services
                             })
                             .OrderByDescending(o => o.Id)
                             .ToListAsync();
+            if (response.Count == 0) throw new NotFoundException("No hay ordenes de compras");
 
-            if (response.Any())
+
+            var ids = response.Select(r => r.Id).ToList();
+            var familiasPorCompra = await _context.DetalleCompras
+                .Where(dc => ids.Contains(dc.IdCompra) && dc.Familia != null)
+                .Select(dc => new { dc.IdCompra, dc.Familia!.Abreviatura })
+                .Distinct()
+                .ToListAsync();
+
+            var dict = familiasPorCompra
+                .GroupBy(x => x.IdCompra)
+                .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
+
+            foreach (var item in response)
             {
-                var ids = response.Select(r => r.Id).ToList();
-                var familiasPorCompra = await _context.DetalleCompras
-                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Familia != null)
-                    .Select(dc => new { dc.IdCompra, dc.Familia!.Abreviatura })
-                    .Distinct()
-                    .ToListAsync();
-
-                var dict = familiasPorCompra
-                    .GroupBy(x => x.IdCompra)
-                    .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
-
-                foreach (var item in response)
+                if (dict.TryGetValue(item.Id, out var fams))
                 {
-                    if (dict.TryGetValue(item.Id, out var fams))
-                    {
-                        item.Familia = fams;
-                    }
+                    item.Familia = fams;
                 }
             }
+
 
             return response;
         }

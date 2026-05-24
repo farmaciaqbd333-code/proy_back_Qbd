@@ -9,7 +9,7 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface IOrdenCompraService
     {
-        Task<List<OrdenesYComprasRes>> ListaOrdenesYCompras();
+        Task<List<OrdenesYComprasRes>> ListaOrdenesDeCompras();
         Task<OrdenesYComprasRes?> ObtenerOrdenOCompra(int id);
         Task<OrdenCompraGetRes?> ObtenerOrdenCompra(int id);
         Task<int?> CrearOrdenDeCompra(OrdenCreateReq request);
