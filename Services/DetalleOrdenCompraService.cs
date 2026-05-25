@@ -19,7 +19,7 @@ namespace proy_back_Qbd.Services
             _context = context;
             _mapper = mapper;
         }
-        public async Task<bool> CrearDetalleOrdenDeCompra(int idCompra, int idCreador, IEnumerable<DetalleOrdenCreateReq> request)
+        public async Task<bool> CrearDetalleOrdenDeCompra(int idCompra, int idCreador, IEnumerable<DetalleInsumosCreateReq> request)
         {
             try
             {

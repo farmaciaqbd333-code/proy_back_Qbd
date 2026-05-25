@@ -22,7 +22,15 @@ namespace proy_back_Qbd.Models
         public string? RegistroSanitario { get; set; }
         public int? IdFabricante { get; set; }
     }
-    public class DetalleOrdenCreateReq
+    public class DetalleCreateReq
+    {
+        public required string Clasificacion { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
+        public required string Um { get; set; }
+        public required decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }
+    }
+    public class DetalleInsumosCreateReq
     {
         public int IdInsumo { get; set; }
         public required string DescripcionFac { get; set; }
@@ -31,10 +39,37 @@ namespace proy_back_Qbd.Models
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
         public required int IdCreador { get; set; }
-        public int? IdFamilia { get; set; }
         public int? IdFabricante { get; set; }
     }
-    public class DetalleOrdenUpdateReq
+    public class DetalleEmpaquesCreateReq
+    {
+        public int IdEmpaque { get; set; }
+        public required string DescripcionFac { get; set; }
+        public required decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public required decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }
+    }
+    public class DetalleProductosCreateReq
+    {
+        public int IdProducto { get; set; }
+        public required string DescripcionFac { get; set; }
+        public required decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public required decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }
+    }
+    public class DetalleEconomatosCreateReq
+    {
+        public int IdEconomato { get; set; }
+        public required string DescripcionFac { get; set; }
+        public required decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public required decimal CostoUnitario { get; set; }
+        public required decimal CostoTotal { get; set; }
+    }
+
+    public class DetalleInsumosUpdateReq
     {
         public int Id { get; set; }
         public int IdInsumo { get; set; }

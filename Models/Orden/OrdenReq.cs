@@ -20,7 +20,7 @@ namespace proy_back_Qbd.Models
         public required int IdCreador { get; set; }
         public required decimal Isc { get; set; }
         public required decimal Icbp { get; set; }
-        public required IEnumerable<DetalleOrdenCreateReq> Detalle { get; set; }
+        public IEnumerable<DetalleInsumosCreateReq>? DetalleInsumos { get; set; }
     }
 
     public class OrdenUpdateReq
@@ -38,8 +38,8 @@ namespace proy_back_Qbd.Models
         public required int IdSede { get; set; }
         public required int IdModificadorCreador { get; set; }
         public IEnumerable<int>? DetallesEliminados { get; set; }
-        public IEnumerable<DetalleOrdenCreateReq>? DetallesNuevos { get; set; }
-        public IEnumerable<DetalleOrdenUpdateReq>? Detalles { get; set; }
+        public IEnumerable<DetalleInsumosCreateReq>? DetallesNuevos { get; set; }
+        public IEnumerable<DetalleInsumosUpdateReq>? Detalles { get; set; }
     }
     public class ConvertirACompraReq
     {

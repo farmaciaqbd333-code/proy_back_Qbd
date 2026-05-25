@@ -176,20 +176,19 @@ namespace proy_back_Qbd.Services
             try
             {
                 Compra compra = _mapper.Map<Compra>(request);
-                compra.Valor = request.Detalle.Sum(s => s.CostoTotal);
+                compra.Valor = request.DetalleInsumos.Sum(s => s.CostoTotal);
                 compra.Total = request.Igv ? (compra.Valor * 1.18m) + request.Isc + request.Icbp : compra.Valor + request.Isc + request.Icbp;
 
-                var idsFamilias = request.Detalle.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
-                var nombresFamilias = await _context.Familias
-                    .Where(f => idsFamilias.Contains(f.Id))
-                    .Select(f => f.Abreviatura)
-                    .ToListAsync();
-                compra.Familia = string.Join(", ", nombresFamilias);
+                // var nombresFamilias = await _context.Familias
+                //     .Where(f => idsFamilias.Contains(f.Id))
+                //     .Select(f => f.Abreviatura)
+                //     .ToListAsync();
+                // compra.Familia = string.Join(", ", nombresFamilias);
 
                 _context.Compras.Add(compra);
                 await _context.SaveChangesAsync();
 
-                foreach (var item in request.Detalle)
+                foreach (var item in request.DetalleInsumos)
                 {
                     DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
                     detalleCompra.IdCompra = compra.Id;
@@ -260,7 +259,7 @@ namespace proy_back_Qbd.Services
 
                     var idsFamilias = new List<int>();
                     if (request.Detalles != null) idsFamilias.AddRange(request.Detalles.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
-                    if (request.DetallesNuevos != null) idsFamilias.AddRange(request.DetallesNuevos.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
+                    // if (request.DetallesNuevos != null) idsFamilias.AddRange(request.DetallesNuevos.Select(s => s.IdFamilia).Where(id => id.HasValue).Select(id => id!.Value));
 
                     var nombresFamilias = await _context.Familias
                         .Where(f => idsFamilias.Distinct().Contains(f.Id))

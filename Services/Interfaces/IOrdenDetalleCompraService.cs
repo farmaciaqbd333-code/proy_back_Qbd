@@ -8,7 +8,7 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface IDetalleOrdenCompraService
     {
-        Task<bool> CrearDetalleOrdenDeCompra(int idCompra, int idCreador, IEnumerable<DetalleOrdenCreateReq> request);
+        Task<bool> CrearDetalleOrdenDeCompra(int idCompra, int idCreador, IEnumerable<DetalleInsumosCreateReq> request);
         Task<bool> EliminarDetalleOrdenDeCompra(IEnumerable<int> request);
     }
 }
