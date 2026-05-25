@@ -20,7 +20,6 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Observaciones))
             .ForMember(dest => dest.IdSede, opt => opt.MapFrom(src => src.IdSede))
             .ForMember(dest => dest.IdCreador, opt => opt.MapFrom(src => src.IdCreador))
-            .ForMember(dest => dest.Familia, opt => opt.MapFrom(src => src.Familia))
             .ForMember(dest => dest.EstadoCompra, opt => opt.MapFrom(src => "Pendiente"));
             ;
             CreateMap<OrdenUpdateReq, Compra>(MemberList.None)

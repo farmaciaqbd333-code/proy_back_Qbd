@@ -40,6 +40,7 @@ namespace proy_back_Qbd.Models
         public required decimal CostoTotal { get; set; }
         public required int IdCreador { get; set; }
         public int? IdFabricante { get; set; }
+        public int? IdFamilia { get; set; }
     }
     public class DetalleEmpaquesCreateReq
     {

@@ -20,6 +20,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
             .ForMember(dest => dest.IdCreador, opt => opt.MapFrom(src => src.IdCreador))
             .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
+            .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.IdFamilia))
             ;
             CreateMap<DetalleInsumosUpdateReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())

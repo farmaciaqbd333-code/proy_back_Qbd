@@ -15,7 +15,6 @@ namespace proy_back_Qbd.Models
         public required bool Igv { get; set; }
         public required DateTime FechaCotizacion { get; set; }
         public required string Observaciones { get; set; }
-        public required string Familia { get; set; }
         public required int IdSede { get; set; }
         public required int IdCreador { get; set; }
         public required decimal Isc { get; set; }

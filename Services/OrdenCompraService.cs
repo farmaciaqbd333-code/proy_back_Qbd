@@ -179,11 +179,22 @@ namespace proy_back_Qbd.Services
                 compra.Valor = request.DetalleInsumos.Sum(s => s.CostoTotal);
                 compra.Total = request.Igv ? (compra.Valor * 1.18m) + request.Isc + request.Icbp : compra.Valor + request.Isc + request.Icbp;
 
-                // var nombresFamilias = await _context.Familias
-                //     .Where(f => idsFamilias.Contains(f.Id))
-                //     .Select(f => f.Abreviatura)
-                //     .ToListAsync();
-                // compra.Familia = string.Join(", ", nombresFamilias);
+                // Calcular Familia a partir de los IdFamilia de cada insumo
+                var idsFamilias = request.DetalleInsumos
+                    .Select(s => s.IdFamilia)
+                    .Where(id => id.HasValue)
+                    .Select(id => id!.Value)
+                    .Distinct()
+                    .ToList();
+
+                if (idsFamilias.Any())
+                {
+                    var nombresFamilias = await _context.Familias
+                        .Where(f => idsFamilias.Contains(f.Id))
+                        .Select(f => f.Abreviatura)
+                        .ToListAsync();
+                    compra.Familia = string.Join(", ", nombresFamilias);
+                }
 
                 _context.Compras.Add(compra);
                 await _context.SaveChangesAsync();
