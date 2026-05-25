@@ -19,7 +19,11 @@ namespace proy_back_Qbd.Models
         public required int IdCreador { get; set; }
         public required decimal Isc { get; set; }
         public required decimal Icbp { get; set; }
-        public IEnumerable<DetalleInsumosCreateReq>? DetalleInsumos { get; set; }
+        public IEnumerable<DetalleCreateReq>? DetalleCompras { get; set; }
+        public IEnumerable<DetalleInsumosCreateReq>? DetalleCompraInsumos { get; set; }
+        public IEnumerable<DetalleEmpaquesCreateReq>? DetalleCompraEmpaques { get; set; }
+        public IEnumerable<DetalleProductosCreateReq>? DetalleCompraProductos { get; set; }
+        public IEnumerable<DetalleEconomatosCreateReq>? DetalleCompraEconomatos { get; set; }
     }
 
     public class OrdenUpdateReq
@@ -37,8 +41,20 @@ namespace proy_back_Qbd.Models
         public required int IdSede { get; set; }
         public required int IdModificadorCreador { get; set; }
         public IEnumerable<int>? DetallesEliminados { get; set; }
-        public IEnumerable<DetalleInsumosCreateReq>? DetallesNuevos { get; set; }
-        public IEnumerable<DetalleInsumosUpdateReq>? Detalles { get; set; }
+
+        // Nuevos arrays de creación durante actualización
+        public IEnumerable<DetalleCreateReq>? DetalleComprasNuevos { get; set; }
+        public IEnumerable<DetalleInsumosCreateReq>? DetalleCompraInsumosNuevos { get; set; }
+        public IEnumerable<DetalleEmpaquesCreateReq>? DetalleCompraEmpaquesNuevos { get; set; }
+        public IEnumerable<DetalleProductosCreateReq>? DetalleCompraProductosNuevos { get; set; }
+        public IEnumerable<DetalleEconomatosCreateReq>? DetalleCompraEconomatosNuevos { get; set; }
+
+        // Nuevos arrays de edición durante actualización (con IDs)
+        public IEnumerable<DetalleUpdateReq>? DetalleCompras { get; set; }
+        public IEnumerable<DetalleInsumosUpdateReq>? DetalleCompraInsumos { get; set; }
+        public IEnumerable<DetalleEmpaquesUpdateReq>? DetalleCompraEmpaques { get; set; }
+        public IEnumerable<DetalleProductosUpdateReq>? DetalleCompraProductos { get; set; }
+        public IEnumerable<DetalleEconomatosUpdateReq>? DetalleCompraEconomatos { get; set; }
     }
     public class ConvertirACompraReq
     {

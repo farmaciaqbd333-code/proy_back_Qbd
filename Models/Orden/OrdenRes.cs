@@ -28,7 +28,7 @@ namespace proy_back_Qbd.Models
         public required string TC { get; set; }
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
-        public List<DetalleInsumosRes>? DetalleInsumos { get; set; }
+        public List<DetalleInsumosRes>? DetalleCompraInsumos { get; set; }
         public List<DetalleEmpaquesRes>? DetalleEmpaques { get; set; }
         public List<DetalleProductosRes>? DetalleProductos { get; set; }
         public List<DetalleEconomatosRes>? DetalleEconomatos { get; set; }
