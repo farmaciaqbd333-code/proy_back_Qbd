@@ -20,7 +20,7 @@ namespace Proy_back_QBD.Models
         [Column("fc")]
         public required string FactorCorreccion { get; set; }
         [Column("dil")]
-        public required string Dilucion { get; set; }        
+        public required string Dilucion { get; set; }
         [Column("fecha_creacion")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime FechaCreacion { get; set; }           // Fecha de creación del pedido
@@ -29,15 +29,14 @@ namespace Proy_back_QBD.Models
         public DateTime FechaModificacion { get; set; }       // Fecha de la última modificación del pedido
         [Column("creador_id")]
         public int CreadorId { get; set; }
+        [Column("id_familia")]
+        public int IdFamilia { get; set; }
         [Column("modificador_id")]
         public int ModificadorId { get; set; }
-        [JsonIgnore]
         public Usuario? Creador { get; set; }
-        [JsonIgnore]
         public Usuario? Modificador { get; set; }
-        [JsonIgnore]        
+        public Familia? Familia { get; set; }
         public List<FormulaCC>? FormulasCC { get; set; }
-        [JsonIgnore]        
         public List<DetalleCompraInsumo>? DetalleCompras { get; set; }
 
     }

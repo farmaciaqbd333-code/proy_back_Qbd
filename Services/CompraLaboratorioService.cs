@@ -77,22 +77,22 @@ namespace proy_back_Qbd.Services
            .Select(s => new ObtenerCompraLab2Res()
            {
                CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
-            //    Detalles = s.DetalleCompras != null ? s.DetalleCompras.Select(s2 => new ObtenerDetalleCompraLab2Res()
-            //    {
-            //        Conformidad = s2.Conformidad == true ? "SI" : "NO",
-            //        Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4, '0') : "",
-            //        CodigoInsumo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
-            //        DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
-            //        Coa = s2.Coa,
-            //        Lote = s2.Lote ?? "",
-            //        Um = "g",
-            //        CantidadSolicitada = s2.CantidadSolicitada * 1000,
-            //        Potencia = s2.Potencia,
-            //        FechaFabricacion = s2.FechaFabricacion,
-            //        FechaVencimiento = s2.FechaVencimiento,
-            //        CantidadPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0m,
-            //        CantidadRecibida = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0m,
-            //    }).ToList() : null
+               //    Detalles = s.DetalleCompras != null ? s.DetalleCompras.Select(s2 => new ObtenerDetalleCompraLab2Res()
+               //    {
+               //        Conformidad = s2.Conformidad == true ? "SI" : "NO",
+               //        Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4, '0') : "",
+               //        CodigoInsumo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
+               //        DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
+               //        Coa = s2.Coa,
+               //        Lote = s2.Lote ?? "",
+               //        Um = "g",
+               //        CantidadSolicitada = s2.CantidadSolicitada * 1000,
+               //        Potencia = s2.Potencia,
+               //        FechaFabricacion = s2.FechaFabricacion,
+               //        FechaVencimiento = s2.FechaVencimiento,
+               //        CantidadPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0m,
+               //        CantidadRecibida = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0m,
+               //    }).ToList() : null
            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra");
 
             return response;
@@ -104,7 +104,7 @@ namespace proy_back_Qbd.Services
             .Where(w => w.Id == idCompra)
             .Select(s => new EtiquetaCompraLabRes()
             {
-                Familia = s.Familia != null ? s.Familia.Abreviatura : "",
+                Familia = (s.Insumo != null && s.Insumo.Familia != null) ? s.Insumo.Familia.Abreviatura : "",
                 Tara = s.Paquetes != null ? s.Paquetes.Sum(s => s.Tara) : 0m
             })
             .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Detalle Compra");

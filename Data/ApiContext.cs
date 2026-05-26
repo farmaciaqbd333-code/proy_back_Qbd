@@ -102,7 +102,6 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraInsumos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
-                e.HasOne(ho => ho.Familia).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFamilia);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante).IsRequired(false);
             });
