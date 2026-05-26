@@ -16,7 +16,7 @@ namespace proy_back_Qbd.Models
         public required DateTime FechaCotizacion { get; set; }
         public required string Observaciones { get; set; }
         public required int IdSede { get; set; }
-        public required int IdCreador { get; set; }
+        public int IdCreador { get; set; }
         public required decimal Isc { get; set; }
         public required decimal Icbp { get; set; }
         public IEnumerable<DetalleCreateReq>? DetalleCompras { get; set; }

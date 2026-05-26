@@ -38,9 +38,7 @@ namespace proy_back_Qbd.Models
         public required string Um { get; set; }
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
-        public required int IdCreador { get; set; }
         public int? IdFabricante { get; set; }
-        public int? IdFamilia { get; set; }
     }
     public class DetalleEmpaquesCreateReq
     {

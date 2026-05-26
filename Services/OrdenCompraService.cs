@@ -149,7 +149,7 @@ namespace proy_back_Qbd.Services
 
 
             var ids = response.Select(r => r.Id).ToList();
-            var familiasPorCompra = await _context.DetalleCompras
+            var familiasPorCompra = await _context.DetalleComprasInsumos
                 .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo.Familia != null)
                 .Select(dc => new { dc.IdCompra, dc.Insumo.Familia!.Abreviatura })
                 .Distinct()
@@ -194,142 +194,114 @@ namespace proy_back_Qbd.Services
                             })
                             .FirstOrDefaultAsync();
 
-            if (response != null)
-            {
-                var familias = await _context.DetalleCompras
-                    .Where(dc => dc.IdCompra == response.Id && dc.Insumo.Familia != null)
-                    .Select(dc => dc.Insumo.Familia!.Abreviatura)
-                    .Distinct()
-                    .ToListAsync();
-
-                if (familias.Any())
-                {
-                    response.Familia = string.Join(", ", familias);
-                }
-            }
 
             return response;
         }
 
-        public async Task<int?> CrearOrdenDeCompra(OrdenCreateReq request)
+        public async Task<int> CrearOrdenDeCompra(OrdenCreateReq request)
         {
-            try
+            Compra compra = _mapper.Map<Compra>(request);
+            decimal valorTotal = 0;
+            string Familia = "";
+            if (request.DetalleCompraInsumos != null)
             {
-                Compra compra = _mapper.Map<Compra>(request);
-
-                decimal valorTotal = 0;
-                string Familia = "";
-                if (request.DetalleCompraInsumos != null)
-                {
-                    valorTotal += request.DetalleCompraInsumos.Sum(s => s.CostoTotal);
-                    Familia += Familia == "" ? "MP" : "- MP";
-                }
-                if (request.DetalleCompraEmpaques != null)
-                {
-                    valorTotal += request.DetalleCompraEmpaques.Sum(s => s.CostoTotal);
-                    Familia += Familia == "" ? "ME" : "- ME";
-                }
-
-                if (request.DetalleCompraProductos != null)
-                {
-                    valorTotal += request.DetalleCompraProductos.Sum(s => s.CostoTotal);
-                    Familia += Familia == "" ? "PT" : "- PT";
-                }
-                if (request.DetalleCompraEconomatos != null)
-                {
-                    valorTotal += request.DetalleCompraEconomatos.Sum(s => s.CostoTotal);
-                    Familia += Familia == "" ? "ECO" : "- ECO";
-                }
-                if (request.DetalleCompras != null)
-                {
-                    valorTotal += request.DetalleCompras.Sum(s => s.CostoTotal);
-                    List<string> lista = request.DetalleCompras.Select(s => s.Clasificacion).Distinct().ToList();
-                    foreach (var item in lista)
-                    {
-                        Familia += Familia == "" ? item : "- " + item;
-                    }
-                }
-                compra.Familia = Familia;
-                compra.Valor = valorTotal;
-                compra.Total = request.Igv ? (compra.Valor * 1.18m) + request.Isc + request.Icbp : compra.Valor + request.Isc + request.Icbp;
-
-                // Calcular Familia a partir de los IdFamilia de cada insumo
-
-
-                _context.Compras.Add(compra);
-                await _context.SaveChangesAsync();
-
-                // Guardar DetalleCompraInsumo
-                if (request.DetalleCompraInsumos != null)
-                {
-                    foreach (var item in request.DetalleCompraInsumos)
-                    {
-                        DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
-                        detalleCompra.IdCompra = compra.Id;
-                        _context.DetalleCompras.Add(detalleCompra);
-                    }
-                }
-
-                // Guardar DetalleCompraEmpaque
-                if (request.DetalleCompraEmpaques != null)
-                {
-                    foreach (var item in request.DetalleCompraEmpaques)
-                    {
-                        DetalleCompraEmpaque detalleCompra = _mapper.Map<DetalleCompraEmpaque>(item);
-                        detalleCompra.IdCompra = compra.Id;
-                        detalleCompra.IdCreador = request.IdCreador;
-                        detalleCompra.FechaCreacion = DateTime.Now;
-                        _context.Add(detalleCompra);
-                    }
-                }
-
-                // Guardar DetalleCompraProducto
-                if (request.DetalleCompraProductos != null)
-                {
-                    foreach (var item in request.DetalleCompraProductos)
-                    {
-                        DetalleCompraProducto detalleCompra = _mapper.Map<DetalleCompraProducto>(item);
-                        detalleCompra.IdCompra = compra.Id;
-                        detalleCompra.IdCreador = request.IdCreador;
-                        detalleCompra.FechaCreacion = DateTime.Now;
-                        _context.Add(detalleCompra);
-                    }
-                }
-
-                // Guardar DetalleCompraEconomato
-                if (request.DetalleCompraEconomatos != null)
-                {
-                    foreach (var item in request.DetalleCompraEconomatos)
-                    {
-                        DetalleCompraEconomato detalleCompra = _mapper.Map<DetalleCompraEconomato>(item);
-                        detalleCompra.IdCompra = compra.Id;
-                        detalleCompra.IdCreador = request.IdCreador;
-                        detalleCompra.FechaCreacion = DateTime.Now;
-                        _context.Add(detalleCompra);
-                    }
-                }
-
-                // Guardar DetalleCompra (Generico)
-                if (request.DetalleCompras != null)
-                {
-                    foreach (var item in request.DetalleCompras)
-                    {
-                        DetalleCompra detalleCompra = _mapper.Map<DetalleCompra>(item);
-                        detalleCompra.IdCompra = compra.Id;
-                        detalleCompra.IdCreador = request.IdCreador;
-                        detalleCompra.FechaCreacion = DateTime.Now;
-                        _context.Add(detalleCompra);
-                    }
-                }
-
-                await _context.SaveChangesAsync();
-
-                return compra.Id;
+                valorTotal += request.DetalleCompraInsumos.Sum(s => s.CostoTotal);
+                Familia += Familia == "" ? "MP" : "- MP";
             }
-            catch (Exception)
+            if (request.DetalleCompraEmpaques != null)
             {
-                return null;
+                valorTotal += request.DetalleCompraEmpaques.Sum(s => s.CostoTotal);
+                Familia += Familia == "" ? "ME" : "- ME";
             }
+
+            if (request.DetalleCompraProductos != null)
+            {
+                valorTotal += request.DetalleCompraProductos.Sum(s => s.CostoTotal);
+                Familia += Familia == "" ? "PT" : "- PT";
+            }
+            if (request.DetalleCompraEconomatos != null)
+            {
+                valorTotal += request.DetalleCompraEconomatos.Sum(s => s.CostoTotal);
+                Familia += Familia == "" ? "ECO" : "- ECO";
+            }
+            if (request.DetalleCompras != null)
+            {
+                valorTotal += request.DetalleCompras.Sum(s => s.CostoTotal);
+                List<string> lista = request.DetalleCompras.Select(s => s.Clasificacion).Distinct().ToList();
+                foreach (var item in lista)
+                {
+                    Familia += Familia == "" ? item : "- " + item;
+                }
+            }
+            compra.Familia = Familia;
+            compra.Valor = valorTotal;
+            compra.Total = request.Igv ? (compra.Valor * 1.18m) + request.Isc + request.Icbp : compra.Valor + request.Isc + request.Icbp;
+            _context.Compras.Add(compra);
+            await _context.SaveChangesAsync();
+
+            if (request.DetalleCompraInsumos != null)
+            {
+                foreach (var item in request.DetalleCompraInsumos)
+                {
+                    DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
+                    detalleCompra.IdCompra = compra.Id;
+                    detalleCompra.IdCreador = 1;
+                    _context.DetalleComprasInsumos.Add(detalleCompra);
+                }
+            }
+
+            // Guardar DetalleCompraEmpaque
+            if (request.DetalleCompraEmpaques != null)
+            {
+                foreach (var item in request.DetalleCompraEmpaques)
+                {
+                    DetalleCompraEmpaque detalleCompra = _mapper.Map<DetalleCompraEmpaque>(item);
+                    detalleCompra.IdCompra = compra.Id;
+                    detalleCompra.IdCreador = request.IdCreador;
+                    _context.DetalleCompraEmpaques.Add(detalleCompra);
+                }
+            }
+
+            // Guardar DetalleCompraProducto
+            if (request.DetalleCompraProductos != null)
+            {
+                foreach (var item in request.DetalleCompraProductos)
+                {
+                    DetalleCompraProducto detalleCompra = _mapper.Map<DetalleCompraProducto>(item);
+                    detalleCompra.IdCompra = compra.Id;
+                    detalleCompra.IdCreador = request.IdCreador;
+                    _context.DetalleCompraProductos.Add(detalleCompra);
+                }
+            }
+
+            // Guardar DetalleCompraEconomato
+            if (request.DetalleCompraEconomatos != null)
+            {
+                foreach (var item in request.DetalleCompraEconomatos)
+                {
+                    DetalleCompraEconomato detalleCompra = _mapper.Map<DetalleCompraEconomato>(item);
+                    detalleCompra.IdCompra = compra.Id;
+                    detalleCompra.IdCreador = request.IdCreador;
+                    _context.DetalleCompraEconomatos.Add(detalleCompra);
+                }
+            }
+
+            // Guardar DetalleCompra (Generico)
+            if (request.DetalleCompras != null)
+            {
+                foreach (var item in request.DetalleCompras)
+                {
+                    DetalleCompra detalleCompra = _mapper.Map<DetalleCompra>(item);
+                    detalleCompra.IdCompra = compra.Id;
+                    detalleCompra.IdCreador = request.IdCreador;
+                    _context.DetalleCompras.Add(detalleCompra);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return compra.Id;
+
         }
 
         public async Task<string?> EliminarOrdenOCompraOCompra(int id)
@@ -367,14 +339,14 @@ namespace proy_back_Qbd.Services
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
                         detalle.FechaCreacion = DateTime.Now;
-                        _context.DetalleCompras.Add(detalle);
+                        _context.DetalleComprasInsumos.Add(detalle);
                     }
                 }
                 if (request.DetalleCompraInsumos != null)
                 {
                     foreach (var item in request.DetalleCompraInsumos)
                     {
-                        DetalleCompraInsumo? detalle = await _context.DetalleCompras.FindAsync(item.Id);
+                        DetalleCompraInsumo? detalle = await _context.DetalleComprasInsumos.FindAsync(item.Id);
                         if (detalle != null)
                         {
                             _mapper.Map(item, detalle);
@@ -393,7 +365,7 @@ namespace proy_back_Qbd.Services
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
                         detalle.FechaCreacion = DateTime.Now;
-                        _context.Add(detalle);
+                        _context.DetalleCompraEmpaques.Add(detalle);
                     }
                 }
                 if (request.DetalleCompraEmpaques != null)
@@ -509,7 +481,7 @@ namespace proy_back_Qbd.Services
                     compra.Total = total;
 
                     // Calcular familias recalculando directamente del estado actual de la DB
-                    var idsFamilias = await _context.DetalleCompras
+                    var idsFamilias = await _context.DetalleComprasInsumos
                         .Where(d => d.IdCompra == idOC)
                         .Select(d => d.Insumo.IdFamilia)
                         .Distinct()
@@ -536,7 +508,7 @@ namespace proy_back_Qbd.Services
 
         public async Task<DescripcionFacturaRes> DescripcionFactura(int idProveedor)
         {
-            var detalles = await _context.DetalleCompras
+            var detalles = await _context.DetalleComprasInsumos
                 .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
                 .OrderBy(w => w.Id)
                 .ToListAsync();
@@ -566,7 +538,7 @@ namespace proy_back_Qbd.Services
             var idsDetalleCompra = request.Detalles
                                     .Select(s => s.IdDetalleCompra);
 
-            List<DetalleCompraInsumo> detalleCompras = await _context.DetalleCompras
+            List<DetalleCompraInsumo> detalleCompras = await _context.DetalleComprasInsumos
                 .Where(w => idsDetalleCompra.Contains(w.Id))
                 .ToListAsync();
 
@@ -580,7 +552,7 @@ namespace proy_back_Qbd.Services
 
             var idsFamiliasKeys = idFamilias.Select(f => f.IdFamilia).ToList();
 
-            List<IdFamiliasMaxRes> ultimosId = await _context.DetalleCompras
+            List<IdFamiliasMaxRes> ultimosId = await _context.DetalleComprasInsumos
             .Where(w => idsFamiliasKeys.Contains(w.Insumo.IdFamilia))
             .GroupBy(g => g.Insumo.IdFamilia)
             .Select(s => new IdFamiliasMaxRes
@@ -681,7 +653,7 @@ namespace proy_back_Qbd.Services
             if (response.Any())
             {
                 var ids = response.Select(r => r.Id).ToList();
-                var familiasPorCompra = await _context.DetalleCompras
+                var familiasPorCompra = await _context.DetalleComprasInsumos
                     .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo.Familia != null)
                     .Select(dc => new { dc.IdCompra, dc.Insumo.Familia!.Abreviatura })
                     .Distinct()

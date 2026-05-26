@@ -18,7 +18,6 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
-            .ForMember(dest => dest.IdCreador, opt => opt.MapFrom(src => src.IdCreador))
             .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
             CreateMap<DetalleInsumosUpdateReq, DetalleCompraInsumo>(MemberList.None)
@@ -65,6 +64,7 @@ namespace proy_back_Qbd.Models
             // DetalleEmpaquesCreateReq -> DetalleCompraEmpaque
             CreateMap<DetalleEmpaquesCreateReq, DetalleCompraEmpaque>(MemberList.None)
             .ForMember(dest => dest.IdEmpaque, opt => opt.MapFrom(src => src.IdEmpaque))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
@@ -73,6 +73,7 @@ namespace proy_back_Qbd.Models
             CreateMap<DetalleEmpaquesUpdateReq, DetalleCompraEmpaque>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdEmpaque, opt => opt.MapFrom(src => src.IdEmpaque))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
@@ -81,6 +82,7 @@ namespace proy_back_Qbd.Models
             CreateMap<DetalleProductosCreateReq, DetalleCompraProducto>(MemberList.None)
             .ForMember(dest => dest.IdProducto, opt => opt.MapFrom(src => src.IdProducto))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
@@ -88,6 +90,7 @@ namespace proy_back_Qbd.Models
             CreateMap<DetalleProductosUpdateReq, DetalleCompraProducto>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdProducto, opt => opt.MapFrom(src => src.IdProducto))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
@@ -96,6 +99,7 @@ namespace proy_back_Qbd.Models
             CreateMap<DetalleEconomatosCreateReq, DetalleCompraEconomato>(MemberList.None)
             .ForMember(dest => dest.IdEconomato, opt => opt.MapFrom(src => src.IdEconomato))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
@@ -103,6 +107,7 @@ namespace proy_back_Qbd.Models
             CreateMap<DetalleEconomatosUpdateReq, DetalleCompraEconomato>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdEconomato, opt => opt.MapFrom(src => src.IdEconomato))
+            .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
