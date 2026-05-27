@@ -30,8 +30,8 @@ namespace proy_back_Qbd.Models
         [Column("fecha_factura")] public DateTime? FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
         [Column("tipo_comprobante")] public string? TipoComprobante { get; set; }
-        [Column("isc")] public int Isc { get; set; }
-        [Column("icbp")] public int Icbp { get; set; }
+        [Column("isc")] public decimal Isc { get; set; }
+        [Column("icbp")] public decimal Icbp { get; set; }
         [Column("valor")] public decimal Valor { get; set; }
         [Column("total")] public decimal Total { get; set; }
         [Column("familia")] public required string Familia { get; set; }

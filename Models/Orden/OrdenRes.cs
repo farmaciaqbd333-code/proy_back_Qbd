@@ -38,8 +38,8 @@ namespace proy_back_Qbd.Models
         public string? Observaciones { get; set; }
         public string? Familia { get; set; }
         public string? Responsable { get; set; }
-        public int ISC { get; set; }
-        public int ICBP { get; set; }
+        public decimal ISC { get; set; }
+        public decimal ICBP { get; set; }
         public string? Guia { get; set; }
         public string? Modalidad { get; set; }
         public string? EstadoCompra { get; set; }

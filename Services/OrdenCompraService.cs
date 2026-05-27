@@ -200,31 +200,49 @@ namespace proy_back_Qbd.Services
 
         public async Task<int> CrearOrdenDeCompra(OrdenCreateReq request)
         {
-            Compra compra = _mapper.Map<Compra>(request);
+            Compra compra = new Compra
+            {
+                IdProveedor = request.IdProveedor,
+                Modalidad = request.Modalidad,
+                Moneda = request.Moneda,
+                TipoCambio = request.TipoCambio,
+                Igv = request.Igv,
+                FechaCotizacion = request.FechaCotizacion,
+                Observaciones = request.Observaciones,
+                IdSede = request.IdSede,
+                IdCreador = request.IdCreador,
+                Isc = request.Isc,
+                Icbp = request.Icbp,
+                EstadoCompra = "PENDIENTE",
+                Familia = "",
+                Valor = 0,
+                Total = 0
+            };
+
             decimal valorTotal = 0;
             string Familia = "";
-            if (request.DetalleCompraInsumos != null)
+            if (request.DetalleCompraInsumos != null && request.DetalleCompraInsumos.Any())
             {
                 valorTotal += request.DetalleCompraInsumos.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "MP" : "- MP";
             }
-            if (request.DetalleCompraEmpaques != null)
+            if (request.DetalleCompraEmpaques != null && request.DetalleCompraEmpaques.Any())
             {
                 valorTotal += request.DetalleCompraEmpaques.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "ME" : "- ME";
             }
 
-            if (request.DetalleCompraProductos != null)
+            if (request.DetalleCompraProductos != null && request.DetalleCompraProductos.Any())
             {
                 valorTotal += request.DetalleCompraProductos.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "PT" : "- PT";
             }
-            if (request.DetalleCompraEconomatos != null)
+            if (request.DetalleCompraEconomatos != null && request.DetalleCompraEconomatos.Any())
             {
                 valorTotal += request.DetalleCompraEconomatos.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "ECO" : "- ECO";
             }
-            if (request.DetalleCompras != null)
+            if (request.DetalleCompras != null && request.DetalleCompras.Any())
             {
                 valorTotal += request.DetalleCompras.Sum(s => s.CostoTotal);
                 List<string> lista = request.DetalleCompras.Select(s => s.Clasificacion).Distinct().ToList();
@@ -239,19 +257,28 @@ namespace proy_back_Qbd.Services
             _context.Compras.Add(compra);
             await _context.SaveChangesAsync();
 
-            if (request.DetalleCompraInsumos != null)
+            if (request.DetalleCompraInsumos != null && request.DetalleCompraInsumos.Any())
             {
                 foreach (var item in request.DetalleCompraInsumos)
                 {
-                    DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
-                    detalleCompra.IdCompra = compra.Id;
-                    detalleCompra.IdCreador = 1;
+                    var detalleCompra = new DetalleCompraInsumo
+                    {
+                        IdCompra = compra.Id,
+                        IdCreador = request.IdCreador,
+                        IdInsumo = item.IdInsumo,
+                        DescripcionFac = item.DescripcionFac,
+                        CantidadSolicitada = item.Cantidad,
+                        Um = item.Um,
+                        CostoUnitario = item.CostoUnitario,
+                        CostoTotal = item.CostoTotal,
+                        IdFabricante = item.IdFabricante,
+                    };
                     _context.DetalleComprasInsumos.Add(detalleCompra);
                 }
             }
 
             // Guardar DetalleCompraEmpaque
-            if (request.DetalleCompraEmpaques != null)
+            if (request.DetalleCompraEmpaques != null && request.DetalleCompraEmpaques.Any())
             {
                 foreach (var item in request.DetalleCompraEmpaques)
                 {
@@ -263,7 +290,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompraProducto
-            if (request.DetalleCompraProductos != null)
+            if (request.DetalleCompraProductos != null && request.DetalleCompraProductos.Any())
             {
                 foreach (var item in request.DetalleCompraProductos)
                 {
@@ -275,7 +302,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompraEconomato
-            if (request.DetalleCompraEconomatos != null)
+            if (request.DetalleCompraEconomatos != null && request.DetalleCompraEconomatos.Any())
             {
                 foreach (var item in request.DetalleCompraEconomatos)
                 {
@@ -287,7 +314,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompra (Generico)
-            if (request.DetalleCompras != null)
+            if (request.DetalleCompras != null && request.DetalleCompras.Any())
             {
                 foreach (var item in request.DetalleCompras)
                 {
