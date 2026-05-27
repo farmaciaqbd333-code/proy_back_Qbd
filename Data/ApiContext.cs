@@ -167,6 +167,7 @@ namespace Proy_back_QBD.Data
             {
                 e.HasOne(x => x.Creador).WithMany(x => x.InsumosCreadas).HasForeignKey(x => x.CreadorId);
                 e.HasOne(x => x.Modificador).WithMany(x => x.InsumosModificadas).HasForeignKey(x => x.ModificadorId);
+                e.HasOne(x => x.Familia).WithMany(x => x.Insumos).HasForeignKey(x => x.IdFamilia);
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
