@@ -107,12 +107,42 @@ namespace proy_back_Qbd.Services
 
                         }).FirstOrDefaultAsync();
 
-            if (response != null && response.DetalleCompraInsumos != null)
+            if (response != null)
             {
-                response.Familia = string.Join(", ", response.DetalleCompraInsumos
-                    .Select(d => d.Familia)
-                    .Where(f => !string.IsNullOrEmpty(f))
-                    .Distinct());
+                var partesFamilia = new List<string>();
+
+                // Familias reales de insumos (desde su entidad Familia)
+                if (response.DetalleCompraInsumos != null && response.DetalleCompraInsumos.Any())
+                {
+                    var familiasInsumos = response.DetalleCompraInsumos
+                        .Select(d => d.Familia)
+                        .Where(f => !string.IsNullOrEmpty(f))
+                        .Distinct();
+                    if (familiasInsumos.Any())
+                        partesFamilia.AddRange(familiasInsumos);
+                    else
+                        partesFamilia.Add("MP");
+                }
+
+                if (response.DetalleEmpaques != null && response.DetalleEmpaques.Any())
+                    partesFamilia.Add("ME");
+
+                if (response.DetalleProductos != null && response.DetalleProductos.Any())
+                    partesFamilia.Add("PT");
+
+                if (response.DetalleEconomatos != null && response.DetalleEconomatos.Any())
+                    partesFamilia.Add("ECO");
+
+                if (response.DetalleCompras != null && response.DetalleCompras.Any())
+                {
+                    var clases = response.DetalleCompras
+                        .Select(d => d.Clasificacion)
+                        .Where(c => !string.IsNullOrEmpty(c))
+                        .Distinct();
+                    partesFamilia.AddRange(clases);
+                }
+
+                response.Familia = string.Join("- ", partesFamilia.Distinct());
             }
 
             if (response == null)
