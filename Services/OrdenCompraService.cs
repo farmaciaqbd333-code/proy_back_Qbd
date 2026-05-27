@@ -230,6 +230,9 @@ namespace proy_back_Qbd.Services
 
         public async Task<int> CrearOrdenDeCompra(OrdenCreateReq request)
         {
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
             Compra compra = new Compra
             {
                 IdProveedor = request.IdProveedor,
@@ -331,6 +334,7 @@ namespace proy_back_Qbd.Services
                 }
             }
 
+
             // Guardar DetalleCompraEconomato
             if (request.DetalleCompraEconomatos.Any())
             {
@@ -356,10 +360,17 @@ namespace proy_back_Qbd.Services
             }
 
             await _context.SaveChangesAsync();
+            await tx.CommitAsync();
 
             return compra.Id;
-
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
         }
+
 
         public async Task<string?> EliminarOrdenOCompraOCompra(int id)
         {
