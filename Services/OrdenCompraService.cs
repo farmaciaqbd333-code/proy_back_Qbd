@@ -593,7 +593,7 @@ namespace proy_back_Qbd.Services
                     // Calcular familias recalculando directamente del estado actual de la DB
                     var idsFamilias = await _context.DetalleComprasInsumos
                         .Where(d => d.IdCompra == idOC && d.Insumo != null && d.Insumo.Familia != null)
-                        .Select(d => d.Insumo.IdFamilia)
+                        .Select(d => d.Insumo!.IdFamilia)
                         .Distinct()
                         .ToListAsync();
 
