@@ -400,26 +400,44 @@ namespace proy_back_Qbd.Services
                         DetalleCompraInsumo? detalle = await _context.DetalleComprasInsumos.FindAsync(item.Id);
                         if (detalle != null)
                         {
-                            _mapper.Map(item, detalle);
+                            if (detalle.IdInsumo != item.IdInsumo)
+                                detalle.IdInsumo = item.IdInsumo;
+
+                            if (detalle.DescripcionFac != item.DescripcionFac)
+                                detalle.DescripcionFac = item.DescripcionFac;
+
+                            if (detalle.CantidadSolicitada != item.Cantidad)
+                                detalle.CantidadSolicitada = item.Cantidad;
+
+                            if (detalle.Um != item.Um)
+                                detalle.Um = item.Um;
+
+                            if (detalle.CostoUnitario != item.CostoUnitario)
+                                detalle.CostoUnitario = item.CostoUnitario;
+
+                            if (detalle.CostoTotal != item.CostoTotal)
+                                detalle.CostoTotal = item.CostoTotal;
+
+                            if (detalle.IdFabricante != item.IdFabricante)
+                                detalle.IdFabricante = item.IdFabricante;
+
+                            // normalmente este sí se asigna siempre (auditoría)
                             detalle.IdModificador = request.IdModificadorCreador;
-                            detalle.FechaModificacion = DateTime.Now;
                         }
                     }
                 }
 
-                // 4. Aplicar Empaques (Nuevos + Editados)
-                if (request.DetalleCompraEmpaquesNuevos != null)
+                if (request.DetalleCompraEmpaquesNuevos.Any())
                 {
                     foreach (var item in request.DetalleCompraEmpaquesNuevos)
                     {
                         DetalleCompraEmpaque detalle = _mapper.Map<DetalleCompraEmpaque>(item);
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
-                        detalle.FechaCreacion = DateTime.Now;
                         _context.DetalleCompraEmpaques.Add(detalle);
                     }
                 }
-                if (request.DetalleCompraEmpaquesUpd != null)
+                if (request.DetalleCompraEmpaquesUpd.Any())
                 {
                     foreach (var item in request.DetalleCompraEmpaquesUpd)
                     {
@@ -428,50 +446,46 @@ namespace proy_back_Qbd.Services
                         {
                             _mapper.Map(item, detalle);
                             detalle.IdModificador = request.IdModificadorCreador;
-                            detalle.FechaModificacion = DateTime.Now;
                         }
                     }
                 }
 
                 // 5. Aplicar Productos (Nuevos + Editados)
-                if (request.DetalleCompraProductosNuevos != null)
+                if (request.DetalleCompraProductosNuevos.Any())
                 {
                     foreach (var item in request.DetalleCompraProductosNuevos)
                     {
                         DetalleCompraProducto detalle = _mapper.Map<DetalleCompraProducto>(item);
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
-                        detalle.FechaCreacion = DateTime.Now;
                         _context.Add(detalle);
                     }
                 }
-                if (request.DetalleCompraProductosUpd != null)
+                if (request.DetalleCompraProductosUpd.Any())
                 {
                     foreach (var item in request.DetalleCompraProductosUpd)
                     {
-                        DetalleCompraProducto? detalle = await _context.Set<DetalleCompraProducto>().FindAsync(item.Id);
+                        DetalleCompraProducto? detalle = await _context.DetalleCompraProductos.FindAsync(item.Id);
                         if (detalle != null)
                         {
                             _mapper.Map(item, detalle);
                             detalle.IdModificador = request.IdModificadorCreador;
-                            detalle.FechaModificacion = DateTime.Now;
                         }
                     }
                 }
 
                 // 6. Aplicar Economatos (Nuevos + Editados)
-                if (request.DetalleCompraEconomatosNuevos != null)
+                if (request.DetalleCompraEconomatosNuevos.Any())
                 {
                     foreach (var item in request.DetalleCompraEconomatosNuevos)
                     {
                         DetalleCompraEconomato detalle = _mapper.Map<DetalleCompraEconomato>(item);
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
-                        detalle.FechaCreacion = DateTime.Now;
                         _context.Add(detalle);
                     }
                 }
-                if (request.DetalleCompraEconomatosUpd != null)
+                if (request.DetalleCompraEconomatosUpd.Any())
                 {
                     foreach (var item in request.DetalleCompraEconomatosUpd)
                     {
@@ -480,24 +494,22 @@ namespace proy_back_Qbd.Services
                         {
                             _mapper.Map(item, detalle);
                             detalle.IdModificador = request.IdModificadorCreador;
-                            detalle.FechaModificacion = DateTime.Now;
                         }
                     }
                 }
 
                 // 7. Aplicar Generico (Nuevos + Editados)
-                if (request.DetalleComprasNuevos != null)
+                if (request.DetalleComprasNuevos.Any())
                 {
                     foreach (var item in request.DetalleComprasNuevos)
                     {
                         DetalleCompra detalle = _mapper.Map<DetalleCompra>(item);
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
-                        detalle.FechaCreacion = DateTime.Now;
                         _context.Add(detalle);
                     }
                 }
-                if (request.DetalleComprasUpd != null)
+                if (request.DetalleComprasUpd.Any())
                 {
                     foreach (var item in request.DetalleComprasUpd)
                     {
@@ -506,7 +518,6 @@ namespace proy_back_Qbd.Services
                         {
                             _mapper.Map(item, detalle);
                             detalle.IdModificador = request.IdModificadorCreador;
-                            detalle.FechaModificacion = DateTime.Now;
                         }
                     }
                 }
