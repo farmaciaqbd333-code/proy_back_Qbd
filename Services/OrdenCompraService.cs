@@ -49,7 +49,7 @@ namespace proy_back_Qbd.Services
                                 Lote = s2.Lote,
                                 RegistroSanitario = s2.RegistroSanitario,
                                 Conforme = s2.Conformidad ?? false,
-                                Familia = s2.Insumo.Familia != null ? s2.Insumo.Familia.Abreviatura : "",
+                                Familia = s2.Insumo == null || s2.Insumo.Familia == null ? "" : s2.Insumo.Familia.Abreviatura,
                                 IdFabricante = s2.IdFabricante,
                                 NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
                                 CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
@@ -150,7 +150,7 @@ namespace proy_back_Qbd.Services
 
             var ids = response.Select(r => r.Id).ToList();
             var familiasPorCompra = await _context.DetalleComprasInsumos
-                .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo.Familia != null)
+                .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo != null && dc.Insumo.Familia != null)
                 .Select(dc => new { dc.IdCompra, dc.Insumo.Familia!.Abreviatura })
                 .Distinct()
                 .ToListAsync();
@@ -544,7 +544,7 @@ namespace proy_back_Qbd.Services
 
                     // Calcular familias recalculando directamente del estado actual de la DB
                     var idsFamilias = await _context.DetalleComprasInsumos
-                        .Where(d => d.IdCompra == idOC)
+                        .Where(d => d.IdCompra == idOC && d.Insumo != null)
                         .Select(d => d.Insumo.IdFamilia)
                         .Distinct()
                         .ToListAsync();
@@ -601,12 +601,13 @@ namespace proy_back_Qbd.Services
                                     .Select(s => s.IdDetalleCompra);
 
             List<DetalleCompraInsumo> detalleCompras = await _context.DetalleComprasInsumos
+                .Include(w => w.Insumo)
                 .Where(w => idsDetalleCompra.Contains(w.Id))
                 .ToListAsync();
 
             // Agrupacion por familias
             List<IdFamiliasRes> idFamilias = detalleCompras
-            .GroupBy(g => g.Insumo.IdFamilia).Select(s => new IdFamiliasRes()
+            .GroupBy(g => g.Insumo == null ? 0 : g.Insumo.IdFamilia).Select(s => new IdFamiliasRes()
             {
                 IdFamilia = s.Key,
                 Cantidad = s.Count()
@@ -615,7 +616,7 @@ namespace proy_back_Qbd.Services
             var idsFamiliasKeys = idFamilias.Select(f => f.IdFamilia).ToList();
 
             List<IdFamiliasMaxRes> ultimosId = await _context.DetalleComprasInsumos
-            .Where(w => idsFamiliasKeys.Contains(w.Insumo.IdFamilia))
+            .Where(w => w.Insumo != null && idsFamiliasKeys.Contains(w.Insumo.IdFamilia))
             .GroupBy(g => g.Insumo.IdFamilia)
             .Select(s => new IdFamiliasMaxRes
             {
@@ -633,9 +634,12 @@ namespace proy_back_Qbd.Services
                     _mapper.Map(item2, item);
                     item.IdModificador = request.IdModificador;
                     item.CostoTotal = item.CostoUnitario * item2.Cantidad;
-                    IdFamiliasMaxRes? idFamilia = ultimosId.FirstOrDefault(w => w.IdFamilia == item.Insumo.IdFamilia);
-                    if (idFamilia == null) return null;
-                    idFamilia.Ultimo++;
+                    if (item.Insumo != null)
+                    {
+                        IdFamiliasMaxRes? idFamilia = ultimosId.FirstOrDefault(w => w.IdFamilia == item.Insumo.IdFamilia);
+                        if (idFamilia == null) return null;
+                        idFamilia.Ultimo++;
+                    }
                     sumaTotal += item.CostoTotal;
                 }
             }
@@ -716,7 +720,7 @@ namespace proy_back_Qbd.Services
             {
                 var ids = response.Select(r => r.Id).ToList();
                 var familiasPorCompra = await _context.DetalleComprasInsumos
-                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo.Familia != null)
+                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo != null && dc.Insumo.Familia != null)
                     .Select(dc => new { dc.IdCompra, dc.Insumo.Familia!.Abreviatura })
                     .Distinct()
                     .ToListAsync();
