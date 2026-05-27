@@ -221,28 +221,28 @@ namespace proy_back_Qbd.Services
 
             decimal valorTotal = 0;
             string Familia = "";
-            if (request.DetalleCompraInsumos != null && request.DetalleCompraInsumos.Any())
+            if (request.DetalleCompraInsumos.Any())
             {
                 valorTotal += request.DetalleCompraInsumos.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "MP" : "- MP";
             }
-            if (request.DetalleCompraEmpaques != null && request.DetalleCompraEmpaques.Any())
+            if (request.DetalleCompraEmpaques.Any())
             {
                 valorTotal += request.DetalleCompraEmpaques.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "ME" : "- ME";
             }
 
-            if (request.DetalleCompraProductos != null && request.DetalleCompraProductos.Any())
+            if (request.DetalleCompraProductos.Any())
             {
                 valorTotal += request.DetalleCompraProductos.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "PT" : "- PT";
             }
-            if (request.DetalleCompraEconomatos != null && request.DetalleCompraEconomatos.Any())
+            if (request.DetalleCompraEconomatos.Any())
             {
                 valorTotal += request.DetalleCompraEconomatos.Sum(s => s.CostoTotal);
                 Familia += Familia == "" ? "ECO" : "- ECO";
             }
-            if (request.DetalleCompras != null && request.DetalleCompras.Any())
+            if (request.DetalleCompras.Any())
             {
                 valorTotal += request.DetalleCompras.Sum(s => s.CostoTotal);
                 List<string> lista = request.DetalleCompras.Select(s => s.Clasificacion).Distinct().ToList();
@@ -257,7 +257,7 @@ namespace proy_back_Qbd.Services
             _context.Compras.Add(compra);
             await _context.SaveChangesAsync();
 
-            if (request.DetalleCompraInsumos != null && request.DetalleCompraInsumos.Any())
+            if (request.DetalleCompraInsumos.Any())
             {
                 foreach (var item in request.DetalleCompraInsumos)
                 {
@@ -278,7 +278,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompraEmpaque
-            if (request.DetalleCompraEmpaques != null && request.DetalleCompraEmpaques.Any())
+            if (request.DetalleCompraEmpaques.Any())
             {
                 foreach (var item in request.DetalleCompraEmpaques)
                 {
@@ -290,7 +290,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompraProducto
-            if (request.DetalleCompraProductos != null && request.DetalleCompraProductos.Any())
+            if (request.DetalleCompraProductos.Any())
             {
                 foreach (var item in request.DetalleCompraProductos)
                 {
@@ -302,7 +302,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompraEconomato
-            if (request.DetalleCompraEconomatos != null && request.DetalleCompraEconomatos.Any())
+            if (request.DetalleCompraEconomatos.Any())
             {
                 foreach (var item in request.DetalleCompraEconomatos)
                 {
@@ -314,7 +314,7 @@ namespace proy_back_Qbd.Services
             }
 
             // Guardar DetalleCompra (Generico)
-            if (request.DetalleCompras != null && request.DetalleCompras.Any())
+            if (request.DetalleCompras.Any())
             {
                 foreach (var item in request.DetalleCompras)
                 {
@@ -345,7 +345,6 @@ namespace proy_back_Qbd.Services
 
         public async Task<OrdenesYComprasRes?> ActualizarOrdenDeCompra(int idOC, OrdenUpdateReq request)
         {
-
             using var tx = await _context.Database.BeginTransactionAsync();
 
             try
@@ -354,24 +353,49 @@ namespace proy_back_Qbd.Services
                 decimal total = 0;
 
                 // 1. Eliminar
-                if (request.DetallesEliminados != null)
-                    await _serviceDOC.EliminarDetalleOrdenDeCompra(request.DetallesEliminados);
+                if (request.DetallesEliminados.Any())
+                    _context.DetalleCompras.Where(d => request.DetallesEliminados.Contains(d.Id));
+                if (request.DetallesCompraInsumosEliminados.Any())
+                {
+                    _context.DetalleComprasInsumos.Where(d => request.DetallesCompraInsumosEliminados.Contains(d.Id));
+                }
+                if (request.DetalleCompraEmpaquesEliminados.Any())
+                {
+                    _context.DetalleCompraEmpaques.Where(d => request.DetalleCompraEmpaquesEliminados.Contains(d.Id));
+                }
+
+                if (request.DetalleCompraProductosEliminados.Any())
+                {
+                    _context.DetalleCompraProductos.Where(d => request.DetalleCompraProductosEliminados.Contains(d.Id));
+                }
+                if (request.DetalleCompraEconomatosEliminados.Any())
+                {
+                    _context.DetalleCompraEconomatos.Where(d => request.DetalleCompraEconomatosEliminados.Contains(d.Id));
+                }
 
                 // 2. Aplicar Insumos (Nuevos + Editados)
-                if (request.DetalleCompraInsumosNuevos != null)
+                if (request.DetalleCompraInsumosNuevos.Any())
                 {
                     foreach (var item in request.DetalleCompraInsumosNuevos)
                     {
-                        DetalleCompraInsumo detalle = _mapper.Map<DetalleCompraInsumo>(item);
-                        detalle.IdCompra = idOC;
-                        detalle.IdCreador = request.IdModificadorCreador;
-                        detalle.FechaCreacion = DateTime.Now;
-                        _context.DetalleComprasInsumos.Add(detalle);
+                        var detalleCompraInsumo = new DetalleCompraInsumo
+                        {
+                            IdCompra = idOC,
+                            IdCreador = request.IdModificadorCreador,
+                            IdInsumo = item.IdInsumo,
+                            DescripcionFac = item.DescripcionFac,
+                            CantidadSolicitada = item.Cantidad,
+                            Um = item.Um,
+                            CostoUnitario = item.CostoUnitario,
+                            CostoTotal = item.CostoTotal,
+                            IdFabricante = item.IdFabricante,
+                        };
+                        _context.DetalleComprasInsumos.Add(detalleCompraInsumo);
                     }
                 }
-                if (request.DetalleCompraInsumos != null)
+                if (request.DetalleCompraInsumosUpd.Any())
                 {
-                    foreach (var item in request.DetalleCompraInsumos)
+                    foreach (var item in request.DetalleCompraInsumosUpd)
                     {
                         DetalleCompraInsumo? detalle = await _context.DetalleComprasInsumos.FindAsync(item.Id);
                         if (detalle != null)
@@ -395,9 +419,9 @@ namespace proy_back_Qbd.Services
                         _context.DetalleCompraEmpaques.Add(detalle);
                     }
                 }
-                if (request.DetalleCompraEmpaques != null)
+                if (request.DetalleCompraEmpaquesUpd != null)
                 {
-                    foreach (var item in request.DetalleCompraEmpaques)
+                    foreach (var item in request.DetalleCompraEmpaquesUpd)
                     {
                         DetalleCompraEmpaque? detalle = await _context.Set<DetalleCompraEmpaque>().FindAsync(item.Id);
                         if (detalle != null)
@@ -421,9 +445,9 @@ namespace proy_back_Qbd.Services
                         _context.Add(detalle);
                     }
                 }
-                if (request.DetalleCompraProductos != null)
+                if (request.DetalleCompraProductosUpd != null)
                 {
-                    foreach (var item in request.DetalleCompraProductos)
+                    foreach (var item in request.DetalleCompraProductosUpd)
                     {
                         DetalleCompraProducto? detalle = await _context.Set<DetalleCompraProducto>().FindAsync(item.Id);
                         if (detalle != null)
@@ -447,9 +471,9 @@ namespace proy_back_Qbd.Services
                         _context.Add(detalle);
                     }
                 }
-                if (request.DetalleCompraEconomatos != null)
+                if (request.DetalleCompraEconomatosUpd != null)
                 {
-                    foreach (var item in request.DetalleCompraEconomatos)
+                    foreach (var item in request.DetalleCompraEconomatosUpd)
                     {
                         DetalleCompraEconomato? detalle = await _context.Set<DetalleCompraEconomato>().FindAsync(item.Id);
                         if (detalle != null)
@@ -473,9 +497,9 @@ namespace proy_back_Qbd.Services
                         _context.Add(detalle);
                     }
                 }
-                if (request.DetalleCompras != null)
+                if (request.DetalleComprasUpd != null)
                 {
-                    foreach (var item in request.DetalleCompras)
+                    foreach (var item in request.DetalleComprasUpd)
                     {
                         DetalleCompra? detalle = await _context.Set<DetalleCompra>().FindAsync(item.Id);
                         if (detalle != null)

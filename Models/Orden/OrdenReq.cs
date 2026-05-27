@@ -19,11 +19,11 @@ namespace proy_back_Qbd.Models
         public int IdCreador { get; set; }
         public required decimal Isc { get; set; }
         public required decimal Icbp { get; set; }
-        public IEnumerable<DetalleCreateReq>? DetalleCompras { get; set; }
-        public IEnumerable<DetalleInsumosCreateReq>? DetalleCompraInsumos { get; set; }
-        public IEnumerable<DetalleEmpaquesCreateReq>? DetalleCompraEmpaques { get; set; }
-        public IEnumerable<DetalleProductosCreateReq>? DetalleCompraProductos { get; set; }
-        public IEnumerable<DetalleEconomatosCreateReq>? DetalleCompraEconomatos { get; set; }
+        public required IEnumerable<DetalleCreateReq> DetalleCompras { get; set; }
+        public required IEnumerable<DetalleInsumosCreateReq> DetalleCompraInsumos { get; set; }
+        public required IEnumerable<DetalleEmpaquesCreateReq> DetalleCompraEmpaques { get; set; }
+        public required IEnumerable<DetalleProductosCreateReq> DetalleCompraProductos { get; set; }
+        public required IEnumerable<DetalleEconomatosCreateReq> DetalleCompraEconomatos { get; set; }
     }
 
     public class OrdenUpdateReq
@@ -40,21 +40,25 @@ namespace proy_back_Qbd.Models
         public required string Familia { get; set; }
         public required int IdSede { get; set; }
         public required int IdModificadorCreador { get; set; }
-        public IEnumerable<int>? DetallesEliminados { get; set; }
+        public required IEnumerable<int> DetallesEliminados { get; set; }
+        public required IEnumerable<int> DetallesCompraInsumosEliminados { get; set; }
+        public required IEnumerable<int> DetalleCompraEmpaquesEliminados { get; set; }
+        public required IEnumerable<int> DetalleCompraProductosEliminados { get; set; }
+        public required IEnumerable<int> DetalleCompraEconomatosEliminados { get; set; }
 
         // Nuevos arrays de creación durante actualización
-        public IEnumerable<DetalleCreateReq>? DetalleComprasNuevos { get; set; }
-        public IEnumerable<DetalleInsumosCreateReq>? DetalleCompraInsumosNuevos { get; set; }
-        public IEnumerable<DetalleEmpaquesCreateReq>? DetalleCompraEmpaquesNuevos { get; set; }
-        public IEnumerable<DetalleProductosCreateReq>? DetalleCompraProductosNuevos { get; set; }
-        public IEnumerable<DetalleEconomatosCreateReq>? DetalleCompraEconomatosNuevos { get; set; }
+        public required IEnumerable<DetalleCreateReq> DetalleComprasNuevos { get; set; }
+        public required IEnumerable<DetalleInsumosCreateReq> DetalleCompraInsumosNuevos { get; set; }
+        public required IEnumerable<DetalleEmpaquesCreateReq> DetalleCompraEmpaquesNuevos { get; set; }
+        public required IEnumerable<DetalleProductosCreateReq> DetalleCompraProductosNuevos { get; set; }
+        public required IEnumerable<DetalleEconomatosCreateReq> DetalleCompraEconomatosNuevos { get; set; }
 
         // Nuevos arrays de edición durante actualización (con IDs)
-        public IEnumerable<DetalleUpdateReq>? DetalleCompras { get; set; }
-        public IEnumerable<DetalleInsumosUpdateReq>? DetalleCompraInsumos { get; set; }
-        public IEnumerable<DetalleEmpaquesUpdateReq>? DetalleCompraEmpaques { get; set; }
-        public IEnumerable<DetalleProductosUpdateReq>? DetalleCompraProductos { get; set; }
-        public IEnumerable<DetalleEconomatosUpdateReq>? DetalleCompraEconomatos { get; set; }
+        public required IEnumerable<DetalleUpdateReq> DetalleComprasUpd { get; set; }
+        public required IEnumerable<DetalleInsumosUpdateReq> DetalleCompraInsumosUpd { get; set; }
+        public required IEnumerable<DetalleEmpaquesUpdateReq> DetalleCompraEmpaquesUpd { get; set; }
+        public required IEnumerable<DetalleProductosUpdateReq> DetalleCompraProductosUpd { get; set; }
+        public required IEnumerable<DetalleEconomatosUpdateReq> DetalleCompraEconomatosUpd { get; set; }
     }
     public class ConvertirACompraReq
     {
