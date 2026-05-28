@@ -11,7 +11,7 @@ namespace proy_back_Qbd.Models
     {
         [Column("id")] public int Id { get; set; }
         [Column("descripcion")] public string Descripcion { get; set; } = string.Empty;
-        [Column("unidad_medida")] public string UnidadMedida { get; set; } = string.Empty;
+        [Column("unidad_medida")] public string? UnidadMedida { get; set; }
         public List<DetalleCompraEconomato>? DetalleCompraEconomatos { get; set; }
     }
 }
