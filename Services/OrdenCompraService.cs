@@ -32,8 +32,13 @@ namespace proy_back_Qbd.Services
                         .Select(s => new OrdenCompraGetRes
                         {
                             TC = s.TipoCambio.ToString(),
+                            Moneda = s.Moneda,
+                            FechaCotizacion = s.FechaCotizacion,
                             Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
                             Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
+                            CodigoProveedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                            RUC = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                            RazonSocial = s.Proveedor != null ? s.Proveedor.Datos : "",
                             DetalleCompraInsumos = s.DetalleCompraInsumos == null ? null : s.DetalleCompraInsumos.Select(s2 => new DetalleInsumosRes
                             {
                                 Id = s2.Id,

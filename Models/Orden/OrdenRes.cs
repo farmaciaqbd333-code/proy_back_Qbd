@@ -26,6 +26,8 @@ namespace proy_back_Qbd.Models
     public class OrdenCompraGetRes
     {
         public required string TC { get; set; }
+        public string? Moneda { get; set; }
+        public DateTime? FechaCotizacion { get; set; }
         public required string Destino { get; set; }
         public required string Direccion { get; set; }
         public List<DetalleInsumosRes>? DetalleCompraInsumos { get; set; }
@@ -43,6 +45,9 @@ namespace proy_back_Qbd.Models
         public string? Guia { get; set; }
         public string? Modalidad { get; set; }
         public string? EstadoCompra { get; set; }
+        public string? CodigoProveedor { get; set; }
+        public string? RUC { get; set; }
+        public string? RazonSocial { get; set; }
     }
     public class DescripcionFacturaRes
     {
