@@ -177,27 +177,6 @@ namespace proy_back_Qbd.Services
                             .ToListAsync();
             if (response.Count == 0) throw new NotFoundException("No hay ordenes de compras");
 
-
-            var ids = response.Select(r => r.Id).ToList();
-            var familiasPorCompra = await _context.DetalleComprasInsumos
-                .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo != null && dc.Insumo.Familia != null)
-                .Select(dc => new { dc.IdCompra, dc.Insumo.Familia!.Abreviatura })
-                .Distinct()
-                .ToListAsync();
-
-            var dict = familiasPorCompra
-                .GroupBy(x => x.IdCompra)
-                .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
-
-            foreach (var item in response)
-            {
-                if (dict.TryGetValue(item.Id, out var fams))
-                {
-                    item.Familia = fams;
-                }
-            }
-
-
             return response;
         }
         public async Task<OrdenesYComprasRes?> ObtenerOrdenOCompra(int id)
@@ -591,6 +570,8 @@ namespace proy_back_Qbd.Services
                     compra.Total = total;
 
                     // Calcular familias recalculando directamente del estado actual de la DB
+                    var partesFamilia = new List<string>();
+
                     var idsFamilias = await _context.DetalleComprasInsumos
                         .Where(d => d.IdCompra == idOC && d.Insumo != null && d.Insumo.Familia != null)
                         .Select(d => d.Insumo!.IdFamilia)
@@ -601,7 +582,30 @@ namespace proy_back_Qbd.Services
                         .Where(f => idsFamilias.Contains(f.Id))
                         .Select(f => f.Abreviatura)
                         .ToListAsync();
-                    compra.Familia = string.Join(", ", nombresFamilias);
+
+                    if (nombresFamilias.Any())
+                        partesFamilia.AddRange(nombresFamilias);
+                    else if (await _context.DetalleComprasInsumos.AnyAsync(d => d.IdCompra == idOC))
+                        partesFamilia.Add("MP");
+
+                    if (await _context.DetalleCompraEmpaques.AnyAsync(d => d.IdCompra == idOC))
+                        partesFamilia.Add("ME");
+
+                    if (await _context.DetalleCompraProductos.AnyAsync(d => d.IdCompra == idOC))
+                        partesFamilia.Add("PT");
+
+                    if (await _context.DetalleCompraEconomatos.AnyAsync(d => d.IdCompra == idOC))
+                        partesFamilia.Add("ECO");
+
+                    var clases = await _context.DetalleCompras
+                        .Where(d => d.IdCompra == idOC && !string.IsNullOrEmpty(d.Clasificacion))
+                        .Select(d => d.Clasificacion)
+                        .Distinct()
+                        .ToListAsync();
+                    if (clases.Any())
+                        partesFamilia.AddRange(clases);
+
+                    compra.Familia = string.Join("- ", partesFamilia.Distinct());
                 }
                 await _context.SaveChangesAsync();
                 await tx.CommitAsync();
@@ -762,28 +766,6 @@ namespace proy_back_Qbd.Services
                 })
                 .OrderByDescending(o => o.Id)
                 .ToListAsync();
-
-            // Enriquecer la columna Familia con los datos reales de DetalleCompras
-            if (response.Any())
-            {
-                var ids = response.Select(r => r.Id).ToList();
-                var familiasPorCompra = await _context.DetalleComprasInsumos
-                    .Where(dc => ids.Contains(dc.IdCompra) && dc.Insumo != null && dc.Insumo.Familia != null)
-                    .Select(dc => new { dc.IdCompra, dc.Insumo.Familia!.Abreviatura })
-                    .Distinct()
-                    .ToListAsync();
-
-                var dict = familiasPorCompra
-                    .GroupBy(x => x.IdCompra)
-                    .ToDictionary(g => g.Key, g => string.Join(", ", g.Select(x => x.Abreviatura)));
-
-                foreach (var item in response)
-                {
-                    if (dict.TryGetValue(item.Id, out var fams))
-                        item.Familia = fams;
-                }
-            }
-
             return response;
         }
 
