@@ -154,7 +154,8 @@ namespace proy_back_Qbd.Services
                     Conformidad = d.Conformidad ?? false,
                     IdFabricante = d.IdFabricante,
                     NombreFabricante = d.Fabricante != null ? d.Fabricante.Nombre : "",
-                    CodigoFabricante = d.Fabricante != null ? d.Fabricante.Codigo : ""
+                    CodigoFabricante = d.Fabricante != null ? d.Fabricante.Codigo : "",
+                    Familia = d.Insumo != null && d.Insumo.Familia != null ? d.Insumo.Familia.Abreviatura : "MP"
                 })
                 .ToListAsync();
 
@@ -183,7 +184,8 @@ namespace proy_back_Qbd.Services
                     Conformidad = false,
                     IdFabricante = null,
                     NombreFabricante = "",
-                    CodigoFabricante = ""
+                    CodigoFabricante = "",
+                    Familia = "ME"
                 })
                 .ToListAsync();
 
@@ -212,7 +214,8 @@ namespace proy_back_Qbd.Services
                     Conformidad = false,
                     IdFabricante = null,
                     NombreFabricante = "",
-                    CodigoFabricante = ""
+                    CodigoFabricante = "",
+                    Familia = "PT"
                 })
                 .ToListAsync();
 
@@ -241,7 +244,8 @@ namespace proy_back_Qbd.Services
                     Conformidad = false,
                     IdFabricante = null,
                     NombreFabricante = "",
-                    CodigoFabricante = ""
+                    CodigoFabricante = "",
+                    Familia = "ECO"
                 })
                 .ToListAsync();
 
@@ -270,7 +274,8 @@ namespace proy_back_Qbd.Services
                     Conformidad = false,
                     IdFabricante = null,
                     NombreFabricante = "",
-                    CodigoFabricante = ""
+                    CodigoFabricante = "",
+                    Familia = d.Clasificacion ?? "OTR"
                 })
                 .ToListAsync();
 

@@ -162,6 +162,7 @@ namespace proy_back_Qbd.Models
         public int? IdFabricante { get; set; }
         public string? NombreFabricante { get; set; }
         public string? CodigoFabricante { get; set; }
+        public string? Familia { get; set; }
     }
     public class DetalleMesonOtrosRes
     {
