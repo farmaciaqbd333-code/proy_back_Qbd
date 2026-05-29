@@ -20,6 +20,9 @@ namespace Proy_back_QBD.Dto.Insumo
         public required string FactorCorreccion { get; set; }
         public required string Dilucion { get; set; }
         public required string UnidadMedida { get; set; }
+        public required string Familia { get; set; }
+        public required decimal Costo { get; set; }
+        public required string FormaFarmaceutica { get; set; }
     }
     public class InsumoFindIdRes
     {
@@ -28,6 +31,9 @@ namespace Proy_back_QBD.Dto.Insumo
         public required string UnidadMedida { get; set; }
         public required string FactorCorreccion { get; set; }
         public required string Dilucion { get; set; }
+        public required string Familia { get; set; }
+        public required decimal Costo { get; set; }
+        public required string FormaFarmaceutica { get; set; }
     }
     public class InsumoFormR
     {

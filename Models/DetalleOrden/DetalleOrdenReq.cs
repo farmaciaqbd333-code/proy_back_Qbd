@@ -138,7 +138,45 @@ namespace proy_back_Qbd.Models
         public required bool Conformidad { get; set; }
         public int? IdFabricante { get; set; }
     }
-    public class DetalleOrdenMesonRes
+    public class DetalleMesonRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonInsumoRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonOtrosRes
     {
         public int Id { get; set; }
         public string? Reg { get; set; }

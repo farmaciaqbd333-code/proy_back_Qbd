@@ -86,7 +86,7 @@ namespace Proy_back_QBD.Services
 
         public async Task<List<InsumoFindAllRes?>> Obtener()
         {
-            List<InsumoFindAllRes?> response = await _context.Insumos
+            List<InsumoFindAllRes> response = await _context.Insumos
                                             .OrderBy(obd => obd.FechaCreacion)
                                             .Select(s => new InsumoFindAllRes
                                             {
@@ -94,7 +94,10 @@ namespace Proy_back_QBD.Services
                                                 Descripcion = s.Descripcion,
                                                 FactorCorreccion = s.FactorCorreccion,
                                                 Dilucion = s.Dilucion,
-                                                UnidadMedida = s.UnidadMedida
+                                                UnidadMedida = s.UnidadMedida,
+                                                Costo = s.Costo??0,
+                                                Familia = s.Familia.Abreviatura,
+                                                FormaFarmaceutica = s.FormaFarmaceutica
                                             }
                                             ).ToListAsync();
             if (response == null)
@@ -106,7 +109,7 @@ namespace Proy_back_QBD.Services
 
         public async Task<InsumoFindIdRes?> ObtenerById(int id)
         {
-            InsumoFindIdRes response = await _context.Insumos
+            InsumoFindIdRes? response = await _context.Insumos
                                             .OrderBy(obd => obd.FechaCreacion)
                                             .Select(s => new InsumoFindIdRes
                                             {
@@ -114,7 +117,10 @@ namespace Proy_back_QBD.Services
                                                 Descripcion = s.Descripcion,
                                                 UnidadMedida = s.UnidadMedida,
                                                 FactorCorreccion = s.FactorCorreccion,
-                                                Dilucion = s.Dilucion
+                                                Dilucion = s.Dilucion,
+                                                Costo = s.Costo??0,
+                                                Familia = s.Familia != null ? s.Familia.Abreviatura : "",
+                                                FormaFarmaceutica = s.FormaFarmaceutica
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);
             if (response == null)

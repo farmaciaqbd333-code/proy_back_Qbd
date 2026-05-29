@@ -41,7 +41,7 @@ namespace proy_back_Qbd.Models
         public Sede? Sede { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
-        public List<DetalleCompra>? DetalleCompras { get; set; }
+        public List<DetalleCompraOtros>? DetalleCompras { get; set; }
         public List<DetalleCompraInsumo>? DetalleCompraInsumos { get; set; }
         public List<DetalleCompraEconomato>? DetalleCompraEconomatos { get; set; }
         public List<DetalleCompraEmpaque>? DetalleCompraEmpaques { get; set; }

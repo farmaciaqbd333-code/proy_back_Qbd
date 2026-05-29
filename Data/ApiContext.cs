@@ -21,7 +21,7 @@ namespace Proy_back_QBD.Data
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<DetalleCompraInsumo> DetalleComprasInsumos { get; set; }
-        public DbSet<DetalleCompra> DetalleCompras { get; set; }
+        public DbSet<DetalleCompraOtros> DetalleCompraOtros { get; set; }
         public DbSet<DetalleCompraEconomato> DetalleCompraEconomatos { get; set; }
         public DbSet<DetalleCompraEmpaque> DetalleCompraEmpaques { get; set; }
         public DbSet<DetalleCompraProducto> DetalleCompraProductos { get; set; }
@@ -94,7 +94,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleNotaSalidaCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleNotaSalidaModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
-            modelBuilder.Entity<DetalleCompra>((e) =>
+            modelBuilder.Entity<DetalleCompraOtros>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra);

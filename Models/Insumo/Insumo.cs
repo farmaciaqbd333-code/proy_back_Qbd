@@ -29,10 +29,14 @@ namespace Proy_back_QBD.Models
         public DateTime FechaModificacion { get; set; }       // Fecha de la última modificación del pedido
         [Column("creador_id")]
         public int CreadorId { get; set; }
-        [Column("id_familia")]
-        public int IdFamilia { get; set; }
         [Column("modificador_id")]
         public int ModificadorId { get; set; }
+        [Column("id_familia")]
+        public int? IdFamilia { get; set; }
+        [Column("costo")]
+        public decimal? Costo { get; set; }
+        [Column("forma_f")]
+        public string? FormaFarmaceutica { get; set; } = "";
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }
