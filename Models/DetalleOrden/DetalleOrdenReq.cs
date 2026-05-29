@@ -22,7 +22,7 @@ namespace proy_back_Qbd.Models
         public string? RegistroSanitario { get; set; }
         public int? IdFabricante { get; set; }
     }
-    public class DetalleCreateReq
+    public class DetalleOtrosReq
     {
         public required string Clasificacion { get; set; }
         public required decimal CantidadSolicitada { get; set; }
@@ -177,6 +177,63 @@ namespace proy_back_Qbd.Models
         public string? CodigoFabricante { get; set; }
     }
     public class DetalleMesonOtrosRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonEmpaquesRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonEconomatosRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonProductosRes
     {
         public int Id { get; set; }
         public string? Reg { get; set; }

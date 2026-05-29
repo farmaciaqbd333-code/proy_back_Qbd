@@ -45,7 +45,7 @@ namespace proy_back_Qbd.Services
                                 IdInsumo = s2.IdInsumo,
                                 Codigo = s2.IdInsumo.ToString(),
                                 DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
-                                DescripcionFactura = s2.DescripcionFac,
+                                DescripcionFactura = s2.DescripcionFactura,
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 UM = s2.Um,
                                 CUnitario = s2.CostoUnitario,
@@ -259,10 +259,10 @@ namespace proy_back_Qbd.Services
                     valorTotal += request.DetalleCompraEconomatos.Sum(s => s.CostoTotal);
                     Familia += Familia == "" ? "ECO" : "- ECO";
                 }
-                if (request.DetalleCompras.Any())
+                if (request.DetalleCompraOtros.Any())
                 {
-                    valorTotal += request.DetalleCompras.Sum(s => s.CostoTotal);
-                    List<string> lista = request.DetalleCompras.Select(s => s.Clasificacion).Distinct().ToList();
+                    valorTotal += request.DetalleCompraOtros.Sum(s => s.CostoTotal);
+                    List<string> lista = request.DetalleCompraOtros.Select(s => s.Clasificacion).Distinct().ToList();
                     foreach (var item in lista)
                     {
                         Familia += Familia == "" ? item : "- " + item;
@@ -283,7 +283,7 @@ namespace proy_back_Qbd.Services
                             IdCompra = compra.Id,
                             IdCreador = request.IdCreador,
                             IdInsumo = item.IdInsumo,
-                            DescripcionFac = item.DescripcionFac,
+                            DescripcionFactura = item.DescripcionFac,
                             CantidadSolicitada = item.Cantidad,
                             Um = item.Um,
                             CostoUnitario = item.CostoUnitario,
@@ -332,9 +332,9 @@ namespace proy_back_Qbd.Services
                 }
 
                 // Guardar DetalleCompra (Generico)
-                if (request.DetalleCompras.Any())
+                if (request.DetalleCompraOtros.Any())
                 {
-                    foreach (var item in request.DetalleCompras)
+                    foreach (var item in request.DetalleCompraOtros)
                     {
                         DetalleCompraOtros detalleCompra = _mapper.Map<DetalleCompraOtros>(item);
                         detalleCompra.IdCompra = compra.Id;
@@ -414,7 +414,7 @@ namespace proy_back_Qbd.Services
                             IdCompra = idOC,
                             IdCreador = request.IdModificadorCreador,
                             IdInsumo = item.IdInsumo,
-                            DescripcionFac = item.DescripcionFac,
+                            DescripcionFactura = item.DescripcionFac,
                             CantidadSolicitada = item.Cantidad,
                             Um = item.Um,
                             CostoUnitario = item.CostoUnitario,
@@ -434,8 +434,8 @@ namespace proy_back_Qbd.Services
                             if (detalle.IdInsumo != item.IdInsumo)
                                 detalle.IdInsumo = item.IdInsumo;
 
-                            if (detalle.DescripcionFac != item.DescripcionFac)
-                                detalle.DescripcionFac = item.DescripcionFac;
+                            if (detalle.DescripcionFactura != item.DescripcionFac)
+                                detalle.DescripcionFactura = item.DescripcionFac;
 
                             if (detalle.CantidadSolicitada != item.Cantidad)
                                 detalle.CantidadSolicitada = item.Cantidad;
@@ -632,13 +632,13 @@ namespace proy_back_Qbd.Services
                 .ToListAsync();
 
             var dict = detalles
-                .Where(d => d.IdInsumo > 0 && !string.IsNullOrEmpty(d.DescripcionFac))
+                .Where(d => d.IdInsumo > 0 && !string.IsNullOrEmpty(d.DescripcionFactura))
                 .GroupBy(d => d.IdInsumo)
-                .ToDictionary(g => g.Key, g => g.Last().DescripcionFac);
+                .ToDictionary(g => g.Key, g => g.Last().DescripcionFactura);
 
             DescripcionFacturaRes response = new()
             {
-                DescripcionFactura = detalles.Select(s => s.DescripcionFac).Distinct().ToArray(),
+                DescripcionFactura = detalles.Select(s => s.DescripcionFactura).Distinct().ToArray(),
                 DescripcionPorInsumo = dict
             };
 
@@ -803,7 +803,7 @@ namespace proy_back_Qbd.Services
                     Reg = Alfanumerico.ConvertToBase36(d.Id).PadLeft(4, '0'),
                     Codigo = d.IdInsumo.ToString(),
                     Descripcion = d.Insumo != null && d.Insumo.Descripcion != null ? d.Insumo.Descripcion : "",
-                    DescripcionFactura = d.DescripcionFac ?? "",
+                    DescripcionFactura = d.DescripcionFactura ?? "",
                     Cantidad = d.CantidadSolicitada,
                     Um = d.Um ?? "",
                     Coa = d.Coa,

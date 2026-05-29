@@ -14,7 +14,7 @@ namespace proy_back_Qbd.Models
             CreateMap<DetalleInsumosUpdateReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdInsumo, opt => opt.MapFrom(src => src.IdInsumo))
-            .ForMember(dest => dest.DescripcionFac, opt => opt.MapFrom(src => src.DescripcionFac))
+            .ForMember(dest => dest.DescripcionFactura, opt => opt.MapFrom(src => src.DescripcionFac))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CostoUnitario, opt => opt.MapFrom(src => src.CostoUnitario))
@@ -23,7 +23,7 @@ namespace proy_back_Qbd.Models
             ;
             CreateMap<ConvertirDetalleCompraReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(dest => dest.DescripcionFac, opt => opt.MapFrom(src => src.DescripcionFactura))
+            .ForMember(dest => dest.DescripcionFactura, opt => opt.MapFrom(src => src.DescripcionFactura))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.FechaFabricacion, opt => opt.MapFrom(src => src.FechaFabricacion))
@@ -36,7 +36,7 @@ namespace proy_back_Qbd.Models
             ;
 
             // DetalleCreateReq -> DetalleCompra
-            CreateMap<DetalleCreateReq, DetalleCompraOtros>(MemberList.None)
+            CreateMap<DetalleOtrosReq, DetalleCompraOtros>(MemberList.None)
             .ForMember(dest => dest.Clasificacion, opt => opt.MapFrom(src => src.Clasificacion))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.CantidadSolicitada))
             .ForMember(dest => dest.UnidadMedida, opt => opt.MapFrom(src => src.Um))

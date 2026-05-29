@@ -19,7 +19,7 @@ namespace proy_back_Qbd.Models
         public int IdCreador { get; set; }
         public required decimal Isc { get; set; }
         public required decimal Icbp { get; set; }
-        public required IEnumerable<DetalleCreateReq> DetalleCompras { get; set; }
+        public required IEnumerable<DetalleOtrosReq> DetalleCompraOtros { get; set; }
         public required IEnumerable<DetalleInsumosCreateReq> DetalleCompraInsumos { get; set; }
         public required IEnumerable<DetalleEmpaquesCreateReq> DetalleCompraEmpaques { get; set; }
         public required IEnumerable<DetalleProductosCreateReq> DetalleCompraProductos { get; set; }
@@ -47,7 +47,7 @@ namespace proy_back_Qbd.Models
         public required IEnumerable<int> DetalleCompraEconomatosEliminados { get; set; }
 
         // Nuevos arrays de creación durante actualización
-        public required IEnumerable<DetalleCreateReq> DetalleComprasNuevos { get; set; }
+        public required IEnumerable<DetalleOtrosReq> DetalleComprasNuevos { get; set; }
         public required IEnumerable<DetalleInsumosCreateReq> DetalleCompraInsumosNuevos { get; set; }
         public required IEnumerable<DetalleEmpaquesCreateReq> DetalleCompraEmpaquesNuevos { get; set; }
         public required IEnumerable<DetalleProductosCreateReq> DetalleCompraProductosNuevos { get; set; }
