@@ -21,7 +21,7 @@ namespace proy_back_Qbd.Models
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
-        [NotMapped] public decimal CantidadRecibida { get; set; }
+        [Column("cantidad_recibida")]public decimal CantidadRecibida { get; set; }
         [Column("conformidad")] public bool Conformidad { get; set; }
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }

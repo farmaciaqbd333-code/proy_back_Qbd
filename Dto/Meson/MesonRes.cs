@@ -5,6 +5,25 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models
 {
+    public class DetalleMesonRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
     public class MesonModalRes
     {
         public int Id { get; set; }
@@ -17,7 +36,11 @@ namespace proy_back_Qbd.Models
         public string? NombreProveedor { get; set; }
         public int? IdProveedor { get; set; }
         public required string Familia { get; set; }
+        public List<DetalleMesonInsumoRes>? Otros { get; set; }
         public List<DetalleMesonInsumoRes>? ListaInsumos { get; set; }
+        public List<DetalleMesonInsumoRes>? ListaEmpaques { get; set; }
+        public List<DetalleMesonInsumoRes>? ListaProductos { get; set; }
+        public List<DetalleMesonInsumoRes>? ListaEconomatos { get; set; }
     }
     public class MesonDetalleRes
     {
@@ -48,5 +71,101 @@ namespace proy_back_Qbd.Models
         public string? ImgFactura { get; set; }
         public string? Guia { get; set; }
         public required string EstadoCompra { get; set; }
+    }
+    public class DetalleMesonInsumoRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+        public string? Familia { get; set; }
+    }
+    public class DetalleMesonOtrosRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonEmpaquesRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonEconomatosRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
+    }
+    public class DetalleMesonProductosRes
+    {
+        public int Id { get; set; }
+        public string? Reg { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public decimal Cantidad { get; set; }
+        public string? Um { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTime? FechaFabricacion { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+        public bool? Conformidad { get; set; }
+        public int? IdFabricante { get; set; }
+        public string? NombreFabricante { get; set; }
+        public string? CodigoFabricante { get; set; }
     }
 }
