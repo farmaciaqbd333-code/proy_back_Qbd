@@ -72,18 +72,5 @@ namespace proy_back_Qbd.Models
         public required string Familia { get; set; }
         public string? RutaFactura { get; set; }
     }
-    public class OrdenMesonRes
-    {
-        public int Id { get; set; }
-        public required string CUO { get; set; }
-        public DateTime? FechaEmision { get; set; }
-        public string? SerieComprobante { get; set; }
-        public string? NumeroComprobante { get; set; }
-        public string? Guia { get; set; }
-        public string? CodFacQBD { get; set; }
-        public string? NombreProveedor { get; set; }
-        public int? IdProveedor { get; set; }
-        public required string Familia { get; set; }
-        public List<DetalleMesonInsumoRes>? ListaInsumos { get; set; }
-    }
+
 }

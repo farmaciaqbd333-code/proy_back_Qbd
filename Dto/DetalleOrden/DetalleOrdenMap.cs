@@ -21,7 +21,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal))
             .ForMember(dest => dest.IdFabricante, opt => opt.MapFrom(src => src.IdFabricante))
             ;
-            CreateMap<ConvertirDetalleCompraReq, DetalleCompraInsumo>(MemberList.None)
+            CreateMap<MesonConvertirDetalleReq, DetalleCompraInsumo>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.DescripcionFactura, opt => opt.MapFrom(src => src.DescripcionFactura))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))

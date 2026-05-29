@@ -15,10 +15,8 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<int> CrearOrdenDeCompra(OrdenCreateReq request);
         Task<string?> EliminarOrdenOCompraOCompra(int id);
         Task<OrdenesYComprasRes?> ActualizarOrdenDeCompra(int id, OrdenUpdateReq request);
-        Task<OrdenesYComprasRes?> ConvertirCompra(int ordenCompraId, ConvertirACompraReq request);
         Task<DescripcionFacturaRes> DescripcionFactura(int proveedorI);
         Task<bool> ActualizarEstadoCompra(int OrdenCompraId, CambiarEstadoReq estado);
-        Task<OrdenMesonRes?> ObtenerCompraMeson(int ordenCompraId);
         Task<bool> ActualizarRutaFactura(int id, UpdateRutaFacturaReq request);
         Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia);
     }

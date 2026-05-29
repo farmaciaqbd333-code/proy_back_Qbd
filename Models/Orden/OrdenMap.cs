@@ -22,7 +22,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.IdModificador, opt => opt.MapFrom(src => src.IdModificadorCreador))
             .ForMember(dest => dest.Familia, opt => opt.MapFrom(src => src.Familia))
             ;
-            CreateMap<ConvertirACompraReq, Compra>(MemberList.None)
+            CreateMap<MesonConvertirReq, Compra>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.FechaFactura, opt => opt.MapFrom(src => src.FechaFactura))
             .ForMember(dest => dest.SerieComprobante, opt => opt.MapFrom(src => src.SerieComprobante))

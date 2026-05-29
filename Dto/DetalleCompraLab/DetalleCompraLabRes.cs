@@ -52,3 +52,17 @@ public class EtiquetaCompraLabRes
     public required string Familia { get; set; }
     public decimal? Tara { get; set; }
 }
+public class LabListaRes
+{
+    public int Id { get; set; }
+    public required DateTime FechaCotizacion { get; set; }
+    public string? Factura { get; set; }
+    public string? Guia { get; set; }
+    public string? CodFacQbd { get; set; }
+    public required string CUO { get; set; }
+    public DateTime? FechaFactura { get; set; }
+    public required string NombreProveedor { get; set; }
+    public required string Familia { get; set; }
+    public string? ImgFactura { get; set; }
+    public required string EstadoCompra { get; set; }
+}

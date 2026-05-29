@@ -89,18 +89,7 @@ namespace proy_back_Qbd.Controllers
 
                 }
 
-                /// <summary>
-                /// Convertir a compra
-                /// </summary>
-                [HttpPatch("meson/{ordenCompraId}")]
-                [SwaggerResponse(200, "Creación exitosa", typeof(OrdenesYComprasRes))]
-                public async Task<ActionResult<OrdenesYComprasRes>> ConvertirCompra(int ordenCompraId, ConvertirACompraReq request)
-                {
-                        OrdenesYComprasRes? response = await _serviceOC.ConvertirCompra(ordenCompraId, request);
-                        if (response == null) return NotFound(new { message = "Compra no encontrada" });
 
-                        return Ok(response);
-                }
 
 
                 /// <summary>
@@ -139,20 +128,7 @@ namespace proy_back_Qbd.Controllers
 
                         return Ok(response);
                 }
-                /// <summary>
-                /// Obtener datos para meson
-                /// </summary>
-                [HttpGet("meson/{ordenId}")]
-                public async Task<ActionResult<OrdenMesonRes>> ObtenerDatosMeson(int ordenId)
-                {
-                        OrdenMesonRes? response = await _serviceOC.ObtenerCompraMeson(ordenId);
-
-                        if (response == null)
-                                return NotFound(new { message = "No se encontro alguna descripcion" });
-
-                        return Ok(response);
-                }
-
+                
                 /// <summary>
                 /// Listar facturas por familia (ej: MP, PT, etc.)
                 /// </summary>

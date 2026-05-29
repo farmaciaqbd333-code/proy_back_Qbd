@@ -111,5 +111,29 @@ namespace proy_back_Qbd.Services
 
             return response;
         }
+        public async Task<List<LabListaRes>> Listar(string[] cadena)
+        {
+            List<LabListaRes> ordenesEnviadasRes = await _context.Compras
+            .Where(w => cadena.Contains(w.EstadoCompra))
+            .Select(s => new LabListaRes
+            {
+                Id = s.Id,
+                CUO = "OC" + s.Id,
+                FechaCotizacion = s.FechaCotizacion,
+                FechaFactura = s.FechaFactura,
+                Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
+                CodFacQbd = s.CodFacQBD,
+                NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
+                EstadoCompra = s.EstadoCompra,
+                Familia = s.Familia,
+                Guia = s.Guia ?? "",
+                ImgFactura = s.ImgFactura,
+            })
+            .OrderByDescending(o => o.FechaCotizacion)
+            .ToListAsync();
+            if (ordenesEnviadasRes.Count() == 0) return new List<LabListaRes>();
+
+            return ordenesEnviadasRes;
+        }
     }
 }

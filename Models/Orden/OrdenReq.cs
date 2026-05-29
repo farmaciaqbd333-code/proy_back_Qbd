@@ -60,16 +60,7 @@ namespace proy_back_Qbd.Models
         public required IEnumerable<DetalleProductosUpdateReq> DetalleCompraProductosUpd { get; set; }
         public required IEnumerable<DetalleEconomatosUpdateReq> DetalleCompraEconomatosUpd { get; set; }
     }
-    public class ConvertirACompraReq
-    {
-        public required string SerieComprobante { get; set; }
-        public required string NumeroComprobante { get; set; }
-        public required string Guia { get; set; }
-        public required string CodFacQBD { get; set; }
-        public required DateTime FechaFactura { get; set; }
-        public required int IdModificador { get; set; }
-        public required IEnumerable<ConvertirDetalleCompraReq> Detalles { get; set; }
-    }
+
 
     public class CambiarEstadoReq
     {

@@ -13,21 +13,19 @@ namespace proy_back_Qbd.Controllers
     [Route("api/[controller]")]
     public class CompraLabController : Controller
     {
-        private readonly ICompraService _service;
         private readonly ICompraLaboratorioService _serviceCompraLab;
 
-        public CompraLabController(ICompraService service, ICompraLaboratorioService serviceCompraLab)
+        public CompraLabController(ICompraLaboratorioService serviceCompraLab)
         {
-            _service = service;
             _serviceCompraLab = serviceCompraLab;
         }
         /// <summary>
         /// Listar para tabla laboratorio
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<List<OrdenesEnviadasRes>>> ListarOrdenesLaboratorio()
+        public async Task<ActionResult<List<MesonListaRes>>> ListarOrdenesLaboratorio()
         {
-            List<OrdenesEnviadasRes> response = await _service.ListaOrdenesEnviadas(["LABORATORIO"]);
+            List<LabListaRes> response = await _serviceCompraLab.Listar(["LABORATORIO"]);
             if (response.Count == 0)
                 return NotFound(new { message = "No se encontro ordenes" });
 
