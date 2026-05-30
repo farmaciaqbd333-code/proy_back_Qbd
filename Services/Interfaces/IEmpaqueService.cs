@@ -8,7 +8,7 @@ namespace Proy_back_QBD.Services
         Task<Empaque?> Crear(EmpaqueCreateReq request);
         Task<Empaque?> Actualizar(int id, EmpaqueUpdateReq request);
         Task<Empaque?> Eliminar(int id);
-        Task<List<EmpaqueFindAllRes?>> Obtener();
+        Task<List<EmpaqueFindAllRes>> Obtener();
         Task<EmpaqueFindIdRes?> ObtenerById(int id);
     }
 }

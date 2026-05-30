@@ -1,5 +1,6 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Dto.Empaque;
 using Proy_back_QBD.Models;
@@ -51,30 +52,23 @@ namespace Proy_back_QBD.Services
             return empaque;
         }
 
-        public async Task<List<EmpaqueFindAllRes?>> Obtener()
+        public async Task<List<EmpaqueFindAllRes>> Obtener()
         {
-            List<EmpaqueFindAllRes?> response = await _context.Empaques
-                                            .Include(i => i.Funda)
-                                            .Include(i => i.Caja)
-                                            .Include(i => i.Etiqueta1)
-                                            .Include(i => i.Etiqueta2)
+            List<EmpaqueFindAllRes> response = await _context.Empaques
                                             .OrderBy(obd => obd.FechaCreacion)
                                             .Select(s => new EmpaqueFindAllRes
                                             {
                                                 Id = s.Id,
                                                 Descripcion = s.Descripcion,
-                                                Funda = s.Funda.Descripcion,
-                                                Caja = s.Caja.Descripcion,
-                                                Etiqueta1 = s.Etiqueta1.Descripcion,
-                                                Etiqueta2 = s.Etiqueta2.Descripcion,
+                                                Funda = s.Funda != null ? s.Funda.Descripcion : "",
+                                                Caja = s.Caja != null ? s.Caja.Descripcion : "",
+                                                Etiqueta1 = s.Etiqueta1 != null ? s.Etiqueta1.Descripcion : "",
+                                                Etiqueta2 = s.Etiqueta2 != null ? s.Etiqueta2.Descripcion : "",
                                                 Tara = s.Tara
                                             }
                                             )
                                             .ToListAsync();
-            if (response == null)
-            {
-                return null;
-            }
+            if (!response.Any()) throw new NotFoundException("No hay empaues");
             return response;
         }
 
