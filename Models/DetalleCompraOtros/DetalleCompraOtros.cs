@@ -12,13 +12,13 @@ namespace proy_back_Qbd.Models
     public class DetalleCompraOtros
     {
         [Key][Column("id")] public int Id { get; set; }
-        [Column("clasificacion")] public string Clasificacion { get; set; } = string.Empty;
+        [Column("clasificacion")] public string Clasificacion { get; set; } = "";
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
         [Column("um")] public required string UnidadMedida { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
         [Column("id_compra")] public int IdCompra { get; set; }
-        [Column("id_creador")] public required int IdCreador { get; set; }
+        [Column("id_creador")] public int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }

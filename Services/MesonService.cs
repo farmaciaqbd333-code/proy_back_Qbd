@@ -129,160 +129,75 @@ namespace proy_back_Qbd.Services
                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
-                ListaInsumos = new List<DetalleMesonInsumoRes>()
+                ListaOtros = s.DetalleCompraOtros != null ? s.DetalleCompraOtros.Select(s2 => new DetalleMesonOtrosRes
+                {
+                    Id = s2.Id,
+                    Familia = s2.Clasificacion ?? "OTRO",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadRecibida = s2.CantidadRecibida,
+                    Um = s2.UnidadMedida,
+                    Conformidad = s2.Conformidad
+                }).ToList() : new List<DetalleMesonOtrosRes>(),
+                ListaInsumos = s.DetalleCompraInsumos != null ? s.DetalleCompraInsumos.Select(s2 => new DetalleMesonInsumoRes
+                {
+                    Id = s2.Id,
+                    Codigo = "MP-QBD-" + s2.IdInsumo,
+                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadRecibida = s2.CantidadRecibida,
+                    Um = s2.Um,
+                    Coa = s2.Coa,
+                    Lote = s2.Lote,
+                    RegistroSanitario = s2.RegistroSanitario,
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
+                    Conformidad = s2.Conformidad,
+                    IdFabricante = s2.IdFabricante,
+                    Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura ?? "" : "",
+                }).ToList() : new List<DetalleMesonInsumoRes>(),
+                ListaEconomatos = s.DetalleCompraEconomatos != null ? s.DetalleCompraEconomatos.Select(s2 => new DetalleMesonEconomatosRes
+                {
+                    Id = s2.Id,
+                    Codigo = s2.Economato != null ? "" + s2.Economato.Id : "",
+                    DescripcionQBD = s2.Economato != null ? s2.Economato.Descripcion : "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    IdFabricante = s2.IdFabricante,
+                    CantidadRecibida = s2.CantidadRecibida,
+                    Um = s2.Um,
+                    Conformidad = s2.Conformidad,
+                    Familia = "ECO"
+                }).ToList() : new List<DetalleMesonEconomatosRes>(),
+                ListaProductos = s.DetalleCompraProductos != null ? s.DetalleCompraProductos.Select(s2 => new DetalleMesonProductosRes
+                {
+                    Id = s2.Id,
+                    Codigo = s2.Producto != null ? "" + s2.Producto.Id : "",
+                    DescripcionQbd = s2.Producto != null ? s2.Producto.Descripcion ?? "" : "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    IdFabricante = s2.IdFabricante,
+                    CantidadRecibida = s2.CantidadRecibida,
+                    Um = s2.Um,
+                    Conformidad = s2.Conformidad,
+                    Familia = "PT"
+                }).ToList() : new List<DetalleMesonProductosRes>(),
+                ListaEmpaques = s.DetalleCompraEmpaques != null ? s.DetalleCompraEmpaques.Select(s2 => new DetalleMesonEmpaquesRes
+                {
+                    Id = s2.Id,
+                    Codigo = s2.Empaque != null ? "" + s2.Empaque.Id : "",
+                    DescripcionQbd = s2.Empaque != null ? s2.Empaque.Descripcion ?? "" : "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    IdFabricante = s2.IdFabricante,
+                    CantidadRecibida = s2.CantidadRecibida,
+                    Um = s2.Um,
+                    Coa = s2.Coa ?? false,
+                    Lote = s2.Lote ?? "",
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
+                    Conformidad = s2.Conformidad,
+                    Familia = "ME"
+                }).ToList() : new List<DetalleMesonEmpaquesRes>()
             }).FirstOrDefaultAsync();
 
-            if (response == null) return null;
-
-            // 1. Insumos
-            var insumosList = await _context.DetalleComprasInsumos
-                .Where(w => w.IdCompra == ordenCompraId)
-                .Select(d => new DetalleMesonInsumoRes
-                {
-                    Id = d.Id,
-                    Reg = Alfanumerico.ConvertToBase36(d.Id).PadLeft(4, '0'),
-                    Codigo = d.IdInsumo.ToString(),
-                    Descripcion = d.Insumo != null && d.Insumo.Descripcion != null ? d.Insumo.Descripcion : "",
-                    DescripcionFactura = d.DescripcionFactura ?? "",
-                    Cantidad = d.CantidadSolicitada,
-                    Um = d.Um ?? "",
-                    Coa = d.Coa,
-                    Lote = d.Lote ?? "",
-                    RegistroSanitario = d.RegistroSanitario ?? "",
-                    FechaFabricacion = d.FechaFabricacion,
-                    FechaVencimiento = d.FechaVencimiento,
-                    Conformidad = d.Conformidad ?? false,
-                    IdFabricante = d.IdFabricante,
-                    NombreFabricante = d.Fabricante != null ? d.Fabricante.Nombre : "",
-                    CodigoFabricante = d.Fabricante != null ? d.Fabricante.Codigo : "",
-                    Familia = d.Insumo != null && d.Insumo.Familia != null ? d.Insumo.Familia.Abreviatura : "MP"
-                })
-                .ToListAsync();
-
-            if (insumosList.Any())
-            {
-                response.ListaInsumos.AddRange(insumosList);
-            }
-
-            // 2. Empaques
-            var empaquesList = await _context.DetalleCompraEmpaques
-                .Where(w => w.IdCompra == ordenCompraId)
-                .Select(d => new DetalleMesonInsumoRes
-                {
-                    Id = d.Id,
-                    Reg = "",
-                    Codigo = d.IdEmpaque.ToString(),
-                    Descripcion = d.Empaque != null && d.Empaque.Descripcion != null ? d.Empaque.Descripcion : "",
-                    DescripcionFactura = d.Empaque != null && d.Empaque.Descripcion != null ? d.Empaque.Descripcion : "",
-                    Cantidad = d.CantidadSolicitada,
-                    Um = d.Um ?? "",
-                    Coa = false,
-                    Lote = "",
-                    RegistroSanitario = "",
-                    FechaFabricacion = null,
-                    FechaVencimiento = null,
-                    Conformidad = false,
-                    IdFabricante = null,
-                    NombreFabricante = "",
-                    CodigoFabricante = "",
-                    Familia = "ME"
-                })
-                .ToListAsync();
-
-            if (empaquesList.Any())
-            {
-                response.ListaInsumos.AddRange(empaquesList);
-            }
-
-            // 3. Productos
-            var productosList = await _context.DetalleCompraProductos
-                .Where(w => w.IdCompra == ordenCompraId)
-                .Select(d => new DetalleMesonInsumoRes
-                {
-                    Id = d.Id,
-                    Reg = "",
-                    Codigo = d.IdProducto.ToString(),
-                    Descripcion = d.Producto != null && d.Producto.Descripcion != null ? d.Producto.Descripcion : "",
-                    DescripcionFactura = d.Producto != null && d.Producto.Descripcion != null ? d.Producto.Descripcion : "",
-                    Cantidad = d.CantidadSolicitada,
-                    Um = d.Um ?? "",
-                    Coa = false,
-                    Lote = "",
-                    RegistroSanitario = "",
-                    FechaFabricacion = null,
-                    FechaVencimiento = null,
-                    Conformidad = false,
-                    IdFabricante = null,
-                    NombreFabricante = "",
-                    CodigoFabricante = "",
-                    Familia = "PT"
-                })
-                .ToListAsync();
-
-            if (productosList.Any())
-            {
-                response.ListaInsumos.AddRange(productosList);
-            }
-
-            // 4. Economatos
-            var economatosList = await _context.DetalleCompraEconomatos
-                .Where(w => w.IdCompra == ordenCompraId)
-                .Select(d => new DetalleMesonInsumoRes
-                {
-                    Id = d.Id,
-                    Reg = "",
-                    Codigo = d.IdEconomato.ToString(),
-                    Descripcion = d.Economato != null && d.Economato.Descripcion != null ? d.Economato.Descripcion : "",
-                    DescripcionFactura = d.Economato != null && d.Economato.Descripcion != null ? d.Economato.Descripcion : "",
-                    Cantidad = d.CantidadSolicitada,
-                    Um = d.Um ?? "",
-                    Coa = false,
-                    Lote = "",
-                    RegistroSanitario = "",
-                    FechaFabricacion = null,
-                    FechaVencimiento = null,
-                    Conformidad = false,
-                    IdFabricante = null,
-                    NombreFabricante = "",
-                    CodigoFabricante = "",
-                    Familia = "ECO"
-                })
-                .ToListAsync();
-
-            if (economatosList.Any())
-            {
-                response.ListaInsumos.AddRange(economatosList);
-            }
-
-            // 5. Genérico
-            var comprasList = await _context.DetalleCompraOtros
-                .Where(w => w.IdCompra == ordenCompraId)
-                .Select(d => new DetalleMesonInsumoRes
-                {
-                    Id = d.Id,
-                    Reg = "",
-                    Codigo = "",
-                    Descripcion = d.Clasificacion ?? "",
-                    DescripcionFactura = d.Clasificacion ?? "",
-                    Cantidad = d.CantidadSolicitada,
-                    Um = d.UnidadMedida ?? "",
-                    Coa = false,
-                    Lote = "",
-                    RegistroSanitario = "",
-                    FechaFabricacion = null,
-                    FechaVencimiento = null,
-                    Conformidad = false,
-                    IdFabricante = null,
-                    NombreFabricante = "",
-                    CodigoFabricante = "",
-                    Familia = d.Clasificacion ?? "OTR"
-                })
-                .ToListAsync();
-
-            if (comprasList.Any())
-            {
-                response.ListaInsumos.AddRange(comprasList);
-            }
+            if (response == null) throw new NotFoundException("No se encontro orden de compra");
 
             return response;
         }
