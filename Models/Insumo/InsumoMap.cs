@@ -17,10 +17,12 @@ namespace Proy_back_QBD.Profiles
             CreateMap<InsumoCreateReq, Insumo>()
             .ForMember(a => a.Id, o => o.Ignore())
             .ForMember(a => a.ModificadorId, o => o.Ignore())
+            .ForMember(a => a.IdFamilia, o => o.MapFrom(s => s.FamiliaId))
             ;
             CreateMap<InsumoUpdateReq, Insumo>()
             .ForMember(a => a.Id, o => o.Ignore())
             .ForMember(a => a.CreadorId, o => o.Ignore())
+            .ForMember(a => a.IdFamilia, o => o.MapFrom(s => s.FamiliaId))
             ;
 
         }

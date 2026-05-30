@@ -93,11 +93,11 @@ namespace Proy_back_QBD.Services
                                                 Id = s.Id,
                                                 Descripcion = s.Descripcion,
                                                 FactorCorreccion = s.FactorCorreccion,
-                                                Dilucion = s.Dilucion,
+                                                Dilucion = s.Dilucion ?? "",
                                                 UnidadMedida = s.UnidadMedida,
-                                                Costo = s.Costo??0,
-                                                Familia = s.Familia.Abreviatura,
-                                                FormaFarmaceutica = s.FormaFarmaceutica
+                                                Costo = s.Costo ?? 0,
+                                                Familia = s.Familia != null ? s.Familia.Abreviatura : "",
+                                                FormaFarmaceutica = s.FormaFarmaceutica ?? ""
                                             }
                                             ).ToListAsync();
             if (response == null)
@@ -117,10 +117,10 @@ namespace Proy_back_QBD.Services
                                                 Descripcion = s.Descripcion,
                                                 UnidadMedida = s.UnidadMedida,
                                                 FactorCorreccion = s.FactorCorreccion,
-                                                Dilucion = s.Dilucion,
-                                                Costo = s.Costo??0,
+                                                Dilucion = s.Dilucion ?? "",
+                                                Costo = s.Costo ?? 0,
                                                 Familia = s.Familia != null ? s.Familia.Abreviatura : "",
-                                                FormaFarmaceutica = s.FormaFarmaceutica
+                                                FormaFarmaceutica = s.FormaFarmaceutica ?? ""
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);
             if (response == null)

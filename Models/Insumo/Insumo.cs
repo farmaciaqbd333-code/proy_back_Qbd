@@ -20,7 +20,7 @@ namespace Proy_back_QBD.Models
         [Column("fc")]
         public required string FactorCorreccion { get; set; }
         [Column("dil")]
-        public required string Dilucion { get; set; }
+        public string? Dilucion { get; set; } = "";
         [Column("fecha_creacion")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime FechaCreacion { get; set; }           // Fecha de creación del pedido
