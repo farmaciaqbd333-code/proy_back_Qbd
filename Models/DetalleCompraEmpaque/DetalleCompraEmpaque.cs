@@ -13,7 +13,7 @@ namespace proy_back_Qbd.Models
         [Column("id")] public int Id { get; set; }
         [Column("id_empaque")] public int IdEmpaque { get; set; }
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
-        [Column("cantidad_recibida")]public decimal CantidadRecibida { get; set; }
+        [Column("cantidad_recibida")]public decimal? CantidadRecibida { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
         [Column("um")] public string? Um { get; set; }

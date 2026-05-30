@@ -26,7 +26,7 @@ namespace proy_back_Qbd.Services
         public async Task<int?> UpdateDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
         {
             IEnumerable<int> ids = request.Select(s => s.IdDetalle).ToList();
-            List<DetalleCompraInsumo> detalleCompras = await _context.DetalleComprasInsumos
+            List<DetalleCompraInsumo> detalleCompras = await _context.DetalleCompraInsumos
             .Where(w => w.IdCompra == idCompra && ids.Contains(w.Id)).ToListAsync();
             if (detalleCompras.Count == 0) return null;
 
@@ -100,7 +100,7 @@ namespace proy_back_Qbd.Services
 
         public async Task<EtiquetaCompraLabRes> GetEtiquetaCompraLab(int idCompra)
         {
-            EtiquetaCompraLabRes? response = await _context.DetalleComprasInsumos
+            EtiquetaCompraLabRes? response = await _context.DetalleCompraInsumos
             .Where(w => w.Id == idCompra)
             .Select(s => new EtiquetaCompraLabRes()
             {

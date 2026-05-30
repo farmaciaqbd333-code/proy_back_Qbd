@@ -43,16 +43,16 @@ namespace proy_back_Qbd.Models
     public class MesonListaRes
     {
         public int Id { get; set; }
-        public required string CUO { get; set; }
-        public required DateTime FechaCotizacion { get; set; }
+        public string? CUO { get; set; }
+        public DateTime? FechaCotizacion { get; set; }
         public DateTime? FechaFactura { get; set; }
-        public required string NombreProveedor { get; set; }
+        public string? NombreProveedor { get; set; }
         public string? CodFacQbd { get; set; }
-        public required string Familia { get; set; }
+        public string? Familia { get; set; }
         public string? Factura { get; set; }
         public string? ImgFactura { get; set; }
         public string? Guia { get; set; }
-        public required string EstadoCompra { get; set; }
+        public string? EstadoCompra { get; set; }
     }
     public class DetalleMesonInsumoRes
     {

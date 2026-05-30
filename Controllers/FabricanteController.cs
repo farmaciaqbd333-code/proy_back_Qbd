@@ -253,7 +253,7 @@ namespace proy_back_Qbd.Controllers
             if (fabricante == null) return NotFound(new { message = "Fabricante no encontrado" });
 
             // Verificar si hay detalles de compra asociados a este fabricante antes de eliminar
-            var tieneDetallesAsociados = await _context.DetalleComprasInsumos.AnyAsync(dc => dc.IdFabricante == id);
+            var tieneDetallesAsociados = await _context.DetalleCompraInsumos.AnyAsync(dc => dc.IdFabricante == id);
             if (tieneDetallesAsociados)
             {
                 return BadRequest(new { message = "No se puede eliminar el fabricante porque está asociado a detalles de compras registradas." });

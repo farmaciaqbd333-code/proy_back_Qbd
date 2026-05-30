@@ -28,7 +28,7 @@ namespace proy_back_Qbd.Services
                     DetalleCompraInsumo detalleCompra = _mapper.Map<DetalleCompraInsumo>(item);
                     detalleCompra.IdCompra = idCompra;
                     detalleCompra.IdCreador = idCreador;
-                    _context.DetalleComprasInsumos.Add(detalleCompra);
+                    _context.DetalleCompraInsumos.Add(detalleCompra);
                 }
                 await _context.SaveChangesAsync();
             }
@@ -45,10 +45,10 @@ namespace proy_back_Qbd.Services
         {
             try
             {
-                var detalles = await _context.DetalleComprasInsumos
+                var detalles = await _context.DetalleCompraInsumos
                 .Where(x => request.Contains(x.Id))
                 .ToListAsync();
-                _context.DetalleComprasInsumos.RemoveRange(detalles);
+                _context.DetalleCompraInsumos.RemoveRange(detalles);
                 await _context.SaveChangesAsync();
             }
             catch (Exception)

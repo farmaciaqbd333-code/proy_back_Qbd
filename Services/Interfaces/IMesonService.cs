@@ -11,6 +11,6 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<List<MesonListaRes>> ListarMeson(string[] cadena);
         Task<MesonDetalleRes> ObtenerDetalleOrdenOCompra(int id);
         Task<MesonModalRes?> ObtenerDatosModal(int ordenCompraId);
-        Task<MesonListaRes?> CompletarDatos(int ordenCompraId, MesonConvertirReq request);
+        Task<string> CompletarDatos(int ordenCompraId, MesonConvertirReq request);
     }
 }

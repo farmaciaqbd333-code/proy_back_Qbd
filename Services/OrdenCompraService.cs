@@ -290,7 +290,7 @@ namespace proy_back_Qbd.Services
                             CostoTotal = item.CostoTotal,
                             IdFabricante = item.IdFabricante,
                         };
-                        _context.DetalleComprasInsumos.Add(detalleCompra);
+                        _context.DetalleCompraInsumos.Add(detalleCompra);
                     }
                 }
 
@@ -384,8 +384,8 @@ namespace proy_back_Qbd.Services
                 }
                 if (request.DetallesCompraInsumosEliminados.Any())
                 {
-                    var items = _context.DetalleComprasInsumos.Where(d => request.DetallesCompraInsumosEliminados.Contains(d.Id));
-                    _context.DetalleComprasInsumos.RemoveRange(items);
+                    var items = _context.DetalleCompraInsumos.Where(d => request.DetallesCompraInsumosEliminados.Contains(d.Id));
+                    _context.DetalleCompraInsumos.RemoveRange(items);
                 }
                 if (request.DetalleCompraEmpaquesEliminados.Any())
                 {
@@ -421,24 +421,24 @@ namespace proy_back_Qbd.Services
                             CostoTotal = item.CostoTotal,
                             IdFabricante = item.IdFabricante,
                         };
-                        _context.DetalleComprasInsumos.Add(detalleCompraInsumo);
+                        _context.DetalleCompraInsumos.Add(detalleCompraInsumo);
                     }
                 }
                 if (request.DetalleCompraInsumosUpd.Any())
                 {
                     foreach (var item in request.DetalleCompraInsumosUpd)
                     {
-                        DetalleCompraInsumo? detalle = await _context.DetalleComprasInsumos.FindAsync(item.Id);
+                        DetalleCompraInsumo? detalle = await _context.DetalleCompraInsumos.FindAsync(item.Id);
                         if (detalle != null)
                         {
                             if (detalle.IdInsumo != item.IdInsumo)
                                 detalle.IdInsumo = item.IdInsumo;
 
-                            if (detalle.DescripcionFactura != item.DescripcionFac)
-                                detalle.DescripcionFactura = item.DescripcionFac;
+                            if (detalle.DescripcionFactura != item.DescripcionFactura)
+                                detalle.DescripcionFactura = item.DescripcionFactura;
 
-                            if (detalle.CantidadSolicitada != item.Cantidad)
-                                detalle.CantidadSolicitada = item.Cantidad;
+                            if (detalle.CantidadSolicitada != item.CantidadSolicitada)
+                                detalle.CantidadSolicitada = item.CantidadSolicitada;
 
                             if (detalle.Um != item.Um)
                                 detalle.Um = item.Um;
@@ -557,7 +557,7 @@ namespace proy_back_Qbd.Services
                 await _context.SaveChangesAsync();
 
                 // Calcular el nuevo valor de la compra sumando de todas las tablas asociadas
-                decimal totalInsumos = await _context.DetalleComprasInsumos.Where(d => d.IdCompra == idOC).SumAsync(d => d.CostoTotal);
+                decimal totalInsumos = await _context.DetalleCompraInsumos.Where(d => d.IdCompra == idOC).SumAsync(d => d.CostoTotal);
                 decimal totalEmpaques = await _context.DetalleCompraEmpaques.Where(d => d.IdCompra == idOC).SumAsync(d => d.CostoTotal);
                 decimal totalProductos = await _context.DetalleCompraProductos.Where(d => d.IdCompra == idOC).SumAsync(d => d.CostoTotal);
                 decimal totalEconomatos = await _context.DetalleCompraEconomatos.Where(d => d.IdCompra == idOC).SumAsync(d => d.CostoTotal);
@@ -576,7 +576,7 @@ namespace proy_back_Qbd.Services
                     // Calcular familias recalculando directamente del estado actual de la DB
                     var partesFamilia = new List<string>();
 
-                    var idsFamilias = await _context.DetalleComprasInsumos
+                    var idsFamilias = await _context.DetalleCompraInsumos
                         .Where(d => d.IdCompra == idOC && d.Insumo != null && d.Insumo.Familia != null)
                         .Select(d => d.Insumo!.IdFamilia)
                         .Distinct()
@@ -589,7 +589,7 @@ namespace proy_back_Qbd.Services
 
                     if (nombresFamilias.Any())
                         partesFamilia.AddRange(nombresFamilias);
-                    else if (await _context.DetalleComprasInsumos.AnyAsync(d => d.IdCompra == idOC))
+                    else if (await _context.DetalleCompraInsumos.AnyAsync(d => d.IdCompra == idOC))
                         partesFamilia.Add("MP");
 
                     if (await _context.DetalleCompraEmpaques.AnyAsync(d => d.IdCompra == idOC))
@@ -626,7 +626,7 @@ namespace proy_back_Qbd.Services
 
         public async Task<DescripcionFacturaRes> DescripcionFactura(int idProveedor)
         {
-            var detalles = await _context.DetalleComprasInsumos
+            var detalles = await _context.DetalleCompraInsumos
                 .Where(w => w.Compra != null && w.Compra.IdProveedor == idProveedor)
                 .OrderBy(w => w.Id)
                 .ToListAsync();

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Dto.Meson;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces;
@@ -15,102 +16,131 @@ namespace proy_back_Qbd.Services
     public class MesonService : IMesonService
     {
         private readonly ApiContext _context;
-        private readonly IOrdenCompraService _serviceOC;
         private readonly IMapper _mapper;
-        public MesonService(ApiContext context, IMapper mapper, IOrdenCompraService serviceOC)
+        public MesonService(ApiContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _serviceOC = serviceOC;
         }
-        public async Task<MesonListaRes?> CompletarDatos(int ordenCompraId, MesonConvertirReq request)
+        public async Task<string> CompletarDatos(int ordenCompraId, MesonConvertirReq request)
         {
+            if (request == null) throw new BadRequestException("Request vacío");
             //Actualizar a compra
             Compra? compra = await _context.Compras.FindAsync(ordenCompraId);
-            if (compra == null) return null;
+            if (compra == null) throw new NotFoundException("No se encontro compra");
             _mapper.Map(request, compra);
 
-            //Actualizar detalles de la compra
-            var idsDetalleCompra = request.Detalles
-                                    .Select(s => s.IdDetalleCompra);
-
-            List<DetalleCompraInsumo> detalleCompras = await _context.DetalleComprasInsumos
-                .Include(w => w.Insumo)
-                .Where(w => idsDetalleCompra.Contains(w.Id))
-                .ToListAsync();
-
-            // Agrupacion por familias
-            List<IdFamiliasRes> idFamilias = detalleCompras
-            .GroupBy(g => g.Insumo == null ? 0 : g.Insumo.IdFamilia).Select(s => new IdFamiliasRes()
+            if (request.DetallesOtros != null && request.DetallesOtros.Count != 0)
             {
-                IdFamilia = s.Key ?? 0,
-                Cantidad = s.Count()
-            }).ToList();
+                //Actualizar detalles de la compra
+                var idsDetalleOtros = request.DetallesOtros
+                                        .Select(s => s.IdDetalleOtro);
+                List<DetalleCompraOtros> otros = await _context.DetalleCompraOtros
+                    .Where(w => idsDetalleOtros.Contains(w.Id))
+                    .ToListAsync();
 
-            var idsFamiliasKeys = idFamilias.Select(f => f.IdFamilia).ToList();
 
-            List<IdFamiliasMaxRes> ultimosId = await _context.DetalleComprasInsumos
-            .Where(w => w.Insumo != null && idsFamiliasKeys.Contains(w.Insumo.IdFamilia ?? 0))
-            .GroupBy(g => g.Insumo.IdFamilia)
-            .Select(s => new IdFamiliasMaxRes
-            {
-                IdFamilia = s.Key ?? 0,
-            })
-            .ToListAsync();
-
-            decimal sumaTotal = 0m;
-
-            foreach (var item in detalleCompras)
-            {
-                MesonConvertirDetalleReq? item2 = request.Detalles.FirstOrDefault(w => w.IdDetalleCompra == item.Id);
-                if (item2 != null)
+                foreach (var item in otros)
                 {
-                    _mapper.Map(item2, item);
-                    item.IdModificador = request.IdModificador;
-                    item.CostoTotal = item.CostoUnitario * item2.Cantidad;
-                    if (item.Insumo != null)
+                    MesonDetOtrosConvReq? item2 = request.DetallesOtros.FirstOrDefault(w => w.IdDetalleOtro == item.Id);
+                    if (item2 != null)
                     {
-                        IdFamiliasMaxRes? idFamilia = ultimosId.FirstOrDefault(w => w.IdFamilia == item.Insumo.IdFamilia);
-                        if (idFamilia == null) return null;
-                        idFamilia.Ultimo++;
+                        var mapper = new MesonMapper();
+                        mapper.ActualizarOtros(item2, item);
+                        item.IdModificador = request.IdModificador;
                     }
-                    sumaTotal += item.CostoTotal;
                 }
             }
 
-            //Actualizar total de la compra
-            compra.Valor = sumaTotal;
-            compra.Total = (compra.Igv ? sumaTotal * 1.18m : sumaTotal) + compra.Isc + compra.Icbp;
+            if (request.DetallesInsumos != null && request.DetallesInsumos.Any())
+            {
+                //Actualizar detalles de la compra
+                var idsDetalleInsumos = request.DetallesInsumos
+                                        .Select(s => s.IdDetalleInsumo);
+                List<DetalleCompraInsumo> detallesInsumos = await _context.DetalleCompraInsumos
+                    .Where(w => idsDetalleInsumos.Contains(w.Id))
+                    .ToListAsync();
 
-            var nombresFamiliasConvert = await _context.Familias
-                .Where(f => idsFamiliasKeys.Contains(f.Id))
-                .Select(f => f.Abreviatura)
-                .ToListAsync();
-            compra.Familia = string.Join(", ", nombresFamiliasConvert);
+
+                foreach (var item in detallesInsumos)
+                {
+                    MesonDetInsumoConvReq? item2 = request.DetallesInsumos.FirstOrDefault(w => w.IdDetalleInsumo == item.Id);
+                    if (item2 != null)
+                    {
+                        var mapper = new MesonMapper();
+                        mapper.ActualizarInsumos(item2, item);
+                        item.IdModificador = request.IdModificador;
+                    }
+                }
+            }
+            if (request.DetallesProductos.Any())
+            {
+                //Actualizar detalles de la compra
+                var idsDetalleProductos = request.DetallesProductos
+                                        .Select(s => s.IdDetalleProducto);
+                List<DetalleCompraProducto> detallesProductos = await _context.DetalleCompraProductos
+                    .Where(w => idsDetalleProductos.Contains(w.Id))
+                    .ToListAsync();
+
+
+                foreach (var item in detallesProductos)
+                {
+                    MesonDetProductoConvReq? item2 = request.DetallesProductos.FirstOrDefault(w => w.IdDetalleProducto == item.Id);
+                    if (item2 != null)
+                    {
+                        var mapper = new MesonMapper();
+                        mapper.ActualizarProductos(item2, item);
+                        item.IdModificador = request.IdModificador;
+                    }
+                }
+            }
+            if (request.DetallesEconomatos.Any())
+            {
+                //Actualizar detalles de la compra
+                var idsDetalleEconomatos = request.DetallesEconomatos
+                                        .Select(s => s.IdDetalleEconomato);
+                List<DetalleCompraEconomato> detallesEconomatos = await _context.DetalleCompraEconomatos
+                    .Where(w => idsDetalleEconomatos.Contains(w.Id))
+                    .ToListAsync();
+
+
+                foreach (var item in detallesEconomatos)
+                {
+                    MesonDetEconomatoConvReq? item2 = request.DetallesEconomatos.FirstOrDefault(w => w.IdDetalleEconomato == item.Id);
+                    if (item2 != null)
+                    {
+                        var mapper = new MesonMapper();
+                        mapper.ActualizarEconomatos(item2, item);
+                        item.IdModificador = request.IdModificador;
+                    }
+                }
+            }
+            if (request.DetallesEmpaques.Any())
+            {
+                //Actualizar detalles de la compra
+                var idsDetalleEmpaques = request.DetallesEmpaques
+                                        .Select(s => s.IdDetalleEmpaque);
+                List<DetalleCompraEmpaque> detallesEmpaques = await _context.DetalleCompraEmpaques
+                    .Where(w => idsDetalleEmpaques.Contains(w.Id))
+                    .ToListAsync();
+
+
+                foreach (var item in detallesEmpaques)
+                {
+                    MesonDetEmpaqueConvReq? item2 = request.DetallesEmpaques.FirstOrDefault(w => w.IdDetalleEmpaque == item.Id);
+                    if (item2 != null)
+                    {
+                        var mapper = new MesonMapper();
+                        mapper.ActualizarEmpaques(item2, item);
+                        item.IdModificador = request.IdModificador;
+                    }
+                }
+            }
+
 
             await _context.SaveChangesAsync();
-            //Devolver dato actualizado de la compra
-            MesonListaRes? response = await _context.Compras
-                            .Where(w => w.Id == ordenCompraId)
-                            .Select(s => new MesonListaRes
-                            {
-                                Id = s.Id,
-                                CUO = "OC" + s.Id,
-                                FechaCotizacion = s.FechaCotizacion,
-                                FechaFactura = s.FechaFactura,
-                                NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
-                                CodFacQbd = s.CodFacQBD,
-                                Familia = s.Familia,
-                                Factura = s.SerieComprobante + s.NumeroComprobante,
-                                ImgFactura = s.ImgFactura,
-                                Guia = s.Guia,
-                                EstadoCompra = s.EstadoCompra
-                            })
-                            .FirstOrDefaultAsync();
-            if (response == null)
-                return null;
 
-            return response;
+            return "Actualizacion Exitosa";
         }
 
         public async Task<MesonModalRes?> ObtenerDatosModal(int ordenCompraId)

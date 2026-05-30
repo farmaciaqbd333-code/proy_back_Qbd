@@ -72,8 +72,8 @@ namespace proy_back_Qbd.Models
     {
         public int Id { get; set; }
         public int IdInsumo { get; set; }
-        public required string DescripcionFac { get; set; }
-        public required decimal Cantidad { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
         public required string Um { get; set; }
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }

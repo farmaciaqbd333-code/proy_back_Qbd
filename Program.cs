@@ -84,7 +84,7 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
     {
         Description = "Ingrese su API Key en el campo",
-        Name = "X-Api-Key", // Nombre del encabezado que el middleware espera
+        Name = "X-Api-Key", 
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
         Scheme = "ApiKeyScheme"
@@ -172,6 +172,7 @@ app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
+    options.ConfigObject.AdditionalItems["persistAuthorization"] = true;
 });
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins");

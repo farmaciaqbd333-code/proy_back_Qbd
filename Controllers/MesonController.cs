@@ -22,8 +22,8 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar para tabla meson
         /// </summary>
-        [HttpGet("meson")]
-        public async Task<ActionResult<List<MesonListaRes>>> ListarOrdenesEnviadasRes()
+        [HttpGet]
+        public async Task<ActionResult<List<MesonListaRes>>> ListarTablaMeson()
         {
             List<MesonListaRes> response = await _serviceMeson.ListarMeson(["ENVIADO", "MESON", "MESÓN", "LABORATORIO"]);
             if (response.Count == 0)
@@ -38,29 +38,25 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{id}")]
         public async Task<ActionResult<MesonDetalleRes>> ObtenerOrdenCompra(int id)
         {
-
             MesonDetalleRes response = await _serviceMeson.ObtenerDetalleOrdenOCompra(id);
-
             return Ok(response);
         }
+
         /// <summary>
         /// Completar Datos
         /// </summary>
-        [HttpPatch("meson/{ordenCompraId}")]
-        [SwaggerResponse(200, "Creación exitosa", typeof(MesonListaRes))]
-        public async Task<ActionResult<MesonListaRes>> ConvertirCompra(int ordenCompraId, MesonConvertirReq request)
+        [HttpPatch("{ordenCompraId}")]
+        public async Task<ActionResult<MesonListaRes>> CompletarDatos(int ordenCompraId, [FromBody] MesonConvertirReq request)
         {
-            MesonListaRes? response = await _serviceMeson.CompletarDatos(ordenCompraId, request);
-            if (response == null) return NotFound(new { message = "Compra no encontrada" });
-
+            string response = await _serviceMeson.CompletarDatos(ordenCompraId, request);
             return Ok(response);
         }
 
         /// <summary>
         /// Obtener datos para meson modal
         /// </summary>
-        [HttpGet("meson/{ordenId}")]
-        public async Task<ActionResult<MesonModalRes>> ObtenerDatosMeson(int ordenId)
+        [HttpGet("{ordenId}")]
+        public async Task<ActionResult<MesonModalRes>> ObtenerDatosModalMeson(int ordenId)
         {
             MesonModalRes? response = await _serviceMeson.ObtenerDatosModal(ordenId);
 

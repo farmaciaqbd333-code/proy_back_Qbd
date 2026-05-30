@@ -20,7 +20,7 @@ namespace Proy_back_QBD.Data
         public DbSet<DetalleNotaSalida> DetalleNotaSalidas { get; set; }
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
-        public DbSet<DetalleCompraInsumo> DetalleComprasInsumos { get; set; }
+        public DbSet<DetalleCompraInsumo> DetalleCompraInsumos { get; set; }
         public DbSet<DetalleCompraOtros> DetalleCompraOtros { get; set; }
         public DbSet<DetalleCompraEconomato> DetalleCompraEconomatos { get; set; }
         public DbSet<DetalleCompraEmpaque> DetalleCompraEmpaques { get; set; }
