@@ -62,11 +62,7 @@ public class EmpaqueController : ControllerBase
     [SwaggerResponse(200, "Operación exitosa", typeof(EmpaqueFindAllRes))]
     public async Task<IActionResult> ObtenerEmpaques()
     {
-        List<EmpaqueFindAllRes?> empaque = await _empaqueService.Obtener();
-        if (empaque == null)
-        {
-            NotFound("No existen");
-        }
+        List<EmpaqueFindAllRes> empaque = await _empaqueService.Obtener();
         return Ok(empaque);
     }
 
