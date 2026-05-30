@@ -18,8 +18,8 @@ namespace proy_back_Qbd.Models
         [Column("cantidad_solicitada")] public required decimal CantidadSolicitada { get; set; }
         [Column("lote")] public string? Lote { get; set; }
         [Column("potencia")] public decimal Potencia { get; set; }
-        [Column("fecha_fabricacion")] public DateTime FechaFabricacion { get; set; }
-        [Column("fecha_vencimiento")] public DateTime FechaVencimiento { get; set; }
+        [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
+        [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         [Column("coa")] public bool Coa { get; set; }
         [Column("registro_sanitario")] public string? RegistroSanitario { get; set; }
         [Column("conformidad")] public bool? Conformidad { get; set; }
