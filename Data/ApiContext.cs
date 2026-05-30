@@ -97,7 +97,7 @@ namespace Proy_back_QBD.Data
             modelBuilder.Entity<DetalleCompraOtros>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdCompra);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraOtros).HasForeignKey(hfk => hfk.IdCompra);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });

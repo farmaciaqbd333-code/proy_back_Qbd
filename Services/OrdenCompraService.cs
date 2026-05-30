@@ -89,7 +89,7 @@ namespace proy_back_Qbd.Services
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal
                             }).ToList(),
-                            DetalleCompras = s.DetalleCompras == null ? null : s.DetalleCompras.Select(s2 => new DetalleComprasRes
+                            DetalleCompras = s.DetalleCompraOtros == null ? null : s.DetalleCompraOtros.Select(s2 => new DetalleComprasRes
                             {
                                 Id = s2.Id,
                                 Clasificacion = s2.Clasificacion,
