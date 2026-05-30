@@ -71,10 +71,6 @@ public class EmpaqueController : ControllerBase
     public async Task<IActionResult> ObtenerEmpaquesPorId(int id)
     {
         EmpaqueFindIdRes? empaque = await _empaqueService.ObtenerById(id);
-        if (empaque == null)
-        {
-            NotFound("No existe");
-        }
         return Ok(empaque);
     }
 

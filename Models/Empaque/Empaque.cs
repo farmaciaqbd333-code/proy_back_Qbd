@@ -19,22 +19,22 @@ namespace Proy_back_QBD.Models
         public string? Descripcion { get; set; }
         [Column("fundaId")]
         [ForeignKey("Funda")]
-        public int? FundaId { get; set; }
+        public int? IdFunda { get; set; }
         [JsonIgnore]
         public Empaque? Funda { get; set; }
         [Column("cajaId")]
         [ForeignKey("Caja")]
-        public int? CajaId { get; set; }
+        public int? IdCaja { get; set; }
         [JsonIgnore]
         public Empaque? Caja { get; set; }
         [Column("etiqueta_id1")]
         [ForeignKey("Etiqueta1")]
-        public int? EtiquetaId1 { get; set; }
+        public int? IdEtiqueta1 { get; set; }
         [JsonIgnore]
         public Empaque? Etiqueta1 { get; set; }
         [Column("etiqueta_id2")]
         [ForeignKey("Etiqueta2")]
-        public int? EtiquetaId2 { get; set; }
+        public int? IdEtiqueta2 { get; set; }
         [JsonIgnore]
         public Empaque? Etiqueta2 { get; set; }
         [Column("tara")]

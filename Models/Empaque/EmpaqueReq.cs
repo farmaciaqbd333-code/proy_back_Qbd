@@ -19,10 +19,10 @@ namespace Proy_back_QBD.Dto.Empaque
     public class EmpaqueUpdateReq
     {
         public string? Descripcion { get; set; }
-        public int? FundaId { get; set; }
-        public int? CajaId { get; set; }
-        public int? EtiquetaId1 { get; set; }
-        public int? EtiquetaId2 { get; set; }
+        public int? IdFunda { get; set; }
+        public int? IdCaja { get; set; }
+        public int? IdEtiqueta1 { get; set; }
+        public int? IdEtiqueta2 { get; set; }
         public string? Tara { get; set; }
         public int ModificadorId { get; set; }
     }

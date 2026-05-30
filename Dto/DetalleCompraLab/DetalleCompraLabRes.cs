@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 public class ObtenerCompraLabRes
 {
     public required string CodigoProveedor { get; set; }
-    public List<ObtenerDetalleCompraLabRes>? Detalles { get; set; }
+    public List<CompraLabDetInsumoRes>? DetalleInsumos { get; set; }
+    public List<CompraLabDetInsumoRes>? DetalleEmpaques { get; set; }
 }
-public class ObtenerDetalleCompraLabRes
+public class CompraLabDetInsumoRes
 {
     public required int Id { get; set; }
     public required string Reg { get; set; }
@@ -18,10 +19,26 @@ public class ObtenerDetalleCompraLabRes
     public required bool Coa { get; set; }
     public required string Lote { get; set; }
     public required string Um { get; set; }
-    public required decimal CantidadSolicitada { get; set; }
+    public required decimal CantidadRecibida { get; set; }
     public required decimal Potencia { get; set; }
-    public required DateTime FechaFabricacion { get; set; }
-    public required DateTime FechaVencimiento { get; set; }
+    public DateTime? FechaFabricacion { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
+    public required string CondicionALmacenamiento { get; set; }
+    public required decimal TotalPaquetes { get; set; }
+    public required decimal TotalPeso { get; set; }
+}
+public class CompraLabDetEmpaquesRes
+{
+    public required int Id { get; set; }
+    public required string Reg { get; set; }
+    public required string Codigo { get; set; }
+    public required string DescripcionQBD { get; set; }
+    public required bool Coa { get; set; }
+    public required string Lote { get; set; }
+    public required string Um { get; set; }
+    public required decimal CantidadRecibida { get; set; }
+    public DateTime? FechaFabricacion { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
     public required string CondicionALmacenamiento { get; set; }
     public required decimal TotalPaquetes { get; set; }
     public required decimal TotalPeso { get; set; }

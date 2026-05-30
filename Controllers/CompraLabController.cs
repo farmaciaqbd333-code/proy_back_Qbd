@@ -19,6 +19,7 @@ namespace proy_back_Qbd.Controllers
         {
             _serviceCompraLab = serviceCompraLab;
         }
+        
         /// <summary>
         /// Listar para tabla laboratorio
         /// </summary>
@@ -26,8 +27,6 @@ namespace proy_back_Qbd.Controllers
         public async Task<ActionResult<List<MesonListaRes>>> ListarOrdenesLaboratorio()
         {
             List<LabListaRes> response = await _serviceCompraLab.Listar(["LABORATORIO"]);
-            if (response.Count == 0)
-                return NotFound(new { message = "No se encontro ordenes" });
 
             return Ok(response);
         }
@@ -38,8 +37,6 @@ namespace proy_back_Qbd.Controllers
         public async Task<ActionResult<ObtenerCompraLabRes>> DatosCompraLaboratorio(int idCompra)
         {
             ObtenerCompraLabRes? response = await _serviceCompraLab.GetCompraLab(idCompra);
-            if (response == null)
-                return NotFound(new { message = "No se encontro detalles" });
 
             return Ok(response);
         }

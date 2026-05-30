@@ -74,7 +74,7 @@ namespace Proy_back_QBD.Services
 
         public async Task<EmpaqueFindIdRes?> ObtenerById(int id)
         {
-            EmpaqueFindIdRes response = await _context.Empaques
+            EmpaqueFindIdRes? response = await _context.Empaques
                                             .Include(i => i.Funda)
                                             .Include(i => i.Caja)
                                             .Select(s => new EmpaqueFindIdRes
@@ -82,16 +82,17 @@ namespace Proy_back_QBD.Services
                                                 Id = s.Id,
                                                 Descripcion = s.Descripcion,
                                                 Funda = s.Funda.Descripcion,
+                                                IdFunda = s.IdFunda,
                                                 Caja = s.Caja.Descripcion,
+                                                IdCaja = s.IdCaja,
                                                 Etiqueta1 = s.Etiqueta1.Descripcion,
+                                                IdEtiqueta1 = s.IdEtiqueta1,
                                                 Etiqueta2 = s.Etiqueta2.Descripcion,
+                                                IdEtiqueta2 = s.IdEtiqueta2,
                                                 Tara = s.Tara
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);
-            if (response == null)
-            {
-                return null;
-            }
+            if (response == null) throw new NotFoundException("No se encontro el empaque");
             return response;
         }
     }

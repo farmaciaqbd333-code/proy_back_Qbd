@@ -46,23 +46,23 @@ namespace proy_back_Qbd.Services
             .Select(s => new ObtenerCompraLabRes()
             {
                 CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
-                // Detalles = s.DetalleCompras != null ? s.DetalleCompras.Select(s2 => new ObtenerDetalleCompraLabRes()
-                // {
-                //     Id = s2.Id,
-                //     Reg = s2.Reg != null ? Alfanumerico.ConvertToBase36(s2.Reg.Value).PadLeft(4, '0') : "",
-                //     Codigo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
-                //     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
-                //     Coa = s2.Coa,
-                //     Lote = s2.Lote ?? "",
-                //     Um = "g",
-                //     CantidadSolicitada = s2.CantidadSolicitada * 1000,
-                //     Potencia = s2.Potencia,
-                //     FechaFabricacion = s2.FechaFabricacion,
-                //     FechaVencimiento = s2.FechaVencimiento,
-                //     CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
-                //     TotalPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0,
-                //     TotalPeso = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0
-                // }).ToList() : null
+                DetalleInsumos = s.DetalleCompraInsumos != null ? s.DetalleCompraInsumos.Select(s2 => new CompraLabDetInsumoRes()
+                {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    Codigo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
+                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
+                    Coa = s2.Coa,
+                    Lote = s2.Lote ?? "",
+                    Um = "g",
+                    CantidadRecibida = s2.CantidadSolicitada * 1000,
+                    Potencia = s2.Potencia,
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
+                    CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
+                    TotalPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0,
+                    TotalPeso = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0
+                }).ToList() : null
             }).FirstOrDefaultAsync();
 
             if (obtenerDetalleCompraLabReq == null) return null;
@@ -131,6 +131,7 @@ namespace proy_back_Qbd.Services
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();
+
             if (ordenesEnviadasRes.Count() == 0) return new List<LabListaRes>();
 
             return ordenesEnviadasRes;
