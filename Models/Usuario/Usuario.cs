@@ -141,25 +141,25 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<Compra>? ComprasModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraInsumo>? DetalleComprasInsumoCreadas { get; set; }
+        public List<CompraInsumos>? DetalleComprasInsumoCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraInsumo>? DetalleCompraInsumosModificadas { get; set; }
+        public List<CompraInsumos>? DetalleCompraInsumosModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraOtros>? DetalleComprasCreadas { get; set; }
+        public List<CompraOtros>? DetalleComprasCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraOtros>? DetalleComprasModificadas { get; set; }
+        public List<CompraOtros>? DetalleComprasModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraEmpaque>? DetalleComprasEmpaquesCreadas { get; set; }
+        public List<CompraEmpaques>? DetalleComprasEmpaquesCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraEmpaque>? DetalleComprasEmpaquesModificadas { get; set; }
+        public List<CompraEmpaques>? DetalleComprasEmpaquesModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraProducto>? DetalleCompraProductoCreadas { get; set; }
+        public List<CompraProductos>? DetalleCompraProductoCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraProducto>? DetalleCompraProductoModificadas { get; set; }
+        public List<CompraProductos>? DetalleCompraProductoModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraEconomato>? DetalleCompraEconomatoCreadas { get; set; }
+        public List<CompraEconomatos>? DetalleCompraEconomatoCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleCompraEconomato>? DetalleCompraEconomatoModificadas { get; set; }
+        public List<CompraEconomatos>? DetalleCompraEconomatoModificadas { get; set; }
         [JsonIgnore]
         public List<Proveedor>? ProveedoresCreados { get; set; }
         [JsonIgnore]

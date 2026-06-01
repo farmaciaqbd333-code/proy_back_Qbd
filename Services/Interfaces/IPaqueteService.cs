@@ -9,9 +9,11 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface IPaqueteService
     {
-        Task<DetallePaqueteRes?> GetDetallePaquete(int compraLabId);
-        Task<int> CrearPaquete(CrearPaqueteReq req);
-        Task<bool> ModificarPaquete(int idPaquete, ModificarPaqueteReq req);
-        Task<bool> EliminarPaquete(int idPaquete);
+        Task<PaqueteInsumoDetalleRes> GetDetallePaquetes(int idCompra);
+        Task<int> CrearPaqueteInsumo(PaqueteInsumoCrearReq req);
+        Task<int> CrearPaqueteEmpaque(PaqueteEmpaqueCrearReq req);
+        Task<string> ModificarPaqueteEmpaque(int idPaquete, PaqueteEmpaqueModificarReq req);
+        Task<string> ModificarPaqueteInsumo(int idInsumo, PaqueteInsumoModificarReq req);
+        Task<string> EliminarPaquete(int idPaquete);
     }
 }

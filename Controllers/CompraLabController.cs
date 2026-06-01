@@ -19,7 +19,7 @@ namespace proy_back_Qbd.Controllers
         {
             _serviceCompraLab = serviceCompraLab;
         }
-        
+
         /// <summary>
         /// Listar para tabla laboratorio
         /// </summary>
@@ -30,24 +30,24 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(response);
         }
-        /// <summary>
-        /// Obtener datos para actualizar datos de laboratorio
-        /// </summary>
-        [HttpGet("{idCompra}")]
-        public async Task<ActionResult<ObtenerCompraLabRes>> DatosCompraLaboratorio(int idCompra)
-        {
-            ObtenerCompraLabRes? response = await _serviceCompraLab.GetCompraLab(idCompra);
+        // /// <summary>
+        // /// Obtener datos para actualizar datos de laboratorio
+        // /// </summary>
+        // [HttpGet("{idCompra}")]
+        // public async Task<ActionResult<ObtenerCompraLabRes>> DatosCompraLaboratorio(int idCompra)
+        // {
+        //     ObtenerCompraLabRes? response = await _serviceCompraLab.GetCompraLab(idCompra);
 
-            return Ok(response);
-        }
+        //     return Ok(response);
+        // }
 
         /// <summary>
         /// Obtener detalle de compra laboratorio
         /// </summary>
         [HttpGet("detalle/{idCompra}")]
-        public async Task<ActionResult<ObtenerCompraLab2Res>> DetalleCompraLaboratorio(int idCompra)
+        public async Task<ActionResult<CompraLabIdRes>> DetalleCompraLaboratorio(int idCompra)
         {
-            ObtenerCompraLab2Res response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
+            CompraLabIdRes response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
 
             return Ok(response);
         }
@@ -56,21 +56,28 @@ namespace proy_back_Qbd.Controllers
         /// Actualizar detalle de laboratorio
         /// </summary>
         [HttpPatch("{idCompra}")]
-        public async Task<ActionResult<ObtenerCompraLabRes>> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
+        public async Task<ActionResult> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
         {
-            int? response = await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
-            if (response == null)
-                return NotFound(new { message = "No se encontro Compra" });
+            int response = await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
+            return Ok(response);
+        }
+        /// <summary>
+        /// Obtener datos para etiqueta insumo
+        /// </summary>
+        [HttpGet("etiqueta/insumo/{idCompra}")]
+        public async Task<ActionResult<EtiquetaCompra>> EtiquetaCompraInsumo(int idCompra)
+        {
+            EtiquetaCompra response = await _serviceCompraLab.GetEtiquetaCompraInsumo(idCompra);
 
             return Ok(response);
         }
         /// <summary>
-        /// Obtener datos para etiqueta
+        /// Obtener datos para etiqueta Empaque
         /// </summary>
-        [HttpGet("etiqueta/{idCompra}")]
-        public async Task<ActionResult<EtiquetaCompraLabRes>> EtiquetaCompraLaboratorio(int idCompra)
+        [HttpGet("etiqueta/empaque/{idCompra}")]
+        public async Task<ActionResult<EtiquetaCompra>> EtiquetaCompraEmpaque(int idCompra)
         {
-            EtiquetaCompraLabRes response = await _serviceCompraLab.GetEtiquetaCompraLab(idCompra);
+            EtiquetaCompra response = await _serviceCompraLab.GetEtiquetaCompraEmpaque(idCompra);
 
             return Ok(response);
         }

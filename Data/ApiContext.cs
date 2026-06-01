@@ -17,14 +17,16 @@ namespace Proy_back_QBD.Data
         public DbSet<ElaboracionBase> ElaboracionBases { get; set; }
         public DbSet<PaqueteSa> PaqueteSas { get; set; }
         public DbSet<Paquete> Paquetes { get; set; }
+        public DbSet<PaqueteInsumo> PaqueteInsumos { get; set; }
+        public DbSet<PaqueteEmpaque> PaqueteEmpaques { get; set; }
         public DbSet<DetalleNotaSalida> DetalleNotaSalidas { get; set; }
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
-        public DbSet<DetalleCompraInsumo> DetalleCompraInsumos { get; set; }
-        public DbSet<DetalleCompraOtros> DetalleCompraOtros { get; set; }
-        public DbSet<DetalleCompraEconomato> DetalleCompraEconomatos { get; set; }
-        public DbSet<DetalleCompraEmpaque> DetalleCompraEmpaques { get; set; }
-        public DbSet<DetalleCompraProducto> DetalleCompraProductos { get; set; }
+        public DbSet<CompraInsumos> CompraInsumos { get; set; }
+        public DbSet<CompraOtros> CompraOtros { get; set; }
+        public DbSet<CompraEconomatos> CompraEconomatos { get; set; }
+        public DbSet<CompraEmpaques> CompraEmpaques { get; set; }
+        public DbSet<CompraProductos> CompraProductos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
         public DbSet<Sede> Sedes { get; set; }  // Para la tabla de secciones
@@ -87,52 +89,63 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
-                e.HasOne(ho => ho.DetalleCompra).WithMany(wm => wm.Paquetes).HasForeignKey(hfk => hfk.IdDetalleCompra).IsRequired(false);
+            });
+            modelBuilder.Entity<PaqueteEmpaque>((e) =>
+            {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(p => p.Paquete).WithOne(w => w.PaqueteEmpaques).HasForeignKey<PaqueteEmpaque>(h => h.IdPaquete);
+                e.HasOne(p => p.CompraEmpaques).WithMany(w => w.PaqueteEmpaques).HasForeignKey(h => h.IdCompraEmpaque);
+            });
+            modelBuilder.Entity<PaqueteInsumo>((e) =>
+            {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(p => p.Paquete).WithOne(w => w.PaqueteInsumos).HasForeignKey<PaqueteInsumo>(h => h.IdPaquete);
+                e.HasOne(p => p.CompraInsumos).WithMany(w => w.PaqueteInsumos).HasForeignKey(h => h.IdCompraInsumo);
             });
             modelBuilder.Entity<DetalleNotaSalida>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleNotaSalidaCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleNotaSalidaModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
-            modelBuilder.Entity<DetalleCompraOtros>((e) =>
+            modelBuilder.Entity<CompraOtros>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraOtros).HasForeignKey(hfk => hfk.IdCompra);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraOtros).HasForeignKey(hfk => hfk.IdCompra);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
-            modelBuilder.Entity<DetalleCompraInsumo>((e) =>
+            modelBuilder.Entity<CompraInsumos>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasInsumoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraInsumosModificadas).HasForeignKey(hfk => hfk.IdModificador);
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraInsumos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraInsumos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante);
             });
 
-            modelBuilder.Entity<DetalleCompraEconomato>((e) =>
+            modelBuilder.Entity<CompraEconomatos>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraEconomatos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraEconomatos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Economato).WithMany(wm => wm.DetalleCompraEconomatos).HasForeignKey(hfk => hfk.IdEconomato).IsRequired(false);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleCompraEconomatoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraEconomatoModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
-            modelBuilder.Entity<DetalleCompraEmpaque>((e) =>
+            modelBuilder.Entity<CompraEmpaques>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraEmpaques).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Empaque).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdEmpaque).IsRequired(false);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasEmpaquesCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasEmpaquesModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
-            modelBuilder.Entity<DetalleCompraProducto>((e) =>
+            modelBuilder.Entity<CompraProductos>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
-                e.HasOne(ho => ho.Compra).WithMany(wm => wm.DetalleCompraProductos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
+                e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraProductos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
                 e.HasOne(ho => ho.Producto).WithMany(wm => wm.DetalleCompraProductos).HasForeignKey(hfk => hfk.IdProducto).IsRequired(false);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleCompraProductoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraProductoModificadas).HasForeignKey(hfk => hfk.IdModificador);
@@ -184,6 +197,11 @@ namespace Proy_back_QBD.Data
 
             modelBuilder.Entity<Empaque>(e =>
             {
+                e.HasOne(x => x.Caja).WithMany(x => x.ListaCajas).HasForeignKey(x => x.IdCaja);
+                e.HasOne(x => x.Funda).WithMany(x => x.ListaFundas).HasForeignKey(x => x.IdFunda);
+                e.HasOne(x => x.Etiqueta1).WithMany(x => x.ListaEtiquetas1).HasForeignKey(x => x.IdEtiqueta1);
+                e.HasOne(x => x.Etiqueta2).WithMany(x => x.ListaEtiquetas2).HasForeignKey(x => x.IdEtiqueta2);
+                e.HasOne(x => x.Familia).WithMany(x => x.Empaques).HasForeignKey(x => x.IdFamilia);
                 e.HasOne(x => x.Creador).WithMany(x => x.EmpaquesCreadas).HasForeignKey(x => x.CreadorId);
                 e.HasOne(x => x.Modificador).WithMany(x => x.EmpaquesModificadas).HasForeignKey(x => x.ModificadorId);
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
@@ -324,7 +342,6 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<Familia>((e) =>
             {
-                e.HasKey(hk => hk.Id);
                 e.HasOne(ho => ho.Creador).WithMany().HasForeignKey(hfk => hfk.IdCreador);
             });
 

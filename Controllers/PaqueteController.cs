@@ -24,39 +24,45 @@ namespace proy_back_Qbd.Controllers
         /// Listar lista de paquetes
         /// </summary>
         [HttpGet("detalle/{detalleCompraId}")]
-        public async Task<IActionResult> ObtenerDetallePaquete(int detalleCompraId)
+        public async Task<IActionResult> ObtenerDetallePaquete(int IdCompra)
         {
-            DetallePaqueteRes? response = await _servicePaquete.GetDetallePaquete(detalleCompraId);
-            if (response == null) return NotFound("No se encontro paquete");
+            PaqueteInsumoDetalleRes response = await _servicePaquete.GetDetallePaquetes(IdCompra);
             return Ok(response);
         }
         /// <summary>
-        /// Crear Paquete a Detalle Compra
+        /// Crear Paquete Insumo a Detalle Compra
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CrearPaquete([FromBody] CrearPaqueteReq req)
+        public async Task<IActionResult> CrearPaqueteInsumo([FromBody] PaqueteInsumoCrearReq req)
         {
-            int id = await _servicePaquete.CrearPaquete(req);
+            int id = await _servicePaquete.CrearPaqueteInsumo(req);
             return Created("", new { id });
         }
         /// <summary>
-        /// Modificar Paquete a Detalle Compra
+        /// Modificar Paquete Insumo a Detalle Compra
         /// </summary>
-        [HttpPut("{idPaquete}")]
-        public async Task<IActionResult> ModificarPaquete(int idPaquete, [FromBody] ModificarPaqueteReq req)
+        [HttpPut("insumo/{idPaquete}")]
+        public async Task<IActionResult> ModificarPaqueteInsumo(int idPaquete, [FromBody] PaqueteInsumoModificarReq req)
         {
-            bool response = await _servicePaquete.ModificarPaquete(idPaquete, req);
-            if (!response) return NotFound("No se modifico el paquete");
+            string response = await _servicePaquete.ModificarPaqueteInsumo(idPaquete, req);
             return Ok(response);
         }
         /// <summary>
-        /// Eliminar Paquete a Detalle Compra
+        /// Modificar Paquete Empaque a Detalle Compra
+        /// </summary>
+        [HttpPut("empaque/{idPaquete}")]
+        public async Task<IActionResult> ModificarPaqueteEmpaque(int idPaquete, [FromBody] PaqueteEmpaqueModificarReq req)
+        {
+            string response = await _servicePaquete.ModificarPaqueteEmpaque(idPaquete, req);
+            return Ok(response);
+        }
+        /// <summary>
+        /// Eliminar Paquete
         /// </summary>
         [HttpDelete("{idPaquete}")]
         public async Task<IActionResult> EliminarPaquete(int idPaquete)
         {
-            bool response = await _servicePaquete.EliminarPaquete(idPaquete);
-            if (!response) return NotFound("No se elimino el paquete");
+            string response = await _servicePaquete.EliminarPaquete(idPaquete);
             return Ok(response);
         }
     }

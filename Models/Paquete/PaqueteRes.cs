@@ -5,15 +5,23 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models
 {
-    public class DetallePaqueteRes
+    public class PaqueteInsumoDetalleRes
     {
+        public List<PaqueteInsumoListRes>? ListaInsumos { get; set; } = [];
+        public List<PaqueteEmpaqueListRes>? ListaEmpaques { get; set; } = [];
+    }
+    public class PaqueteInsumoListRes
+    {
+        public int IdPaquete { get; set; }
+        public string? CodigoCompraInsumo { get; set; }
+        public decimal CantidadPaquete { get; set; }
         public decimal PesoUnitario { get; set; }
         public decimal Tara { get; set; }
-        public List<ListaDetallePaqueteRes>? Lista { get; set; }
     }
-    public class ListaDetallePaqueteRes
+    public class PaqueteEmpaqueListRes
     {
-        public required string IdInsumo { get; set; }
+        public int IdPaquete { get; set; }
+        public string? CodigoCompraEmpaque { get; set; }
         public decimal CantidadPaquete { get; set; }
         public decimal PesoUnitario { get; set; }
         public decimal Tara { get; set; }

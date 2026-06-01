@@ -41,7 +41,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }
         public List<FormulaCC>? FormulasCC { get; set; }
-        public List<DetalleCompraInsumo>? DetalleCompras { get; set; }
+        public List<CompraInsumos>? DetalleCompras { get; set; }
 
     }
 

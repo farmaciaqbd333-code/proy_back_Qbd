@@ -9,8 +9,8 @@ using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
 {
-    [Table("detalle_compra_insumo")]
-    public class DetalleCompraInsumo
+    [Table("compra_insumo")]
+    public class CompraInsumos
     {
 
         [Column("id_compra")] public required int IdCompra { get; set; }
@@ -39,7 +39,7 @@ namespace proy_back_Qbd.Models
         public Usuario? Modificador { get; set; }
         public Insumo? Insumo { get; set; }
         public Compra? Compra { get; set; }
-        public List<Paquete>? Paquetes { get; set; }
+        public List<PaqueteInsumo>? PaqueteInsumos { get; set; }
         public Fabricante? Fabricante { get; set; }
     }
 

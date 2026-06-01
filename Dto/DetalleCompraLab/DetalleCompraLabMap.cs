@@ -10,7 +10,7 @@ namespace proy_back_Qbd.Models
     {
         public DetalleCompraLabMap()
         {
-            CreateMap<ActualizarDetCompraLabReq, DetalleCompraInsumo>(MemberList.None)
+            CreateMap<ActualizarDetCompraLabReq, CompraInsumos>(MemberList.None)
             .ForMember(f => f.Coa, o => o.MapFrom(m => m.Coa))
             .ForMember(f => f.Lote, o => o.MapFrom(m => m.Lote))
             .ForMember(f => f.CantidadSolicitada, o => o.MapFrom(m => m.CantidadSolicitada))

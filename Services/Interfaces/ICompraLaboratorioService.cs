@@ -8,10 +8,11 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface ICompraLaboratorioService
     {
-        Task<ObtenerCompraLabRes?> GetCompraLab(int IdCompra);
+        // Task<ObtenerCompraLabRes?> GetCompraLab(int IdCompra);
         Task<List<LabListaRes>> Listar(string[] cadena);
-        Task<ObtenerCompraLab2Res> GetDetalleCompraLab(int IdCompra);
-        Task<int?> UpdateDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request);
-        Task<EtiquetaCompraLabRes> GetEtiquetaCompraLab(int IdCompra);
+        Task<CompraLabIdRes> GetDetalleCompraLab(int IdCompra);
+        Task<int> UpdateDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request);
+        Task<EtiquetaCompra> GetEtiquetaCompraInsumo(int IdCompra);
+        Task<EtiquetaCompra> GetEtiquetaCompraEmpaque(int IdCompra);
     }
 }

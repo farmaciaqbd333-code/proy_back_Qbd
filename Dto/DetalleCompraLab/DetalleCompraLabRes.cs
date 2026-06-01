@@ -4,53 +4,58 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-public class ObtenerCompraLabRes
+// public class ObtenerCompraLabRes
+// {
+//     public required string CodigoProveedor { get; set; }
+//     public List<CompraLabDetInsumoRes>? DetalleInsumos { get; set; }
+//     public List<CompraLabDetEmpaquesRes>? DetalleEmpaques { get; set; }
+// }
+// public class CompraLabDetInsumoRes
+// {
+//     public required int Id { get; set; }
+//     public required string Familia { get; set; }
+//     public required string Reg { get; set; }
+//     public required string Codigo { get; set; }
+//     public required string DescripcionQBD { get; set; }
+//     public required bool Coa { get; set; }
+//     public required string Lote { get; set; }
+//     public required string Um { get; set; }
+//     public required decimal CantidadRecibida { get; set; }
+//     public required decimal Potencia { get; set; }
+//     public DateTime? FechaFabricacion { get; set; }
+//     public DateTime? FechaVencimiento { get; set; }
+//     public required string CondicionALmacenamiento { get; set; }
+//     public required decimal TotalPaquetes { get; set; }
+//     public required decimal TotalPeso { get; set; }
+// }
+// public class CompraLabDetEmpaquesRes
+// {
+//     public required int Id { get; set; }
+//     public required string Familia { get; set; }
+//     public required string Reg { get; set; }
+//     public required string Codigo { get; set; }
+//     public required string DescripcionQBD { get; set; }
+//     public bool? Coa { get; set; }
+//     public required string Lote { get; set; }
+//     public required string Um { get; set; }
+//     public required decimal CantidadRecibida { get; set; }
+//     public DateTime? FechaFabricacion { get; set; }
+//     public DateTime? FechaVencimiento { get; set; }
+//     public required string CondicionALmacenamiento { get; set; }
+//     public required decimal TotalPaquetes { get; set; }
+//     public required decimal TotalPeso { get; set; }
+// }
+public class CompraLabIdRes
 {
     public required string CodigoProveedor { get; set; }
-    public List<CompraLabDetInsumoRes>? DetalleInsumos { get; set; }
-    public List<CompraLabDetInsumoRes>? DetalleEmpaques { get; set; }
+    public List<CompraLabDetInsumosRes>? ListaInsumos { get; set; } = [];
+    public List<CompraLabDetEmpRes>? ListaEmpaques { get; set; } = [];
 }
-public class CompraLabDetInsumoRes
+public class CompraLabDetInsumosRes
 {
     public required int Id { get; set; }
-    public required string Reg { get; set; }
-    public required string Codigo { get; set; }
-    public required string DescripcionQBD { get; set; }
-    public required bool Coa { get; set; }
-    public required string Lote { get; set; }
-    public required string Um { get; set; }
-    public required decimal CantidadRecibida { get; set; }
-    public required decimal Potencia { get; set; }
-    public DateTime? FechaFabricacion { get; set; }
-    public DateTime? FechaVencimiento { get; set; }
-    public required string CondicionALmacenamiento { get; set; }
-    public required decimal TotalPaquetes { get; set; }
-    public required decimal TotalPeso { get; set; }
-}
-public class CompraLabDetEmpaquesRes
-{
-    public required int Id { get; set; }
-    public required string Reg { get; set; }
-    public required string Codigo { get; set; }
-    public required string DescripcionQBD { get; set; }
-    public required bool Coa { get; set; }
-    public required string Lote { get; set; }
-    public required string Um { get; set; }
-    public required decimal CantidadRecibida { get; set; }
-    public DateTime? FechaFabricacion { get; set; }
-    public DateTime? FechaVencimiento { get; set; }
-    public required string CondicionALmacenamiento { get; set; }
-    public required decimal TotalPaquetes { get; set; }
-    public required decimal TotalPeso { get; set; }
-}
-public class ObtenerCompraLab2Res
-{
-    public required string CodigoProveedor { get; set; }
-    public List<ObtenerDetalleCompraLab2Res>? Detalles { get; set; }
-}
-public class ObtenerDetalleCompraLab2Res
-{
     public required string Conformidad { get; set; }
+    public required string Familia { get; set; }
     public required string Reg { get; set; }
     public required string CodigoInsumo { get; set; }
     public required string DescripcionQBD { get; set; }
@@ -59,12 +64,29 @@ public class ObtenerDetalleCompraLab2Res
     public required string Um { get; set; }
     public required decimal CantidadSolicitada { get; set; }
     public required decimal Potencia { get; set; }
-    public required DateTime FechaFabricacion { get; set; }
-    public required DateTime FechaVencimiento { get; set; }
+    public DateTime? FechaFabricacion { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
     public required decimal CantidadRecibida { get; set; }
 }
-public class EtiquetaCompraLabRes
+public class CompraLabDetEmpRes
+{
+    public required int Id { get; set; }
+    public required string Conformidad { get; set; }
+    public required string Familia { get; set; }
+    public required string Reg { get; set; }
+    public required string Codigo { get; set; }
+    public required bool Coa { get; set; }
+    public required string DescripcionQBD { get; set; }
+    public required string Lote { get; set; }
+    public required string Um { get; set; }
+    public required decimal CantidadSolicitada { get; set; }
+    public DateTime? FechaFabricacion { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
+    public required decimal CantidadPaquetes { get; set; }
+    public required decimal CantidadRecibida { get; set; }
+}
+public class EtiquetaCompra
 {
     public required string Familia { get; set; }
     public decimal? Tara { get; set; }

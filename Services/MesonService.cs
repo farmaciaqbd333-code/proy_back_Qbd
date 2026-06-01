@@ -35,7 +35,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleOtros = request.DetallesOtros
                                         .Select(s => s.IdDetalleOtro);
-                List<DetalleCompraOtros> otros = await _context.DetalleCompraOtros
+                List<CompraOtros> otros = await _context.CompraOtros
                     .Where(w => idsDetalleOtros.Contains(w.Id))
                     .ToListAsync();
 
@@ -57,7 +57,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleInsumos = request.DetallesInsumos
                                         .Select(s => s.IdDetalleInsumo);
-                List<DetalleCompraInsumo> detallesInsumos = await _context.DetalleCompraInsumos
+                List<CompraInsumos> detallesInsumos = await _context.CompraInsumos
                     .Where(w => idsDetalleInsumos.Contains(w.Id))
                     .ToListAsync();
 
@@ -78,7 +78,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleProductos = request.DetallesProductos
                                         .Select(s => s.IdDetalleProducto);
-                List<DetalleCompraProducto> detallesProductos = await _context.DetalleCompraProductos
+                List<CompraProductos> detallesProductos = await _context.CompraProductos
                     .Where(w => idsDetalleProductos.Contains(w.Id))
                     .ToListAsync();
 
@@ -99,7 +99,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleEconomatos = request.DetallesEconomatos
                                         .Select(s => s.IdDetalleEconomato);
-                List<DetalleCompraEconomato> detallesEconomatos = await _context.DetalleCompraEconomatos
+                List<CompraEconomatos> detallesEconomatos = await _context.CompraEconomatos
                     .Where(w => idsDetalleEconomatos.Contains(w.Id))
                     .ToListAsync();
 
@@ -120,7 +120,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleEmpaques = request.DetallesEmpaques
                                         .Select(s => s.IdDetalleEmpaque);
-                List<DetalleCompraEmpaque> detallesEmpaques = await _context.DetalleCompraEmpaques
+                List<CompraEmpaques> detallesEmpaques = await _context.CompraEmpaques
                     .Where(w => idsDetalleEmpaques.Contains(w.Id))
                     .ToListAsync();
 
@@ -159,7 +159,7 @@ namespace proy_back_Qbd.Services
                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
-                ListaOtros = s.DetalleCompraOtros != null ? s.DetalleCompraOtros.Select(s2 => new DetalleMesonOtrosRes
+                ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
                 {
                     Id = s2.Id,
                     Familia = s2.Clasificacion ?? "OTRO",
@@ -168,7 +168,7 @@ namespace proy_back_Qbd.Services
                     Um = s2.UnidadMedida,
                     Conformidad = s2.Conformidad
                 }).ToList() : new List<DetalleMesonOtrosRes>(),
-                ListaInsumos = s.DetalleCompraInsumos != null ? s.DetalleCompraInsumos.Select(s2 => new DetalleMesonInsumoRes
+                ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new DetalleMesonInsumoRes
                 {
                     Id = s2.Id,
                     Codigo = "MP-QBD-" + s2.IdInsumo,
@@ -185,7 +185,7 @@ namespace proy_back_Qbd.Services
                     IdFabricante = s2.IdFabricante,
                     Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura ?? "" : "",
                 }).ToList() : new List<DetalleMesonInsumoRes>(),
-                ListaEconomatos = s.DetalleCompraEconomatos != null ? s.DetalleCompraEconomatos.Select(s2 => new DetalleMesonEconomatosRes
+                ListaEconomatos = s.CompraEconomatos != null ? s.CompraEconomatos.Select(s2 => new DetalleMesonEconomatosRes
                 {
                     Id = s2.Id,
                     Codigo = s2.Economato != null ? "" + s2.Economato.Id : "",
@@ -197,7 +197,7 @@ namespace proy_back_Qbd.Services
                     Conformidad = s2.Conformidad,
                     Familia = "ECO"
                 }).ToList() : new List<DetalleMesonEconomatosRes>(),
-                ListaProductos = s.DetalleCompraProductos != null ? s.DetalleCompraProductos.Select(s2 => new DetalleMesonProductosRes
+                ListaProductos = s.CompraProductos != null ? s.CompraProductos.Select(s2 => new DetalleMesonProductosRes
                 {
                     Id = s2.Id,
                     Codigo = s2.Producto != null ? "" + s2.Producto.Id : "",
@@ -209,7 +209,7 @@ namespace proy_back_Qbd.Services
                     Conformidad = s2.Conformidad,
                     Familia = "PT"
                 }).ToList() : new List<DetalleMesonProductosRes>(),
-                ListaEmpaques = s.DetalleCompraEmpaques != null ? s.DetalleCompraEmpaques.Select(s2 => new DetalleMesonEmpaquesRes
+                ListaEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s2 => new DetalleMesonEmpaquesRes
                 {
                     Id = s2.Id,
                     Codigo = s2.Empaque != null ? "" + s2.Empaque.Id : "",

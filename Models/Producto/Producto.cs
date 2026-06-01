@@ -33,7 +33,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<ProdTerm>? ProdTerm { get; set; }
-        public List<DetalleCompraProducto>? DetalleCompraProductos { get; set; }
+        public List<CompraProductos>? DetalleCompraProductos { get; set; }
     }
 
 }

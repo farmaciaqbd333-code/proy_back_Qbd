@@ -12,47 +12,29 @@ namespace Proy_back_QBD.Models
     [Table("empaques")]
     public class Empaque
     {
-        [Column("id")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
-        [Column("descripcion")]
-        public string? Descripcion { get; set; }
-        [Column("fundaId")]
-        [ForeignKey("Funda")]
-        public int? IdFunda { get; set; }
-        [JsonIgnore]
+        [Column("id"), DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int Id { get; set; }
+        [Column("descripcion")] public string? Descripcion { get; set; }
+        [Column("fundaId")] public int? IdFunda { get; set; }
+        [Column("cajaId")] public int? IdCaja { get; set; }
+        [Column("etiqueta_id1")] public int? IdEtiqueta1 { get; set; }
+        [Column("etiqueta_id2")] public int? IdEtiqueta2 { get; set; }
+        [Column("tara")] public string? Tara { get; set; }
+        [Column("fecha_modificacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaModificacion { get; set; }
+        [Column("fecha_creacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaCreacion { get; set; }
+        [Column("creador_id")] public int CreadorId { get; set; }
+        [Column("id_familia")] public int IdFamilia { get; set; }
+        [Column("modificador_id")] public int ModificadorId { get; set; }
         public Empaque? Funda { get; set; }
-        [Column("cajaId")]
-        [ForeignKey("Caja")]
-        public int? IdCaja { get; set; }
-        [JsonIgnore]
         public Empaque? Caja { get; set; }
-        [Column("etiqueta_id1")]
-        [ForeignKey("Etiqueta1")]
-        public int? IdEtiqueta1 { get; set; }
-        [JsonIgnore]
         public Empaque? Etiqueta1 { get; set; }
-        [Column("etiqueta_id2")]
-        [ForeignKey("Etiqueta2")]
-        public int? IdEtiqueta2 { get; set; }
-        [JsonIgnore]
         public Empaque? Etiqueta2 { get; set; }
-        [Column("tara")]
-        public string? Tara { get; set; }
-        [Column("fecha_modificacion")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime FechaModificacion { get; set; }  // Puede ser nulo        
-        [Column("fecha_creacion")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime FechaCreacion { get; set; }  // Puede ser nulo        
-        [Column("creador_id")]
-        public int CreadorId { get; set; }
-        [JsonIgnore]
         public Usuario? Creador { get; set; }
-        [Column("modificador_id")]
-        public int ModificadorId { get; set; }
-        [JsonIgnore]
         public Usuario? Modificador { get; set; }
-        public List<DetalleCompraEmpaque>? DetalleCompraEmpaques { get; set; }
+        public Familia? Familia { get; set; }
+        public List<CompraEmpaques>? DetalleCompraEmpaques { get; set; }
+        public List<Empaque>? ListaCajas { get; set; }
+        public List<Empaque>? ListaFundas { get; set; }
+        public List<Empaque>? ListaEtiquetas1 { get; set; }
+        public List<Empaque>? ListaEtiquetas2 { get; set; }
     }
 }

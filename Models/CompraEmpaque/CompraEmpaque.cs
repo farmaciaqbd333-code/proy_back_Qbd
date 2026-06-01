@@ -7,13 +7,13 @@ using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
 {
-    [Table("detalle_compra_empaque")]
-    public class DetalleCompraEmpaque
+    [Table("compra_empaque")]
+    public class CompraEmpaques
     {
         [Column("id")] public int Id { get; set; }
         [Column("id_empaque")] public int IdEmpaque { get; set; }
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
-        [Column("cantidad_recibida")]public decimal? CantidadRecibida { get; set; }
+        [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
         [Column("um")] public string? Um { get; set; }
@@ -29,9 +29,11 @@ namespace proy_back_Qbd.Models
         [Column("lote")] public string? Lote { get; set; }
         [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
+        [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; } = "";
         public Compra? Compra { get; set; }
         public Empaque? Empaque { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
+        public List<PaqueteEmpaque>? PaqueteEmpaques { get; set; }
     }
 }

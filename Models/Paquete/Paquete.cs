@@ -16,10 +16,9 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; } = null;
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
-        [Column("id_detalle_compra")] public int IdDetalleCompra { get; set; }
-
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
-        public DetalleCompraInsumo? DetalleCompra { get; set; }
+        public PaqueteEmpaque? PaqueteEmpaques { get; set; }
+        public PaqueteInsumo? PaqueteInsumos { get; set; }
     }
 }
