@@ -39,6 +39,15 @@ namespace proy_back_Qbd.Controllers
             return Created("", new { id });
         }
         /// <summary>
+        /// Crear Paquete Empaque a Detalle Compra
+        /// </summary>
+        [HttpPost("empaque")]
+        public async Task<IActionResult> CrearPaqueteEmpaque([FromBody] PaqueteEmpaqueCrearReq req)
+        {
+            int id = await _servicePaquete.CrearPaqueteEmpaque(req);
+            return Created("", new { id });
+        }
+        /// <summary>
         /// Modificar Paquete Insumo a Detalle Compra
         /// </summary>
         [HttpPut("insumo/{idPaquete}")]
