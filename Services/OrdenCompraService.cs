@@ -67,7 +67,8 @@ namespace proy_back_Qbd.Services
                                 DescripcionQBD = s2.Empaque == null || s2.Empaque.Descripcion == null ? "" : s2.Empaque.Descripcion,
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal
+                                CTotal = s2.CostoTotal,
+                                UM = s2.Um
                             }).ToList(),
                             DetalleProductos = s.CompraProductos == null ? null : s.CompraProductos.Select(s2 => new DetalleProductosRes
                             {
@@ -77,7 +78,8 @@ namespace proy_back_Qbd.Services
                                 DescripcionQBD = s2.Producto == null || s2.Producto.Descripcion == null ? "" : s2.Producto.Descripcion,
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal
+                                CTotal = s2.CostoTotal,
+                                UM = s2.Um
                             }).ToList(),
                             DetalleEconomatos = s.CompraEconomatos == null ? null : s.CompraEconomatos.Select(s2 => new DetalleEconomatosRes
                             {
@@ -87,7 +89,8 @@ namespace proy_back_Qbd.Services
                                 DescripcionQBD = s2.Economato == null || s2.Economato.Descripcion == null ? "" : s2.Economato.Descripcion,
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal
+                                CTotal = s2.CostoTotal,
+                                UM = s2.Um
                             }).ToList(),
                             DetalleCompras = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasRes
                             {
@@ -97,7 +100,8 @@ namespace proy_back_Qbd.Services
                                 DescripcionQBD = "",
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal
+                                CTotal = s2.CostoTotal,
+                                UM = s2.UnidadMedida
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
