@@ -24,22 +24,26 @@ namespace proy_back_Qbd.Services
 
         public async Task<int> CrearPaqueteInsumo(PaqueteInsumoCrearReq req)
         {
+            var compraInsumo = await _context.CompraInsumos
+                .Include(i => i.PaqueteInsumos)
+                .ThenInclude(p => p.Paquete)
+                .FirstOrDefaultAsync(f => f.Id == req.IdCompraInsumo) ?? throw new NotFoundException("No se encontró la compra insumo");
 
-            var validar = await _context.PaqueteInsumos.Where(w => w.IdCompraInsumo == req.IdCompraInsumo)
-            .GroupBy(g => g.IdCompraInsumo)
-            .Select(s => new
-            {
-                PesoTotalPaquete = s.Sum(s2 => s2.Paquete != null ? s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario : null),
-                PesoTotalSolicitado = s.Sum(s3 => s3.CompraInsumos != null ? s3.CompraInsumos.CantidadRecibida * 1000 : 0m)
-            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra insumo");
+            decimal pesoTotalPaquete = compraInsumo.PaqueteInsumos != null
+                ? compraInsumo.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario : 0m)
+                : 0m;
+
+            decimal pesoTotalSolicitado = (compraInsumo.CantidadRecibida ?? 0m) * 1000;
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
-            if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete))
+            if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
                 throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteInsumo(req);
             _context.Paquetes.Add(paquete);
+            await _context.SaveChangesAsync();
+
             PaqueteInsumo paqueteInsumo = new()
             {
                 IdPaquete = paquete.Id,
@@ -54,22 +58,26 @@ namespace proy_back_Qbd.Services
         }
         public async Task<int> CrearPaqueteEmpaque(PaqueteEmpaqueCrearReq req)
         {
+            var compraEmpaque = await _context.CompraEmpaques
+                .Include(i => i.PaqueteEmpaques)
+                .ThenInclude(p => p.Paquete)
+                .FirstOrDefaultAsync(f => f.Id == req.IdCompraEmpaque) ?? throw new NotFoundException("No se encontró la compra Empaque");
 
-            var validar = await _context.PaqueteEmpaques.Where(w => w.IdCompraEmpaque == req.IdCompraEmpaque)
-            .GroupBy(g => g.IdCompraEmpaque)
-            .Select(s => new
-            {
-                PesoTotalPaquete = s.Sum(s2 => s2.Paquete != null ? s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario : null),
-                PesoTotalSolicitado = s.Sum(s3 => s3.CompraEmpaques != null ? s3.CompraEmpaques.CantidadRecibida * 1000 : 0m)
-            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra Empaque");
+            decimal pesoTotalPaquete = compraEmpaque.PaqueteEmpaques != null
+                ? compraEmpaque.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario : 0m)
+                : 0m;
+
+            decimal pesoTotalSolicitado = (compraEmpaque.CantidadRecibida ?? 0m) * 1000;
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
-            if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete))
+            if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
                 throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteEmpaque(req);
             _context.Paquetes.Add(paquete);
+            await _context.SaveChangesAsync();
+
             PaqueteEmpaque paqueteEmpaque = new()
             {
                 IdPaquete = paquete.Id,
