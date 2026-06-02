@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 public class ObtenerCompraLabRes
 {
     public required string CodigoProveedor { get; set; }
+    public string? Ruc { get; set; }
+    public string? NumProvedor { get; set; }
     public List<CompraLabInsumoModalRes>? DetalleInsumos { get; set; }
     public List<CompraLabEmpaqueModalRes>? DetalleEmpaques { get; set; }
 }
@@ -48,6 +50,8 @@ public class CompraLabEmpaqueModalRes
 public class CompraLabDetIdRes
 {
     public required string CodigoProveedor { get; set; }
+    public string? Ruc { get; set; }
+    public string? NumProvedor { get; set; }
     public List<CompraLabDetInsumosRes>? ListaInsumos { get; set; } = [];
     public List<CompraLabDetEmpRes>? ListaEmpaques { get; set; } = [];
 }

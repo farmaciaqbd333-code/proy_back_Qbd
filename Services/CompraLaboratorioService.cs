@@ -47,6 +47,8 @@ namespace proy_back_Qbd.Services
             .Select(s => new ObtenerCompraLabRes()
             {
                 CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
+                Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                 DetalleInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new CompraLabInsumoModalRes()
                 {
                     Id = s2.Id,
@@ -94,6 +96,8 @@ namespace proy_back_Qbd.Services
            .Select(s => new CompraLabDetIdRes()
            {
                CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
+               Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+               NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new CompraLabDetInsumosRes()
                {
                    Id = s2.Id,
