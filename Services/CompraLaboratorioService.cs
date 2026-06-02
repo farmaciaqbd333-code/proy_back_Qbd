@@ -177,6 +177,11 @@ namespace proy_back_Qbd.Services
                 ImgFactura = s.ImgFactura,
                 Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                Usuario = (s.Modificador != null && s.Modificador.Persona != null)
+                    ? s.Modificador.Persona.NombreCompleto ?? ""
+                    : (s.Creador != null && s.Creador.Persona != null)
+                        ? s.Creador.Persona.NombreCompleto ?? ""
+                        : "",
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();

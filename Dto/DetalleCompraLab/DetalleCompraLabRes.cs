@@ -104,4 +104,5 @@ public class LabListaRes
     public required string EstadoCompra { get; set; }
     public required string Ruc { get; set; }
     public required string NumProvedor { get; set; }
+    public required string Usuario { get; set; }
 }
