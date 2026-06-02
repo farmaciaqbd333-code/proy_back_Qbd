@@ -40,58 +40,58 @@ namespace proy_back_Qbd.Services
             return 1;
         }
 
-        // public async Task<ObtenerCompraLabRes?> GetCompraLab(int idCompra)
-        // {
-        //     ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
-        //     .Where(w => w.Id == idCompra)
-        //     .Select(s => new ObtenerCompraLabRes()
-        //     {
-        // CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
-        // DetalleInsumos = s.DetalleCompraInsumos != null ? s.DetalleCompraInsumos.Select(s2 => new CompraLabDetInsumoRes()
-        // {
-        //     Id = s2.Id,
-        //     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-        //     Codigo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
-        //     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
-        //     Coa = s2.Coa,
-        //     Lote = s2.Lote ?? "",
-        //     Um = "g",
-        //     CantidadRecibida = s2.CantidadSolicitada * 1000,
-        //     Potencia = s2.Potencia,
-        //     FechaFabricacion = s2.FechaFabricacion,
-        //     FechaVencimiento = s2.FechaVencimiento,
-        //     CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
-        //     TotalPaquetes = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete) : 0,
-        //     TotalPeso = s2.Paquetes != null ? s2.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0
-        // }).ToList() : [],
-        // DetalleEmpaques = s.DetalleCompraEmpaques != null ? s.DetalleCompraEmpaques.Select(s3 => new CompraLabDetEmpaquesRes()
-        // {
-        //     Id = s3.Id,
-        //     Reg = Alfanumerico.ConvertToBase36(s3.Id).PadLeft(4, '0'),
-        //     Codigo = s3.Empaque != null ? "" + s3.IdEmpaque.ToString("D4") : "",
-        //     DescripcionQBD = s3.Empaque != null ? s3.Empaque.Descripcion ?? "" : "",
-        //     Coa = s3.Coa,
-        //     Lote = s3.Lote ?? "",
-        //     Um = "g",
-        //     CantidadRecibida = s3.CantidadSolicitada * 1000,
-        //     FechaFabricacion = s3.FechaFabricacion,
-        //     FechaVencimiento = s3.FechaVencimiento,
-        //     CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
-        //     TotalPaquetes = s3.Paquetes != null ? s3.Paquetes.Sum(s => s.CantidadPaquete) : 0,
-        //     TotalPeso = s3.Paquetes != null ? s3.Paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario) : 0
-        // }) : []
-        //     }).FirstOrDefaultAsync();
-
-        //     if (obtenerDetalleCompraLabReq == null) return null;
-
-        //     return obtenerDetalleCompraLabReq;
-        // }
-
-        public async Task<CompraLabIdRes> GetDetalleCompraLab(int IdCompra)
+        public async Task<ObtenerCompraLabRes> ModalPaquetes(int idCompra)
         {
-            CompraLabIdRes? response = await _context.Compras
+            ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
+            .Where(w => w.Id == idCompra)
+            .Select(s => new ObtenerCompraLabRes()
+            {
+                CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
+                DetalleInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new CompraLabInsumoModalRes()
+                {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura : "",
+                    Codigo = s2.Insumo != null ? "MP-QBD-" + s2.IdInsumo.ToString("D4") : "",
+                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
+                    Coa = s2.Coa,
+                    Lote = s2.Lote ?? "",
+                    Um = "g",
+                    CantidadRecibida = s2.CantidadSolicitada * 1000,
+                    Potencia = s2.Potencia,
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
+                    CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
+                    TotalPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
+                    TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0
+                }).ToList() : new List<CompraLabInsumoModalRes>(),
+                DetalleEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new CompraLabEmpaqueModalRes()
+                {
+                    Id = s3.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s3.Id).PadLeft(4, '0'),
+                    Familia = (s3.Empaque != null && s3.Empaque.Familia != null) ? s3.Empaque.Familia.Abreviatura : "",
+                    Codigo = s3.Empaque != null ? "" + s3.IdEmpaque.ToString("D4") : "",
+                    DescripcionQBD = s3.Empaque != null ? s3.Empaque.Descripcion ?? "" : "",
+                    Coa = s3.Coa,
+                    Lote = s3.Lote ?? "",
+                    Um = "g",
+                    CantidadRecibida = s3.CantidadSolicitada * 1000,
+                    FechaFabricacion = s3.FechaFabricacion,
+                    FechaVencimiento = s3.FechaVencimiento,
+                    CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
+                    TotalPaquetes = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
+                    TotalPeso = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0
+                }).ToList() : new List<CompraLabEmpaqueModalRes>()
+            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Compra");
+
+            return obtenerDetalleCompraLabReq;
+        }
+
+        public async Task<CompraLabDetIdRes> GetDetalleCompraLab(int IdCompra)
+        {
+            CompraLabDetIdRes? response = await _context.Compras
            .Where(w => w.Id == IdCompra)
-           .Select(s => new CompraLabIdRes()
+           .Select(s => new CompraLabDetIdRes()
            {
                CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
                ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new CompraLabDetInsumosRes()
@@ -105,7 +105,6 @@ namespace proy_back_Qbd.Services
                    Coa = s2.Coa,
                    Lote = s2.Lote ?? "",
                    Um = "g",
-                   CantidadSolicitada = s2.CantidadSolicitada * 1000,
                    Potencia = s2.Potencia,
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
@@ -123,7 +122,6 @@ namespace proy_back_Qbd.Services
                    DescripcionQBD = s2.Empaque != null ? s2.Empaque.Descripcion ?? "" : "",
                    Lote = s2.Lote ?? "",
                    Um = "g",
-                   CantidadSolicitada = s2.CantidadSolicitada * 1000,
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
                    CantidadPaquetes = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,

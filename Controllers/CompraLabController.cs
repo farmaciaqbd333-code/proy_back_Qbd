@@ -30,24 +30,24 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(response);
         }
-        // /// <summary>
-        // /// Obtener datos para actualizar datos de laboratorio
-        // /// </summary>
-        // [HttpGet("{idCompra}")]
-        // public async Task<ActionResult<ObtenerCompraLabRes>> DatosCompraLaboratorio(int idCompra)
-        // {
-        //     ObtenerCompraLabRes? response = await _serviceCompraLab.GetCompraLab(idCompra);
+        /// <summary>
+        /// Obtener datos para actualizar datos de laboratorio
+        /// </summary>
+        [HttpGet("modal/{idCompra}")]
+        public async Task<ActionResult<ObtenerCompraLabRes>> CompraLaboratorioModal(int idCompra)
+        {
+            ObtenerCompraLabRes response = await _serviceCompraLab.ModalPaquetes(idCompra);
 
-        //     return Ok(response);
-        // }
+            return Ok(response);
+        }
 
         /// <summary>
         /// Obtener detalle de compra laboratorio
         /// </summary>
         [HttpGet("detalle/{idCompra}")]
-        public async Task<ActionResult<CompraLabIdRes>> DetalleCompraLaboratorio(int idCompra)
+        public async Task<ActionResult<CompraLabDetIdRes>> DetalleCompraLaboratorio(int idCompra)
         {
-            CompraLabIdRes response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
+            CompraLabDetIdRes response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
 
             return Ok(response);
         }

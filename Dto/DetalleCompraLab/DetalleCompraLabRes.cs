@@ -4,48 +4,48 @@ using System.Linq;
 using System.Threading.Tasks;
 
 
-// public class ObtenerCompraLabRes
-// {
-//     public required string CodigoProveedor { get; set; }
-//     public List<CompraLabDetInsumoRes>? DetalleInsumos { get; set; }
-//     public List<CompraLabDetEmpaquesRes>? DetalleEmpaques { get; set; }
-// }
-// public class CompraLabDetInsumoRes
-// {
-//     public required int Id { get; set; }
-//     public required string Familia { get; set; }
-//     public required string Reg { get; set; }
-//     public required string Codigo { get; set; }
-//     public required string DescripcionQBD { get; set; }
-//     public required bool Coa { get; set; }
-//     public required string Lote { get; set; }
-//     public required string Um { get; set; }
-//     public required decimal CantidadRecibida { get; set; }
-//     public required decimal Potencia { get; set; }
-//     public DateTime? FechaFabricacion { get; set; }
-//     public DateTime? FechaVencimiento { get; set; }
-//     public required string CondicionALmacenamiento { get; set; }
-//     public required decimal TotalPaquetes { get; set; }
-//     public required decimal TotalPeso { get; set; }
-// }
-// public class CompraLabDetEmpaquesRes
-// {
-//     public required int Id { get; set; }
-//     public required string Familia { get; set; }
-//     public required string Reg { get; set; }
-//     public required string Codigo { get; set; }
-//     public required string DescripcionQBD { get; set; }
-//     public bool? Coa { get; set; }
-//     public required string Lote { get; set; }
-//     public required string Um { get; set; }
-//     public required decimal CantidadRecibida { get; set; }
-//     public DateTime? FechaFabricacion { get; set; }
-//     public DateTime? FechaVencimiento { get; set; }
-//     public required string CondicionALmacenamiento { get; set; }
-//     public required decimal TotalPaquetes { get; set; }
-//     public required decimal TotalPeso { get; set; }
-// }
-public class CompraLabIdRes
+public class ObtenerCompraLabRes
+{
+    public required string CodigoProveedor { get; set; }
+    public List<CompraLabInsumoModalRes>? DetalleInsumos { get; set; }
+    public List<CompraLabEmpaqueModalRes>? DetalleEmpaques { get; set; }
+}
+public class CompraLabInsumoModalRes
+{
+    public required int Id { get; set; }
+    public required string Familia { get; set; }
+    public required string Reg { get; set; }
+    public required string Codigo { get; set; }
+    public required string DescripcionQBD { get; set; }
+    public required bool Coa { get; set; }
+    public required string Lote { get; set; }
+    public required string Um { get; set; }
+    public required decimal CantidadRecibida { get; set; }
+    public required decimal Potencia { get; set; }
+    public DateTime? FechaFabricacion { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
+    public required string CondicionALmacenamiento { get; set; }
+    public required decimal TotalPaquetes { get; set; }
+    public required decimal TotalPeso { get; set; }
+}
+public class CompraLabEmpaqueModalRes
+{
+    public required int Id { get; set; }
+    public required string Familia { get; set; }
+    public required string Reg { get; set; }
+    public required string Codigo { get; set; }
+    public required string DescripcionQBD { get; set; }
+    public bool? Coa { get; set; }
+    public required string Lote { get; set; }
+    public required string Um { get; set; }
+    public required decimal CantidadRecibida { get; set; }
+    public DateTime? FechaFabricacion { get; set; }
+    public DateTime? FechaVencimiento { get; set; }
+    public required string CondicionALmacenamiento { get; set; }
+    public required decimal TotalPaquetes { get; set; }
+    public required decimal TotalPeso { get; set; }
+}
+public class CompraLabDetIdRes
 {
     public required string CodigoProveedor { get; set; }
     public List<CompraLabDetInsumosRes>? ListaInsumos { get; set; } = [];
@@ -62,12 +62,11 @@ public class CompraLabDetInsumosRes
     public required bool Coa { get; set; }
     public required string Lote { get; set; }
     public required string Um { get; set; }
-    public required decimal CantidadSolicitada { get; set; }
+    public required decimal CantidadRecibida { get; set; }
     public required decimal Potencia { get; set; }
     public DateTime? FechaFabricacion { get; set; }
     public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
-    public required decimal CantidadRecibida { get; set; }
 }
 public class CompraLabDetEmpRes
 {
@@ -80,7 +79,6 @@ public class CompraLabDetEmpRes
     public required string DescripcionQBD { get; set; }
     public required string Lote { get; set; }
     public required string Um { get; set; }
-    public required decimal CantidadSolicitada { get; set; }
     public DateTime? FechaFabricacion { get; set; }
     public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
