@@ -206,6 +206,10 @@ namespace proy_back_Qbd.Services
                     IdFabricante = s2.IdFabricante,
                     CantidadRecibida = s2.CantidadRecibida,
                     Um = s2.Um,
+                    Lote = s2.Lote ?? "",
+                    RegistroSanitario = s2.RegistroSanitario ?? "",
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
                     Conformidad = s2.Conformidad,
                     Familia = "PT"
                 }).ToList() : new List<DetalleMesonProductosRes>(),
