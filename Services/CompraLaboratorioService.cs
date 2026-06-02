@@ -175,6 +175,8 @@ namespace proy_back_Qbd.Services
                 Familia = s.Familia,
                 Guia = s.Guia ?? "",
                 ImgFactura = s.ImgFactura,
+                Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();

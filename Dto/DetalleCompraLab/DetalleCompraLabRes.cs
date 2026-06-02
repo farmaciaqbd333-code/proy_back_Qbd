@@ -102,4 +102,6 @@ public class LabListaRes
     public required string Familia { get; set; }
     public string? ImgFactura { get; set; }
     public required string EstadoCompra { get; set; }
+    public required string Ruc { get; set; }
+    public required string NumProvedor { get; set; }
 }
