@@ -164,6 +164,7 @@ namespace proy_back_Qbd.Services
                 ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
                 {
                     Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     Familia = s2.Clasificacion ?? "OTRO",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     CantidadRecibida = s2.CantidadRecibida ?? s2.CantidadSolicitada,
@@ -173,6 +174,7 @@ namespace proy_back_Qbd.Services
                 ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new DetalleMesonInsumoRes
                 {
                     Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     Codigo = "MP-QBD-" + s2.IdInsumo,
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
@@ -190,6 +192,7 @@ namespace proy_back_Qbd.Services
                 ListaEconomatos = s.CompraEconomatos != null ? s.CompraEconomatos.Select(s2 => new DetalleMesonEconomatosRes
                 {
                     Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     Codigo = s2.Economato != null ? "" + s2.Economato.Id : "",
                     DescripcionQBD = s2.Economato != null ? s2.Economato.Descripcion : "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
@@ -202,6 +205,7 @@ namespace proy_back_Qbd.Services
                 ListaProductos = s.CompraProductos != null ? s.CompraProductos.Select(s2 => new DetalleMesonProductosRes
                 {
                     Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     Codigo = s2.Producto != null ? "" + s2.Producto.Id : "",
                     DescripcionQbd = s2.Producto != null ? s2.Producto.Descripcion ?? "" : "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
@@ -218,6 +222,7 @@ namespace proy_back_Qbd.Services
                 ListaEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s2 => new DetalleMesonEmpaquesRes
                 {
                     Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     Codigo = s2.Empaque != null ? "" + s2.Empaque.Id : "",
                     DescripcionQbd = s2.Empaque != null ? s2.Empaque.Descripcion ?? "" : "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",

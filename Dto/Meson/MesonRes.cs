@@ -59,6 +59,7 @@ namespace proy_back_Qbd.Models
     public class DetalleMesonInsumoRes
     {
         public int Id { get; set; }
+        public string? Reg { get; set; }
         public string? Codigo { get; set; }
         public string? DescripcionQBD { get; set; }
         public string? DescripcionFactura { get; set; }
@@ -76,6 +77,7 @@ namespace proy_back_Qbd.Models
     public class DetalleMesonOtrosRes
     {
         public int Id { get; set; }
+        public string? Reg { get; set; }
         public string? Familia { get; set; }
         public string? DescripcionFactura { get; set; }
         public decimal? CantidadRecibida { get; set; }
@@ -85,6 +87,7 @@ namespace proy_back_Qbd.Models
     public class DetalleMesonEmpaquesRes
     {
         public int Id { get; set; }
+        public string? Reg { get; set; }
         public string? Codigo { get; set; }
         public string? DescripcionQbd { get; set; }
         public string? DescripcionFactura { get; set; }
@@ -101,6 +104,7 @@ namespace proy_back_Qbd.Models
     public class DetalleMesonEconomatosRes
     {
         public int Id { get; set; }
+        public string? Reg { get; set; }
         public string? Codigo { get; set; }
         public string? DescripcionQBD { get; set; }
         public string? DescripcionFactura { get; set; }
@@ -113,6 +117,7 @@ namespace proy_back_Qbd.Models
     public class DetalleMesonProductosRes
     {
         public int Id { get; set; }
+        public string? Reg { get; set; }
         public string? Codigo { get; set; }
         public string? DescripcionQbd { get; set; }
         public string? DescripcionFactura { get; set; }
