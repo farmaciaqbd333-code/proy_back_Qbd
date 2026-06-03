@@ -159,6 +159,8 @@ namespace proy_back_Qbd.Services
                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
+                Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
+                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
                 ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
                 {
                     Id = s2.Id,

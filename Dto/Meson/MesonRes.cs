@@ -18,6 +18,8 @@ namespace proy_back_Qbd.Models
         public string? NombreProveedor { get; set; }
         public int? IdProveedor { get; set; }
         public required string Familia { get; set; }
+        public string? Destino { get; set; }
+        public string? Direccion { get; set; }
         public List<DetalleMesonOtrosRes> ListaOtros { get; set; } = [];
         public List<DetalleMesonInsumoRes> ListaInsumos { get; set; } = [];
         public List<DetalleMesonEmpaquesRes> ListaEmpaques { get; set; } = [];
