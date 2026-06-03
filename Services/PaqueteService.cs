@@ -37,8 +37,8 @@ namespace proy_back_Qbd.Services
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
-            if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
-                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            // if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
+            //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteInsumo(req);
             _context.Paquetes.Add(paquete);
@@ -71,8 +71,8 @@ namespace proy_back_Qbd.Services
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
-            if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
-                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            // if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
+            //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteEmpaque(req);
             _context.Paquetes.Add(paquete);
@@ -120,8 +120,8 @@ namespace proy_back_Qbd.Services
             if (validar == null)
                 throw new NotFoundException("No se encontró el detalle compra");
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
-            if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete - paquetePesoActual))
-                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            // if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete - paquetePesoActual))
+            //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
             PaqueteMapper.ModificarPaqueteInsumo(req, paquete);
             await _context.SaveChangesAsync();
 
@@ -147,8 +147,8 @@ namespace proy_back_Qbd.Services
             if (validar == null)
                 throw new NotFoundException("No se encontró el detalle compra");
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
-            if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete - paquetePesoActual))
-                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            // if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete - paquetePesoActual))
+            //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
             PaqueteMapper.ModificarPaqueteEmpaque(req, paquete);
             await _context.SaveChangesAsync();
 
