@@ -175,7 +175,7 @@ namespace proy_back_Qbd.Services
                 {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                    Codigo = "MP-QBD-" + s2.IdInsumo,
+                    Codigo = s2.IdInsumo.ToString(),
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     CantidadRecibida = s2.CantidadRecibida ?? s2.CantidadSolicitada,
