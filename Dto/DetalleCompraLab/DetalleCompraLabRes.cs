@@ -11,6 +11,7 @@ public class ObtenerCompraLabRes
     public string? NumProvedor { get; set; }
     public List<CompraLabInsumoModalRes>? DetalleInsumos { get; set; }
     public List<CompraLabEmpaqueModalRes>? DetalleEmpaques { get; set; }
+    public string? CodFacQbd { get; set; }
 }
 public class CompraLabInsumoModalRes
 {
@@ -54,6 +55,7 @@ public class CompraLabDetIdRes
     public string? NumProvedor { get; set; }
     public List<CompraLabDetInsumosRes>? ListaInsumos { get; set; } = [];
     public List<CompraLabDetEmpRes>? ListaEmpaques { get; set; } = [];
+    public string? CodFacQbd { get; set; }
 }
 public class CompraLabDetInsumosRes
 {
