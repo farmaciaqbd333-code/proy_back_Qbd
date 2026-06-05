@@ -17,6 +17,8 @@ namespace Proy_back_QBD.Models
         public string? Descripcion { get; set; }                    // Costo del pedido
         [Column("costo")]
         public decimal? Costo { get; set; }                   // g/ml (gramos por mililitro)
+        [Column("id_familia")]
+        public int IdFamilia { get; set; }                   // g/ml (gramos por mililitro)
         [Column("fecha_creacion")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime FechaCreacion { get; set; }           // Fecha de creación del pedido
@@ -33,6 +35,8 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<ProdTerm>? ProdTerm { get; set; }
+        [JsonIgnore]
+        public Familia? Familia { get; set; }
         public List<CompraProductos>? DetalleCompraProductos { get; set; }
     }
 

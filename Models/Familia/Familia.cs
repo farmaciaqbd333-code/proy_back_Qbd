@@ -16,6 +16,8 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public int IdCreador { get; set; }
         public Usuario? Creador { get; set; }
         public List<Insumo>? Insumos { get; set; }
+        public List<Producto>? Productos { get; set; }
+        public List<Economato>? Economatos { get; set; }
         public List<Empaque>? Empaques { get; set; }
     }
 }

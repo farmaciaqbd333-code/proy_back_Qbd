@@ -134,6 +134,11 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleCompraEconomatoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraEconomatoModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
+            modelBuilder.Entity<Economato>((e) =>
+            {
+                e.Property(p => p.Id).ValueGeneratedOnAdd();
+                e.HasOne(x => x.Familia).WithMany(x => x.Economatos).HasForeignKey(x => x.IdFamilia);
+            });
             modelBuilder.Entity<CompraEmpaques>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
@@ -309,6 +314,7 @@ namespace Proy_back_QBD.Data
             modelBuilder.Entity<Producto>(e =>
             {
                 e.HasOne(x => x.Creador).WithMany(x => x.ProductoCreadas).HasForeignKey(x => x.CreadorId);
+                e.HasOne(x => x.Familia).WithMany(x => x.Productos).HasForeignKey(x => x.IdFamilia);
                 e.HasOne(x => x.Modificador).WithMany(x => x.ProductoModificadas).HasForeignKey(x => x.ModificadorId);
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
