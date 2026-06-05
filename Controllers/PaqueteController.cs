@@ -23,7 +23,7 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar lista de paquetes
         /// </summary>
-        [HttpGet("detalle/{detalleCompraId}")]
+        [HttpGet("detalle/{IdCompra}")]
         public async Task<IActionResult> ObtenerDetallePaquete(int IdCompra)
         {
             PaqueteInsumoDetalleRes response = await _servicePaquete.GetDetallePaquetes(IdCompra);
