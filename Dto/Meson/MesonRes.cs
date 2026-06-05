@@ -64,6 +64,7 @@ namespace proy_back_Qbd.Models
         public string? DescripcionQBD { get; set; }
         public string? DescripcionFactura { get; set; }
         public decimal? CantidadRecibida { get; set; }
+        public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
         public bool? Coa { get; set; }
         public string? Lote { get; set; }
@@ -81,6 +82,7 @@ namespace proy_back_Qbd.Models
         public string? Familia { get; set; }
         public string? DescripcionFactura { get; set; }
         public decimal? CantidadRecibida { get; set; }
+        public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
         public bool? Conformidad { get; set; }
     }
@@ -93,6 +95,7 @@ namespace proy_back_Qbd.Models
         public string? DescripcionFactura { get; set; }
         public int? IdFabricante { get; set; }
         public decimal? CantidadRecibida { get; set; }
+        public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
         public bool? Coa { get; set; }
         public string? Lote { get; set; }
@@ -110,6 +113,7 @@ namespace proy_back_Qbd.Models
         public string? DescripcionFactura { get; set; }
         public int? IdFabricante { get; set; }
         public decimal? CantidadRecibida { get; set; }
+        public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
         public bool? Conformidad { get; set; }
         public string? Familia { get; set; }
@@ -123,6 +127,7 @@ namespace proy_back_Qbd.Models
         public string? DescripcionFactura { get; set; }
         public int? IdFabricante { get; set; }
         public decimal? CantidadRecibida { get; set; }
+        public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
