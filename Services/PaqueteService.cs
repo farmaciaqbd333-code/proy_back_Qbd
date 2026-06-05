@@ -41,6 +41,7 @@ namespace proy_back_Qbd.Services
             //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteInsumo(req);
+            paquete.FechaCreacion = DateTime.Now;
             _context.Paquetes.Add(paquete);
             await _context.SaveChangesAsync();
 
@@ -75,6 +76,7 @@ namespace proy_back_Qbd.Services
             //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteEmpaque(req);
+            paquete.FechaCreacion = DateTime.Now;
             _context.Paquetes.Add(paquete);
             await _context.SaveChangesAsync();
 
