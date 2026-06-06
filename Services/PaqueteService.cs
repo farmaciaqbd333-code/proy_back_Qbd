@@ -33,7 +33,7 @@ namespace proy_back_Qbd.Services
                 ? compraInsumo.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario : 0m)
                 : 0m;
 
-            decimal pesoTotalSolicitado = (compraInsumo.CantidadRecibida ?? 0m) * 1000;
+            decimal pesoTotalSolicitado = compraInsumo.CantidadSolicitada * 1000;
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
@@ -68,7 +68,7 @@ namespace proy_back_Qbd.Services
                 ? compraEmpaque.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario : 0m)
                 : 0m;
 
-            decimal pesoTotalSolicitado = (compraEmpaque.CantidadRecibida ?? 0m) * 1000;
+            decimal pesoTotalSolicitado = compraEmpaque.CantidadSolicitada * 1000;
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
