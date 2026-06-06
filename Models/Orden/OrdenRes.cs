@@ -34,7 +34,7 @@ namespace proy_back_Qbd.Models
         public List<DetalleEmpaquesRes>? DetalleEmpaques { get; set; }
         public List<DetalleProductosRes>? DetalleProductos { get; set; }
         public List<DetalleEconomatosRes>? DetalleEconomatos { get; set; }
-        public List<DetalleComprasRes>? DetalleCompras { get; set; }
+        public List<DetalleComprasOtrosRes>? DetalleCompras { get; set; }
         public required int IdProveedor { get; set; }
         public bool IncluyeImpuesto { get; set; }
         public string? Observaciones { get; set; }

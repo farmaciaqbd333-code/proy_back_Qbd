@@ -65,6 +65,7 @@ namespace proy_back_Qbd.Services
                                 IdEmpaque = s2.IdEmpaque,
                                 Codigo = s2.IdEmpaque.ToString(),
                                 DescripcionQBD = s2.Empaque == null || s2.Empaque.Descripcion == null ? "" : s2.Empaque.Descripcion,
+                                DescripcionFactura = s2.DescripcionFactura ?? "",
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
@@ -76,6 +77,7 @@ namespace proy_back_Qbd.Services
                                 IdProducto = s2.IdProducto,
                                 Codigo = s2.IdProducto.ToString(),
                                 DescripcionQBD = s2.Producto == null || s2.Producto.Descripcion == null ? "" : s2.Producto.Descripcion,
+                                DescripcionFactura = s2.DescripcionFactura ?? "",
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
@@ -87,17 +89,18 @@ namespace proy_back_Qbd.Services
                                 IdEconomato = s2.IdEconomato,
                                 Codigo = s2.IdEconomato.ToString(),
                                 DescripcionQBD = s2.Economato == null || s2.Economato.Descripcion == null ? "" : s2.Economato.Descripcion,
+                                DescripcionFactura = s2.DescripcionFactura ?? "",
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
                                 UM = s2.Um
                             }).ToList(),
-                            DetalleCompras = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasRes
+                            DetalleCompras = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasOtrosRes
                             {
                                 Id = s2.Id,
                                 Clasificacion = s2.Clasificacion,
                                 Codigo = "",
-                                DescripcionQBD = "",
+                                DescripcionFactura = s2.DescripcionFactura ?? "",
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
@@ -704,6 +707,6 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
-       
+
     }
 }
