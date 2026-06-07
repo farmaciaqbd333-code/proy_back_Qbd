@@ -24,7 +24,7 @@ namespace proy_back_Qbd.Models
     }
     public class DetalleOtrosReq
     {
-        public required string Clasificacion { get; set; }
+        public int IdFamilia { get; set; }
         public required string DescripcionFactura { get; set; }
         public required decimal CantidadSolicitada { get; set; }
         public required string Um { get; set; }
@@ -84,7 +84,7 @@ namespace proy_back_Qbd.Models
     public class DetalleUpdateReq
     {
         public int Id { get; set; }
-        public required string Clasificacion { get; set; }
+        public int IdFamilia { get; set; }
         public required decimal CantidadSolicitada { get; set; }
         public required string Um { get; set; }
         public required decimal CostoUnitario { get; set; }
@@ -120,6 +120,6 @@ namespace proy_back_Qbd.Models
         public required decimal CostoUnitario { get; set; }
         public required decimal CostoTotal { get; set; }
     }
-    
-    
+
+
 }

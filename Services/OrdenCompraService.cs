@@ -95,10 +95,10 @@ namespace proy_back_Qbd.Services
                                 CTotal = s2.CostoTotal,
                                 UM = s2.Um
                             }).ToList(),
-                            DetalleCompras = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasOtrosRes
+                            DetalleOtros = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasOtrosRes
                             {
                                 Id = s2.Id,
-                                Clasificacion = s2.Clasificacion,
+                                IdFamilia = s2.IdFamilia,
                                 Codigo = "",
                                 DescripcionFactura = s2.DescripcionFactura ?? "",
                                 CantidadSolicitada = s2.CantidadSolicitada,
@@ -145,13 +145,17 @@ namespace proy_back_Qbd.Services
                 if (response.DetalleEconomatos != null && response.DetalleEconomatos.Any())
                     partesFamilia.Add("ECO");
 
-                if (response.DetalleCompras != null && response.DetalleCompras.Any())
+                if (response.DetalleOtros != null && response.DetalleOtros.Any())
                 {
-                    var clases = response.DetalleCompras
-                        .Select(d => d.Clasificacion)
-                        .Where(c => !string.IsNullOrEmpty(c))
+                    var clases1 = response.DetalleOtros
+                        .Select(d => d.IdFamilia)
+                        .Where(c => c != 0)
                         .Distinct();
-                    partesFamilia.AddRange(clases);
+                    List<string> clases2 = new();
+                    if (clases1.Contains(5)) clases2.Add("FXP");
+                    if (clases1.Contains(6)) clases2.Add("FXS");
+                    if (clases1.Contains(7)) clases2.Add("RH");
+                    partesFamilia.AddRange(clases2);
                 }
 
                 response.Familia = string.Join("- ", partesFamilia.Distinct());
@@ -269,8 +273,12 @@ namespace proy_back_Qbd.Services
                 if (request.DetalleCompraOtros.Any())
                 {
                     valorTotal += request.DetalleCompraOtros.Sum(s => s.CostoTotal);
-                    List<string> lista = request.DetalleCompraOtros.Select(s => s.Clasificacion).Distinct().ToList();
-                    foreach (var item in lista)
+                    List<int> clases1 = request.DetalleCompraOtros.Select(s => s.IdFamilia).Distinct().ToList();
+                    List<string> clases2 = new();
+                    if (clases1.Contains(5)) clases2.Add("FXP");
+                    if (clases1.Contains(6)) clases2.Add("FXS");
+                    if (clases1.Contains(7)) clases2.Add("RH");
+                    foreach (var item in clases1)
                     {
                         Familia += Familia == "" ? item : "- " + item;
                     }
@@ -608,13 +616,16 @@ namespace proy_back_Qbd.Services
                     if (await _context.CompraEconomatos.AnyAsync(d => d.IdCompra == idOC))
                         partesFamilia.Add("ECO");
 
-                    var clases = await _context.CompraOtros
-                        .Where(d => d.IdCompra == idOC && !string.IsNullOrEmpty(d.Clasificacion))
-                        .Select(d => d.Clasificacion)
+                    var clases1 = await _context.CompraOtros
+                        .Where(d => d.IdCompra == idOC && d.IdFamilia != 0)
+                        .Select(d => d.IdFamilia)
                         .Distinct()
                         .ToListAsync();
-                    if (clases.Any())
-                        partesFamilia.AddRange(clases);
+                    List<string> clases2 = new();
+                    if (clases1.Contains(5)) clases2.Add("FXP");
+                    if (clases1.Contains(6)) clases2.Add("FXS");
+                    if (clases1.Contains(7)) clases2.Add("RH");
+                    if (clases2.Any()) partesFamilia.AddRange(clases2);
 
                     compra.Familia = string.Join("- ", partesFamilia.Distinct());
                 }

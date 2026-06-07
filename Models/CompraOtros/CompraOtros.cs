@@ -12,7 +12,7 @@ namespace proy_back_Qbd.Models
     public class CompraOtros
     {
         [Key][Column("id")] public int Id { get; set; }
-        [Column("clasificacion")] public string Clasificacion { get; set; } = "";
+        [Column("id_familia")] public int IdFamilia { get; set; }
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
         [Column("um")] public required string UnidadMedida { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
@@ -27,5 +27,6 @@ namespace proy_back_Qbd.Models
         public Compra? Compra { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
+        public Familia? Familia { get; set; }
     }
 }

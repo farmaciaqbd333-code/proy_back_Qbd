@@ -15,12 +15,10 @@ namespace proy_back_Qbd.Models.NotaSalida
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")] public int Id { get; set; }
-        [Column("familia")] public string Familia { get; set; }
-        [Column("registro")] public string Registro { get; set; }
-        [Column("id_insumo")] public int IdInsumo { get; set; }
+        [Column("id_familia")] public int IdFamilia { get; set; }
         [Column("cantidad")] public decimal Cantidad { get; set; }
-        [Column("um")] public string Um { get; set; }
-        [Column("lote")] public string Lote { get; set; }
+        [Column("um")] public string? Um { get; set; }
+        [Column("lote")] public string? Lote { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]

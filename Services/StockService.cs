@@ -15,18 +15,22 @@
 //         {
 //             _context = context;
 //         }
-//         public async Task<List<StockGetRes>> StockGetRes()
+
+//         public async Task<StockGetRes> StockListaPrincipal()
 //         {
-//             List<StockGetRes> stockGetRes = await _context.DetalleCompras
-//             .GroupBy(g => "MP-QbD-" + (g.IdInsumo).ToString("D4"))
-//             .Select(s => new StockGetRes
-//             {
-//                 Codigo = s.Key,
-//                 Descripcion = s.First().Insumo != null ? s.First().Insumo.Descripcion : "",
-//                 Um = s.First().Um,
-//                 Entradas = s.Sum(s2 => s2.CantidadSolicitada),
-//                 Salidas = s.Sum(s2 => s2)
-//             });
+//             StockGetRes response = new();
+//             // List<StockMPRes> responseMP = await _context.CompraInsumos.GroupBy(g => new { g.IdInsumo, g.Insumo.Descripcion, g.Insumo.UnidadMedida }).Select(s => new StockMPRes()
+//             // {
+//             //     Codigo = s.Key.IdInsumo + "",
+//             //     Descripcion = s.Key.Descripcion + "",
+//             //     Um = s.Key.UnidadMedida + "",
+//             //     Entradas = s.Sum(x => x.PaqueteInsumos != null ? x.PaqueteInsumos.Sum(pi => pi.Paquete?.CantidadPaquete ?? 0) : 0),
+//             //     Salidas = s.Sum(x => x.Insumo.Familia.)
+
+//             // });
+//             // response.MateriaPrimas = responseMP;
+
+//             return response;
 //         }
 //     }
 // }
