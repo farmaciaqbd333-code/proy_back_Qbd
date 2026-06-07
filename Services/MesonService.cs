@@ -260,6 +260,7 @@ namespace proy_back_Qbd.Services
                 Familia = s.Familia,
                 Guia = s.Guia ?? "",
                 ImgFactura = s.ImgFactura,
+                FechaMeson = s.FechaMeson,
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();

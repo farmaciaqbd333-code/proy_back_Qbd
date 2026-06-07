@@ -196,6 +196,7 @@ namespace proy_back_Qbd.Services
                     : (s.Creador != null && s.Creador.Codigo != null)
                         ? s.Creador.Codigo
                         : "",
+                FechaLab = s.FechaLab,
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();
