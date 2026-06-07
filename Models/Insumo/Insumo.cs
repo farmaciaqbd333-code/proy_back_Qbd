@@ -59,6 +59,8 @@ namespace Proy_back_QBD.Models
         public bool? Fotosensible { get; set; } = false;
         [Column("refrigerado")]
         public bool? Refrigerado { get; set; } = false;
+        [Column("pdf")]
+        public string? Pdf { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }

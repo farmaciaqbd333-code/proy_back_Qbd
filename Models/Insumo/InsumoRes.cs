@@ -34,6 +34,7 @@ namespace Proy_back_QBD.Dto.Insumo
         public bool? Higroscopico { get; set; }
         public bool? Fotosensible { get; set; }
         public bool? Refrigerado { get; set; }
+        public string? Pdf { get; set; }
     }
     public class InsumoFindIdRes
     {
@@ -56,6 +57,7 @@ namespace Proy_back_QBD.Dto.Insumo
         public bool? Higroscopico { get; set; }
         public bool? Fotosensible { get; set; }
         public bool? Refrigerado { get; set; }
+        public string? Pdf { get; set; }
     }
     public class InsumoFormR
     {

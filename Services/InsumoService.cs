@@ -108,9 +108,10 @@ namespace Proy_back_QBD.Services
                                                 PrecioVenta = s.PrecioVenta,
                                                 Higroscopico = s.Higroscopico,
                                                 Fotosensible = s.Fotosensible,
-                                                Refrigerado = s.Refrigerado
-                                            }
-                                            ).ToListAsync();
+                                                Refrigerado = s.Refrigerado,
+                                                Pdf = s.Pdf
+                                            })
+                                            .ToListAsync();
             if (response == null)
             {
                 return null;
@@ -142,9 +143,10 @@ namespace Proy_back_QBD.Services
                                                 PrecioVenta = s.PrecioVenta,
                                                 Higroscopico = s.Higroscopico,
                                                 Fotosensible = s.Fotosensible,
-                                                Refrigerado = s.Refrigerado
-                                            }
-                                            ).FirstOrDefaultAsync(fod => fod.Id == id);
+                                                Refrigerado = s.Refrigerado,
+                                                Pdf = s.Pdf
+                                            })
+                                            .FirstOrDefaultAsync(s => s.Id == id);
             if (response == null)
             {
                 return null;
