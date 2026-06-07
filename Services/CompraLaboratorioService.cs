@@ -167,7 +167,7 @@ namespace proy_back_Qbd.Services
         public async Task<List<LabListaRes>> Listar(string[] cadena)
         {
             List<LabListaRes> ordenesEnviadasRes = await _context.Compras
-            .Where(w => cadena.Contains(w.EstadoCompra))
+            .Where(w => cadena.Contains(w.EstadoCompra) && w.CompraInsumos != null && w.CompraEmpaques != null)
             .Select(s => new LabListaRes
             {
                 Id = s.Id,
