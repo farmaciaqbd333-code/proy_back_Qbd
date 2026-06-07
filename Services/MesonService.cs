@@ -165,7 +165,7 @@ namespace proy_back_Qbd.Services
                 {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                    Familia = s2.Clasificacion ?? "OTRO",
+                    Familia = s2.Familia != null ? s2.Familia.Abreviatura : "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     CantidadSolicitada = s2.CantidadSolicitada,
                     Um = s2.UnidadMedida,

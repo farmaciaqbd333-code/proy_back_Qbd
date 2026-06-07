@@ -9,9 +9,9 @@ namespace proy_back_Qbd.Models
     [Table("familias")]
     public class Familia
     {
-        [Key][Column("id")]public int Id { get; set; }
-        [Column("nombre")]public required string Nombre { get; set; }
-        [Column("abreviatura")]public required string Abreviatura { get; set; }        
+        [Key][Column("id")] public int Id { get; set; }
+        [Column("nombre")] public required string Nombre { get; set; }
+        [Column("abreviatura")] public required string Abreviatura { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public int IdCreador { get; set; }
         public Usuario? Creador { get; set; }
@@ -19,5 +19,6 @@ namespace proy_back_Qbd.Models
         public List<Producto>? Productos { get; set; }
         public List<Economato>? Economatos { get; set; }
         public List<Empaque>? Empaques { get; set; }
+        public List<CompraOtros>? CompraOtros { get; set; }
     }
 }
