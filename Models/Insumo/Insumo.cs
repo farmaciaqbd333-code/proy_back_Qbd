@@ -37,6 +37,28 @@ namespace Proy_back_QBD.Models
         public decimal? Costo { get; set; }
         [Column("forma_f")]
         public string? FormaFarmaceutica { get; set; } = "";
+        [Column("numero_cas")]
+        public string? NumeroCas { get; set; }
+        [Column("base")]
+        public decimal? Base { get; set; }
+        [Column("uso_min")]
+        public decimal? UsoMin { get; set; }
+        [Column("sal")]
+        public decimal? Sal { get; set; }
+        [Column("uso_max")]
+        public decimal? UsoMax { get; set; }
+        [Column("factor_e")]
+        public decimal? FactorE { get; set; }
+        [Column("precio_costo")]
+        public decimal? PrecioCosto { get; set; }
+        [Column("precio_venta")]
+        public decimal? PrecioVenta { get; set; }
+        [Column("higroscopico")]
+        public bool? Higroscopico { get; set; } = false;
+        [Column("fotosensible")]
+        public bool? Fotosensible { get; set; } = false;
+        [Column("refrigerado")]
+        public bool? Refrigerado { get; set; } = false;
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }

@@ -97,7 +97,18 @@ namespace Proy_back_QBD.Services
                                                 UnidadMedida = s.UnidadMedida,
                                                 Costo = s.Costo ?? 0,
                                                 Familia = s.Familia != null ? s.Familia.Abreviatura : "",
-                                                FormaFarmaceutica = s.FormaFarmaceutica ?? ""
+                                                FormaFarmaceutica = s.FormaFarmaceutica ?? "",
+                                                NumeroCas = s.NumeroCas,
+                                                Base = s.Base,
+                                                UsoMin = s.UsoMin,
+                                                Sal = s.Sal,
+                                                UsoMax = s.UsoMax,
+                                                FactorE = s.FactorE,
+                                                PrecioCosto = s.PrecioCosto,
+                                                PrecioVenta = s.PrecioVenta,
+                                                Higroscopico = s.Higroscopico,
+                                                Fotosensible = s.Fotosensible,
+                                                Refrigerado = s.Refrigerado
                                             }
                                             ).ToListAsync();
             if (response == null)
@@ -120,7 +131,18 @@ namespace Proy_back_QBD.Services
                                                 Dilucion = s.Dilucion ?? "",
                                                 Costo = s.Costo ?? 0,
                                                 Familia = s.Familia != null ? s.Familia.Abreviatura : "",
-                                                FormaFarmaceutica = s.FormaFarmaceutica ?? ""
+                                                FormaFarmaceutica = s.FormaFarmaceutica ?? "",
+                                                NumeroCas = s.NumeroCas,
+                                                Base = s.Base,
+                                                UsoMin = s.UsoMin,
+                                                Sal = s.Sal,
+                                                UsoMax = s.UsoMax,
+                                                FactorE = s.FactorE,
+                                                PrecioCosto = s.PrecioCosto,
+                                                PrecioVenta = s.PrecioVenta,
+                                                Higroscopico = s.Higroscopico,
+                                                Fotosensible = s.Fotosensible,
+                                                Refrigerado = s.Refrigerado
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);
             if (response == null)
