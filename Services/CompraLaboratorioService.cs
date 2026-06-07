@@ -37,6 +37,14 @@ namespace proy_back_Qbd.Services
                 if (req != null)
                     _mapper.Map(req, item);
             }
+
+            Compra? compra = await _context.Compras.FindAsync(idCompra);
+            if (compra != null)
+            {
+                compra.FechaLab = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
             return 1;
         }
 
