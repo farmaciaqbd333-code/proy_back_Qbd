@@ -29,6 +29,7 @@ namespace proy_back_Qbd.Services
             Compra? compra = await _context.Compras.FindAsync(ordenCompraId);
             if (compra == null) throw new NotFoundException("No se encontro compra");
             _mapper.Map(request, compra);
+            compra.FechaMeson = DateTime.Now;
 
             if (request.DetallesOtros != null && request.DetallesOtros.Count != 0)
             {
@@ -259,6 +260,7 @@ namespace proy_back_Qbd.Services
                 Familia = s.Familia,
                 Guia = s.Guia ?? "",
                 ImgFactura = s.ImgFactura,
+                FechaMeson = s.FechaMeson,
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();

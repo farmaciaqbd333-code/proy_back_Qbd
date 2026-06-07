@@ -35,7 +35,8 @@ namespace proy_back_Qbd.Models
         [Column("valor")] public decimal Valor { get; set; }
         [Column("total")] public decimal Total { get; set; }
         [Column("familia")] public required string Familia { get; set; }
-        
+        [Column("fecha_meson")] public DateTime? FechaMeson { get; set; }
+        [Column("fecha_lab")] public DateTime? FechaLab { get; set; }
 
         public Proveedor? Proveedor { get; set; }
         public Sede? Sede { get; set; }
