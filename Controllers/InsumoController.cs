@@ -69,6 +69,18 @@ public class InsumoController : ControllerBase
         return Ok(insumo);
     }
 
+    [HttpPatch("{id}/pdf")]
+    [SwaggerResponse(200, "Operación exitosa", typeof(Insumo))]
+    public async Task<IActionResult> ActualizarInsumoPdf(int id, [FromBody] string pdfUrl)
+    {
+        Insumo? insumo = await _insumoService.ActualizarPdf(id, pdfUrl);
+        if (insumo == null)
+        {
+            return NotFound("No existe");
+        }
+        return Ok(insumo);
+    }
+
     [HttpGet()]
     [SwaggerResponse(200, "Operación exitosa", typeof(InsumoFindAllRes))]
     public async Task<IActionResult> ObtenerInsumos()

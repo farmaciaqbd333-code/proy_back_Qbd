@@ -29,6 +29,18 @@ namespace Proy_back_QBD.Services
             return insumo;
         }
 
+        public async Task<Insumo?> ActualizarPdf(int id, string pdfUrl)
+        {
+            Insumo? insumo = await _context.Insumos.FindAsync(id);
+            if (insumo == null)
+            {
+                return null;
+            }
+            insumo.Pdf = pdfUrl;
+            await _context.SaveChangesAsync();
+            return insumo;
+        }
+
         public async Task<Insumo?> Crear(InsumoCreateReq request)
         {
             Insumo? insumo = _mapper.Map<Insumo>(request);
