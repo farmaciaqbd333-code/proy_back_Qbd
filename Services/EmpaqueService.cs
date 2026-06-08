@@ -71,6 +71,7 @@ namespace Proy_back_QBD.Services
                                                 Codigo = s.Codigo,
                                                 Costo = s.Costo,
                                                 Tara = s.Tara,
+                                                ImagenUrl = s.ImagenUrl,
                                                 FamiliaId = s.IdFamilia
                                             }
                                             )
@@ -99,6 +100,7 @@ namespace Proy_back_QBD.Services
                                                 Codigo = s.Codigo,
                                                 Costo = s.Costo,
                                                 Tara = s.Tara,
+                                                ImagenUrl = s.ImagenUrl,
                                                 FamiliaId = s.IdFamilia
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);

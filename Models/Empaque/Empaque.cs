@@ -21,6 +21,7 @@ namespace Proy_back_QBD.Models
         [Column("codigo")] public string? Codigo { get; set; }
         [Column("costo")] public decimal? Costo { get; set; }
         [Column("tara")] public string? Tara { get; set; }
+        [Column("imagen_url")] public string? ImagenUrl { get; set; }
         [Column("fecha_modificacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaModificacion { get; set; }
         [Column("fecha_creacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaCreacion { get; set; }
         [Column("creador_id")] public int CreadorId { get; set; }
