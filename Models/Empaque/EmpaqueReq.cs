@@ -16,6 +16,7 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? Codigo { get; set; }
         public decimal? Costo { get; set; }
         public string? Tara { get; set; }
+        public int FamiliaId { get; set; }
         public int CreadorId { get; set; }
     }
     public class EmpaqueUpdateReq
@@ -28,6 +29,7 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? Codigo { get; set; }
         public decimal? Costo { get; set; }
         public string? Tara { get; set; }
+        public int FamiliaId { get; set; }
         public int ModificadorId { get; set; }
     }
 }

@@ -16,10 +16,12 @@ namespace Proy_back_QBD.Profiles
             .ForMember(dest => dest.IdFunda, opt => opt.MapFrom(src => src.FundaId))
             .ForMember(dest => dest.IdCaja, opt => opt.MapFrom(src => src.CajaId))
             .ForMember(dest => dest.IdEtiqueta1, opt => opt.MapFrom(src => src.EtiquetaId1))
-            .ForMember(dest => dest.IdEtiqueta2, opt => opt.MapFrom(src => src.EtiquetaId2));
+            .ForMember(dest => dest.IdEtiqueta2, opt => opt.MapFrom(src => src.EtiquetaId2))
+            .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.FamiliaId));
             CreateMap<EmpaqueUpdateReq, Empaque>()
             .ForMember(a => a.Id, o => o.Ignore())
-            .ForMember(a => a.CreadorId, o => o.Ignore());
+            .ForMember(a => a.CreadorId, o => o.Ignore())
+            .ForMember(dest => dest.IdFamilia, opt => opt.MapFrom(src => src.FamiliaId));
 
         }
     }

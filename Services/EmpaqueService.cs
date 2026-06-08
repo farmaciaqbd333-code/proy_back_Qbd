@@ -66,7 +66,8 @@ namespace Proy_back_QBD.Services
                                                 Etiqueta2 = s.Etiqueta2 != null ? s.Etiqueta2.Descripcion : "",
                                                 Codigo = s.Codigo,
                                                 Costo = s.Costo,
-                                                Tara = s.Tara
+                                                Tara = s.Tara,
+                                                FamiliaId = s.IdFamilia
                                             }
                                             )
                                             .ToListAsync();
@@ -93,7 +94,8 @@ namespace Proy_back_QBD.Services
                                                 IdEtiqueta2 = s.IdEtiqueta2,
                                                 Codigo = s.Codigo,
                                                 Costo = s.Costo,
-                                                Tara = s.Tara
+                                                Tara = s.Tara,
+                                                FamiliaId = s.IdFamilia
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);
             if (response == null) throw new NotFoundException("No se encontro el empaque");
