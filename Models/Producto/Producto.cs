@@ -28,11 +28,11 @@ namespace Proy_back_QBD.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime FechaModificacion { get; set; }       // Fecha de la última modificación del pedido
         [Column("creador_id")]
-        public int CreadorId { get; set; }
+        public int? CreadorId { get; set; }
         [JsonIgnore]
         public Usuario? Creador { get; set; }
         [Column("modificador_id")]
-        public int ModificadorId { get; set; }
+        public int? ModificadorId { get; set; }
         [JsonIgnore]
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
