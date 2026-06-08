@@ -18,6 +18,8 @@ namespace Proy_back_QBD.Models
         [Column("cajaId")] public int? IdCaja { get; set; }
         [Column("etiqueta_id1")] public int? IdEtiqueta1 { get; set; }
         [Column("etiqueta_id2")] public int? IdEtiqueta2 { get; set; }
+        [Column("codigo")] public string? Codigo { get; set; }
+        [Column("costo")] public decimal? Costo { get; set; }
         [Column("tara")] public string? Tara { get; set; }
         [Column("fecha_modificacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaModificacion { get; set; }
         [Column("fecha_creacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaCreacion { get; set; }

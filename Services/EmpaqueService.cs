@@ -64,6 +64,8 @@ namespace Proy_back_QBD.Services
                                                 Caja = s.Caja != null ? s.Caja.Descripcion : "",
                                                 Etiqueta1 = s.Etiqueta1 != null ? s.Etiqueta1.Descripcion : "",
                                                 Etiqueta2 = s.Etiqueta2 != null ? s.Etiqueta2.Descripcion : "",
+                                                Codigo = s.Codigo,
+                                                Costo = s.Costo,
                                                 Tara = s.Tara
                                             }
                                             )
@@ -89,6 +91,8 @@ namespace Proy_back_QBD.Services
                                                 IdEtiqueta1 = s.IdEtiqueta1,
                                                 Etiqueta2 = s.Etiqueta2.Descripcion,
                                                 IdEtiqueta2 = s.IdEtiqueta2,
+                                                Codigo = s.Codigo,
+                                                Costo = s.Costo,
                                                 Tara = s.Tara
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);

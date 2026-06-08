@@ -14,6 +14,8 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? Caja { get; set; }
         public string? Etiqueta1 { get; set; }
         public string? Etiqueta2 { get; set; }
+        public string? Codigo { get; set; }
+        public decimal? Costo { get; set; }
         public string? Tara { get; set; }
     }
     public class EmpaqueFindIdRes
@@ -28,6 +30,8 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? Etiqueta1 { get; set; }
         public int? IdEtiqueta2 { get; set; }
         public string? Etiqueta2 { get; set; }
+        public string? Codigo { get; set; }
+        public decimal? Costo { get; set; }
         public string? Tara { get; set; }
     }
 }

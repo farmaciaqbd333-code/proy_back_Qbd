@@ -13,6 +13,8 @@ namespace Proy_back_QBD.Dto.Empaque
         public int? CajaId { get; set; }
         public int? EtiquetaId1 { get; set; }
         public int? EtiquetaId2 { get; set; }
+        public string? Codigo { get; set; }
+        public decimal? Costo { get; set; }
         public string? Tara { get; set; }
         public int CreadorId { get; set; }
     }
@@ -23,6 +25,8 @@ namespace Proy_back_QBD.Dto.Empaque
         public int? IdCaja { get; set; }
         public int? IdEtiqueta1 { get; set; }
         public int? IdEtiqueta2 { get; set; }
+        public string? Codigo { get; set; }
+        public decimal? Costo { get; set; }
         public string? Tara { get; set; }
         public int ModificadorId { get; set; }
     }
