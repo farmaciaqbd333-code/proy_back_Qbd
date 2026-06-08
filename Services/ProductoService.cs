@@ -28,6 +28,7 @@ namespace Proy_back_QBD.Services
                                             Codigo = $"PT {s.Id}",
                                             Descripcion = s.Descripcion,
                                             Costo = s.Costo,
+                                            UrlImagen = s.UrlImagen,
                                         })
                                         .ToListAsync();
 

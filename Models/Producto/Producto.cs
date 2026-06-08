@@ -17,6 +17,8 @@ namespace Proy_back_QBD.Models
         public string? Descripcion { get; set; }                    // Costo del pedido
         [Column("costo")]
         public decimal? Costo { get; set; }                   // g/ml (gramos por mililitro)
+        [Column("url_imagen")]
+        public string? UrlImagen { get; set; }
         [Column("id_familia")]
         public int IdFamilia { get; set; }                   // g/ml (gramos por mililitro)
         [Column("fecha_creacion")]
