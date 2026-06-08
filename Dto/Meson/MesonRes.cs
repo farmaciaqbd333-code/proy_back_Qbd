@@ -75,6 +75,7 @@ namespace proy_back_Qbd.Models
         public bool? Conformidad { get; set; }
         public int? IdFabricante { get; set; }
         public string? Familia { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleMesonOtrosRes
     {
@@ -86,6 +87,7 @@ namespace proy_back_Qbd.Models
         public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
         public bool? Conformidad { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleMesonEmpaquesRes
     {
@@ -104,6 +106,7 @@ namespace proy_back_Qbd.Models
         public DateTime? FechaVencimiento { get; set; }
         public bool? Conformidad { get; set; }
         public string? Familia { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleMesonEconomatosRes
     {
@@ -118,6 +121,7 @@ namespace proy_back_Qbd.Models
         public string? Um { get; set; }
         public bool? Conformidad { get; set; }
         public string? Familia { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleMesonProductosRes
     {

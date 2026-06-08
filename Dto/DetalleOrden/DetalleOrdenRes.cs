@@ -25,6 +25,7 @@ namespace proy_back_Qbd.Models
         public int? IdFabricante { get; set; }
         public string? NombreFabricante { get; set; }
         public string? CodigoFabricante { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleEmpaquesRes
     {
@@ -37,6 +38,7 @@ namespace proy_back_Qbd.Models
         public required decimal CUnitario { get; set; }
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleProductosRes
     {
@@ -61,6 +63,7 @@ namespace proy_back_Qbd.Models
         public required decimal CUnitario { get; set; }
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
+        public string? Pdf { get; set; }
     }
     public class DetalleComprasOtrosRes
     {
@@ -72,6 +75,7 @@ namespace proy_back_Qbd.Models
         public required decimal CUnitario { get; set; }
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
+        public string? Pdf { get; set; }
     }
     public class IdFamiliasRes
     {

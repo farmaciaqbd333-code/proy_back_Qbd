@@ -29,6 +29,7 @@ namespace proy_back_Qbd.Models
         [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; } = "";
+        [Column("pdf")] public string? Pdf { get; set; }
         public Compra? Compra { get; set; }
         public Empaque? Empaque { get; set; }
         public Usuario? Creador { get; set; }

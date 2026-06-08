@@ -147,5 +147,22 @@ namespace proy_back_Qbd.Controllers
                         return Ok(response);
                 }
 
+                /// <summary>
+                /// Actualizar pdf de un detalle (insumo, empaque, economato, otros)
+                /// </summary>
+                [HttpPatch("detalle-pdf/{familia}/{id}")]
+                public async Task<IActionResult> ActualizarDetallePdf(string familia, int id, [FromBody] UpdateDetallePdfReq request)
+                {
+                        bool response = await _serviceOC.ActualizarDetallePdf(familia, id, request.Pdf);
+                        if (!response) return NotFound(new { message = "Detalle no encontrado" });
+
+                        return Ok(new { message = "PDF de detalle actualizado" });
+                }
+
+        }
+
+        public class UpdateDetallePdfReq
+        {
+                public string? Pdf { get; set; }
         }
 }

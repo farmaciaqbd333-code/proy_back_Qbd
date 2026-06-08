@@ -161,8 +161,7 @@ namespace proy_back_Qbd.Services
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
                 Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
-                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
+                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,                 ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
                 {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
@@ -170,7 +169,8 @@ namespace proy_back_Qbd.Services
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     CantidadSolicitada = s2.CantidadSolicitada,
                     Um = s2.UnidadMedida,
-                    Conformidad = s2.Conformidad
+                    Conformidad = s2.Conformidad,
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonOtrosRes>(),
                 ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new DetalleMesonInsumoRes
                 {
@@ -189,6 +189,7 @@ namespace proy_back_Qbd.Services
                     Conformidad = s2.Conformidad,
                     IdFabricante = s2.IdFabricante,
                     Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura ?? "" : "",
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonInsumoRes>(),
                 ListaEconomatos = s.CompraEconomatos != null ? s.CompraEconomatos.Select(s2 => new DetalleMesonEconomatosRes
                 {
@@ -201,7 +202,8 @@ namespace proy_back_Qbd.Services
                     CantidadSolicitada = s2.CantidadSolicitada,
                     Um = s2.Um,
                     Conformidad = s2.Conformidad,
-                    Familia = "ECO"
+                    Familia = "ECO",
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonEconomatosRes>(),
                 ListaProductos = s.CompraProductos != null ? s.CompraProductos.Select(s2 => new DetalleMesonProductosRes
                 {
@@ -235,7 +237,8 @@ namespace proy_back_Qbd.Services
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
                     Conformidad = s2.Conformidad,
-                    Familia = "ME"
+                    Familia = "ME",
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonEmpaquesRes>()
             }).FirstOrDefaultAsync();
 
