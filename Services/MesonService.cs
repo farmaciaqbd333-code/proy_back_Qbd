@@ -264,6 +264,7 @@ namespace proy_back_Qbd.Services
                 Guia = s.Guia ?? "",
                 ImgFactura = s.ImgFactura,
                 FechaMeson = s.FechaMeson,
+                NombreModificador = s.Modificador != null && s.Modificador.Persona != null ? s.Modificador.Persona.NombreCompleto : null
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();

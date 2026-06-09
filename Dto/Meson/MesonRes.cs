@@ -56,6 +56,7 @@ namespace proy_back_Qbd.Models
         public string? Guia { get; set; }
         public string? EstadoCompra { get; set; }
         public DateTime? FechaMeson { get; set; }
+        public string? NombreModificador { get; set; }
     }
     public class DetalleMesonInsumoRes
     {
