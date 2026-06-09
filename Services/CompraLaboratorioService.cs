@@ -74,7 +74,8 @@ namespace proy_back_Qbd.Services
                     FechaVencimiento = s2.FechaVencimiento,
                     CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
                     TotalPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
-                    TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0
+                    TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
+                    Fabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : ""
                 }).ToList() : new List<CompraLabInsumoModalRes>(),
                 DetalleEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new CompraLabEmpaqueModalRes()
                 {
@@ -91,7 +92,8 @@ namespace proy_back_Qbd.Services
                     FechaVencimiento = s3.FechaVencimiento,
                     CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
                     TotalPaquetes = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
-                    TotalPeso = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0
+                    TotalPeso = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
+                    Fabricante = s3.Fabricante != null ? s3.Fabricante.Nombre : ""
                 }).ToList() : new List<CompraLabEmpaqueModalRes>()
             }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Compra");
 
