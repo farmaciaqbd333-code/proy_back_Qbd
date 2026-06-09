@@ -35,5 +35,6 @@ namespace proy_back_Qbd.Models
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public List<PaqueteEmpaque>? PaqueteEmpaques { get; set; }
+        public Fabricante? Fabricante { get; set; }
     }
 }
