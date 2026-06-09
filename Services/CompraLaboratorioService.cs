@@ -35,7 +35,13 @@ namespace proy_back_Qbd.Services
             {
                 ActualizarDetCompraLabReq? req = request.FirstOrDefault(f => f.IdDetalle == item.Id);
                 if (req != null)
+                {
                     _mapper.Map(req, item);
+                    if (item.Um != null && (item.Um.ToUpper() == "L" || item.Um.ToUpper() == "LITRO"))
+                    {
+                        item.CantidadSolicitada = item.CantidadSolicitada / 1000m;
+                    }
+                }
             }
 
             Compra? compra = await _context.Compras.FindAsync(idCompra);
@@ -67,8 +73,8 @@ namespace proy_back_Qbd.Services
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     Coa = s2.Coa,
                     Lote = s2.Lote ?? "",
-                    Um = s2.Um ?? "",
-                    CantidadRecibida = s2.CantidadSolicitada,
+                    Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ml" : (s2.Um ?? ""),
+                    CantidadRecibida = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? s2.CantidadSolicitada * 1000 : s2.CantidadSolicitada,
                     Potencia = s2.Potencia,
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
@@ -86,8 +92,8 @@ namespace proy_back_Qbd.Services
                     DescripcionQBD = s3.Empaque != null ? s3.Empaque.Descripcion ?? "" : "",
                     Coa = s3.Coa,
                     Lote = s3.Lote ?? "",
-                    Um = s3.Um ?? "",
-                    CantidadRecibida = s3.CantidadSolicitada,
+                    Um = (s3.Um != null && (s3.Um.ToUpper() == "L" || s3.Um.ToUpper() == "LITRO")) ? "ml" : (s3.Um ?? ""),
+                    CantidadRecibida = (s3.Um != null && (s3.Um.ToUpper() == "L" || s3.Um.ToUpper() == "LITRO")) ? s3.CantidadSolicitada * 1000 : s3.CantidadSolicitada,
                     FechaFabricacion = s3.FechaFabricacion,
                     FechaVencimiento = s3.FechaVencimiento,
                     CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
@@ -120,7 +126,7 @@ namespace proy_back_Qbd.Services
                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                    Coa = s2.Coa,
                    Lote = s2.Lote ?? "",
-                   Um = s2.Um ?? "",
+                   Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ml" : (s2.Um ?? ""),
                    Potencia = s2.Potencia,
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
@@ -137,7 +143,7 @@ namespace proy_back_Qbd.Services
                    Codigo = s2.IdEmpaque.ToString(),
                    DescripcionQBD = s2.Empaque != null ? s2.Empaque.Descripcion ?? "" : "",
                    Lote = s2.Lote ?? "",
-                   Um = s2.Um ?? "",
+                   Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ml" : (s2.Um ?? ""),
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
                    CantidadPaquetes = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
