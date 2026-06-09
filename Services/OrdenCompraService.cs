@@ -307,7 +307,7 @@ namespace proy_back_Qbd.Services
                             Um = item.Um,
                             CostoUnitario = item.CostoUnitario,
                             CostoTotal = item.CostoTotal,
-                            IdFabricante = item.IdFabricante,
+                            IdFabricante = item.IdFabricante == 0 ? null : item.IdFabricante,
                         };
                         _context.CompraInsumos.Add(detalleCompra);
                     }
@@ -438,7 +438,7 @@ namespace proy_back_Qbd.Services
                             Um = item.Um,
                             CostoUnitario = item.CostoUnitario,
                             CostoTotal = item.CostoTotal,
-                            IdFabricante = item.IdFabricante,
+                            IdFabricante = item.IdFabricante == 0 ? null : item.IdFabricante,
                         };
                         _context.CompraInsumos.Add(detalleCompraInsumo);
                     }
@@ -468,8 +468,9 @@ namespace proy_back_Qbd.Services
                             if (detalle.CostoTotal != item.CostoTotal)
                                 detalle.CostoTotal = item.CostoTotal;
 
-                            if (detalle.IdFabricante != item.IdFabricante)
-                                detalle.IdFabricante = item.IdFabricante;
+                            var incomingFabricanteId = item.IdFabricante == 0 ? null : item.IdFabricante;
+                            if (detalle.IdFabricante != incomingFabricanteId)
+                                detalle.IdFabricante = incomingFabricanteId;
 
                             // normalmente este sí se asigna siempre (auditoría)
                             detalle.IdModificador = request.IdModificadorCreador;
