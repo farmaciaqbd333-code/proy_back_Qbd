@@ -35,6 +35,7 @@ namespace proy_back_Qbd.Models
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
         [Column("pdf")] public string? Pdf { get; set; }
+        [Column("justificacion_diferencia")] public string? JustificacionDiferencia { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Insumo? Insumo { get; set; }

@@ -15,5 +15,6 @@ namespace proy_back_Qbd.Models
         public DateTime FechaFabricacion { get; set; }
         public DateTime FechaVencimiento { get; set; }
         public required string CondicionAlmacenamiento { get; set; }
+        public string? JustificacionDiferencia { get; set; }
     }
 }

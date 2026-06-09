@@ -36,5 +36,6 @@ namespace proy_back_Qbd.Models
         public Usuario? Modificador { get; set; }
         public List<PaqueteEmpaque>? PaqueteEmpaques { get; set; }
         public Fabricante? Fabricante { get; set; }
+        [Column("justificacion_diferencia")] public string? JustificacionDiferencia { get; set; }
     }
 }

@@ -17,7 +17,8 @@ namespace proy_back_Qbd.Models
             .ForMember(f => f.Potencia, o => o.MapFrom(m => m.Potencia))
             .ForMember(f => f.FechaFabricacion, o => o.MapFrom(m => m.FechaFabricacion))
             .ForMember(f => f.FechaVencimiento, o => o.MapFrom(m => m.FechaVencimiento))
-            .ForMember(f => f.CondicionAlmacenamiento, o => o.MapFrom(m => m.CondicionAlmacenamiento));
+            .ForMember(f => f.CondicionAlmacenamiento, o => o.MapFrom(m => m.CondicionAlmacenamiento))
+            .ForMember(f => f.JustificacionDiferencia, o => o.MapFrom(m => m.JustificacionDiferencia));
         }
     }
 }
