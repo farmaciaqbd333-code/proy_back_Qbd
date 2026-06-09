@@ -41,6 +41,7 @@ namespace proy_back_Qbd.Models
         public Insumo? Insumo { get; set; }
         public Compra? Compra { get; set; }
         public List<PaqueteInsumo>? PaqueteInsumos { get; set; }
+        [ForeignKey("IdFabricante")]
         public Fabricante? Fabricante { get; set; }
     }
 
