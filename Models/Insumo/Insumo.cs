@@ -61,6 +61,8 @@ namespace Proy_back_QBD.Models
         public bool? Refrigerado { get; set; } = false;
         [Column("pdf")]
         public string? Pdf { get; set; }
+        [Column("densidad")]
+        public decimal? Densidad { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }

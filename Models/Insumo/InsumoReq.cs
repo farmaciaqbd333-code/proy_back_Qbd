@@ -28,6 +28,7 @@ namespace Proy_back_QBD.Dto.Insumo
         public bool? Refrigerado { get; set; }
         public string? Pdf { get; set; }
         public int CreadorId { get; set; }
+        public decimal? Densidad { get; set; }
     }
     public class InsumoUpdateReq
     {
@@ -51,5 +52,6 @@ namespace Proy_back_QBD.Dto.Insumo
         public bool? Refrigerado { get; set; }
         public string? Pdf { get; set; }
         public int ModificadorId { get; set; }
+        public decimal? Densidad { get; set; }
     }
 }

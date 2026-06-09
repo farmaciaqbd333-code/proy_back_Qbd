@@ -121,7 +121,8 @@ namespace Proy_back_QBD.Services
                                                 Higroscopico = s.Higroscopico,
                                                 Fotosensible = s.Fotosensible,
                                                 Refrigerado = s.Refrigerado,
-                                                Pdf = s.Pdf
+                                                Pdf = s.Pdf,
+                                                Densidad = s.Densidad
                                             })
                                             .ToListAsync();
             if (response == null)
@@ -156,7 +157,8 @@ namespace Proy_back_QBD.Services
                                                 Higroscopico = s.Higroscopico,
                                                 Fotosensible = s.Fotosensible,
                                                 Refrigerado = s.Refrigerado,
-                                                Pdf = s.Pdf
+                                                Pdf = s.Pdf,
+                                                Densidad = s.Densidad
                                             })
                                             .FirstOrDefaultAsync(s => s.Id == id);
             if (response == null)

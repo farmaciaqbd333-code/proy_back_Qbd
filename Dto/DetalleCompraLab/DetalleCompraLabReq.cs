@@ -16,6 +16,5 @@ namespace proy_back_Qbd.Models
         public DateTime FechaVencimiento { get; set; }
         public required string CondicionAlmacenamiento { get; set; }
         public string? JustificacionDiferencia { get; set; }
-        public decimal? Densidad { get; set; }
     }
 }
