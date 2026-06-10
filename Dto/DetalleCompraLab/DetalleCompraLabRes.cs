@@ -32,6 +32,7 @@ public class CompraLabInsumoModalRes
     public required decimal TotalPeso { get; set; }
     public string? Fabricante { get; set; }
     public decimal? Densidad { get; set; }
+    public string? DescripcionFactura { get; set; }
 }
 public class CompraLabEmpaqueModalRes
 {
@@ -50,6 +51,7 @@ public class CompraLabEmpaqueModalRes
     public required decimal TotalPaquetes { get; set; }
     public required decimal TotalPeso { get; set; }
     public string? Fabricante { get; set; }
+    public string? DescripcionFactura { get; set; }
 }
 public class CompraLabDetIdRes
 {
