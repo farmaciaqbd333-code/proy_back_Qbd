@@ -137,7 +137,8 @@ namespace proy_back_Qbd.Services
                    CantidadRecibida = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
                    Densidad = s2.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
                    DescripcionFactura = s2.DescripcionFactura ?? "",
-                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : ""
+                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
+                   CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
                }).ToList() : null,
                ListaEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s2 => new CompraLabDetEmpRes()
                {
@@ -155,7 +156,8 @@ namespace proy_back_Qbd.Services
                    CantidadPaquetes = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
                    CantidadRecibida = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
                    DescripcionFactura = s2.DescripcionFactura ?? "",
-                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : ""
+                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
+                   CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
                }).ToList() : null
            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra");
 

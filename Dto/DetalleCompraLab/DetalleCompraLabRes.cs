@@ -81,6 +81,7 @@ public class CompraLabDetInsumosRes
     public decimal? Densidad { get; set; }
     public string? DescripcionFactura { get; set; }
     public string? Fabricante { get; set; }
+    public string? CondicionAlmacenamiento { get; set; }
 }
 public class CompraLabDetEmpRes
 {
@@ -99,6 +100,7 @@ public class CompraLabDetEmpRes
     public required decimal CantidadRecibida { get; set; }
     public string? DescripcionFactura { get; set; }
     public string? Fabricante { get; set; }
+    public string? CondicionAlmacenamiento { get; set; }
 }
 public class EtiquetaCompra
 {
