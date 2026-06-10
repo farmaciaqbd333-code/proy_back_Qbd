@@ -77,6 +77,7 @@ public class CompraLabDetInsumosRes
     public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
     public decimal? Densidad { get; set; }
+    public string? DescripcionFactura { get; set; }
 }
 public class CompraLabDetEmpRes
 {
@@ -93,6 +94,7 @@ public class CompraLabDetEmpRes
     public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
     public required decimal CantidadRecibida { get; set; }
+    public string? DescripcionFactura { get; set; }
 }
 public class EtiquetaCompra
 {
