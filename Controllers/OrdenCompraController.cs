@@ -105,6 +105,18 @@ namespace proy_back_Qbd.Controllers
                 }
 
                 /// <summary>
+                /// Actualizar estado de pago (Modalidad)
+                /// </summary>
+                [HttpPatch("estado-pago/{idOrdenCompra}")]
+                public async Task<IActionResult> CambiarEstadoPago(int idOrdenCompra, CambiarEstadoReq request)
+                {
+                        bool response = await _serviceOC.ActualizarEstadoPago(idOrdenCompra, request);
+                        if (!response) return StatusCode(500, "No se actualizó");
+
+                        return Ok(new { message = "Estado de pago actualizado" });
+                }
+
+                /// <summary>
                 /// Actualizar ruta de la factura
                 /// </summary>
                 [HttpPatch("ruta-factura/{id}")]

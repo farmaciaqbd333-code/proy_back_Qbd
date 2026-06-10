@@ -689,6 +689,16 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
+        public async Task<bool> ActualizarEstadoPago(int OrdenCompraId, CambiarEstadoReq response)
+        {
+            Compra? compra = await _context.Compras.FindAsync(OrdenCompraId);
+            if (compra == null) return false;
+            compra.Modalidad = response.Estado;
+            compra.IdModificador = response.IdModificador;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia)
         {
             // Normalizar búsqueda: ignorar mayúsculas/minúsculas y espacios extra
