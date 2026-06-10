@@ -368,8 +368,8 @@ namespace proy_back_Qbd.Services
                 detalles.AddRange(s.CompraOtros.Select(s2 => new CompraInsumoRes2 {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                    IdInsumo = s2.IdFamilia ?? 0,
-                    Codigo = s2.IdFamilia?.ToString() ?? "",
+                    IdInsumo = s2.IdFamilia,
+                    Codigo = s2.IdFamilia.ToString(),
                     DescripcionQBD = "",
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     CantidadSolicitada = s2.CantidadSolicitada,
