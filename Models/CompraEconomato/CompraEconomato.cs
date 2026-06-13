@@ -24,6 +24,7 @@ namespace proy_back_Qbd.Models
         [Column("conformidad")] public bool? Conformidad { get; set; }
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
+        [Column("pdf")] public string? Pdf { get; set; }
         public Compra? Compra { get; set; }
         public Economato? Economato { get; set; }
         public Usuario? Creador { get; set; }

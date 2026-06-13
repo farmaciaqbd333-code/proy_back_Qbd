@@ -32,13 +32,17 @@ namespace proy_back_Qbd.Models
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
         [Column("um")] public required string Um { get; set; }
+        [Column("densidad")] public decimal? Densidad { get; set; }
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
+        [Column("pdf")] public string? Pdf { get; set; }
+        [Column("justificacion_diferencia")] public string? JustificacionDiferencia { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Insumo? Insumo { get; set; }
         public Compra? Compra { get; set; }
         public List<PaqueteInsumo>? PaqueteInsumos { get; set; }
+        [ForeignKey("IdFabricante")]
         public Fabricante? Fabricante { get; set; }
     }
 

@@ -60,11 +60,19 @@ namespace Proy_back_QBD.Services
                                             {
                                                 Id = s.Id,
                                                 Descripcion = s.Descripcion,
-                                                Funda = s.Funda != null ? s.Funda.Descripcion : "",
-                                                Caja = s.Caja != null ? s.Caja.Descripcion : "",
-                                                Etiqueta1 = s.Etiqueta1 != null ? s.Etiqueta1.Descripcion : "",
-                                                Etiqueta2 = s.Etiqueta2 != null ? s.Etiqueta2.Descripcion : "",
-                                                Tara = s.Tara
+                                                FundaId = s.IdFunda,
+                                                Funda = s.Funda != null ? s.Funda.Codigo : "",
+                                                CajaId = s.IdCaja,
+                                                Caja = s.Caja != null ? s.Caja.Codigo : "",
+                                                EtiquetaId1 = s.IdEtiqueta1,
+                                                Etiqueta1 = s.Etiqueta1 != null ? s.Etiqueta1.Codigo : "",
+                                                EtiquetaId2 = s.IdEtiqueta2,
+                                                Etiqueta2 = s.Etiqueta2 != null ? s.Etiqueta2.Codigo : "",
+                                                Codigo = s.Codigo,
+                                                Costo = s.Costo,
+                                                Tara = s.Tara,
+                                                ImagenUrl = s.ImagenUrl,
+                                                FamiliaId = s.IdFamilia
                                             }
                                             )
                                             .ToListAsync();
@@ -81,15 +89,19 @@ namespace Proy_back_QBD.Services
                                             {
                                                 Id = s.Id,
                                                 Descripcion = s.Descripcion,
-                                                Funda = s.Funda.Descripcion,
-                                                IdFunda = s.IdFunda,
-                                                Caja = s.Caja.Descripcion,
-                                                IdCaja = s.IdCaja,
-                                                Etiqueta1 = s.Etiqueta1.Descripcion,
-                                                IdEtiqueta1 = s.IdEtiqueta1,
-                                                Etiqueta2 = s.Etiqueta2.Descripcion,
-                                                IdEtiqueta2 = s.IdEtiqueta2,
-                                                Tara = s.Tara
+                                                Funda = s.Funda != null ? s.Funda.Codigo : "",
+                                                FundaId = s.IdFunda,
+                                                Caja = s.Caja != null ? s.Caja.Codigo : "",
+                                                CajaId = s.IdCaja,
+                                                Etiqueta1 = s.Etiqueta1 != null ? s.Etiqueta1.Codigo : "",
+                                                EtiquetaId1 = s.IdEtiqueta1,
+                                                Etiqueta2 = s.Etiqueta2 != null ? s.Etiqueta2.Codigo : "",
+                                                EtiquetaId2 = s.IdEtiqueta2,
+                                                Codigo = s.Codigo,
+                                                Costo = s.Costo,
+                                                Tara = s.Tara,
+                                                ImagenUrl = s.ImagenUrl,
+                                                FamiliaId = s.IdFamilia
                                             }
                                             ).FirstOrDefaultAsync(fod => fod.Id == id);
             if (response == null) throw new NotFoundException("No se encontro el empaque");

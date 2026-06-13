@@ -28,6 +28,7 @@ namespace Proy_back_QBD.Services
                                             Codigo = $"PT {s.Id}",
                                             Descripcion = s.Descripcion,
                                             Costo = s.Costo,
+                                            UrlImagen = s.UrlImagen,
                                         })
                                         .ToListAsync();
 
@@ -41,7 +42,8 @@ namespace Proy_back_QBD.Services
         public async Task<Producto?> Crear(ProductoReq request)
         {
             Producto producto = _mapper.Map<Producto>(request);
-            producto.ModificadorId = producto.CreadorId;
+            producto.CreadorId = request.CreadorId;
+            producto.ModificadorId = request.CreadorId;
 
             await _context.Productos.AddAsync(producto);
             await _context.SaveChangesAsync();

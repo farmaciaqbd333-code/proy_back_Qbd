@@ -57,7 +57,8 @@ namespace proy_back_Qbd.Services
                                 Familia = s2.Insumo == null || s2.Insumo.Familia == null ? "" : s2.Insumo.Familia.Abreviatura,
                                 IdFabricante = s2.IdFabricante,
                                 NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
-                                CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : ""
+                                CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : "",
+                                Pdf = s2.Pdf
                             }).ToList(),
                             DetalleEmpaques = s.CompraEmpaques == null ? null : s.CompraEmpaques.Select(s2 => new DetalleEmpaquesRes
                             {
@@ -69,7 +70,8 @@ namespace proy_back_Qbd.Services
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
-                                UM = s2.Um
+                                UM = s2.Um,
+                                Pdf = s2.Pdf
                             }).ToList(),
                             DetalleProductos = s.CompraProductos == null ? null : s.CompraProductos.Select(s2 => new DetalleProductosRes
                             {
@@ -93,7 +95,8 @@ namespace proy_back_Qbd.Services
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
-                                UM = s2.Um
+                                UM = s2.Um,
+                                Pdf = s2.Pdf
                             }).ToList(),
                             DetalleOtros = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasOtrosRes
                             {
@@ -104,7 +107,8 @@ namespace proy_back_Qbd.Services
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
-                                UM = s2.UnidadMedida
+                                UM = s2.UnidadMedida,
+                                Pdf = s2.Pdf
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
@@ -303,7 +307,7 @@ namespace proy_back_Qbd.Services
                             Um = item.Um,
                             CostoUnitario = item.CostoUnitario,
                             CostoTotal = item.CostoTotal,
-                            IdFabricante = item.IdFabricante,
+                            IdFabricante = item.IdFabricante == 0 ? null : item.IdFabricante,
                         };
                         _context.CompraInsumos.Add(detalleCompra);
                     }
@@ -434,7 +438,7 @@ namespace proy_back_Qbd.Services
                             Um = item.Um,
                             CostoUnitario = item.CostoUnitario,
                             CostoTotal = item.CostoTotal,
-                            IdFabricante = item.IdFabricante,
+                            IdFabricante = item.IdFabricante == 0 ? null : item.IdFabricante,
                         };
                         _context.CompraInsumos.Add(detalleCompraInsumo);
                     }
@@ -464,8 +468,9 @@ namespace proy_back_Qbd.Services
                             if (detalle.CostoTotal != item.CostoTotal)
                                 detalle.CostoTotal = item.CostoTotal;
 
-                            if (detalle.IdFabricante != item.IdFabricante)
-                                detalle.IdFabricante = item.IdFabricante;
+                            var incomingFabricanteId = item.IdFabricante == 0 ? null : item.IdFabricante;
+                            if (detalle.IdFabricante != incomingFabricanteId)
+                                detalle.IdFabricante = incomingFabricanteId;
 
                             // normalmente este sí se asigna siempre (auditoría)
                             detalle.IdModificador = request.IdModificadorCreador;
@@ -684,6 +689,16 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
+        public async Task<bool> ActualizarEstadoPago(int OrdenCompraId, CambiarEstadoReq response)
+        {
+            Compra? compra = await _context.Compras.FindAsync(OrdenCompraId);
+            if (compra == null) return false;
+            compra.Modalidad = response.Estado;
+            compra.IdModificador = response.IdModificador;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia)
         {
             // Normalizar búsqueda: ignorar mayúsculas/minúsculas y espacios extra
@@ -718,6 +733,41 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
+        public async Task<bool> ActualizarDetallePdf(string familia, int id, string? pdf)
+        {
+            string famNorm = familia.Trim().ToUpper();
+            if (famNorm.Contains("MP") || famNorm.Contains("INSUMO"))
+            {
+                CompraInsumos? detail = await _context.CompraInsumos.FindAsync(id);
+                if (detail == null) return false;
+                detail.Pdf = pdf;
+            }
+            else if (famNorm.Contains("ME") || famNorm.Contains("EMPAQUE"))
+            {
+                CompraEmpaques? detail = await _context.CompraEmpaques.FindAsync(id);
+                if (detail == null) return false;
+                detail.Pdf = pdf;
+            }
+            else if (famNorm.Contains("ECO") || famNorm.Contains("ECONOMATO"))
+            {
+                CompraEconomatos? detail = await _context.CompraEconomatos.FindAsync(id);
+                if (detail == null) return false;
+                detail.Pdf = pdf;
+            }
+            else if (famNorm.Contains("OTROS") || famNorm.Contains("OTRO"))
+            {
+                CompraOtros? detail = await _context.CompraOtros.FindAsync(id);
+                if (detail == null) return false;
+                detail.Pdf = pdf;
+            }
+            else
+            {
+                return false;
+            }
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
 
     }
 }

@@ -12,6 +12,7 @@ namespace Proy_back_QBD.Profiles
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaCreacion, opt => opt.Ignore())
                 .ForMember(dest => dest.FechaModificacion, opt => opt.Ignore())
+                .ForMember(dest => dest.CreadorId, opt => opt.Ignore())
                 .ForMember(dest => dest.Creador, opt => opt.Ignore())
                 .ForMember(dest => dest.Modificador, opt => opt.Ignore())
                 .ForMember(dest => dest.ProdTerm, opt => opt.Ignore());

@@ -105,6 +105,18 @@ namespace proy_back_Qbd.Controllers
                 }
 
                 /// <summary>
+                /// Actualizar estado de pago (Modalidad)
+                /// </summary>
+                [HttpPatch("estado-pago/{idOrdenCompra}")]
+                public async Task<IActionResult> CambiarEstadoPago(int idOrdenCompra, CambiarEstadoReq request)
+                {
+                        bool response = await _serviceOC.ActualizarEstadoPago(idOrdenCompra, request);
+                        if (!response) return StatusCode(500, "No se actualizó");
+
+                        return Ok(new { message = "Estado de pago actualizado" });
+                }
+
+                /// <summary>
                 /// Actualizar ruta de la factura
                 /// </summary>
                 [HttpPatch("ruta-factura/{id}")]
@@ -147,5 +159,22 @@ namespace proy_back_Qbd.Controllers
                         return Ok(response);
                 }
 
+                /// <summary>
+                /// Actualizar pdf de un detalle (insumo, empaque, economato, otros)
+                /// </summary>
+                [HttpPatch("detalle-pdf/{familia}/{id}")]
+                public async Task<IActionResult> ActualizarDetallePdf(string familia, int id, [FromBody] UpdateDetallePdfReq request)
+                {
+                        bool response = await _serviceOC.ActualizarDetallePdf(familia, id, request.Pdf);
+                        if (!response) return NotFound(new { message = "Detalle no encontrado" });
+
+                        return Ok(new { message = "PDF de detalle actualizado" });
+                }
+
+        }
+
+        public class UpdateDetallePdfReq
+        {
+                public string? Pdf { get; set; }
         }
 }

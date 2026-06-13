@@ -35,7 +35,13 @@ namespace proy_back_Qbd.Services
             {
                 ActualizarDetCompraLabReq? req = request.FirstOrDefault(f => f.IdDetalle == item.Id);
                 if (req != null)
+                {
                     _mapper.Map(req, item);
+                    if (item.Um != null && (item.Um.ToUpper() == "L" || item.Um.ToUpper() == "LITRO"))
+                    {
+                        item.CantidadSolicitada = item.CantidadSolicitada / 1000m;
+                    }
+                }
             }
 
             Compra? compra = await _context.Compras.FindAsync(idCompra);
@@ -67,14 +73,17 @@ namespace proy_back_Qbd.Services
                     DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                     Coa = s2.Coa,
                     Lote = s2.Lote ?? "",
-                    Um = "g",
-                    CantidadRecibida = s2.CantidadSolicitada * 1000,
+                    Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ML" : (s2.Um ?? "").ToUpper(),
+                    CantidadRecibida = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? s2.CantidadSolicitada * 1000 : s2.CantidadSolicitada,
                     Potencia = s2.Potencia,
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
                     CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
                     TotalPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
-                    TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0
+                    TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
+                    Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
+                    Densidad = s2.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
+                    DescripcionFactura = s2.DescripcionFactura ?? ""
                 }).ToList() : new List<CompraLabInsumoModalRes>(),
                 DetalleEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new CompraLabEmpaqueModalRes()
                 {
@@ -85,13 +94,15 @@ namespace proy_back_Qbd.Services
                     DescripcionQBD = s3.Empaque != null ? s3.Empaque.Descripcion ?? "" : "",
                     Coa = s3.Coa,
                     Lote = s3.Lote ?? "",
-                    Um = "g",
-                    CantidadRecibida = s3.CantidadSolicitada * 1000,
+                    Um = (s3.Um != null && (s3.Um.ToUpper() == "L" || s3.Um.ToUpper() == "LITRO")) ? "ML" : (s3.Um ?? "").ToUpper(),
+                    CantidadRecibida = (s3.Um != null && (s3.Um.ToUpper() == "L" || s3.Um.ToUpper() == "LITRO")) ? s3.CantidadSolicitada * 1000 : s3.CantidadSolicitada,
                     FechaFabricacion = s3.FechaFabricacion,
                     FechaVencimiento = s3.FechaVencimiento,
                     CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
                     TotalPaquetes = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
-                    TotalPeso = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0
+                    TotalPeso = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
+                    Fabricante = s3.Fabricante != null ? $"{s3.Fabricante.Codigo ?? s3.Fabricante.Nombre} ({s3.Fabricante.Pais})" : "",
+                    DescripcionFactura = s3.DescripcionFactura ?? ""
                 }).ToList() : new List<CompraLabEmpaqueModalRes>()
             }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Compra");
 
@@ -118,12 +129,16 @@ namespace proy_back_Qbd.Services
                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
                    Coa = s2.Coa,
                    Lote = s2.Lote ?? "",
-                   Um = "g",
+                   Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ML" : (s2.Um ?? "").ToUpper(),
                    Potencia = s2.Potencia,
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
                    CantidadPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
                    CantidadRecibida = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
+                   Densidad = s2.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
+                   DescripcionFactura = s2.DescripcionFactura ?? "",
+                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
+                   CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
                }).ToList() : null,
                ListaEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s2 => new CompraLabDetEmpRes()
                {
@@ -135,11 +150,14 @@ namespace proy_back_Qbd.Services
                    Codigo = s2.IdEmpaque.ToString(),
                    DescripcionQBD = s2.Empaque != null ? s2.Empaque.Descripcion ?? "" : "",
                    Lote = s2.Lote ?? "",
-                   Um = "g",
+                   Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ML" : (s2.Um ?? "").ToUpper(),
                    FechaFabricacion = s2.FechaFabricacion,
                    FechaVencimiento = s2.FechaVencimiento,
                    CantidadPaquetes = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
                    CantidadRecibida = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
+                   DescripcionFactura = s2.DescripcionFactura ?? "",
+                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
+                   CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
                }).ToList() : null
            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra");
 

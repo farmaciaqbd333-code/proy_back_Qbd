@@ -161,8 +161,7 @@ namespace proy_back_Qbd.Services
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
                 Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
-                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
+                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,                 ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
                 {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
@@ -170,7 +169,8 @@ namespace proy_back_Qbd.Services
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     CantidadSolicitada = s2.CantidadSolicitada,
                     Um = s2.UnidadMedida,
-                    Conformidad = s2.Conformidad
+                    Conformidad = s2.Conformidad,
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonOtrosRes>(),
                 ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new DetalleMesonInsumoRes
                 {
@@ -189,6 +189,7 @@ namespace proy_back_Qbd.Services
                     Conformidad = s2.Conformidad,
                     IdFabricante = s2.IdFabricante,
                     Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura ?? "" : "",
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonInsumoRes>(),
                 ListaEconomatos = s.CompraEconomatos != null ? s.CompraEconomatos.Select(s2 => new DetalleMesonEconomatosRes
                 {
@@ -201,7 +202,8 @@ namespace proy_back_Qbd.Services
                     CantidadSolicitada = s2.CantidadSolicitada,
                     Um = s2.Um,
                     Conformidad = s2.Conformidad,
-                    Familia = "ECO"
+                    Familia = "ECO",
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonEconomatosRes>(),
                 ListaProductos = s.CompraProductos != null ? s.CompraProductos.Select(s2 => new DetalleMesonProductosRes
                 {
@@ -235,7 +237,8 @@ namespace proy_back_Qbd.Services
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
                     Conformidad = s2.Conformidad,
-                    Familia = "ME"
+                    Familia = "ME",
+                    Pdf = s2.Pdf
                 }).ToList() : new List<DetalleMesonEmpaquesRes>()
             }).FirstOrDefaultAsync();
 
@@ -261,6 +264,7 @@ namespace proy_back_Qbd.Services
                 Guia = s.Guia ?? "",
                 ImgFactura = s.ImgFactura,
                 FechaMeson = s.FechaMeson,
+                NombreModificador = s.Modificador != null ? s.Modificador.Codigo : null
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();
@@ -271,54 +275,141 @@ namespace proy_back_Qbd.Services
 
         public async Task<MesonDetalleRes> ObtenerDetalleOrdenOCompra(int id)
         {
-            MesonDetalleRes? response = await _context.Compras
-                        .Where(w => w.Id == id)
-                        .Select(s => new MesonDetalleRes
-                        {
-                            TC = s.TipoCambio.ToString(),
-                            Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
-                            Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                            // DetalleOrdenCompras = s.DetalleCompras == null ? null : s.DetalleCompras.Select(s2 => new DetInsumoRes2
-                            // {
-                            //     Id = s2.Id,
-                            //     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                            //     IdInsumo = s2.IdInsumo,
-                            //     Codigo = s2.IdInsumo.ToString(),
-                            //     DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
-                            //     DescripcionFactura = s2.DescripcionFac,
-                            //     CantidadSolicitada = s2.CantidadSolicitada,
-                            //     UM = s2.Um,
-                            //     CUnitario = s2.CostoUnitario,
-                            //     CTotal = s2.CostoTotal,
-                            //     Coa = s2.Coa,
-                            //     Lote = s2.Lote,
-                            //     RegistroSanitario = s2.RegistroSanitario,
-                            //     Conforme = s2.Conformidad ?? false,
-                            //     Familia = s2.Familia != null ? s2.Familia.Abreviatura : ""
-                            // }).ToList(),
-                            IdProveedor = s.IdProveedor,
-                            IncluyeImpuesto = s.Igv,
-                            Observaciones = s.Observaciones,
-                            Familia = s.Familia,
-                            Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
-                            ISC = s.Isc,
-                            ICBP = s.Icbp,
-                            Guia = s.Guia,
-                            Modalidad = s.Modalidad
+            var s = await _context.Compras
+                .Include(x => x.Sede)
+                .Include(x => x.CompraInsumos!).ThenInclude(i => i.Insumo).ThenInclude(i => i.Familia)
+                .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Empaque)
+                .Include(x => x.CompraProductos!).ThenInclude(i => i.Producto)
+                .Include(x => x.CompraEconomatos!).ThenInclude(i => i.Economato)
+                .Include(x => x.CompraOtros!).ThenInclude(i => i.Familia)
+                .FirstOrDefaultAsync(w => w.Id == id);
 
-                        }).FirstOrDefaultAsync();
+            if (s == null) throw new NotFoundException("No se encontro");
 
-            if (response != null && response.DetalleOrdenCompras != null)
-            {
-                response.Familia = string.Join(", ", response.DetalleOrdenCompras
-                    .Select(d => d.Familia)
-                    .Where(f => !string.IsNullOrEmpty(f))
-                    .Distinct());
+            var detalles = new List<CompraInsumoRes2>();
+            
+            if (s.CompraInsumos != null) {
+                detalles.AddRange(s.CompraInsumos.Select(s2 => new CompraInsumoRes2 {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    IdInsumo = s2.IdInsumo,
+                    Codigo = s2.IdInsumo.ToString(),
+                    DescripcionQBD = s2.Insumo?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    UM = s2.Um ?? "",
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    Coa = s2.Coa,
+                    Lote = s2.Lote,
+                    RegistroSanitario = s2.RegistroSanitario,
+                    Conforme = s2.Conformidad ?? false,
+                    Familia = s2.Insumo?.Familia?.Abreviatura ?? ""
+                }));
+            }
+            if (s.CompraEmpaques != null) {
+                detalles.AddRange(s.CompraEmpaques.Select(s2 => new CompraInsumoRes2 {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    IdInsumo = s2.IdEmpaque,
+                    Codigo = s2.IdEmpaque.ToString(),
+                    DescripcionQBD = s2.Empaque?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    UM = s2.Um ?? "",
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    Coa = s2.Coa ?? false,
+                    Lote = s2.Lote,
+                    RegistroSanitario = "",
+                    Conforme = s2.Conformidad ?? false,
+                    Familia = "ME"
+                }));
+            }
+            if (s.CompraProductos != null) {
+                detalles.AddRange(s.CompraProductos.Select(s2 => new CompraInsumoRes2 {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    IdInsumo = s2.IdProducto,
+                    Codigo = s2.IdProducto.ToString(),
+                    DescripcionQBD = s2.Producto?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    UM = s2.Um ?? "",
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    Coa = false,
+                    Lote = s2.Lote,
+                    RegistroSanitario = s2.RegistroSanitario,
+                    Conforme = s2.Conformidad ?? false,
+                    Familia = "PT"
+                }));
+            }
+            if (s.CompraEconomatos != null) {
+                detalles.AddRange(s.CompraEconomatos.Select(s2 => new CompraInsumoRes2 {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    IdInsumo = s2.IdEconomato,
+                    Codigo = s2.IdEconomato.ToString(),
+                    DescripcionQBD = s2.Economato?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    UM = s2.Um ?? "",
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    Coa = false,
+                    Lote = "",
+                    RegistroSanitario = "",
+                    Conforme = s2.Conformidad ?? false,
+                    Familia = "ECO"
+                }));
+            }
+            if (s.CompraOtros != null) {
+                detalles.AddRange(s.CompraOtros.Select(s2 => new CompraInsumoRes2 {
+                    Id = s2.Id,
+                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                    IdInsumo = s2.IdFamilia,
+                    Codigo = s2.IdFamilia.ToString(),
+                    DescripcionQBD = "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    UM = s2.UnidadMedida ?? "",
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    Coa = false,
+                    Lote = "",
+                    RegistroSanitario = "",
+                    Conforme = s2.Conformidad ?? false,
+                    Familia = s2.Familia?.Abreviatura ?? ""
+                }));
             }
 
-            if (response == null)
+            var responsable = "";
+            if (s.Sede != null) {
+                var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id.ToString() == s.Sede.Encargado);
+                responsable = persona?.NombreCompleto ?? s.Sede.Encargado;
+            }
+
+            var response = new MesonDetalleRes
             {
-                throw new NotFoundException("No se encontro");
+                TC = s.TipoCambio.ToString(),
+                Destino = s.Sede?.Nombre ?? "",
+                Direccion = s.Sede?.Direccion ?? "",
+                DetalleOrdenCompras = detalles,
+                IdProveedor = s.IdProveedor,
+                IncluyeImpuesto = s.Igv,
+                Observaciones = s.Observaciones,
+                Familia = s.Familia,
+                Responsable = responsable,
+                ISC = s.Isc,
+                ICBP = s.Icbp,
+                Guia = s.Guia,
+                Modalidad = s.Modalidad
+            };
+
+            if (detalles.Count > 0)
+            {
+                response.Familia = string.Join(", ", detalles.Select(d => d.Familia).Where(f => !string.IsNullOrEmpty(f)).Distinct());
             }
 
             return response;

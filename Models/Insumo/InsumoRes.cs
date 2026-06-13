@@ -23,6 +23,19 @@ namespace Proy_back_QBD.Dto.Insumo
         public required string Familia { get; set; }
         public required decimal Costo { get; set; }
         public required string FormaFarmaceutica { get; set; }
+        public string? NumeroCas { get; set; }
+        public decimal? Base { get; set; }
+        public decimal? UsoMin { get; set; }
+        public decimal? Sal { get; set; }
+        public decimal? UsoMax { get; set; }
+        public decimal? FactorE { get; set; }
+        public decimal? PrecioCosto { get; set; }
+        public decimal? PrecioVenta { get; set; }
+        public bool? Higroscopico { get; set; }
+        public bool? Fotosensible { get; set; }
+        public bool? Refrigerado { get; set; }
+        public string? Pdf { get; set; }
+        public decimal? Densidad { get; set; }
     }
     public class InsumoFindIdRes
     {
@@ -34,6 +47,19 @@ namespace Proy_back_QBD.Dto.Insumo
         public required string Familia { get; set; }
         public required decimal Costo { get; set; }
         public required string FormaFarmaceutica { get; set; }
+        public string? NumeroCas { get; set; }
+        public decimal? Base { get; set; }
+        public decimal? UsoMin { get; set; }
+        public decimal? Sal { get; set; }
+        public decimal? UsoMax { get; set; }
+        public decimal? FactorE { get; set; }
+        public decimal? PrecioCosto { get; set; }
+        public decimal? PrecioVenta { get; set; }
+        public bool? Higroscopico { get; set; }
+        public bool? Fotosensible { get; set; }
+        public bool? Refrigerado { get; set; }
+        public string? Pdf { get; set; }
+        public decimal? Densidad { get; set; }
     }
     public class InsumoFormR
     {

@@ -30,6 +30,9 @@ public class CompraLabInsumoModalRes
     public required string CondicionALmacenamiento { get; set; }
     public required decimal TotalPaquetes { get; set; }
     public required decimal TotalPeso { get; set; }
+    public string? Fabricante { get; set; }
+    public decimal? Densidad { get; set; }
+    public string? DescripcionFactura { get; set; }
 }
 public class CompraLabEmpaqueModalRes
 {
@@ -47,6 +50,8 @@ public class CompraLabEmpaqueModalRes
     public required string CondicionALmacenamiento { get; set; }
     public required decimal TotalPaquetes { get; set; }
     public required decimal TotalPeso { get; set; }
+    public string? Fabricante { get; set; }
+    public string? DescripcionFactura { get; set; }
 }
 public class CompraLabDetIdRes
 {
@@ -73,6 +78,10 @@ public class CompraLabDetInsumosRes
     public DateTime? FechaFabricacion { get; set; }
     public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
+    public decimal? Densidad { get; set; }
+    public string? DescripcionFactura { get; set; }
+    public string? Fabricante { get; set; }
+    public string? CondicionAlmacenamiento { get; set; }
 }
 public class CompraLabDetEmpRes
 {
@@ -89,6 +98,9 @@ public class CompraLabDetEmpRes
     public DateTime? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
     public required decimal CantidadRecibida { get; set; }
+    public string? DescripcionFactura { get; set; }
+    public string? Fabricante { get; set; }
+    public string? CondicionAlmacenamiento { get; set; }
 }
 public class EtiquetaCompra
 {

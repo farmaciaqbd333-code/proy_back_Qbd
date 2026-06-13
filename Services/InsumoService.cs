@@ -29,6 +29,18 @@ namespace Proy_back_QBD.Services
             return insumo;
         }
 
+        public async Task<Insumo?> ActualizarPdf(int id, string pdfUrl)
+        {
+            Insumo? insumo = await _context.Insumos.FindAsync(id);
+            if (insumo == null)
+            {
+                return null;
+            }
+            insumo.Pdf = pdfUrl;
+            await _context.SaveChangesAsync();
+            return insumo;
+        }
+
         public async Task<Insumo?> Crear(InsumoCreateReq request)
         {
             Insumo? insumo = _mapper.Map<Insumo>(request);
@@ -97,9 +109,22 @@ namespace Proy_back_QBD.Services
                                                 UnidadMedida = s.UnidadMedida,
                                                 Costo = s.Costo ?? 0,
                                                 Familia = s.Familia != null ? s.Familia.Abreviatura : "",
-                                                FormaFarmaceutica = s.FormaFarmaceutica ?? ""
-                                            }
-                                            ).ToListAsync();
+                                                FormaFarmaceutica = s.FormaFarmaceutica ?? "",
+                                                NumeroCas = s.NumeroCas,
+                                                Base = s.Base,
+                                                UsoMin = s.UsoMin,
+                                                Sal = s.Sal,
+                                                UsoMax = s.UsoMax,
+                                                FactorE = s.FactorE,
+                                                PrecioCosto = s.PrecioCosto,
+                                                PrecioVenta = s.PrecioVenta,
+                                                Higroscopico = s.Higroscopico,
+                                                Fotosensible = s.Fotosensible,
+                                                Refrigerado = s.Refrigerado,
+                                                Pdf = s.Pdf,
+                                                Densidad = s.Densidad
+                                            })
+                                            .ToListAsync();
             if (response == null)
             {
                 return null;
@@ -120,9 +145,22 @@ namespace Proy_back_QBD.Services
                                                 Dilucion = s.Dilucion ?? "",
                                                 Costo = s.Costo ?? 0,
                                                 Familia = s.Familia != null ? s.Familia.Abreviatura : "",
-                                                FormaFarmaceutica = s.FormaFarmaceutica ?? ""
-                                            }
-                                            ).FirstOrDefaultAsync(fod => fod.Id == id);
+                                                FormaFarmaceutica = s.FormaFarmaceutica ?? "",
+                                                NumeroCas = s.NumeroCas,
+                                                Base = s.Base,
+                                                UsoMin = s.UsoMin,
+                                                Sal = s.Sal,
+                                                UsoMax = s.UsoMax,
+                                                FactorE = s.FactorE,
+                                                PrecioCosto = s.PrecioCosto,
+                                                PrecioVenta = s.PrecioVenta,
+                                                Higroscopico = s.Higroscopico,
+                                                Fotosensible = s.Fotosensible,
+                                                Refrigerado = s.Refrigerado,
+                                                Pdf = s.Pdf,
+                                                Densidad = s.Densidad
+                                            })
+                                            .FirstOrDefaultAsync(s => s.Id == id);
             if (response == null)
             {
                 return null;

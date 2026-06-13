@@ -9,6 +9,7 @@ namespace Proy_back_QBD.Services
         Task<List<InsumoLabRes>?> ListaFormulaR(int sedeId);
         Task<Insumo?> Crear(InsumoCreateReq request);
         Task<Insumo?> Actualizar(int id, InsumoUpdateReq request);
+        Task<Insumo?> ActualizarPdf(int id, string pdfUrl);
         Task<Insumo?> Eliminar(int id);
         Task<List<InsumoFindAllRes?>> Obtener();
         Task<InsumoFindIdRes?> ObtenerById(int id);

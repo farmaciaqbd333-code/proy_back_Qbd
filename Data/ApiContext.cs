@@ -148,6 +148,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Empaque).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdEmpaque).IsRequired(false);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleComprasEmpaquesCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasEmpaquesModificadas).HasForeignKey(hfk => hfk.IdModificador);
+                e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdFabricante);
             });
             modelBuilder.Entity<CompraProductos>((e) =>
             {
