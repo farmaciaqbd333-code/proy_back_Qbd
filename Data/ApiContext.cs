@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.ElaboracionBase;
-using proy_back_Qbd.Models.NotaSalida;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
@@ -74,6 +73,8 @@ namespace Proy_back_QBD.Data
 
             modelBuilder.Entity<ElaboracionBase>((e) =>
             {
+                e.HasOne(ho => ho.Empaque).WithMany(wm => wm.ElaboracionBases).HasForeignKey(hfk => hfk.IdEmpaque);
+                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.ElaboracionBases).HasForeignKey(hfk => hfk.IdInsumo);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.ElaboracionBaseCreados).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ElaboracionBaseModificados).HasForeignKey(hfk => hfk.IdModificador);
             });

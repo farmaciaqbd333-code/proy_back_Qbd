@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.ElaboracionBase;
 
 namespace Proy_back_QBD.Models
 {
@@ -42,6 +43,7 @@ namespace Proy_back_QBD.Models
         public Familia? Familia { get; set; }
         public List<FormulaCC>? FormulasCC { get; set; }
         public List<CompraInsumos>? DetalleCompras { get; set; }
+        public List<ElaboracionBase>? ElaboracionBases { get; set; }
 
     }
 

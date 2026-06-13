@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
-namespace proy_back_Qbd.Models.NotaSalida
+namespace proy_back_Qbd.Models
 {
     [Table("detalle_nota_salida")]
     public class DetalleNotaSalida
@@ -25,9 +25,8 @@ namespace proy_back_Qbd.Models.NotaSalida
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public int IdCreador { get; set; }
         [Column("id_modificador")] public int IdModificador { get; set; }
-        [JsonIgnore]
         public Usuario? Creador { get; set; }
-        [JsonIgnore]
+        public Familia? Familia { get; set; }
         public Usuario? Modificador { get; set; }
     }
 }
