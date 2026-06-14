@@ -46,8 +46,8 @@ namespace proy_back_Qbd.Models
     {
         public int Id { get; set; }
         public string? CUO { get; set; }
-        public DateTime? FechaCotizacion { get; set; }
-        public DateTime? FechaFactura { get; set; }
+        public DateTimeOffset? FechaCotizacion { get; set; }
+        public DateTimeOffset? FechaFactura { get; set; }
         public string? NombreProveedor { get; set; }
         public string? CodFacQbd { get; set; }
         public string? Familia { get; set; }
@@ -71,8 +71,8 @@ namespace proy_back_Qbd.Models
         public bool? Coa { get; set; }
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
-        public DateTime? FechaFabricacion { get; set; }
-        public DateTime? FechaVencimiento { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
         public bool? Conformidad { get; set; }
         public int? IdFabricante { get; set; }
         public string? Familia { get; set; }

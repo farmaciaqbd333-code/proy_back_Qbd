@@ -12,8 +12,9 @@ namespace Proy_back_QBD.Data
         public ApiContext(DbContextOptions<ApiContext> options) : base(options)
         {
         }
-        // DbSets actualizados a las clases correctas
         public DbSet<ElaboracionBase> ElaboracionBases { get; set; }
+        public DbSet<AjusteEmpaque> AjusteEmpaques { get; set; }
+        public DbSet<AjusteInsumo> AjusteInsumos { get; set; }
         public DbSet<PaqueteSa> PaqueteSas { get; set; }
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<PaqueteInsumo> PaqueteInsumos { get; set; }
@@ -127,7 +128,6 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante);
             });
-
             modelBuilder.Entity<CompraEconomatos>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
@@ -158,7 +158,6 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleCompraProductoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraProductoModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
-
             modelBuilder.Entity<Compra>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wo => wo.ComprasCreadas).HasForeignKey(hfk => hfk.IdCreador);
@@ -183,7 +182,6 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
-
             modelBuilder.Entity<Insumo>(e =>
             {
                 e.HasOne(x => x.Creador).WithMany(x => x.InsumosCreadas).HasForeignKey(x => x.CreadorId);
@@ -192,7 +190,6 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
-
             modelBuilder.Entity<FormulaCC>(e =>
             {
                 e.HasKey(x => new { x.FormulaId, x.InsumoId, x.Variable, x.SedeId });
@@ -202,7 +199,6 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
-
             modelBuilder.Entity<Empaque>(e =>
             {
                 e.HasOne(x => x.Caja).WithMany(x => x.ListaCajas).HasForeignKey(x => x.IdCaja);
@@ -331,7 +327,6 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
 
-
             modelBuilder.Entity<Usuario>(e =>
             {
                 e.HasOne(x => x.Creador).WithMany(x => x.UsuariosCreadas).HasForeignKey(x => x.CreadorId);
@@ -370,6 +365,7 @@ namespace Proy_back_QBD.Data
                         j => j.HasOne<Fabricante>().WithMany().HasForeignKey("id_fabricante")
                     );
             });
+
         }
     }
 }

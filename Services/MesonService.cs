@@ -161,7 +161,8 @@ namespace proy_back_Qbd.Services
                 IdProveedor = s.IdProveedor,
                 Familia = s.Familia,
                 Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
-                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,                 ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
+                Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
+                ListaOtros = s.CompraOtros != null ? s.CompraOtros.Select(s2 => new DetalleMesonOtrosRes
                 {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
@@ -287,9 +288,11 @@ namespace proy_back_Qbd.Services
             if (s == null) throw new NotFoundException("No se encontro");
 
             var detalles = new List<CompraInsumoRes2>();
-            
-            if (s.CompraInsumos != null) {
-                detalles.AddRange(s.CompraInsumos.Select(s2 => new CompraInsumoRes2 {
+
+            if (s.CompraInsumos != null)
+            {
+                detalles.AddRange(s.CompraInsumos.Select(s2 => new CompraInsumoRes2
+                {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     IdInsumo = s2.IdInsumo,
@@ -307,8 +310,10 @@ namespace proy_back_Qbd.Services
                     Familia = s2.Insumo?.Familia?.Abreviatura ?? ""
                 }));
             }
-            if (s.CompraEmpaques != null) {
-                detalles.AddRange(s.CompraEmpaques.Select(s2 => new CompraInsumoRes2 {
+            if (s.CompraEmpaques != null)
+            {
+                detalles.AddRange(s.CompraEmpaques.Select(s2 => new CompraInsumoRes2
+                {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     IdInsumo = s2.IdEmpaque,
@@ -326,8 +331,10 @@ namespace proy_back_Qbd.Services
                     Familia = "ME"
                 }));
             }
-            if (s.CompraProductos != null) {
-                detalles.AddRange(s.CompraProductos.Select(s2 => new CompraInsumoRes2 {
+            if (s.CompraProductos != null)
+            {
+                detalles.AddRange(s.CompraProductos.Select(s2 => new CompraInsumoRes2
+                {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     IdInsumo = s2.IdProducto,
@@ -345,8 +352,10 @@ namespace proy_back_Qbd.Services
                     Familia = "PT"
                 }));
             }
-            if (s.CompraEconomatos != null) {
-                detalles.AddRange(s.CompraEconomatos.Select(s2 => new CompraInsumoRes2 {
+            if (s.CompraEconomatos != null)
+            {
+                detalles.AddRange(s.CompraEconomatos.Select(s2 => new CompraInsumoRes2
+                {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     IdInsumo = s2.IdEconomato,
@@ -364,8 +373,10 @@ namespace proy_back_Qbd.Services
                     Familia = "ECO"
                 }));
             }
-            if (s.CompraOtros != null) {
-                detalles.AddRange(s.CompraOtros.Select(s2 => new CompraInsumoRes2 {
+            if (s.CompraOtros != null)
+            {
+                detalles.AddRange(s.CompraOtros.Select(s2 => new CompraInsumoRes2
+                {
                     Id = s2.Id,
                     Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
                     IdInsumo = s2.IdFamilia,
@@ -385,7 +396,8 @@ namespace proy_back_Qbd.Services
             }
 
             var responsable = "";
-            if (s.Sede != null) {
+            if (s.Sede != null)
+            {
                 var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id.ToString() == s.Sede.Encargado);
                 responsable = persona?.NombreCompleto ?? s.Sede.Encargado;
             }

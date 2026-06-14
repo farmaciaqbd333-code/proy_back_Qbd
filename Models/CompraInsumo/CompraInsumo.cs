@@ -18,15 +18,15 @@ namespace proy_back_Qbd.Models
         [Column("cantidad_solicitada")] public required decimal CantidadSolicitada { get; set; }
         [Column("lote")] public string? Lote { get; set; }
         [Column("potencia")] public decimal Potencia { get; set; }
-        [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
-        [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
+        [Column("fecha_fabricacion")] public DateTimeOffset? FechaFabricacion { get; set; }
+        [Column("fecha_vencimiento")] public DateTimeOffset? FechaVencimiento { get; set; }
         [Column("coa")] public bool Coa { get; set; }
         [Column("registro_sanitario")] public string? RegistroSanitario { get; set; }
         [Column("conformidad")] public bool? Conformidad { get; set; }
-        [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Key][Column("id")] public int Id { get; set; }
-        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
+        [Column("fecha_modificacion")] public DateTimeOffset? FechaModificacion { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
@@ -41,8 +41,8 @@ namespace proy_back_Qbd.Models
         public Usuario? Modificador { get; set; }
         public Insumo? Insumo { get; set; }
         public Compra? Compra { get; set; }
+        public List<AjusteInsumo>? AjusteInsumos { get; set; }
         public List<PaqueteInsumo>? PaqueteInsumos { get; set; }
-        [ForeignKey("IdFabricante")]
         public Fabricante? Fabricante { get; set; }
     }
 

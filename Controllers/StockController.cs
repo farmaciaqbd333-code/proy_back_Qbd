@@ -24,12 +24,12 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar Principal
         /// </summary>
-        // [HttpGet]
-        // public async Task<IActionResult> ObtenerStock()
-        // {
-        //     StockGetRes response = await _service.StockListaPrincipal();
+        [HttpGet]
+        public async Task<IActionResult> ObtenerStock()
+        {
+            StockGetRes response = await _service.StockListaPrincipal();
 
-        //     return Ok(response);
-        // }
+            return Ok(response);
+        }
     }
 }

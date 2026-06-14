@@ -183,5 +183,10 @@ app.MapControllers();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("\nSwagger disponible en:".PadRight(30, ' ') + " http://localhost:5051/swagger" + "\n" + "API KEY:".PadRight(30, ' ') + "4554654654754");
-
+// using (var scope = app.Services.CreateScope())
+// {
+//     var db = scope.ServiceProvider.GetRequiredService<ApiContext>();
+//     var users = await db.CompraInsumos.FindAsync(53);
+//     Console.WriteLine(users.FechaVencimiento);
+// }
 app.Run();

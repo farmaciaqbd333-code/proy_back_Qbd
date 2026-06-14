@@ -70,6 +70,7 @@ namespace Proy_back_QBD.Models
         public List<FormulaCC>? FormulasCC { get; set; }
         public List<CompraInsumos>? DetalleCompras { get; set; }
         public List<ElaboracionBase>? ElaboracionBases { get; set; }
+        public List<AjusteInsumo>? AjusteInsumos { get; set; }
 
     }
 

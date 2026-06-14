@@ -34,8 +34,8 @@ namespace Proy_back_QBD.Models
         public Empaque? Etiqueta2 { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
-        public List<ElaboracionBase> ElaboracionBases { get; set; } = [];
         public Familia? Familia { get; set; }
+        public List<ElaboracionBase> ElaboracionBases { get; set; } = [];
         public List<CompraEmpaques>? DetalleCompraEmpaques { get; set; }
         public List<Empaque>? ListaCajas { get; set; }
         public List<Empaque>? ListaFundas { get; set; }

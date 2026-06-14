@@ -8,6 +8,6 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface IStockService
     {
-        // public Task<StockGetRes> StockListaPrincipal();
+        public Task<StockGetRes> StockListaPrincipal();
     }
 }
