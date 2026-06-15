@@ -13,7 +13,6 @@ namespace proy_back_Qbd.Models
     {
         [Column("id")] public int Id { get; set; }
 
-
         [Column("ajuste")] public int Ajuste { get; set; }
 
         [Column("id_compra_insumo")] public int IdCompraInsumo { get; set; }
@@ -21,7 +20,6 @@ namespace proy_back_Qbd.Models
         [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }
 
         [Column("id_creador")] public int IdCreador { get; set; }
-
 
         [ForeignKey(nameof(IdCompraInsumo))] public CompraInsumos? CompraInsumos { get; set; }
     }

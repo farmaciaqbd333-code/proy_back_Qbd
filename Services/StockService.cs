@@ -20,33 +20,34 @@ namespace proy_back_Qbd.Services
         public async Task<StockGetRes> StockListaPrincipal()
         {
             StockGetRes response = new();
-            List<StockMPRes> responseMP = await _context.CompraInsumos
-            .GroupBy(g => new { g.IdInsumo, g.Insumo.Descripcion, g.Insumo.UnidadMedida })
+            List<StockMPRes> responseMP = await _context.Insumos
+            .GroupBy(g => new { g.Id })
             .Select(s => new StockMPRes()
             {
-                Codigo = s.Key.IdInsumo + "",
-                Descripcion = s.Key.Descripcion + "",
-                Um = s.Key.UnidadMedida + "",
-                Entradas = s.Sum(x => x.PaqueteInsumos != null ? x.PaqueteInsumos.Sum(pi => pi.Paquete.CantidadPaquete) : 0),
-                Salidas = s.Sum(x => x.Insumo.Familia.DetalleNotaSalida.Sum(s2 => s2.Cantidad) + x.Insumo.ElaboracionBases.Sum(s => s.Cantidad)),
-                Ajustes = s.Sum(s => s.AjusteInsumos.Sum(s => s.Ajuste)),
-                Baja = s.Where(w => w.FechaVencimiento >= DateTimeOffset.UtcNow).Sum(s => s.PaqueteInsumos.Sum(s => s.Paquete.CantidadPaquete))
+                Codigo = s.Key.Id + "",
+                Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
+                Entradas = s.Sum(s => s.CompraInsumos.Sum(s => s.PaqueteInsumos.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario))),
+                Salidas = s.Sum(x => x.DetalleNotaSalidaInsumo.Sum(s2 => s2.Cantidad) + x.ElaboracionBases.Sum(s => s.Cantidad)),
+                Ajustes = s.Sum(s => s.CompraInsumos.Sum(s => s.AjusteInsumos.Sum(s => s.Ajuste))),
+                Baja = s.Sum(s => s.CompraInsumos.Where(w => w.FechaVencimiento >= DateTimeOffset.UtcNow).Sum(s => s.PaqueteInsumos.Sum(s => s.Paquete.StockDisponible)))
             }).ToListAsync()
             ;
-            List<StockMERes> responseME = await _context.CompraEmpaques
-            .GroupBy(g => new { g.IdEmpaque, g.Empaque.Descripcion, g.Um })
-            .Select(s => new StockMERes()
-            {
-                Codigo = s.Key.IdEmpaque + "",
-                Descripcion = s.Key.Descripcion + "",
-                Um = s.Key.Um + "",
-                Entradas = s.Sum(x => x.PaqueteEmpaques != null ? x.PaqueteEmpaques.Sum(pi => pi.Paquete.CantidadPaquete) : 0),
-                Salidas = s.Sum(x => x.Empaque.Familia.DetalleNotaSalida.Sum(s2 => s2.Cantidad) + x.Empaque.ElaboracionBases.Count()),
-                Ajustes = s.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste)),
-                Baja = s.Where(w => w.FechaVencimiento >= DateTimeOffset.UtcNow).Sum(s => s.PaqueteEmpaques.Sum(s => s.Paquete.CantidadPaquete))
-            }).ToListAsync()
-            ;
+            List<StockMERes> responseME = await _context.Empaques
+                        .GroupBy(g => new { g.Id })
+                        .Select(s => new StockMERes()
+                        {
+                            Codigo = s.Key.Id + "",
+                            Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                            Um = "Und",
+                            Entradas = s.Sum(s => s.CompraEmpaques.Sum(s => s.PaqueteEmpaques.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario))),
+                            Salidas = s.Sum(x => x.DetalleNotaSalidaEmpaques.Sum(s2 => s2.Cantidad) + x.ElaboracionBases.Count()),
+                            Ajustes = s.Sum(s => s.CompraEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
+                            Baja = s.Sum(s => s.CompraEmpaques.Where(w => w.FechaVencimiento >= DateTimeOffset.UtcNow).Sum(s => s.PaqueteEmpaques.Sum(s => s.Paquete.StockDisponible)))
+                        }).ToListAsync()
+                        ;
             response.MateriaPrimas = responseMP;
+            response.Empaques = responseME;
 
             return response;
         }

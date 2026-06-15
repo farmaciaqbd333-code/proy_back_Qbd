@@ -36,10 +36,11 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }
         public List<ElaboracionBase> ElaboracionBases { get; set; } = [];
-        public List<CompraEmpaques>? DetalleCompraEmpaques { get; set; }
+        public List<CompraEmpaques>? CompraEmpaques { get; set; }
         public List<Empaque>? ListaCajas { get; set; }
         public List<Empaque>? ListaFundas { get; set; }
         public List<Empaque>? ListaEtiquetas1 { get; set; }
         public List<Empaque>? ListaEtiquetas2 { get; set; }
+        public List<DetalleNotaSalidaEmpaque>? DetalleNotaSalidaEmpaques { get; set; }
     }
 }

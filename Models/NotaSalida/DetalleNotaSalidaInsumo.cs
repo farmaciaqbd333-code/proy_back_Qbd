@@ -9,24 +9,32 @@ using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
 {
-    [Table("detalle_nota_salida")]
-    public class DetalleNotaSalida
+    [Table("detalle_nota_salida_insumo")]
+    public class DetalleNotaSalidaInsumo
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("id")] public int Id { get; set; }
-        [Column("id_familia")] public int IdFamilia { get; set; }
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Column("id")] public int Id { get; set; }
+
+        [Column("id_insumo")] public int IdInsumo { get; set; }
+
         [Column("cantidad")] public decimal Cantidad { get; set; }
+
         [Column("um")] public string? Um { get; set; }
+
         [Column("lote")] public string? Lote { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
+
         [Column("id_creador")] public int IdCreador { get; set; }
+
         [Column("id_modificador")] public int IdModificador { get; set; }
-        public Usuario? Creador { get; set; }
-        public Familia? Familia { get; set; }
-        public Usuario? Modificador { get; set; }
+
+        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
+
+        [ForeignKey(nameof(IdInsumo))] public Insumo? Insumo { get; set; }
+
+        [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; }
+
     }
 }

@@ -168,9 +168,9 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<NotaSalida>? NotaSalidaModificadas { get; set; }
         [JsonIgnore]
-        public List<DetalleNotaSalida>? DetalleNotaSalidaCreadas { get; set; }
+        public List<DetalleNotaSalidaInsumo>? DetalleNotaSalidaCreadas { get; set; }
         [JsonIgnore]
-        public List<DetalleNotaSalida>? DetalleNotaSalidaModificadas { get; set; }
+        public List<DetalleNotaSalidaInsumo>? DetalleNotaSalidaModificadas { get; set; }
         [JsonIgnore]
         public List<Paquete>? PaquetesCreados { get; set; }
         [JsonIgnore]
