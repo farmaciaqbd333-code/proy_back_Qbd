@@ -82,7 +82,7 @@ namespace proy_back_Qbd.Services
                     TotalPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
                     TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
                     Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
-                    Densidad = s2.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
+                    Densidad = s2.Insumo.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
                     DescripcionFactura = s2.DescripcionFactura ?? ""
                 }).ToList() : new List<CompraLabInsumoModalRes>(),
                 DetalleEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new CompraLabEmpaqueModalRes()
@@ -135,7 +135,7 @@ namespace proy_back_Qbd.Services
                    FechaVencimiento = s2.FechaVencimiento,
                    CantidadPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
                    CantidadRecibida = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
-                   Densidad = s2.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
+                   Densidad = s2.Insumo.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
                    DescripcionFactura = s2.DescripcionFactura ?? "",
                    Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
                    CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
