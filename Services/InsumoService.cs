@@ -122,7 +122,8 @@ namespace Proy_back_QBD.Services
                                                 Fotosensible = s.Fotosensible,
                                                 Refrigerado = s.Refrigerado,
                                                 Pdf = s.Pdf,
-                                                Densidad = s.Densidad
+                                                Densidad = s.Densidad,
+                                                CodigoUbicacion = s.CodigoUbicacion
                                             })
                                             .ToListAsync();
             if (response == null)

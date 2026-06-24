@@ -23,6 +23,7 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? Tara { get; set; }
         public string? ImagenUrl { get; set; }
         public int FamiliaId { get; set; }
+        public string? CodigoUbicacion { get; set; }
     }
     public class EmpaqueFindIdRes
     {

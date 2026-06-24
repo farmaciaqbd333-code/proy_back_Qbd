@@ -36,6 +36,7 @@ namespace Proy_back_QBD.Dto.Insumo
         public bool? Refrigerado { get; set; }
         public string? Pdf { get; set; }
         public decimal? Densidad { get; set; }
+        public string? CodigoUbicacion { get; set; }
     }
     public class InsumoFindIdRes
     {

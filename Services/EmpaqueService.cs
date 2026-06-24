@@ -72,7 +72,8 @@ namespace Proy_back_QBD.Services
                                                 Costo = s.Costo,
                                                 Tara = s.Tara,
                                                 ImagenUrl = s.ImagenUrl,
-                                                FamiliaId = s.IdFamilia
+                                                FamiliaId = s.IdFamilia,
+                                                CodigoUbicacion = s.CodigoUbicacion
                                             }
                                             )
                                             .ToListAsync();
