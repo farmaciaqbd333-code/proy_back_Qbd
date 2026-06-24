@@ -19,6 +19,7 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? ImagenUrl { get; set; }
         public int FamiliaId { get; set; }
         public int CreadorId { get; set; }
+        public string? CodigoUbicacion { get; set; }
     }
     public class EmpaqueUpdateReq
     {
@@ -33,5 +34,6 @@ namespace Proy_back_QBD.Dto.Empaque
         public string? ImagenUrl { get; set; }
         public int FamiliaId { get; set; }
         public int ModificadorId { get; set; }
+        public string? CodigoUbicacion { get; set; }
     }
 }
