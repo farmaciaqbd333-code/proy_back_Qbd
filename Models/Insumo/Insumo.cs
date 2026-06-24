@@ -64,6 +64,8 @@ namespace Proy_back_QBD.Models
         public string? Pdf { get; set; }
         [Column("densidad")]
         public decimal? Densidad { get; set; }
+        [Column("codigo_ubicacion")]
+        public string? CodigoUbicacion { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }

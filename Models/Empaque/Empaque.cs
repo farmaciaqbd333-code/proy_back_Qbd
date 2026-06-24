@@ -28,6 +28,7 @@ namespace Proy_back_QBD.Models
         [Column("creador_id")] public int CreadorId { get; set; }
         [Column("id_familia")] public int IdFamilia { get; set; }
         [Column("modificador_id")] public int ModificadorId { get; set; }
+        [Column("codigo_ubicacion")] public string? CodigoUbicacion { get; set; }
         public Empaque? Funda { get; set; }
         public Empaque? Caja { get; set; }
         public Empaque? Etiqueta1 { get; set; }

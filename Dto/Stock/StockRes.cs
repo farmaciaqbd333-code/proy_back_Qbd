@@ -15,10 +15,10 @@ namespace proy_back_Qbd.Models.Stock
         public required string Codigo { get; set; }
         public required string Descripcion { get; set; }
         public required string Um { get; set; }
-        public required decimal Entradas { get; set; }
-        public required decimal Salidas { get; set; }
-        public required decimal Ajustes { get; set; }
-        public required decimal Baja { get; set; }
+        public decimal? Entradas { get; set; }
+        public decimal? Salidas { get; set; }
+        public decimal? Ajustes { get; set; }
+        public decimal? Baja { get; set; }
     }
     public class StockMERes
     {
