@@ -68,10 +68,10 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Eliminar Paquete
         /// </summary>
-        [HttpDelete("{idPaquete}")]
-        public async Task<IActionResult> EliminarPaquete(int idPaquete)
+        [HttpDelete("{idPaquete}/{empaqueInsumo}")]
+        public async Task<IActionResult> EliminarPaquete(int idPaquete, int empaqueInsumo)
         {
-            string response = await _servicePaquete.EliminarPaquete(idPaquete);
+            string response = await _servicePaquete.EliminarPaquete(idPaquete, empaqueInsumo);
             return Ok(response);
         }
     }

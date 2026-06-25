@@ -12,11 +12,11 @@ using Proy_back_QBD.Data;
 namespace proy_back_Qbd.Controllers
 {
     [Route("api/[controller]")]
-    public class StockController : Controller
+    public class KardexController : Controller
     {
         private readonly IKardexService _service;
 
-        public StockController(IKardexService _service)
+        public KardexController(IKardexService _service)
         {
             this._service = _service;
         }
@@ -30,6 +30,21 @@ namespace proy_back_Qbd.Controllers
             StockGetRes response = await _service.StockListaPrincipal();
 
             return Ok(response);
+        }
+        [HttpGet("detalle-insumo/{insumoId:int}")]
+        public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId)
+        {
+            var resultado = await _service.ObtenerDetalleInsumo(insumoId);
+
+            return Ok(resultado);
+        }
+
+        [HttpGet("detalle-empaque/{empaqueId:int}")]
+        public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId)
+        {
+            var resultado = await _service.ObtenerDetalleEmpaque(empaqueId);
+
+            return Ok(resultado);
         }
     }
 }
