@@ -103,7 +103,7 @@ namespace Proy_back_QBD.Data
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(p => p.Paquete).WithOne(w => w.PaqueteInsumos).HasForeignKey<PaqueteInsumo>(h => h.IdPaquete);
-                e.HasOne(p => p.CompraInsumos).WithMany(w => w.PaqueteInsumos).HasForeignKey(h => h.IdCompraInsumo);
+                e.HasOne(p => p.CompraInsumo).WithMany(w => w.PaqueteInsumos).HasForeignKey(h => h.IdCompraInsumo);
             });
             modelBuilder.Entity<DetalleNotaSalidaInsumo>((e) =>
             {

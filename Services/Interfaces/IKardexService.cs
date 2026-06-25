@@ -6,8 +6,9 @@ using proy_back_Qbd.Models.Stock;
 
 namespace proy_back_Qbd.Services.Interfaces
 {
-    public interface IStockService
+    public interface IKardexService
     {
         public Task<StockGetRes> StockListaPrincipal();
+        // public Task<StockGetRes> ObtenerRegistros();
     }
 }

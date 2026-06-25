@@ -117,17 +117,34 @@ namespace proy_back_Qbd.Services
                 IdCompraEmpaque = req.IdCompraEmpaque
             };
             _context.PaqueteEmpaques.Add(paqueteEmpaque);
-
+            compraEmpaque.StockDisponible += paqueteEntrante;
             await _context.SaveChangesAsync();
 
             return paquete.Id;
 
         }
 
-        public async Task<string> EliminarPaquete(int idPaquete)
+        public async Task<string> EliminarPaquete(int idPaquete, int empaqueInsumo)
         {
             Paquete paquete = await _context.Paquetes.FindAsync(idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             _context.Paquetes.Remove(paquete);
+            if (empaqueInsumo == 0)
+            {
+                CompraInsumos compraInsumo = await _context.PaqueteInsumos
+                           .Where(w => w.IdPaquete == idPaquete)
+                           .Select(s => s.CompraInsumo)
+                           .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra insumo"); ;
+                compraInsumo.StockDisponible -= paquete.PesoUnitario * paquete.CantidadPaquete;
+            }
+            else
+            {
+                CompraEmpaques compraEmpaque = await _context.PaqueteEmpaques
+           .Where(w => w.IdPaquete == idPaquete)
+           .Select(s => s.CompraEmpaques)
+           .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra empaque"); ;
+                compraEmpaque.StockDisponible -= paquete.PesoUnitario * paquete.CantidadPaquete;
+            }
+
             await _context.SaveChangesAsync();
             return "Se Elimino el paquete id " + idPaquete;
         }
@@ -137,26 +154,26 @@ namespace proy_back_Qbd.Services
 
             Paquete paquete = await _context.Paquetes
             .Include(i => i.PaqueteInsumos)
-            .ThenInclude(th => th!.CompraInsumos)
+            .ThenInclude(th => th!.CompraInsumo)
             .ThenInclude(th => th!.Insumo)
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             PaqueteInsumo paqueteInsumo = paquete.PaqueteInsumos ?? throw new NotFoundException("No se encontró paquetes insumos");
-            CompraInsumos compraInsumos = paqueteInsumo.CompraInsumos ?? throw new NotFoundException("No hay Compra Insumos");
-            Insumo insumo = compraInsumos.Insumo ?? throw new NotFoundException("No hay Insumo");
+            CompraInsumos compraInsumo = paqueteInsumo.CompraInsumo ?? throw new NotFoundException("No hay Compra Insumos");
+            Insumo insumo = compraInsumo.Insumo ?? throw new NotFoundException("No hay Insumo");
 
             var totales = await _context.PaqueteInsumos
-                                    .Where(w => w.IdCompraInsumo == compraInsumos.Id)
+                                    .Where(w => w.IdCompraInsumo == compraInsumo.Id)
                                     .GroupBy(g => g.IdCompraInsumo)
                                     .Select(s => new
                                     {
                                         paquetePesoTotal = s.Sum(s2 => s2.Paquete != null ? (s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario) : 0),
-                                        PesoTotalCompra = s.Sum(s3 => s3.CompraInsumos != null ? s3.CompraInsumos.CantidadSolicitada * 1000 : 0)
+                                        PesoTotalCompra = s.Sum(s3 => s3.CompraInsumo != null ? s3.CompraInsumo.CantidadSolicitada * 1000 : 0)
                                     }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el detalle compra");
 
             //CONVERSION A GRAMOS
             decimal pesoTotalCompra;
-            string Um = compraInsumos.Um;
-            decimal CantidadSolicitada = compraInsumos.CantidadSolicitada;
+            string Um = compraInsumo.Um;
+            decimal CantidadSolicitada = compraInsumo.CantidadSolicitada;
             if (Um == "G")
             {
                 pesoTotalCompra = CantidadSolicitada;
@@ -181,6 +198,7 @@ namespace proy_back_Qbd.Services
 
             //ACTUALIZAR PESO
             PaqueteMapper.ModificarPaqueteInsumo(req, paquete);
+            compraInsumo.StockDisponible = compraInsumo.StockDisponible - paquetePesoActual + paquetePesoEntrante;
             await _context.SaveChangesAsync();
 
             return "Modificacion Exitosa";
@@ -190,24 +208,28 @@ namespace proy_back_Qbd.Services
 
             Paquete? paquete = await _context.Paquetes
             .Include(i => i.PaqueteEmpaques)
+            .ThenInclude(th => th!.CompraEmpaques)
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
+            PaqueteEmpaque paqueteEmpaques = paquete.PaqueteEmpaques ?? throw new NotFoundException("No se encontró paquetes empaques");
+            CompraEmpaques CompraEmpaque = paqueteEmpaques.CompraEmpaques ?? throw new NotFoundException("No hay Compra empaque");
             if (paquete.PaqueteEmpaques == null) throw new NotFoundException("No se encontró paquetes Empaques");
-
-            decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
-            var validar = await _context.PaqueteEmpaques.Where(w => w.IdCompraEmpaque == paquete.PaqueteEmpaques.IdCompraEmpaque)
+            var totales = await _context.PaqueteEmpaques.Where(w => w.IdCompraEmpaque == paquete.PaqueteEmpaques.IdCompraEmpaque)
                                     .GroupBy(g => g.IdCompraEmpaque)
                                     .Select(s => new
                                     {
-                                        PesoTotalPaquete = s.Sum(s2 => s2.Paquete != null ? (s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario) : null),
+                                        PesoTotalPaquete = s.Sum(s2 => s2.Paquete != null ? (s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario) : 0),
                                         PesoTotalCompra = s.Sum(s3 => s3.CompraEmpaques != null ? s3.CompraEmpaques.CantidadSolicitada * 1000 : 0m)
                                     }).FirstOrDefaultAsync()
                                     ;
-            if (validar == null)
+            if (totales == null)
                 throw new NotFoundException("No se encontró el detalle compra");
-            decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
-            // if (validar.PesoTotalSolicitado < (paqueteEntrante + validar.PesoTotalPaquete - paquetePesoActual))
-            //    throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
+            decimal paquetePesoEntrante = req.CantidadPaquete * req.PesoUnitario;
+            decimal nuevaCantidad = paquetePesoEntrante + totales.PesoTotalPaquete - paquetePesoActual;
+            if (totales.PesoTotalCompra < nuevaCantidad)
+                throw new BadRequestException("Se ha pasado el límite de cantidad solicitada");
             PaqueteMapper.ModificarPaqueteEmpaque(req, paquete);
+            CompraEmpaque.StockDisponible = CompraEmpaque.StockDisponible - paquetePesoActual + paquetePesoEntrante;
             await _context.SaveChangesAsync();
 
             return "Modificacion Exitosa";
@@ -216,11 +238,11 @@ namespace proy_back_Qbd.Services
         {
             PaqueteInsumoDetalleRes response = new();
             List<PaqueteInsumoListRes> ListaInsumos = _context.PaqueteInsumos
-            .Where(w => w.CompraInsumos != null && w.CompraInsumos.IdCompra == idCompra)
+            .Where(w => w.CompraInsumo != null && w.CompraInsumo.IdCompra == idCompra)
             .Select(s => new PaqueteInsumoListRes
             {
                 IdPaquete = s.IdPaquete,
-                CodigoCompraInsumo = s.CompraInsumos != null ? ("MP-QbD-" + s.CompraInsumos.IdInsumo.ToString("D4")) : "",
+                CodigoCompraInsumo = s.CompraInsumo != null ? ("MP-QbD-" + s.CompraInsumo.IdInsumo.ToString("D4")) : "",
                 CantidadPaquete = s.Paquete != null ? s.Paquete.CantidadPaquete : 0,
                 PesoUnitario = s.Paquete != null ? s.Paquete.PesoUnitario : 0,
                 Tara = s.Paquete != null ? s.Paquete.Tara : 0

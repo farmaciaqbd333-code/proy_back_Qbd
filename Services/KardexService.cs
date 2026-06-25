@@ -9,10 +9,10 @@ using Proy_back_QBD.Data;
 
 namespace proy_back_Qbd.Services
 {
-    public class StockService : IStockService
+    public class KardexService : IKardexService
     {
         private readonly ApiContext _context;
-        public StockService(ApiContext context)
+        public KardexService(ApiContext context)
         {
             _context = context;
         }

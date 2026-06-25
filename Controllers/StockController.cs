@@ -14,9 +14,9 @@ namespace proy_back_Qbd.Controllers
     [Route("api/[controller]")]
     public class StockController : Controller
     {
-        private readonly IStockService _service;
+        private readonly IKardexService _service;
 
-        public StockController(IStockService _service)
+        public StockController(IKardexService _service)
         {
             this._service = _service;
         }

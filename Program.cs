@@ -45,7 +45,7 @@ builder.Configuration
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IStockService, StockService>();
+builder.Services.AddScoped<IKardexService, KardexService>();
 builder.Services.AddScoped<ISedeService, SedeService>();
 builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
 builder.Services.AddScoped<IPacienteService, PacienteService>();

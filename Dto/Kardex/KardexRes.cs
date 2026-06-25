@@ -20,6 +20,15 @@ namespace proy_back_Qbd.Models.Stock
         public decimal? Ajustes { get; set; }
         public decimal? Baja { get; set; }
     }
+    public class DetalleInsumoRes
+    {
+        public required string Familia { get; set; }
+        public required string Registro { get; set; }
+        public required string Lote { get; set; }
+        public required string Saldo { get; set; }
+        public required decimal FechaFabricacion { get; set; }
+        public required decimal FechaVencimiento { get; set; }
+    }
     public class StockMERes
     {
         public required string Codigo { get; set; }

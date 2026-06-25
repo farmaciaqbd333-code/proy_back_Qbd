@@ -38,5 +38,6 @@ namespace proy_back_Qbd.Models
         public List<AjusteEmpaque>? AjusteEmpaques { get; set; }
         [ForeignKey("IdFabricante")] public Fabricante? Fabricante { get; set; }
         [Column("justificacion_diferencia")] public string? JustificacionDiferencia { get; set; }
+        [Column("stock_disponible")] public decimal? StockDisponible { get; set; }
     }
 }
