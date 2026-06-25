@@ -41,7 +41,7 @@ namespace proy_back_Qbd.Services
         {
             var resultado = new List<DetalleEmpaqueRes>();
             resultado = await _context.CompraEmpaques
-      .Where(w => w.Id == empaqueId)
+      .Where(w => w.IdEmpaque == empaqueId)
       .Select(s => new DetalleEmpaqueRes
       {
           Registro = Alfanumerico.ConvertToBase36(s.Id),
