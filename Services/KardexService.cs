@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using proy_back_Qbd.Models.Stock;
+using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
 using Proy_back_QBD.Data;
@@ -55,9 +55,9 @@ namespace proy_back_Qbd.Services
             return resultado;
         }
 
-        public async Task<StockGetRes> StockListaPrincipal()
+        public async Task<ListarStockRes> StockListaPrincipal()
         {
-            StockGetRes response = new();
+            ListarStockRes response = new();
             List<StockMPRes> responseMP = await _context.Insumos
             .GroupBy(g => new { g.Id })
             .Select(s => new StockMPRes()

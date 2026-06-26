@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.DetalleCompraLab;
 using proy_back_Qbd.Services.Interfaces;
 
 namespace proy_back_Qbd.Controllers
@@ -56,10 +57,10 @@ namespace proy_back_Qbd.Controllers
         /// Actualizar detalle de laboratorio
         /// </summary>
         [HttpPatch("{idCompra}")]
-        public async Task<ActionResult> ActualizarDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
+        public async Task<IActionResult> UpdateDetalleLab(int idCompra, [FromBody] ActualizarDetCompraLabReq request)
         {
-            int response = await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
-            return Ok(response);
+            await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
+            return Ok("Actualización correcta");
         }
         /// <summary>
         /// Obtener datos para etiqueta insumo

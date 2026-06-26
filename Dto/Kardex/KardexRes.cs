@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace proy_back_Qbd.Models.Stock
+namespace proy_back_Qbd.Models.Kardex
 {
-    public class StockGetRes
+    public class ListarStockRes
     {
         public List<StockMPRes> MateriaPrimas { get; set; } = [];
         public List<StockMERes> Empaques { get; set; } = [];
@@ -46,4 +46,5 @@ namespace proy_back_Qbd.Models.Stock
         public required decimal Ajustes { get; set; }
         public required decimal Baja { get; set; }
     }
+
 }

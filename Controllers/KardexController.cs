@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using proy_back_Qbd.Models.Stock;
+using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using Proy_back_QBD.Data;
 
@@ -27,7 +27,7 @@ namespace proy_back_Qbd.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerStock()
         {
-            StockGetRes response = await _service.StockListaPrincipal();
+            ListarStockRes response = await _service.StockListaPrincipal();
 
             return Ok(response);
         }

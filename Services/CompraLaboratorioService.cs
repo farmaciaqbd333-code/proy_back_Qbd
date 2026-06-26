@@ -7,6 +7,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.DetalleCompraLab;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
 using Proy_back_QBD.Data;
@@ -23,35 +24,54 @@ namespace proy_back_Qbd.Services
             _mapper = mapper;
         }
 
-        public async Task<int> UpdateDetalleLab(int idCompra, List<ActualizarDetCompraLabReq> request)
+        public async Task UpdateDetalleLab(int idCompra, ActualizarDetCompraLabReq request)
         {
-            IEnumerable<int> ids = request.Select(s => s.IdDetalle).ToList();
-            List<CompraInsumos> detalleCompras = await _context.CompraInsumos
-            .Where(w => w.IdCompra == idCompra && ids.Contains(w.Id)).ToListAsync();
-
-            if (detalleCompras.Count == 0) throw new NotFoundException("No se encontro");
-
-            foreach (var item in detalleCompras)
+            int x = 0;
+            if (request.Insumos.Any())
             {
-                ActualizarDetCompraLabReq? req = request.FirstOrDefault(f => f.IdDetalle == item.Id);
-                if (req != null)
+                List<ActualizarInsumoReq> insumos = request.Insumos;
+                IEnumerable<int> idInsumos = insumos.Select(s => s.IdCompraInsumo).ToList();
+
+                List<CompraInsumos> detalleCompras = await _context.CompraInsumos
+                .Where(w => w.IdCompra == idCompra && idInsumos.Contains(w.Id)).ToListAsync();
+                if (detalleCompras.Count == 0) throw new NotFoundException("No se encontro");
+
+                foreach (var item in detalleCompras)
                 {
-                    _mapper.Map(req, item);
-                    if (item.Um != null && (item.Um.ToUpper() == "L" || item.Um.ToUpper() == "LITRO"))
+                    ActualizarInsumoReq? req = insumos.FirstOrDefault(f => f.IdCompraInsumo == item.Id);
+                    if (req != null)
                     {
-                        item.CantidadSolicitada = item.CantidadSolicitada / 1000m;
+                        new DetalleCompraLabMapper().ActualizarInsumo(req, item);
+                        x = 1;
                     }
                 }
             }
-
-            Compra? compra = await _context.Compras.FindAsync(idCompra);
-            if (compra != null)
+            if (request.Empaques.Any())
             {
+                List<ActualizarEmpaqueReq> empaques = request.Empaques;
+                IEnumerable<int> idEmpaques = empaques.Select(s => s.IdCompraEmpaque).ToList();
+
+                List<CompraEmpaques> compraEmpaque = await _context.CompraEmpaques
+                .Where(w => w.IdCompra == idCompra && idEmpaques.Contains(w.Id)).ToListAsync();
+                if (compraEmpaque.Count == 0) throw new NotFoundException("No se encontro");
+
+                foreach (var item in compraEmpaque)
+                {
+                    ActualizarEmpaqueReq? req = empaques.FirstOrDefault(f => f.IdCompraEmpaque == item.Id);
+                    if (req != null)
+                    {
+                        new DetalleCompraLabMapper().ActualizarEmpaque(req, item);
+                        x = 1;
+                    }
+                }
+            }
+            if (x == 1)
+            {
+                Compra? compra = await _context.Compras.FindAsync(idCompra) ?? throw new NotFoundException("No se encontro Compra");
                 compra.FechaLab = DateTime.Now;
+                await _context.SaveChangesAsync();
             }
 
-            await _context.SaveChangesAsync();
-            return 1;
         }
 
         public async Task<ObtenerCompraLabRes> ModalPaquetes(int idCompra)
@@ -223,5 +243,6 @@ namespace proy_back_Qbd.Services
 
             return ordenesEnviadasRes;
         }
+
     }
 }
