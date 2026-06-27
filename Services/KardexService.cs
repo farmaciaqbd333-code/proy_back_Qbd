@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
@@ -92,6 +93,22 @@ namespace proy_back_Qbd.Services
             response.Empaques = responseME;
 
             return response;
+        }
+
+        public async Task RegistrarAjuste(CrearAjusteReq request)
+        {
+            if (request.Familia == "MP")
+            {
+                throw new NotImplementedException();
+            }
+            else if (request.Familia == "ME")
+            {
+
+            }
+            else
+            {
+                throw new BadRequestException("Familia no admitida");
+            }
         }
     }
 }

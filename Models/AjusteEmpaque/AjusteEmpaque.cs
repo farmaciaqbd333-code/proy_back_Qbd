@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 
 namespace proy_back_Qbd.Models
 {
@@ -11,7 +12,7 @@ namespace proy_back_Qbd.Models
     [Table("ajuste_empaque")]
     public class AjusteEmpaque
     {
-        [Column("id")] public int Id { get; set; }
+        [Key][Column("id")] public int Id { get; set; }
 
         [Column("ajuste")] public int Ajuste { get; set; }
 

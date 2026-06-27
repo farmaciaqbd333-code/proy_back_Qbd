@@ -37,7 +37,6 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<ProductoMap>();
     cfg.AddProfile<OrdenCompraMap>();
     cfg.AddProfile<DetalleOrdenCompraMap>();
-    cfg.AddProfile<DetalleCompraLabMap>();
 });
 
 builder.Configuration
