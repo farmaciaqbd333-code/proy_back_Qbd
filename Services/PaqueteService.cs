@@ -104,7 +104,7 @@ namespace proy_back_Qbd.Services
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
             if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
-                throw new BadRequestException("Se ha pasado el límite de unidadases solicitadas");
+                throw new BadRequestException("Se ha pasado el límite de unidades solicitadas");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteEmpaque(req);
             paquete.FechaCreacion = DateTime.Now;
