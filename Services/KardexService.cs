@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
+using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
@@ -99,11 +100,36 @@ namespace proy_back_Qbd.Services
         {
             if (request.Familia == "MP")
             {
-                throw new NotImplementedException();
+                AjusteInsumo ajusteInsumo = new KardexMapper().CrearAjusteInsumo(request);
+                CompraInsumos compraInsumos = await _context.CompraInsumos
+                .Where(w => w.Id == request.Id)
+                .FirstOrDefaultAsync() ?? throw new BadRequestException("compraInsumos no encontrada");
+                ajusteInsumo.IdCompraInsumo = request.Id;
+                ajusteInsumo.Id = 0;
+                if (compraInsumos.StockDisponible == null) throw new BadRequestException("el stock disponible es null, tiene que ser 0");
+                else
+                {
+                    compraInsumos.StockDisponible += request.Ajuste;
+                }
+                _context.AjusteInsumos.Add(ajusteInsumo);
+                await _context.SaveChangesAsync();
             }
             else if (request.Familia == "ME")
             {
-
+                AjusteEmpaque ajusteEmpaque = new KardexMapper().CrearAjusteEmpaque(request);
+                ajusteEmpaque.IdCompraEmpaque = request.Id;
+                CompraEmpaques compraEmpaque = await _context.CompraEmpaques
+                .Where(w => w.Id == request.Id)
+                .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
+                ajusteEmpaque.IdCompraEmpaque = request.Id;
+                ajusteEmpaque.Id = 0;
+                if (compraEmpaque.StockDisponible == null) throw new BadRequestException("el stock disponible es null, tiene que ser 0");
+                else
+                {
+                    compraEmpaque.StockDisponible += request.Ajuste;
+                }
+                _context.AjusteEmpaques.Add(ajusteEmpaque);
+                await _context.SaveChangesAsync();
             }
             else
             {

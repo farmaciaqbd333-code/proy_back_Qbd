@@ -9,8 +9,8 @@ namespace proy_back_Qbd.Models.Kardex
     [Mapper(RequiredMappingStrategy = RequiredMappingStrategy.None)]
     public partial class KardexMapper
     {
-        public partial void CrearAjusteInsumo(CrearAjusteReq source, AjusteInsumo target);
-        public partial void CrearAjusteEmpaque(CrearAjusteReq source, AjusteEmpaque target);
+        public partial AjusteInsumo CrearAjusteInsumo(CrearAjusteReq source);
+        public partial AjusteEmpaque CrearAjusteEmpaque(CrearAjusteReq source);
 
     }
 }

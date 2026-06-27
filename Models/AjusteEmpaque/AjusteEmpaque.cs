@@ -18,7 +18,7 @@ namespace proy_back_Qbd.Models
 
         [Column("id_compra_empaque")] public int IdCompraEmpaque { get; set; }
 
-        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }
+        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; } = DateTimeOffset.Now;
 
         [Column("id_creador")] public int IdCreador { get; set; }
 

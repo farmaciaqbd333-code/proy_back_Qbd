@@ -4,6 +4,7 @@ namespace proy_back_Qbd.Models.Kardex
     {
         public string Familia { get; set; } = string.Empty;
         public int Id { get; set; }
-        public decimal AjusteDecimal { get; set; }
+        public decimal Ajuste { get; set; }
+        public int IdCreador { get; set; }
     }
 }

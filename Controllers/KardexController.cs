@@ -14,11 +14,11 @@ namespace proy_back_Qbd.Controllers
     [Route("api/[controller]")]
     public class KardexController : Controller
     {
-        private readonly IKardexService _service;
+        private readonly IKardexService _kardexService;
 
         public KardexController(IKardexService _service)
         {
-            this._service = _service;
+            this._kardexService = _service;
         }
 
         /// <summary>
@@ -27,14 +27,14 @@ namespace proy_back_Qbd.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerStock()
         {
-            ListarStockRes response = await _service.StockListaPrincipal();
+            ListarStockRes response = await _kardexService.StockListaPrincipal();
 
             return Ok(response);
         }
         [HttpGet("detalle-insumo/{insumoId:int}")]
         public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId)
         {
-            var resultado = await _service.ObtenerDetalleInsumo(insumoId);
+            var resultado = await _kardexService.ObtenerDetalleInsumo(insumoId);
 
             return Ok(resultado);
         }
@@ -42,9 +42,18 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle-empaque/{empaqueId:int}")]
         public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId)
         {
-            var resultado = await _service.ObtenerDetalleEmpaque(empaqueId);
+            var resultado = await _kardexService.ObtenerDetalleEmpaque(empaqueId);
 
             return Ok(resultado);
+        }
+        [HttpPost("registrar-ajuste")]
+        public async Task<IActionResult> RegistrarAjuste([FromBody] CrearAjusteReq request)
+        {
+            await _kardexService.RegistrarAjuste(request);
+            return Ok(new
+            {
+                mensaje = "Ajuste registrado correctamente."
+            });
         }
     }
 }
