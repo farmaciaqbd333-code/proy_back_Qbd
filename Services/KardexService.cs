@@ -25,12 +25,14 @@ namespace proy_back_Qbd.Services
             var resultado = new List<DetalleInsumoRes>();
 
             resultado = await _context.CompraInsumos
+            .Include(w => w.Compra)
             .Where(w => w.IdInsumo == insumoId)
             .Select(s => new DetalleInsumoRes
             {
                 Registro = Alfanumerico.ConvertToBase36(s.Id),
                 Lote = s.Lote ?? "",
                 Saldo = s.StockDisponible,
+                FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
                 FechaFabricacion = s.FechaFabricacion,
                 FechaVencimiento = s.FechaVencimiento,
                 Observacion = s.Observacion
@@ -44,12 +46,14 @@ namespace proy_back_Qbd.Services
         {
             var resultado = new List<DetalleEmpaqueRes>();
             resultado = await _context.CompraEmpaques
+      .Include(w => w.Compra)
       .Where(w => w.IdEmpaque == empaqueId)
       .Select(s => new DetalleEmpaqueRes
       {
           Registro = Alfanumerico.ConvertToBase36(s.Id),
           Lote = s.Lote ?? "",
           Saldo = s.StockDisponible,
+          FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
           FechaFabricacion = s.FechaFabricacion,
           FechaVencimiento = s.FechaVencimiento,
           Observacion = s.Observacion
