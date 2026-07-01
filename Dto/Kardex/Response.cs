@@ -27,6 +27,7 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Saldo { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
+        public string? Observacion { get; set; }
     }
     public class DetalleEmpaqueRes
     {
@@ -35,6 +36,7 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Saldo { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
+        public string? Observacion { get; set; }
     }
     public class StockMERes
     {

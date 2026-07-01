@@ -32,7 +32,8 @@ namespace proy_back_Qbd.Services
                 Lote = s.Lote ?? "",
                 Saldo = s.StockDisponible,
                 FechaFabricacion = s.FechaFabricacion,
-                FechaVencimiento = s.FechaVencimiento
+                FechaVencimiento = s.FechaVencimiento,
+                Observacion = s.Observacion
             })
             .ToListAsync();
 
@@ -50,7 +51,8 @@ namespace proy_back_Qbd.Services
           Lote = s.Lote ?? "",
           Saldo = s.StockDisponible,
           FechaFabricacion = s.FechaFabricacion,
-          FechaVencimiento = s.FechaVencimiento
+          FechaVencimiento = s.FechaVencimiento,
+          Observacion = s.Observacion
       })
       .ToListAsync();
 
