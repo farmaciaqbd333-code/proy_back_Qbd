@@ -30,7 +30,7 @@ namespace proy_back_Qbd.Services
             {
                 Registro = Alfanumerico.ConvertToBase36(s.Id),
                 Lote = s.Lote ?? "",
-                Saldo = s.StockDisponible ?? 0,
+                Saldo = s.StockDisponible,
                 FechaFabricacion = s.FechaFabricacion,
                 FechaVencimiento = s.FechaVencimiento
             })
@@ -48,7 +48,7 @@ namespace proy_back_Qbd.Services
       {
           Registro = Alfanumerico.ConvertToBase36(s.Id),
           Lote = s.Lote ?? "",
-          Saldo = s.StockDisponible ?? 0,
+          Saldo = s.StockDisponible,
           FechaFabricacion = s.FechaFabricacion,
           FechaVencimiento = s.FechaVencimiento
       })
@@ -72,7 +72,7 @@ namespace proy_back_Qbd.Services
                 Ajustes = s.Sum(s => s.CompraInsumos.Sum(s => s.AjusteInsumos.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos
     .Where(ci => ci.FechaVencimiento >= DateTimeOffset.UtcNow)
-    .Sum(ci => ci.StockDisponible ?? 0))
+    .Sum(ci => ci.StockDisponible))
             }).ToListAsync()
             ;
             List<StockMERes> responseME = await _context.Empaques
@@ -87,7 +87,7 @@ namespace proy_back_Qbd.Services
                             Ajustes = s.Sum(s => s.CompraEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
                             Baja = s.Sum(x => x.CompraEmpaques
     .Where(ce => ce.FechaVencimiento >= DateTimeOffset.UtcNow)
-    .Sum(ce => ce.StockDisponible ?? 0))
+    .Sum(ce => ce.StockDisponible))
                         }).ToListAsync()
                         ;
             response.MateriaPrimas = responseMP;
@@ -96,6 +96,6 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
-        
+
     }
 }

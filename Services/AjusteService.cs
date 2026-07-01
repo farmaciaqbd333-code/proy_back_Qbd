@@ -3,6 +3,9 @@ using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Ajuste;
 using proy_back_Qbd.Models.Ajuste.request;
+using proy_back_Qbd.Models.Ajuste.response;
+using proy_back_Qbd.Util;
+using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
 
@@ -11,17 +14,58 @@ namespace Proy_back_QBD.Service.AjusteService
     public class AjusteService : IAjusteService
     {
         private readonly ApiContext _context;
+        private static readonly List<string> FamiliasAptas = ["MP", "ME"];
         public AjusteService(ApiContext context)
         {
             _context = context;
+        }
+
+        public async Task<List<TablaAjustesRes>> ListaAjustes(string familia)
+        {
+            if (FamiliasAptas.Contains(familia))
+            {
+                List<TablaAjustesRes> Response = new();
+                if (familia == "MP")
+                {
+                    Response = await _context.CompraInsumos
+                    .Select(s => new TablaAjustesRes()
+                    {
+                        Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
+                        Registro = Alfanumerico.ConvertToBase36(s.Id),
+                        Descripcion = s.Insumo!.Descripcion,
+                        Lote = s.Lote ?? "",
+                        Saldo = s.StockDisponible
+                    }).ToListAsync()
+                    ;
+
+                }
+                if (familia == "ME")
+                {
+                    Response = await _context.CompraEmpaques
+                    .Select(s => new TablaAjustesRes()
+                    {
+                        Codigo = UtilFamilia.CodigoInsumo(s.IdEmpaque),
+                        Registro = Alfanumerico.ConvertToBase36(s.Id),
+                        Descripcion = s.Empaque!.Descripcion ?? "",
+                        Lote = s.Lote ?? "",
+                        Saldo = s.StockDisponible
+                    }).ToListAsync()
+                    ;
+
+                }
+                return Response;
+            }
+            else
+            {
+                throw new BadRequestException("Familia no Apta");
+            }
         }
 
         public async Task RegistrarAjuste(CrearAjusteReq request)
         {
             string familia = request.Familia;
             int idCreador = request.IdCreador;
-            List<string> familiasAptas = ["MP", "ME"];
-            if (familiasAptas.Contains(familia))
+            if (FamiliasAptas.Contains(familia))
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
                 try
