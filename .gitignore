@@ -19,3 +19,4 @@ out/
 firebase-adminsdk.json
 # Dependency direc
 Migrations/
+.fake

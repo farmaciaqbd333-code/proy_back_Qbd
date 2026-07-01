@@ -29,9 +29,9 @@ namespace Proy_back_QBD.Services
                 return null;
             }
             DateTime fechaFiltro = new DateTime(año, mes, 1, 0, 0, 0);
-            
+
             var lista = await _context.Asistencias
-                .Where(a => a.CreadorId == id && a.FechaCreacion.AddHours(-5).Year == año  && a.FechaCreacion.AddHours(-5).Month == mes && a.SedeId == sedeId)
+                .Where(a => a.CreadorId == id && a.FechaCreacion.AddHours(-5).Year == año && a.FechaCreacion.AddHours(-5).Month == mes && a.SedeId == sedeId)
                 .GroupBy(a => a.FechaCreacion.AddHours(-5).Date)
                 .Select(g => new FechaConHoras
                 {

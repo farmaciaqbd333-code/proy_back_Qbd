@@ -36,7 +36,7 @@ namespace proy_back_Qbd.Models
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
         [Column("observacion")] public string? Observacion { get; set; }
         [Column("pdf")] public string? Pdf { get; set; }
-        [Column("stock_disponible")] public decimal? StockDisponible { get; set; }
+        [Column("stock_disponible")] public decimal StockDisponible { get; set; } = 0;
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Insumo? Insumo { get; set; }
