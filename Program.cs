@@ -12,6 +12,7 @@ using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Models;
 using Microsoft.AspNetCore.Diagnostics;
 using proy_back_Qbd.Exceptions;
+using Proy_back_QBD.Service.AjusteService;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
@@ -68,6 +69,7 @@ builder.Services.AddScoped<IDetalleOrdenCompraService, DetalleOrdenCompraService
 builder.Services.AddScoped<ICompraLaboratorioService, CompraLaboratorioService>();
 builder.Services.AddScoped<IPaqueteService, PaqueteService>();
 builder.Services.AddScoped<IMesonService, MesonService>();
+builder.Services.AddScoped<IAjusteService, AjusteService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

@@ -46,14 +46,6 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(resultado);
         }
-        [HttpPost("registrar-ajuste")]
-        public async Task<IActionResult> RegistrarAjuste([FromBody] CrearAjusteReq request)
-        {
-            await _kardexService.RegistrarAjuste(request);
-            return Ok(new
-            {
-                mensaje = "Ajuste registrado correctamente."
-            });
-        }
+       
     }
 }

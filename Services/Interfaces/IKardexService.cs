@@ -11,6 +11,6 @@ namespace proy_back_Qbd.Services.Interfaces
         public Task<ListarStockRes> StockListaPrincipal();
         public Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int insumoId);
         public Task<List<DetalleEmpaqueRes>> ObtenerDetalleEmpaque(int empaqueId);
-        public Task RegistrarAjuste(CrearAjusteReq request);
+        
     }
 }
