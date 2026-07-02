@@ -22,6 +22,8 @@ namespace proy_back_Qbd.Models
 
         [Column("id_creador")] public int IdCreador { get; set; }
 
+        [Column("observacion")] public string? Observacion { get; set; }
+
         [ForeignKey(nameof(IdCompraInsumo))] public CompraInsumos? CompraInsumos { get; set; }
     }
 }
