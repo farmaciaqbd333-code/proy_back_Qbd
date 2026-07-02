@@ -96,8 +96,22 @@ namespace proy_back_Qbd.Services
     .Sum(ce => ce.StockDisponible))
                         }).ToListAsync()
                         ;
+            List<StockECORes> responseECO = await _context.Economatos
+                        .GroupBy(g => new { g.Id })
+                        .Select(s => new StockECORes()
+                        {
+                            Codigo = s.Key.Id + "",
+                            Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                            Um = s.Select(s => s.UnidadMedida).FirstOrDefault() ?? "Und",
+                            Entradas = s.Sum(s => s.DetalleCompraEconomatos.Sum(ce => ce.CantidadSolicitada)),
+                            Salidas = 0,
+                            Ajustes = 0,
+                            Baja = 0
+                        }).ToListAsync();
+
             response.MateriaPrimas = responseMP;
             response.Empaques = responseME;
+            response.Economatos = responseECO;
 
             return response;
         }
