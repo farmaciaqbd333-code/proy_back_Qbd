@@ -46,8 +46,8 @@ public class CompraLabEmpaqueModalRes
     public required string Lote { get; set; }
     public required string Um { get; set; }
     public required decimal CantidadRecibida { get; set; }
-    public DateTime? FechaFabricacion { get; set; }
-    public DateTime? FechaVencimiento { get; set; }
+    public DateTimeOffset? FechaFabricacion { get; set; }
+    public DateTimeOffset? FechaVencimiento { get; set; }
     public required string CondicionALmacenamiento { get; set; }
     public required decimal TotalPaquetes { get; set; }
     public required decimal TotalPeso { get; set; }
@@ -96,8 +96,8 @@ public class CompraLabDetEmpRes
     public required string DescripcionQBD { get; set; }
     public required string Lote { get; set; }
     public required string Um { get; set; }
-    public DateTime? FechaFabricacion { get; set; }
-    public DateTime? FechaVencimiento { get; set; }
+    public DateTimeOffset? FechaFabricacion { get; set; }
+    public DateTimeOffset? FechaVencimiento { get; set; }
     public required decimal CantidadPaquetes { get; set; }
     public required decimal CantidadRecibida { get; set; }
     public string? DescripcionFactura { get; set; }

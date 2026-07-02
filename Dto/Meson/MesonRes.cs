@@ -103,8 +103,8 @@ namespace proy_back_Qbd.Models
         public string? Um { get; set; }
         public bool? Coa { get; set; }
         public string? Lote { get; set; }
-        public DateTime? FechaFabricacion { get; set; }
-        public DateTime? FechaVencimiento { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
         public bool? Conformidad { get; set; }
         public string? Familia { get; set; }
         public string? Pdf { get; set; }

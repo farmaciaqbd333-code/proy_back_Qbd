@@ -34,7 +34,9 @@ namespace Proy_back_QBD.Service.AjusteService
                         Registro = Alfanumerico.ConvertToBase36(s.Id),
                         Descripcion = s.Insumo!.Descripcion,
                         Lote = s.Lote ?? "",
-                        Saldo = s.StockDisponible
+                        Saldo = s.StockDisponible,
+                        FechaFabricacion = s.FechaFabricacion,
+                        FechaVencimiento = s.FechaVencimiento,
                     }).ToListAsync()
                     ;
 
@@ -48,7 +50,9 @@ namespace Proy_back_QBD.Service.AjusteService
                         Registro = Alfanumerico.ConvertToBase36(s.Id),
                         Descripcion = s.Empaque!.Descripcion ?? "",
                         Lote = s.Lote ?? "",
-                        Saldo = s.StockDisponible
+                        Saldo = s.StockDisponible,
+                        FechaFabricacion = s.FechaFabricacion,
+                        FechaVencimiento = s.FechaVencimiento,
                     }).ToListAsync()
                     ;
 
