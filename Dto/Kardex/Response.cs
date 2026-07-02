@@ -25,16 +25,20 @@ namespace proy_back_Qbd.Models.Kardex
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
         public decimal? Saldo { get; set; }
+        public DateTime? FechaCompra { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
+        public string? Observacion { get; set; }
     }
     public class DetalleEmpaqueRes
     {
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
         public decimal? Saldo { get; set; }
+        public DateTime? FechaCompra { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
+        public string? Observacion { get; set; }
     }
     public class StockMERes
     {

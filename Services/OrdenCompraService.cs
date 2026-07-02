@@ -642,8 +642,9 @@ namespace proy_back_Qbd.Services
             catch (Exception ex)
             {
                 await tx.RollbackAsync();
-                Console.WriteLine($"Error en ActualizarOrdenDeCompra: {ex.Message}\n{ex.StackTrace}");
-                throw;
+                var innerMsg = ex.InnerException != null ? ex.InnerException.Message : "No inner exception";
+                Console.WriteLine($"Error en ActualizarOrdenDeCompra: {ex.Message} - {innerMsg}\n{ex.StackTrace}");
+                throw new Exception($"Error al guardar en DB: {ex.Message}. Detalle interno: {innerMsg}");
             }
         }
 

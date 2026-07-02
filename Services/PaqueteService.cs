@@ -65,7 +65,7 @@ namespace proy_back_Qbd.Services
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
             decimal pesoTotalPaquete = paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario);
             decimal pesoPaqueteNuevo = paqueteEntrante + pesoTotalPaquete;
-            if (pesoTotalCompra < pesoPaqueteNuevo) throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            // if (pesoTotalCompra < pesoPaqueteNuevo) throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteInsumo(req);
             paquete.FechaCreacion = DateTime.Now;
@@ -103,8 +103,8 @@ namespace proy_back_Qbd.Services
             decimal pesoTotalSolicitado = compraEmpaque.CantidadSolicitada;
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
 
-            if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
-                throw new BadRequestException("Se ha pasado el límite de unidades solicitadas");
+            // if (pesoTotalSolicitado < (paqueteEntrante + pesoTotalPaquete))
+            //     throw new BadRequestException("Se ha pasado el límite de unidades solicitadas");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteEmpaque(req);
             paquete.FechaCreacion = DateTime.Now;
@@ -193,8 +193,8 @@ namespace proy_back_Qbd.Services
             decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
             decimal paquetePesoEntrante = req.CantidadPaquete * req.PesoUnitario;
             decimal nuevoPeso = paquetePesoEntrante + totales.paquetePesoTotal - paquetePesoActual;
-            if (pesoTotalCompra < nuevoPeso)
-                throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            // if (pesoTotalCompra < nuevoPeso)
+            //     throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             //ACTUALIZAR PESO
             PaqueteMapper.ModificarPaqueteInsumo(req, paquete);
@@ -226,8 +226,8 @@ namespace proy_back_Qbd.Services
             decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
             decimal paquetePesoEntrante = req.CantidadPaquete * req.PesoUnitario;
             decimal nuevaCantidad = paquetePesoEntrante + totales.PesoTotalPaquete - paquetePesoActual;
-            if (totales.PesoTotalCompra < nuevaCantidad)
-                throw new BadRequestException("Se ha pasado el límite de cantidad solicitada");
+            // if (totales.PesoTotalCompra < nuevaCantidad)
+            //     throw new BadRequestException("Se ha pasado el límite de cantidad solicitada");
             PaqueteMapper.ModificarPaqueteEmpaque(req, paquete);
             CompraEmpaque.StockDisponible = CompraEmpaque.StockDisponible - paquetePesoActual + paquetePesoEntrante;
             await _context.SaveChangesAsync();
