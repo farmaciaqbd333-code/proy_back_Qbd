@@ -37,6 +37,8 @@ namespace Proy_back_QBD.Service.AjusteService
                         Saldo = s.StockDisponible,
                         FechaFabricacion = s.FechaFabricacion,
                         FechaVencimiento = s.FechaVencimiento,
+                        Ajuste = _context.AjusteInsumos.Where(a => a.IdCompraInsumo == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Ajuste).FirstOrDefault(),
+                        Observacion = _context.AjusteInsumos.Where(a => a.IdCompraInsumo == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Observacion).FirstOrDefault()
                     }).ToListAsync()
                     ;
 
@@ -53,6 +55,8 @@ namespace Proy_back_QBD.Service.AjusteService
                         Saldo = s.StockDisponible,
                         FechaFabricacion = s.FechaFabricacion,
                         FechaVencimiento = s.FechaVencimiento,
+                        Ajuste = _context.AjusteEmpaques.Where(a => a.IdCompraEmpaque == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Ajuste).FirstOrDefault(),
+                        Observacion = _context.AjusteEmpaques.Where(a => a.IdCompraEmpaque == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Observacion).FirstOrDefault()
                     }).ToListAsync()
                     ;
 

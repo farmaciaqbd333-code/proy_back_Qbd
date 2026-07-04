@@ -12,6 +12,6 @@ namespace proy_back_Qbd.Models.Ajuste.request
         public decimal StockAnterior { get; set; }
         public decimal Ajuste { get; set; }
         public decimal StockNuevo { get; set; }
-        public string Observacion { get; set; }
+        public string? Observacion { get; set; }
     }
 }

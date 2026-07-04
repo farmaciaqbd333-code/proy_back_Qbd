@@ -9,6 +9,8 @@ namespace proy_back_Qbd.Models.Ajuste.response
         public DateTimeOffset? FechaVencimiento { get; set; }
         public required string Lote { get; set; }
         public decimal Saldo { get; set; }
+        public decimal Ajuste { get; set; }
+        public string? Observacion { get; set; }
     }
     public class DetalleAjusteRes
     {

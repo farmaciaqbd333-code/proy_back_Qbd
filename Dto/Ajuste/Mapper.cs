@@ -12,7 +12,8 @@ namespace proy_back_Qbd.Models.Ajuste
             {
                 Ajuste = source.Ajuste,
                 IdCompraInsumo = source.IdCompraFamilia,
-                IdCreador = idCreador
+                IdCreador = idCreador,
+                Observacion = source.Observacion
             };
         }
         public List<AjusteInsumo> CrearAjusteInsumoList(List<CrearAjustes> crearAjusteReqs, int idCreador)
@@ -25,7 +26,8 @@ namespace proy_back_Qbd.Models.Ajuste
             {
                 Ajuste = source.Ajuste,
                 IdCompraEmpaque = source.IdCompraFamilia,
-                IdCreador = idCreador
+                IdCreador = idCreador,
+                Observacion = source.Observacion
             };
         }
         public List<AjusteEmpaque> CrearAjusteEmpaqueList(List<CrearAjustes> crearAjusteReqs, int idCreador)
