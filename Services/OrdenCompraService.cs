@@ -136,8 +136,12 @@ namespace proy_back_Qbd.Services
                             ICBP = s.Icbp,
                             Guia = s.Guia,
                             Modalidad = s.Modalidad,
-                            EstadoCompra = s.EstadoCompra
-
+                            EstadoCompra = s.EstadoCompra,
+                            SerieComprobante = s.SerieComprobante,
+                            NumeroComprobante = s.NumeroComprobante,
+                            Factura = s.SerieComprobante + "-" + s.NumeroComprobante,
+                            CodFacQBD = s.CodFacQBD,
+                            FechaFactura = s.FechaFactura
                         }).FirstOrDefaultAsync();
 
             if (response != null)
