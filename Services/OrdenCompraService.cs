@@ -278,11 +278,11 @@ namespace proy_back_Qbd.Services
                 {
                     valorTotal += request.DetalleCompraOtros.Sum(s => s.CostoTotal);
                     List<int> clases1 = request.DetalleCompraOtros.Select(s => s.IdFamilia).Distinct().ToList();
-                    List<string> clases2 = new();
-                    if (clases1.Contains(5)) clases2.Add("FXP");
-                    if (clases1.Contains(6)) clases2.Add("FXS");
-                    if (clases1.Contains(7)) clases2.Add("RH");
-                    foreach (var item in clases1)
+                    var nombresFamiliasOtros = await _context.Familias
+                        .Where(f => clases1.Contains(f.Id))
+                        .Select(f => f.Abreviatura)
+                        .ToListAsync();
+                    foreach (var item in nombresFamiliasOtros)
                     {
                         Familia += Familia == "" ? item : "- " + item;
                     }
@@ -626,11 +626,11 @@ namespace proy_back_Qbd.Services
                         .Select(d => d.IdFamilia)
                         .Distinct()
                         .ToListAsync();
-                    List<string> clases2 = new();
-                    if (clases1.Contains(5)) clases2.Add("FXP");
-                    if (clases1.Contains(6)) clases2.Add("FXS");
-                    if (clases1.Contains(7)) clases2.Add("RH");
-                    if (clases2.Any()) partesFamilia.AddRange(clases2);
+                    var nombresFamiliasOtros = await _context.Familias
+                        .Where(f => clases1.Contains(f.Id))
+                        .Select(f => f.Abreviatura)
+                        .ToListAsync();
+                    if (nombresFamiliasOtros.Any()) partesFamilia.AddRange(nombresFamiliasOtros);
 
                     compra.Familia = string.Join("- ", partesFamilia.Distinct());
                 }
