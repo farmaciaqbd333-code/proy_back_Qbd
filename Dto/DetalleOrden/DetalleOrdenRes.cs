@@ -26,6 +26,8 @@ namespace proy_back_Qbd.Models
         public string? NombreFabricante { get; set; }
         public string? CodigoFabricante { get; set; }
         public string? Pdf { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
     }
     public class DetalleEmpaquesRes
     {

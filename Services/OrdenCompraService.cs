@@ -58,7 +58,9 @@ namespace proy_back_Qbd.Services
                                 IdFabricante = s2.IdFabricante,
                                 NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
                                 CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : "",
-                                Pdf = s2.Pdf
+                                Pdf = s2.Pdf,
+                                FechaFabricacion = s2.FechaFabricacion,
+                                FechaVencimiento = s2.FechaVencimiento
                             }).ToList(),
                             DetalleEmpaques = s.CompraEmpaques == null ? null : s.CompraEmpaques.Select(s2 => new DetalleEmpaquesRes
                             {
