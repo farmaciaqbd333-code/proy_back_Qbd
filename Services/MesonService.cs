@@ -46,6 +46,10 @@ namespace proy_back_Qbd.Services
                     MesonDetOtrosConvReq? item2 = request.DetallesOtros.FirstOrDefault(w => w.IdDetalleOtro == item.Id);
                     if (item2 != null)
                     {
+                        item.DescripcionFactura = item2.DescripcionFactura;
+                        item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.Conformidad = item2.Conformidad;
+                        
                         var mapper = new MesonMapper();
                         mapper.ActualizarOtros(item2, item);
                         item.IdModificador = request.IdModificador;
@@ -89,6 +93,15 @@ namespace proy_back_Qbd.Services
                     MesonDetProductoConvReq? item2 = request.DetallesProductos.FirstOrDefault(w => w.IdDetalleProducto == item.Id);
                     if (item2 != null)
                     {
+                        item.DescripcionFactura = item2.DescripcionFactura;
+                        item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.Conformidad = item2.Conformidad;
+                        item.Lote = item2.Lote;
+                        item.FechaFabricacion = item2.FechaFabricacion;
+                        item.FechaVencimiento = item2.FechaVencimiento;
+                        item.RegistroSanitario = item2.RegistroSanitario;
+                        item.IdFabricante = item2.IdFabricante;
+
                         var mapper = new MesonMapper();
                         mapper.ActualizarProductos(item2, item);
                         item.IdModificador = request.IdModificador;
@@ -110,6 +123,11 @@ namespace proy_back_Qbd.Services
                     MesonDetEconomatoConvReq? item2 = request.DetallesEconomatos.FirstOrDefault(w => w.IdDetalleEconomato == item.Id);
                     if (item2 != null)
                     {
+                        item.DescripcionFactura = item2.DescripcionFactura;
+                        item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.Conformidad = item2.Conformidad;
+                        item.IdFabricante = item2.IdFabricante;
+
                         var mapper = new MesonMapper();
                         mapper.ActualizarEconomatos(item2, item);
                         item.IdModificador = request.IdModificador;
@@ -131,6 +149,15 @@ namespace proy_back_Qbd.Services
                     MesonDetEmpaqueConvReq? item2 = request.DetallesEmpaques.FirstOrDefault(w => w.IdDetalleEmpaque == item.Id);
                     if (item2 != null)
                     {
+                        item.DescripcionFactura = item2.DescripcionFactura;
+                        item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.Conformidad = item2.Conformidad;
+                        item.Lote = item2.Lote;
+                        item.FechaFabricacion = item2.FechaFabricacion;
+                        item.FechaVencimiento = item2.FechaVencimiento;
+                        item.Coa = item2.Coa;
+                        item.IdFabricante = item2.IdFabricante;
+
                         var mapper = new MesonMapper();
                         mapper.ActualizarEmpaques(item2, item);
                         item.IdModificador = request.IdModificador;
