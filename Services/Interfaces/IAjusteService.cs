@@ -7,5 +7,6 @@ namespace Proy_back_QBD.Services
     {
         public Task RegistrarAjuste(CrearAjusteReq request);
         public Task<List<TablaAjustesRes>> ListaAjustes(string familia);
+        public Task<List<DetalleAjusteRes>> DetalleAjuste(int ajuste, string familia);
     }
 }

@@ -15,6 +15,9 @@ namespace proy_back_Qbd.Models
         [Key][Column("id")] public int Id { get; set; }
 
         [Column("ajuste")] public decimal Ajuste { get; set; }
+        [Column("stock_anterior")] public decimal StockAnterior { get; set; }
+        [Column("stock_nuevo")] public decimal StockNuevo { get; set; }
+        [Column("observacion")] public string? Observacion { get; set; }
 
         [Column("id_compra_empaque")] public int IdCompraEmpaque { get; set; }
 
@@ -23,5 +26,6 @@ namespace proy_back_Qbd.Models
         [Column("id_creador")] public int IdCreador { get; set; }
 
         [ForeignKey(nameof(IdCompraEmpaque))] public CompraEmpaques? CompraEmpaques { get; set; }
+        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
     }
 }

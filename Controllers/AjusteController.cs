@@ -29,6 +29,12 @@ namespace proy_back_Qbd.Controllers
             List<TablaAjustesRes> response = await _ajusteService.ListaAjustes(familia);
             return Ok(response);
         }
+        [HttpGet("detalle")]
+        public async Task<IActionResult> DetalleAjustes(int registroId, string familia)
+        {
+            List<DetalleAjusteRes> response = await _ajusteService.DetalleAjuste(registroId, familia);
+            return Ok(response);
+        }
         [HttpPost("registrar-ajuste")]
         public async Task<IActionResult> RegistrarAjuste([FromBody] CrearAjusteReq request)
         {
