@@ -15,7 +15,6 @@ namespace proy_back_Qbd.Models
         [Key][Column("id")] public int Id { get; set; }
 
         [Column("ajuste")] public decimal Ajuste { get; set; }
-        [Column("observacion")] public string? Observacion { get; set; }
         [Column("stock_anterior")] public decimal StockAnterior { get; set; }
         [Column("stock_nuevo")] public decimal StockNuevo { get; set; }
         [Column("id_compra_insumo")] public int IdCompraInsumo { get; set; }

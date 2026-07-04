@@ -61,5 +61,16 @@ namespace proy_back_Qbd.Models.Kardex
         public required decimal Ajustes { get; set; }
         public required decimal Baja { get; set; }
     }
-
+    public class ComprasVencidasRes
+    {
+        public required string Registro { get; set; }
+        public required string Codigo { get; set; }
+        public required string Descripcion { get; set; }
+        public required string Lote { get; set; }
+        public required decimal Cantidad { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
+        public decimal? Saldo { get; set; }
+        public required string Estado { get; set; }
+    }
 }

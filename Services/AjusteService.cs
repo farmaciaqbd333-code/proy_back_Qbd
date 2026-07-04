@@ -146,7 +146,7 @@ namespace Proy_back_QBD.Service.AjusteService
                         Stock = s.StockAnterior,
                         Diferencia = s.Ajuste,
                         StockFinal = s.StockNuevo,
-                        Observacion = s.Observacion ?? ""
+                        Observacion = s.Observacion
 
                     }).ToListAsync();
                 }

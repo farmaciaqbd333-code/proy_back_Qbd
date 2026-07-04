@@ -15,6 +15,7 @@ namespace proy_back_Qbd.Services
     public class KardexService : IKardexService
     {
         private readonly ApiContext _context;
+        private static readonly List<string> FamiliasAptas = ["MP", "ME"];
         public KardexService(ApiContext context)
         {
             _context = context;
@@ -116,6 +117,50 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
+        public async Task<List<ComprasVencidasRes>> ObtenerComprasVencidas(string familia)
+        {
+            List<ComprasVencidasRes> response = new();
+            if (FamiliasAptas.Contains(familia))
+            {
+                if (familia == "MP")
+                {
+                    response = await _context.CompraInsumos.Select(s => new ComprasVencidasRes()
+                    {
+                        Registro = Alfanumerico.ConvertToBase36(s.Id),
+                        Codigo = s.Insumo.Id.ToString("d4"),
+                        Descripcion = s.Insumo.Descripcion,
+                        Estado = (DateTimeOffset.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTimeOffset.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
+                        Lote = s.Lote,
+                        FechaFabricacion = s.FechaFabricacion,
+                        FechaVencimiento = s.FechaVencimiento,
+                        Saldo = s.StockDisponible,
+                        Cantidad = s.PaqueteInsumos.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario)
 
+                    }).ToListAsync();
+                }
+                if (familia == "ME")
+                {
+                    response = await _context.CompraEmpaques.Select(s => new ComprasVencidasRes()
+                    {
+                        Registro = Alfanumerico.ConvertToBase36(s.Id),
+                        Codigo = s.Empaque.Id.ToString("d4"),
+                        Descripcion = s.Empaque.Descripcion,
+                        Estado = (DateTimeOffset.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTimeOffset.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
+                        Lote = s.Lote,
+                        FechaFabricacion = s.FechaFabricacion,
+                        FechaVencimiento = s.FechaVencimiento,
+                        Saldo = s.StockDisponible,
+                        Cantidad = s.PaqueteEmpaques.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario)
+
+                    }).ToListAsync();
+                }
+                return response;
+            }
+            else
+            {
+                throw new BadRequestException("Familia no apta");
+            }
+
+        }
     }
 }
