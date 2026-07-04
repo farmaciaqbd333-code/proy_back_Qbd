@@ -9,7 +9,9 @@ namespace proy_back_Qbd.Models.Ajuste.request
     public class CrearAjustes
     {
         public int IdCompraFamilia { get; set; }
+        public decimal StockAnterior { get; set; }
         public decimal Ajuste { get; set; }
+        public decimal StockNuevo { get; set; }
         public string? Observacion { get; set; }
     }
 }

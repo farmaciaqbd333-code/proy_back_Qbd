@@ -12,5 +12,14 @@ namespace proy_back_Qbd.Models.Ajuste.response
         public decimal Ajuste { get; set; }
         public string? Observacion { get; set; }
     }
+    public class DetalleAjusteRes
+    {
+        public DateTimeOffset? FechaCreacion { get; set; }
+        public required decimal Stock { get; set; }
+        public required decimal Diferencia { get; set; }
+        public required decimal StockFinal { get; set; }
+        public required string Usuario { get; set; }
+        public required string Observacion { get; set; }
+    }
 
 }

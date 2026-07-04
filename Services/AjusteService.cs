@@ -127,5 +127,52 @@ namespace Proy_back_QBD.Service.AjusteService
                 throw new BadRequestException("Familia no apta");
             }
         }
+
+        public async Task<List<DetalleAjusteRes>> DetalleAjuste(int registroId, string familia)
+        {
+            if (FamiliasAptas.Contains(familia))
+            {
+                List<DetalleAjusteRes> response = new();
+                if (familia == "MP")
+                {
+                    response = await _context.AjusteInsumos
+                    .AsNoTracking()
+                    .Where(w => w.IdCompraInsumo == registroId)
+                    .OrderByDescending(odb => odb.FechaCreacion)
+                    .Select(s => new DetalleAjusteRes()
+                    {
+                        FechaCreacion = s.FechaCreacion,
+                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
+                        Stock = s.StockAnterior,
+                        Diferencia = s.Ajuste,
+                        StockFinal = s.StockNuevo,
+                        Observacion = s.Observacion
+
+                    }).ToListAsync();
+                }
+                if (familia == "ME")
+                {
+                    response = await _context.AjusteEmpaques
+                    .AsNoTracking()
+                    .Where(w => w.IdCompraEmpaque == registroId)
+                    .OrderByDescending(odb => odb.FechaCreacion)
+                    .Select(s => new DetalleAjusteRes()
+                    {
+                        FechaCreacion = s.FechaCreacion,
+                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
+                        Stock = s.StockAnterior,
+                        Diferencia = s.Ajuste,
+                        StockFinal = s.StockNuevo,
+                        Observacion = s.Observacion ?? ""
+
+                    }).ToListAsync();
+                }
+                return response;
+            }
+            else
+            {
+                throw new BadRequestException("Familia no apta");
+            }
+        }
     }
 }

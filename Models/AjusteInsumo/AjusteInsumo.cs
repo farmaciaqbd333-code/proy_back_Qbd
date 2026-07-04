@@ -12,18 +12,20 @@ namespace proy_back_Qbd.Models
     [Table("ajuste_insumo")]
     public class AjusteInsumo
     {
-        [Key] [Column("id")] public int Id { get; set; }
+        [Key][Column("id")] public int Id { get; set; }
 
         [Column("ajuste")] public decimal Ajuste { get; set; }
-
+        [Column("stock_anterior")] public decimal StockAnterior { get; set; }
+        [Column("stock_nuevo")] public decimal StockNuevo { get; set; }
         [Column("id_compra_insumo")] public int IdCompraInsumo { get; set; }
 
-        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }= DateTimeOffset.Now;
+        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; } = DateTimeOffset.Now;
 
         [Column("id_creador")] public int IdCreador { get; set; }
 
         [Column("observacion")] public string? Observacion { get; set; }
 
         [ForeignKey(nameof(IdCompraInsumo))] public CompraInsumos? CompraInsumos { get; set; }
+        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
     }
 }

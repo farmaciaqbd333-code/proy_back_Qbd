@@ -46,6 +46,13 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(resultado);
         }
+        [HttpGet("vencidos")]
+        public async Task<IActionResult> ObtenerVencidos(string familia)
+        {
+            var resultado = await _kardexService.ObtenerComprasVencidas(familia);
+
+            return Ok(resultado);
+        }
        
     }
 }
