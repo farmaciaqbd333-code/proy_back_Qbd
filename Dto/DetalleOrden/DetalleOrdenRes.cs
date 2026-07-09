@@ -26,6 +26,8 @@ namespace proy_back_Qbd.Models
         public string? NombreFabricante { get; set; }
         public string? CodigoFabricante { get; set; }
         public string? Pdf { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
     }
     public class DetalleEmpaquesRes
     {
@@ -39,6 +41,12 @@ namespace proy_back_Qbd.Models
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
         public string? Pdf { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
+        public bool Conforme { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class DetalleProductosRes
     {
@@ -51,6 +59,12 @@ namespace proy_back_Qbd.Models
         public required decimal CUnitario { get; set; }
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public DateTimeOffset? FechaFabricacion { get; set; }
+        public DateTimeOffset? FechaVencimiento { get; set; }
+        public bool Conforme { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class DetalleEconomatosRes
     {
@@ -64,6 +78,8 @@ namespace proy_back_Qbd.Models
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
         public string? Pdf { get; set; }
+        public bool Conforme { get; set; }
+        public int? IdFabricante { get; set; }
     }
     public class DetalleComprasOtrosRes
     {
@@ -76,6 +92,7 @@ namespace proy_back_Qbd.Models
         public required decimal CTotal { get; set; }
         public string? UM { get; set; }
         public string? Pdf { get; set; }
+        public bool Conforme { get; set; }
     }
     public class IdFamiliasRes
     {

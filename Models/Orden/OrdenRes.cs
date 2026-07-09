@@ -48,6 +48,11 @@ namespace proy_back_Qbd.Models
         public string? CodigoProveedor { get; set; }
         public string? RUC { get; set; }
         public string? RazonSocial { get; set; }
+        public string? SerieComprobante { get; set; }
+        public string? NumeroComprobante { get; set; }
+        public string? Factura { get; set; }
+        public string? CodFacQBD { get; set; }
+        public DateTime? FechaFactura { get; set; }
     }
     public class DescripcionFacturaRes
     {

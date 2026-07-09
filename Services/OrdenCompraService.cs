@@ -58,7 +58,9 @@ namespace proy_back_Qbd.Services
                                 IdFabricante = s2.IdFabricante,
                                 NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
                                 CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : "",
-                                Pdf = s2.Pdf
+                                Pdf = s2.Pdf,
+                                FechaFabricacion = s2.FechaFabricacion,
+                                FechaVencimiento = s2.FechaVencimiento
                             }).ToList(),
                             DetalleEmpaques = s.CompraEmpaques == null ? null : s.CompraEmpaques.Select(s2 => new DetalleEmpaquesRes
                             {
@@ -71,7 +73,13 @@ namespace proy_back_Qbd.Services
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
                                 UM = s2.Um,
-                                Pdf = s2.Pdf
+                                Pdf = s2.Pdf,
+                                Coa = s2.Coa ?? false,
+                                Lote = s2.Lote,
+                                FechaFabricacion = s2.FechaFabricacion,
+                                FechaVencimiento = s2.FechaVencimiento,
+                                Conforme = s2.Conformidad ?? false,
+                                IdFabricante = s2.IdFabricante
                             }).ToList(),
                             DetalleProductos = s.CompraProductos == null ? null : s.CompraProductos.Select(s2 => new DetalleProductosRes
                             {
@@ -83,7 +91,13 @@ namespace proy_back_Qbd.Services
                                 CantidadSolicitada = s2.CantidadSolicitada,
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
-                                UM = s2.Um
+                                UM = s2.Um,
+                                Lote = s2.Lote,
+                                RegistroSanitario = s2.RegistroSanitario,
+                                FechaFabricacion = s2.FechaFabricacion,
+                                FechaVencimiento = s2.FechaVencimiento,
+                                Conforme = s2.Conformidad ?? false,
+                                IdFabricante = s2.IdFabricante
                             }).ToList(),
                             DetalleEconomatos = s.CompraEconomatos == null ? null : s.CompraEconomatos.Select(s2 => new DetalleEconomatosRes
                             {
@@ -96,7 +110,9 @@ namespace proy_back_Qbd.Services
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
                                 UM = s2.Um,
-                                Pdf = s2.Pdf
+                                Pdf = s2.Pdf,
+                                Conforme = s2.Conformidad ?? false,
+                                IdFabricante = s2.IdFabricante
                             }).ToList(),
                             DetalleOtros = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasOtrosRes
                             {
@@ -108,7 +124,8 @@ namespace proy_back_Qbd.Services
                                 CUnitario = s2.CostoUnitario,
                                 CTotal = s2.CostoTotal,
                                 UM = s2.UnidadMedida,
-                                Pdf = s2.Pdf
+                                Pdf = s2.Pdf,
+                                Conforme = s2.Conformidad ?? false
                             }).ToList(),
                             IdProveedor = s.IdProveedor,
                             IncluyeImpuesto = s.Igv,
@@ -119,8 +136,12 @@ namespace proy_back_Qbd.Services
                             ICBP = s.Icbp,
                             Guia = s.Guia,
                             Modalidad = s.Modalidad,
-                            EstadoCompra = s.EstadoCompra
-
+                            EstadoCompra = s.EstadoCompra,
+                            SerieComprobante = s.SerieComprobante,
+                            NumeroComprobante = s.NumeroComprobante,
+                            Factura = s.SerieComprobante + "-" + s.NumeroComprobante,
+                            CodFacQBD = s.CodFacQBD,
+                            FechaFactura = s.FechaFactura
                         }).FirstOrDefaultAsync();
 
             if (response != null)
