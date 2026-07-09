@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 using proy_back_Qbd.Models;
-using proy_back_Qbd.Models.ElaboracionBase;
+using proy_back_Qbd.Models.ProductoIntermedio;
 
 namespace Proy_back_QBD.Models
 {
@@ -180,9 +180,9 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<PaqueteSa>? PaquetesSAModificados { get; set; }
         [JsonIgnore]
-        public List<ElaboracionBase>? ElaboracionBaseCreados { get; set; }
+        public List<ProductoIntermedio>? ProductosIntermediosCreados { get; set; }
         [JsonIgnore]
-        public List<ElaboracionBase>? ElaboracionBaseModificados { get; set; }
+        public List<ProductoIntermedio>? ProductosIntermediosModificados { get; set; }
     }
     [Table("tipos_usuario")]
     public class TipoUsuario

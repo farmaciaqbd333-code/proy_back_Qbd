@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using proy_back_Qbd.Models;
-using proy_back_Qbd.Models.ElaboracionBase;
+using proy_back_Qbd.Models.ProductoIntermedio;
 
 namespace Proy_back_QBD.Models
 {
@@ -36,7 +36,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }
-        public List<ElaboracionBase> ElaboracionBases { get; set; } = [];
+        public List<ProductoIntermedio> ProductosIntermedios { get; set; } = [];
         public List<CompraEmpaques>? CompraEmpaques { get; set; }
         public List<Empaque>? ListaCajas { get; set; }
         public List<Empaque>? ListaFundas { get; set; }

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
-using proy_back_Qbd.Models.ElaboracionBase;
+using proy_back_Qbd.Models.ProductoIntermedio;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
@@ -12,7 +12,7 @@ namespace Proy_back_QBD.Data
         public ApiContext(DbContextOptions<ApiContext> options) : base(options)
         {
         }
-        public DbSet<ElaboracionBase> ElaboracionBases { get; set; }
+        public DbSet<ProductoIntermedio> ProductosIntermedios { get; set; }
         public DbSet<AjusteEmpaque> AjusteEmpaques { get; set; }
         public DbSet<AjusteInsumo> AjusteInsumos { get; set; }
         public DbSet<PaqueteSa> PaqueteSas { get; set; }
@@ -73,12 +73,12 @@ namespace Proy_back_QBD.Data
                e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
            });
 
-            modelBuilder.Entity<ElaboracionBase>((e) =>
+            modelBuilder.Entity<ProductoIntermedio>((e) =>
             {
-                e.HasOne(ho => ho.Empaque).WithMany(wm => wm.ElaboracionBases).HasForeignKey(hfk => hfk.IdEmpaque);
-                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.ElaboracionBases).HasForeignKey(hfk => hfk.IdInsumo);
-                e.HasOne(ho => ho.Creador).WithMany(wm => wm.ElaboracionBaseCreados).HasForeignKey(hfk => hfk.IdCreador);
-                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ElaboracionBaseModificados).HasForeignKey(hfk => hfk.IdModificador);
+                e.HasOne(ho => ho.Empaque).WithMany(wm => wm.ProductosIntermedios).HasForeignKey(hfk => hfk.IdEmpaque);
+                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.ProductoIntermedio).HasForeignKey(hfk => hfk.IdInsumo);
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.ProductosIntermediosCreados).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ProductosIntermediosModificados).HasForeignKey(hfk => hfk.IdModificador);
             });
             modelBuilder.Entity<PaqueteSa>((e) =>
             {

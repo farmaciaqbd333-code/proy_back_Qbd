@@ -7,10 +7,10 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
-namespace proy_back_Qbd.Models.ElaboracionBase
+namespace proy_back_Qbd.Models.ProductoIntermedio
 {
-    [Table("elaboracion_base")]
-    public class ElaboracionBase
+    [Table("producto_intermedio")]
+    public class ProductoIntermedio
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
