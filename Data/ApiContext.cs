@@ -13,6 +13,7 @@ namespace Proy_back_QBD.Data
         {
         }
         public DbSet<ProductoIntermedio> ProductosIntermedios { get; set; }
+        public DbSet<InsumoProductoIntermedio> InsumoProductoIntermedios { get; set; }
         public DbSet<AjusteEmpaque> AjusteEmpaques { get; set; }
         public DbSet<AjusteInsumo> AjusteInsumos { get; set; }
         public DbSet<PaqueteSa> PaqueteSas { get; set; }

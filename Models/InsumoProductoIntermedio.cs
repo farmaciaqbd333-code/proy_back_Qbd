@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations.Schema;
+using proy_back_Qbd.Models.ProductoIntermedio;
 using Proy_back_QBD.Models;
 
 [Table("insumo_producto_intermedio")]
@@ -33,4 +34,7 @@ public class InsumoProductoIntermedio
     [Column("creador")] public Usuario? Creador { get; set; }
 
     [Column("modificador")] public Usuario? Modificador { get; set; }
+    [Column("id_producto_intermedio")] public int IdProductoIntermedio { get; set; }
+    [ForeignKey(nameof(IdInsumo))] public Insumo? Insumo { get; set; }
+    [ForeignKey(nameof(IdProductoIntermedio))] public ProductoIntermedio? ProductoIntermedio { get; set; }
 }
