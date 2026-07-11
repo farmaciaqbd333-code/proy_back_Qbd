@@ -43,9 +43,9 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public int IdCreador { get; set; }
         [Column("id_modificador")] public int IdModificador { get; set; }
-        public Usuario Creador { get; set; } = null!;
+        public Usuario? Creador { get; set; }
         public Usuario Modificador { get; set; } = null!;
-        public Empaque Empaque { get; set; } = null!;
-        public Insumo Insumo { get; set; } = null!;
+        public Empaque? Empaque { get; set; }
+        public required Insumo Insumo { get; set; }
     }
 }
