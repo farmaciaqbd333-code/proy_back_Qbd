@@ -72,7 +72,7 @@ namespace Proy_back_QBD.Models
         public List<FormulaCC>? FormulasCC { get; set; }
         public List<CompraInsumos>? CompraInsumos { get; set; }
         public List<ProductoIntermedio>? ProductoIntermedio { get; set; }
-        public List<DetalleNotaSalidaInsumo>? DetalleNotaSalidaInsumo { get; set; }
+        public List<NotaSalidaInsumo>? DetalleNotaSalidaInsumo { get; set; }
 
     }
 

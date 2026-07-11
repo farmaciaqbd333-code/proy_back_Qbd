@@ -1,20 +1,15 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
 {
-    [Table("detalle_nota_salida_insumo")]
-    public class DetalleNotaSalidaInsumo
+    [Table("nota_salida_economato")]
+    public class NotaSalidaEconomato
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Column("id")] public int Id { get; set; }
 
-        [Column("id_insumo")] public int IdInsumo { get; set; }
+        [Column("id_economato")] public int IdEconomato { get; set; }
 
         [Column("cantidad")] public decimal Cantidad { get; set; }
 
@@ -30,11 +25,11 @@ namespace proy_back_Qbd.Models
 
         [Column("id_modificador")] public int IdModificador { get; set; }
 
-        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
+        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; } = null!;
 
-        [ForeignKey(nameof(IdInsumo))] public Insumo? Insumo { get; set; }
+        [ForeignKey(nameof(IdEconomato))] public Producto? Producto { get; set; } = null!;
 
-        [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; }
+        [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; } = null!;
 
     }
 }

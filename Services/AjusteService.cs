@@ -143,6 +143,7 @@ namespace Proy_back_QBD.Service.AjusteService
             }
         }
 
+        //LISTA AJUSTE PRINCIPAL
         private async Task<List<TablaAjustesRes>> ObtenerMateriaPrima()
         {
             return await _context.CompraInsumos

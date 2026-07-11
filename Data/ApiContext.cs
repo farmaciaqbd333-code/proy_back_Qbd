@@ -22,8 +22,10 @@ namespace Proy_back_QBD.Data
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<PaqueteInsumo> PaqueteInsumos { get; set; }
         public DbSet<PaqueteEmpaque> PaqueteEmpaques { get; set; }
-        public DbSet<DetalleNotaSalidaInsumo> DetalleNotaSalidaInsumo { get; set; }
-        public DbSet<DetalleNotaSalidaEmpaque> DetalleNotaSalidaEmpaques { get; set; }
+        public DbSet<NotaSalidaInsumo> NotaSalidaInsumo { get; set; }
+        public DbSet<NotaSalidaEmpaque> NotaSalidaEmpaques { get; set; }
+        public DbSet<NotaSalidaEconomato> NotaSalidaEconomatos { get; set; }
+        public DbSet<NotaSalidaProducto> NotaSalidaProductos { get; set; }
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<CompraInsumos> CompraInsumos { get; set; }
@@ -108,7 +110,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(p => p.Paquete).WithOne(w => w.PaqueteInsumos).HasForeignKey<PaqueteInsumo>(h => h.IdPaquete);
                 e.HasOne(p => p.CompraInsumo).WithMany(w => w.PaqueteInsumos).HasForeignKey(h => h.IdCompraInsumo);
             });
-            modelBuilder.Entity<DetalleNotaSalidaInsumo>((e) =>
+            modelBuilder.Entity<NotaSalidaInsumo>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleNotaSalidaCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleNotaSalidaModificadas).HasForeignKey(hfk => hfk.IdModificador);
@@ -136,7 +138,7 @@ namespace Proy_back_QBD.Data
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraEconomatos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
-                e.HasOne(ho => ho.Economato).WithMany(wm => wm.DetalleCompraEconomatos).HasForeignKey(hfk => hfk.IdEconomato).IsRequired(false);
+                e.HasOne(ho => ho.Economato).WithMany(wm => wm.CompraEconomatos).HasForeignKey(hfk => hfk.IdEconomato).IsRequired(false);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleCompraEconomatoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraEconomatoModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
@@ -158,7 +160,7 @@ namespace Proy_back_QBD.Data
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraProductos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
-                e.HasOne(ho => ho.Producto).WithMany(wm => wm.DetalleCompraProductos).HasForeignKey(hfk => hfk.IdProducto).IsRequired(false);
+                e.HasOne(ho => ho.Producto).WithMany(wm => wm.CompraProductos).HasForeignKey(hfk => hfk.IdProducto).IsRequired(false);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleCompraProductoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleCompraProductoModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });

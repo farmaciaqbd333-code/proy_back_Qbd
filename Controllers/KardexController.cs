@@ -24,10 +24,10 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar Principal
         /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> ObtenerStock()
+        [HttpGet("lista/{familia}")]
+        public async Task<IActionResult> ObtenerStock(string familia)
         {
-            ListarStockRes response = await _kardexService.StockListaPrincipal();
+            List<StockRes> response = await _kardexService.StockListaPrincipal(familia);
 
             return Ok(response);
         }
@@ -53,6 +53,6 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(resultado);
         }
-       
+
     }
 }
