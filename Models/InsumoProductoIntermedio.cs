@@ -11,7 +11,7 @@ public class InsumoProductoIntermedio
 
     [Column("porcentaje")] public decimal Porcentaje { get; set; }
 
-    [Column("v")] public required string V { get; set; }
+    [Column("v")] public required string Variable { get; set; }
 
     [Column("cantidad_unidad")] public decimal CantidadUnidad { get; set; }
 
@@ -35,7 +35,7 @@ public class InsumoProductoIntermedio
 
     [Column("modificador")] public Usuario? Modificador { get; set; }
     [Column("id_producto_intermedio")] public int IdProductoIntermedio { get; set; }
-    [ForeignKey(nameof(IdInsumo))] public Insumo? Insumo { get; set; }
-    [ForeignKey(nameof(IdProductoIntermedio))] public ProductoIntermedio? ProductoIntermedio { get; set; }
+    [ForeignKey(nameof(IdInsumo))] public required Insumo Insumo { get; set; }
+    [ForeignKey(nameof(IdProductoIntermedio))] public required ProductoIntermedio ProductoIntermedio { get; set; }
     public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
 }

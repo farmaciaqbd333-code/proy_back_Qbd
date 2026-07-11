@@ -37,5 +37,5 @@ public class AjusteEconomato
     public string? Observacion { get; set; }
 
     public virtual CompraEconomatos CompraEconomato { get; set; } = null!;
-    public virtual Usuario Creador { get; set; } = null!;
+    public virtual Usuario? Creador { get; set; } = null!;
 }

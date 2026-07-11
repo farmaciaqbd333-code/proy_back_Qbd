@@ -16,14 +16,37 @@ namespace proy_back_Qbd.Services
             _context = context;
         }
 
-        public Task<TablaPIRes> DetalleConsumo()
+        public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
         {
-            throw new NotImplementedException();
+            IEnumerable<ConsumoPIRes> response = await _context.CompraInsumoProductoIntermedios
+            .Where(w => w.InsumoProductoIntermedio.IdProductoIntermedio == id)
+            .OrderBy(ob => ob.InsumoProductoIntermedio.Variable)
+            .Select(s => new ConsumoPIRes()
+            {
+                Codigo = UtilFamilia.CodigoInsumo(s.InsumoProductoIntermedio.IdInsumo),
+                Porcentaje = s.InsumoProductoIntermedio.Porcentaje,
+                Descripcion = s.InsumoProductoIntermedio.Insumo.Descripcion,
+                V = s.InsumoProductoIntermedio.Variable,
+                Lote = s.CompraInsumo.Lote,
+                Registro = Alfanumerico.ConvertToBase36(s.IdCompraInsumo),
+                CantidadUnidad = s.Cantidad,
+                FactorCorreccion = s.InsumoProductoIntermedio.FactorCorrecion,
+                Dilucion = s.InsumoProductoIntermedio.Dilucion,
+                Um = s.UnidadMedida,
+                CantidadLote = s.Cantidad,
+                Practica = s.InsumoProductoIntermedio.Practica,
+                CSP = s.InsumoProductoIntermedio.Csp
+            })
+            .AsNoTracking()
+            .ToListAsync();
+
+            return response;
         }
 
-        public async Task<List<TablaPIRes>> ListaProductoIntermedio()
+        public async Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio()
         {
-            List<TablaPIRes> response = await _context.ProductosIntermedios
+            IEnumerable<TablaPIRes> response = await _context.ProductosIntermedios
+            .OrderByDescending(ob => ob.Id)
             .Select(s => new TablaPIRes()
             {
                 Id = s.Id,
@@ -39,6 +62,7 @@ namespace proy_back_Qbd.Services
                 FechaVencimiento = s.FechaVencimiento,
                 Elaborado = s.Elaborado
             })
+            .AsNoTracking()
             .ToListAsync();
 
             return response;

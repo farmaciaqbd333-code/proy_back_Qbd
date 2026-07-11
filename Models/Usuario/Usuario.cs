@@ -183,7 +183,8 @@ namespace Proy_back_QBD.Models
         public List<ProductoIntermedio>? ProductosIntermediosCreados { get; set; }
         [JsonIgnore]
         public List<ProductoIntermedio>? ProductosIntermediosModificados { get; set; }
-        [JsonIgnore] public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
+        [JsonIgnore] public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedioCreados { get; set; } = new();
+        [JsonIgnore] public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedioModificados { get; set; } = new();
     }
     [Table("tipos_usuario")]
     public class TipoUsuario

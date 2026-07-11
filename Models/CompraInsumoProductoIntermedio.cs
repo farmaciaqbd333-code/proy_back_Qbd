@@ -15,8 +15,8 @@ public class CompraInsumoProductoIntermedio
     [Column("id_compra_insumo")] public int IdCompraInsumo { get; set; }
     [Column("id_modificador")] public int? IdModificador { get; set; }
     [Column("fecha_modificacion")] public DateTimeOffset? FechaModificacion { get; set; }
-    [ForeignKey(nameof(IdInsumoProductoIntermedio))] public required InsumoProductoIntermedio InsumoProductoIntermedio { get; set; }
-    [ForeignKey(nameof(IdCompraInsumo))] public required CompraInsumos CompraInsumo { get; set; }
-    [ForeignKey(nameof(IdCreador))] public required Usuario Creador { get; set; }
+    [ForeignKey(nameof(IdInsumoProductoIntermedio))] public InsumoProductoIntermedio? InsumoProductoIntermedio { get; set; }
+    [ForeignKey(nameof(IdCompraInsumo))] public CompraInsumos? CompraInsumo { get; set; }
+    [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
     [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; }
 }
