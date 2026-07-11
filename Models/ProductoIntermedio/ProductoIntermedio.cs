@@ -23,8 +23,8 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         [Column("tipo")] public string? Tipo { get; set; }
         [Column("cantidad")] public decimal Cantidad { get; set; }
         [Column("um")] public string? Um { get; set; }
-        [Column("fecha_emision")] public DateTime FechaEmision { get; set; }
-        [Column("fecha_vencimiento")] public DateTime FechaVencimiento { get; set; }
+        [Column("fecha_emision")] public DateTimeOffset FechaEmision { get; set; }
+        [Column("fecha_vencimiento")] public DateTimeOffset FechaVencimiento { get; set; }
         [Column("elaborado")] public string? Elaborado { get; set; }
         [Column("autorizado")] public string? Autorizado { get; set; }
         [Column("procedimiento")] public string? Procedimiento { get; set; }
@@ -43,9 +43,9 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
         [Column("id_creador")] public int IdCreador { get; set; }
         [Column("id_modificador")] public int IdModificador { get; set; }
-        public Usuario? Creador { get; set; }
-        public Usuario? Modificador { get; set; }
-        public Empaque? Empaque { get; set; }
-        public Insumo? Insumo { get; set; }
+        public Usuario Creador { get; set; } = null!;
+        public Usuario Modificador { get; set; } = null!;
+        public Empaque Empaque { get; set; } = null!;
+        public Insumo Insumo { get; set; } = null!;
     }
 }

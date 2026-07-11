@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using proy_back_Qbd.Services;
 
 namespace Proy_back_QBD.Controllers
 {
@@ -6,19 +7,20 @@ namespace Proy_back_QBD.Controllers
     [Route("api/[controller]")]
     public class ProductoIntermedioController : ControllerBase
     {
-        public ProductoIntermedioController()
+        public readonly ProductoIntermedioService _productoIntermedioService;
+        public ProductoIntermedioController(ProductoIntermedioService _productoIntermedioService)
         {
+            this._productoIntermedioService = _productoIntermedioService;
         }
 
-        // GET: api/ejemplo
-        [HttpGet]
+        [HttpGet("tabla")]
         public IActionResult Get()
         {
-            return Ok("Hola desde el controlador");
+            return Ok(_productoIntermedioService.ListaProductoIntermedio());
         }
 
         // GET: api/ejemplo/5
-        [HttpGet("{id}")]
+        [HttpGet("consumo/{id}")]
         public IActionResult GetById(int id)
         {
             return Ok(new { Id = id });
