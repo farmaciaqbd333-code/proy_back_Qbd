@@ -14,7 +14,7 @@ namespace Proy_back_QBD.Service.AjusteService
     public class AjusteService : IAjusteService
     {
         private readonly ApiContext _context;
-        private static readonly List<string> FamiliasAptas = ["MP", "ME"];
+        private static readonly List<string> FamiliasAptas = ["MP", "ME", "PT", "ECO"];
         public AjusteService(ApiContext context)
         {
             _context = context;
@@ -22,51 +22,18 @@ namespace Proy_back_QBD.Service.AjusteService
 
         public async Task<List<TablaAjustesRes>> ListaAjustes(string familia)
         {
-            if (FamiliasAptas.Contains(familia))
-            {
-                List<TablaAjustesRes> Response = new();
-                if (familia == "MP")
-                {
-                    Response = await _context.CompraInsumos
-                    .Select(s => new TablaAjustesRes()
-                    {
-                        Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
-                        Registro = Alfanumerico.ConvertToBase36(s.Id),
-                        Descripcion = s.Insumo!.Descripcion,
-                        Lote = s.Lote ?? "",
-                        Saldo = s.StockDisponible,
-                        FechaFabricacion = s.FechaFabricacion,
-                        FechaVencimiento = s.FechaVencimiento,
-                        Ajuste = _context.AjusteInsumos.Where(a => a.IdCompraInsumo == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Ajuste).FirstOrDefault(),
-                        Observacion = _context.AjusteInsumos.Where(a => a.IdCompraInsumo == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Observacion).FirstOrDefault()
-                    }).ToListAsync()
-                    ;
 
-                }
-                if (familia == "ME")
-                {
-                    Response = await _context.CompraEmpaques
-                    .Select(s => new TablaAjustesRes()
-                    {
-                        Codigo = UtilFamilia.CodigoInsumo(s.IdEmpaque),
-                        Registro = Alfanumerico.ConvertToBase36(s.Id),
-                        Descripcion = s.Empaque!.Descripcion ?? "",
-                        Lote = s.Lote ?? "",
-                        Saldo = s.StockDisponible,
-                        FechaFabricacion = s.FechaFabricacion,
-                        FechaVencimiento = s.FechaVencimiento,
-                        Ajuste = _context.AjusteEmpaques.Where(a => a.IdCompraEmpaque == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Ajuste).FirstOrDefault(),
-                        Observacion = _context.AjusteEmpaques.Where(a => a.IdCompraEmpaque == s.Id).OrderByDescending(a => a.FechaCreacion).Select(a => a.Observacion).FirstOrDefault()
-                    }).ToListAsync()
-                    ;
-
-                }
-                return Response;
-            }
-            else
+            List<TablaAjustesRes> Response = familia switch
             {
-                throw new BadRequestException("Familia no Apta");
-            }
+                "MP" => await ObtenerMateriaPrima(),
+                "ME" => await ObtenerMateriaEmpaques(),
+                "PT" => await ObtenerProductosTerminados(),
+                "ECO" => await ObtenerEconomatos(),
+                _ => throw new BadRequestException("Familia no Apta")
+            };
+
+            return Response;
+
         }
 
         public async Task RegistrarAjuste(CrearAjusteReq request)
@@ -79,6 +46,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 try
                 {
                     List<CrearAjustes> listaAjustes = request.ListaAjustes;
+
                     if (familia == "MP")
                     {
                         List<AjusteInsumo> ajusteInsumos = new AjusteMapper().CrearAjusteInsumoList(listaAjustes, idCreador);
@@ -174,5 +142,88 @@ namespace Proy_back_QBD.Service.AjusteService
                 throw new BadRequestException("Familia no apta");
             }
         }
+
+        private async Task<List<TablaAjustesRes>> ObtenerMateriaPrima()
+        {
+            return await _context.CompraInsumos
+                .Select(s => new TablaAjustesRes
+                {
+                    Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Descripcion = s.Insumo!.Descripcion,
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.AjusteInsumos!
+                        .Where(a => a.IdCompraInsumo == s.Id)
+                        .OrderByDescending(a => a.FechaCreacion)
+                        .Select(a => a.Observacion)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        private async Task<List<TablaAjustesRes>> ObtenerMateriaEmpaques()
+        {
+            return await _context.CompraEmpaques
+                .Select(s => new TablaAjustesRes
+                {
+                    Codigo = UtilFamilia.CodigoEmpaque(s.IdEmpaque),
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Descripcion = s.Empaque!.Descripcion ?? "",
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.AjusteEmpaques!
+                        .Where(a => a.IdCompraEmpaque == s.Id)
+                        .OrderByDescending(a => a.FechaCreacion)
+                        .Select(a => a.Observacion)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        private async Task<List<TablaAjustesRes>> ObtenerEconomatos()
+        {
+            return await _context.CompraEconomatos
+                .Select(s => new TablaAjustesRes
+                {
+                    Codigo = UtilFamilia.CodigoInsumo(s.IdEconomato),
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Descripcion = s.Economato!.Descripcion,
+                    Lote = "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = null,
+                    FechaVencimiento = null,
+                    Observacion = s.AjusteEconomatos!
+                        .Where(a => a.IdCompraEconomato == s.Id)
+                        .OrderByDescending(a => a.FechaCreacion)
+                        .Select(a => a.Observacion)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+        private async Task<List<TablaAjustesRes>> ObtenerProductosTerminados()
+        {
+            return await _context.CompraProductos
+                .Select(s => new TablaAjustesRes
+                {
+                    Codigo = UtilFamilia.CodigoInsumo(s.IdProducto),
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Descripcion = s.Producto!.Descripcion ?? "",
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.AjusteProductoTerminados!
+                        .Where(a => a.IdCompraProducto == s.Id)
+                        .OrderByDescending(a => a.FechaCreacion)
+                        .Select(a => a.Observacion)
+                        .FirstOrDefault()
+                })
+                .ToListAsync();
+        }
+
+
     }
 }

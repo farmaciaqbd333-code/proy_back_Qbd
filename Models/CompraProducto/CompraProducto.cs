@@ -15,6 +15,7 @@ namespace proy_back_Qbd.Models
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
+        [Column("stock_disponible")] public decimal StockDisponible { get; set; }
         [Column("id_compra")] public int IdCompra { get; set; }
         [Column("um")] public string? Um { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
@@ -30,6 +31,7 @@ namespace proy_back_Qbd.Models
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         public Compra? Compra { get; set; }
         public Producto? Producto { get; set; }
+        public List<AjusteProductoTerminado>? AjusteProductoTerminados { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
     }

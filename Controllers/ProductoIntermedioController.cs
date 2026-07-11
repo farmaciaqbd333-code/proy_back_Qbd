@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace MiProyecto.Controllers
+namespace Proy_back_QBD.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class IntermProductController : ControllerBase
+    public class ProductoIntermedioController : ControllerBase
     {
-        public IntermProductController()
+        public ProductoIntermedioController()
         {
         }
 
