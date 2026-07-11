@@ -58,7 +58,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Fabricante> Fabricantes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);
             Configure(modelBuilder);
         }
 

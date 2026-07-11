@@ -5,6 +5,7 @@ using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Dto;
 using Proy_back_QBD.Interface;
+using Proy_back_QBD.Request;
 
 namespace proy_back_Qbd.Services
 {
@@ -14,6 +15,11 @@ namespace proy_back_Qbd.Services
         public ProductoIntermedioService(ApiContext context)
         {
             _context = context;
+        }
+
+        public Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
