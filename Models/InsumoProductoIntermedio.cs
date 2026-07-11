@@ -37,4 +37,5 @@ public class InsumoProductoIntermedio
     [Column("id_producto_intermedio")] public int IdProductoIntermedio { get; set; }
     [ForeignKey(nameof(IdInsumo))] public Insumo? Insumo { get; set; }
     [ForeignKey(nameof(IdProductoIntermedio))] public ProductoIntermedio? ProductoIntermedio { get; set; }
+    public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
 }

@@ -15,10 +15,16 @@ namespace proy_back_Qbd.Services
         {
             _context = context;
         }
-        public async Task<List<PanelPIRes>> ListaProductoIntermedio()
+
+        public Task<TablaPIRes> DetalleConsumo()
         {
-            List<PanelPIRes> response = await _context.ProductosIntermedios
-            .Select(s => new PanelPIRes()
+            throw new NotImplementedException();
+        }
+
+        public async Task<List<TablaPIRes>> ListaProductoIntermedio()
+        {
+            List<TablaPIRes> response = await _context.ProductosIntermedios
+            .Select(s => new TablaPIRes()
             {
                 Id = s.Id,
                 Registro = Alfanumerico.ConvertToBase36(s.Id),

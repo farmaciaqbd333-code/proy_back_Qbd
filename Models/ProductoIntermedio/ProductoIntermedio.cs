@@ -15,7 +15,6 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")] public int Id { get; set; }
-        [Column("registro")] public string? Registro { get; set; }
         [Column("lote")] public string? Lote { get; set; }
         [Column("id_insumo")] public int IdInsumo { get; set; }
         [Column("formula_rapida")] public string? FormulaRapida { get; set; }
