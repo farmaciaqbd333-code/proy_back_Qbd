@@ -34,5 +34,33 @@ namespace proy_back_Qbd.Models.Ajuste
         {
             return crearAjusteReqs.Select(s => CrearAjusteEmpaque(s, idCreador)).ToList();
         }
+        public AjusteEconomato CrearAjusteEconomato(CrearAjustes source, int idCreador)
+        {
+            return new AjusteEconomato
+            {
+                Ajuste = source.Ajuste,
+                IdCompraEconomato = source.IdCompraFamilia,
+                IdCreador = idCreador,
+                Observacion = source.Observacion
+            };
+        }
+        public List<AjusteEconomato> CrearAjusteEconomatoList(List<CrearAjustes> crearAjusteReqs, int idCreador)
+        {
+            return crearAjusteReqs.Select(s => CrearAjusteEconomato(s, idCreador)).ToList();
+        }
+        public AjusteProductoTerminado CrearAjusteProductoTerminado(CrearAjustes source, int idCreador)
+        {
+            return new AjusteProductoTerminado
+            {
+                Ajuste = source.Ajuste,
+                IdCompraProducto = source.IdCompraFamilia,
+                IdCreador = idCreador,
+                Observacion = source.Observacion
+            };
+        }
+        public List<AjusteProductoTerminado> CrearAjusteProductoTerminadoList(List<CrearAjustes> crearAjusteReqs, int idCreador)
+        {
+            return crearAjusteReqs.Select(s => CrearAjusteProductoTerminado(s, idCreador)).ToList();
+        }
     }
 }

@@ -2,7 +2,6 @@ namespace Proy_back_QBD.Request
 {
     public class CrearProductoIntermedioReq
     {
-        public required string Registro { get; set; }
         public required string Lote { get; set; }
         public int IdInsumo { get; set; }
         public required string LoteEstandar { get; set; }

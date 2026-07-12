@@ -47,47 +47,27 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     List<CrearAjustes> listaAjustes = request.ListaAjustes;
 
-                    if (familia == "MP")
+                    switch (familia)
                     {
-                        List<AjusteInsumo> ajusteInsumos = new AjusteMapper().CrearAjusteInsumoList(listaAjustes, idCreador);
-                        foreach (var item in ajusteInsumos)
-                        {
-                            AjusteInsumo ajusteInsumo = item;
-                            CompraInsumos compraInsumo = await _context.CompraInsumos
-                            .Where(w => w.Id == ajusteInsumo.IdCompraInsumo)
-                            .FirstOrDefaultAsync() ?? throw new NotFoundException("compraInsumo no encontrada");
-                            if (compraInsumo.StockDisponible == null) throw new BadRequestException("el stock disponible es null, tiene que ser 0");
-                            else
-                            {
-                                compraInsumo.StockDisponible += ajusteInsumo.Ajuste;
-                            }
-                            _context.AjusteInsumos.Add(ajusteInsumo);
-                        }
+                        case "MP":
+                            await StrategyCrearAjusteInsumo(listaAjustes, idCreador); break;
+                        case "ME":
+                            await StrategyCrearAjusteEmpaque(listaAjustes, idCreador); break;
+                        case "ECO":
+                            await StrategyCrearAjusteEconomato(listaAjustes, idCreador); break;
+                        case "PT":
+                            await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador); break;
+                        default: throw new BadRequestException("Familia no apta");
                     }
-                    if (familia == "ME")
-                    {
-                        List<AjusteEmpaque> ajusteEmpaques = new AjusteMapper().CrearAjusteEmpaqueList(listaAjustes, idCreador);
-                        foreach (var item in ajusteEmpaques)
-                        {
-                            AjusteEmpaque ajusteEmpaque = item;
-                            CompraEmpaques compraEmpaque = await _context.CompraEmpaques
-                            .Where(w => w.Id == ajusteEmpaque.IdCompraEmpaque)
-                            .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
-                            if (compraEmpaque.StockDisponible == null) throw new BadRequestException("el stock disponible es null, tiene que ser 0");
-                            else
-                            {
-                                compraEmpaque.StockDisponible += ajusteEmpaque.Ajuste;
-                            }
-                            _context.AjusteEmpaques.Add(ajusteEmpaque);
-                        }
-                    }
+                    ;
+
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
                     await transaction.RollbackAsync();
-                    throw;
+                    throw new ServerException("Ocurrió un error al crear el ajuste.", e);
                 }
             }
             else
@@ -225,6 +205,58 @@ namespace Proy_back_QBD.Service.AjusteService
                 .ToListAsync();
         }
 
-
+        //REGISTRAR AJUSTES
+        private async Task StrategyCrearAjusteInsumo(List<CrearAjustes> listaAjustes, int idCreador)
+        {
+            List<AjusteInsumo> ajusteInsumos = new AjusteMapper().CrearAjusteInsumoList(listaAjustes, idCreador);
+            foreach (var item in ajusteInsumos)
+            {
+                AjusteInsumo ajusteInsumo = item;
+                CompraInsumos compraInsumo = await _context.CompraInsumos
+                .Where(w => w.Id == ajusteInsumo.IdCompraInsumo)
+                .FirstOrDefaultAsync() ?? throw new NotFoundException("compraInsumo no encontrada");
+                compraInsumo.StockDisponible += ajusteInsumo.Ajuste;
+                _context.AjusteInsumos.Add(ajusteInsumo);
+            }
+        }
+        private async Task StrategyCrearAjusteEmpaque(List<CrearAjustes> listaAjustes, int idCreador)
+        {
+            List<AjusteEmpaque> ajusteEmpaques = new AjusteMapper().CrearAjusteEmpaqueList(listaAjustes, idCreador);
+            foreach (var item in ajusteEmpaques)
+            {
+                AjusteEmpaque ajusteEmpaque = item;
+                CompraEmpaques compraEmpaque = await _context.CompraEmpaques
+                .Where(w => w.Id == ajusteEmpaque.IdCompraEmpaque)
+                .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
+                compraEmpaque.StockDisponible += ajusteEmpaque.Ajuste;
+                _context.AjusteEmpaques.Add(ajusteEmpaque);
+            }
+        }
+        private async Task StrategyCrearAjusteEconomato(List<CrearAjustes> listaAjustes, int idCreador)
+        {
+            List<AjusteEconomato> ajusteEconomatos = new AjusteMapper().CrearAjusteEconomatoList(listaAjustes, idCreador);
+            foreach (var item in ajusteEconomatos)
+            {
+                AjusteEconomato ajusteEconomato = item;
+                CompraEconomatos compraEconomato = await _context.CompraEconomatos
+                .Where(w => w.Id == ajusteEconomato.IdCompraEconomato)
+                .FirstOrDefaultAsync() ?? throw new NotFoundException("compraEconomato no encontrada");
+                compraEconomato.StockDisponible += ajusteEconomato.Ajuste;
+                _context.AjusteEconomatos.Add(ajusteEconomato);
+            }
+        }
+        private async Task StrategyCrearAjusteProductoTerminado(List<CrearAjustes> listaAjustes, int idCreador)
+        {
+            List<AjusteProductoTerminado> ajusteProductoTerminados = new AjusteMapper().CrearAjusteProductoTerminadoList(listaAjustes, idCreador);
+            foreach (var item in ajusteProductoTerminados)
+            {
+                AjusteProductoTerminado ajusteProductoTerminado = item;
+                CompraProductos compraProductoTerminado = await _context.CompraProductos
+                .Where(w => w.Id == ajusteProductoTerminado.IdCompraProducto)
+                .FirstOrDefaultAsync() ?? throw new NotFoundException("compraProductoTerminado no encontrada");
+                compraProductoTerminado.StockDisponible += ajusteProductoTerminado.Ajuste;
+                _context.AjusteProductoTerminados.Add(ajusteProductoTerminado);
+            }
+        }
     }
 }

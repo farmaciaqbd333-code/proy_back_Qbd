@@ -155,6 +155,9 @@ app.UseExceptionHandler(appError =>
             case NotFoundException:
                 context.Response.StatusCode = 404;
                 break;
+            case ServerException:
+                context.Response.StatusCode = 500;
+                break;
 
             default:
                 context.Response.StatusCode = 500;

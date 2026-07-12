@@ -9,6 +9,10 @@ namespace proy_back_Qbd.Exceptions
     {
         public BadRequestException(string message) : base(message) { }
     }
+    public class ServerException : Exception
+    {
+        public ServerException(string message,Exception e) : base(message) { }
+    }
 
     public class NotFoundException : Exception
     {

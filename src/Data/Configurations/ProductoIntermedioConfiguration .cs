@@ -52,6 +52,9 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.IdEmpaque)
                 .HasColumnName("id_empaque");
 
+            builder.Property(x => x.IdEtiqueta)
+                .HasColumnName("id_etiqueta");
+
             builder.Property(x => x.CodTermo)
                 .HasColumnName("cod_termo");
 
@@ -94,21 +97,20 @@ namespace proy_back_Qbd.Data.Configurations
 
             builder.HasOne(x => x.Insumo)
             .WithMany()
-            .HasForeignKey(x => x.IdInsumo).OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(x => x.IdInsumo)
+            ;
 
             builder.HasOne(x => x.Empaque)
             .WithMany()
-            .HasForeignKey(x => x.IdEmpaque).OnDelete(DeleteBehavior.Restrict);
+            .HasForeignKey(x => x.IdEmpaque);
 
             builder.HasOne(x => x.Creador)
                 .WithMany(wm => wm.ProductosIntermediosCreados)
-                .HasForeignKey(x => x.IdCreador)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(x => x.IdCreador);
 
             builder.HasOne(x => x.Modificador)
                 .WithMany(wm => wm.ProductosIntermediosModificados)
-                .HasForeignKey(x => x.IdModificador)
-                .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(x => x.IdModificador);
         }
     }
 }

@@ -17,6 +17,7 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public string? Autorizado { get; set; }
         public string? Procedimiento { get; set; }
         public int IdEmpaque { get; set; }
+        public int IdEtiqueta { get; set; }
         public string? CodTermo { get; set; }
         public string? CodEtiqueta1 { get; set; }
         public string? CodEtiqueta2 { get; set; }
