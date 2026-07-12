@@ -84,8 +84,7 @@ namespace proy_back_Qbd.Data.Configurations
                 .ValueGeneratedOnAddOrUpdate();
 
             builder.Property(x => x.FechaModificacion)
-                .HasColumnName("fecha_modificacion")
-                .ValueGeneratedOnAddOrUpdate();
+                .HasColumnName("fecha_modificacion");
 
             builder.Property(x => x.IdCreador)
                 .HasColumnName("id_creador");

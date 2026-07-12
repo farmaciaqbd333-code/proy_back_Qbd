@@ -19,7 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Proy_back_QBD.csproj" />
+    <ProjectReference Include="..\Proy_Back_QBD\Proy_Back_QBD.csproj" />
   </ItemGroup>
+
 
 </Project>
