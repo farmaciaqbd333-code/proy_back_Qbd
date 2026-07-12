@@ -12,6 +12,8 @@ namespace proy_back_Qbd.Models.Ajuste
             {
                 Ajuste = source.Ajuste,
                 IdCompraInsumo = source.IdCompraFamilia,
+                StockAnterior = source.StockAnterior,
+                StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
                 Observacion = source.Observacion
             };
@@ -26,6 +28,8 @@ namespace proy_back_Qbd.Models.Ajuste
             {
                 Ajuste = source.Ajuste,
                 IdCompraEmpaque = source.IdCompraFamilia,
+                StockAnterior = source.StockAnterior,
+                StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
                 Observacion = source.Observacion
             };
@@ -40,6 +44,8 @@ namespace proy_back_Qbd.Models.Ajuste
             {
                 Ajuste = source.Ajuste,
                 IdCompraEconomato = source.IdCompraFamilia,
+                StockAnterior = source.StockAnterior,
+                StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
                 Observacion = source.Observacion
             };
@@ -54,6 +60,8 @@ namespace proy_back_Qbd.Models.Ajuste
             {
                 Ajuste = source.Ajuste,
                 IdCompraProducto = source.IdCompraFamilia,
+                StockAnterior = source.StockAnterior,
+                StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
                 Observacion = source.Observacion
             };
