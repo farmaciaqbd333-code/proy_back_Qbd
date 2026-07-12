@@ -40,11 +40,11 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.FechaVencimiento)
                 .HasColumnName("fecha_vencimiento");
 
-            builder.Property(x => x.Elaborado)
-                .HasColumnName("elaborado");
+            builder.Property(x => x.IdElaborado)
+                .HasColumnName("id_elaborado");
 
-            builder.Property(x => x.Autorizado)
-                .HasColumnName("autorizado");
+            builder.Property(x => x.IdAutorizado)
+                .HasColumnName("id_autorizado");
 
             builder.Property(x => x.Procedimiento)
                 .HasColumnName("procedimiento");
@@ -106,6 +106,12 @@ namespace proy_back_Qbd.Data.Configurations
             builder.HasOne(x => x.Creador)
                 .WithMany(wm => wm.ProductosIntermediosCreados)
                 .HasForeignKey(x => x.IdCreador);
+            builder.HasOne(x => x.Elaborador)
+                .WithMany(wm => wm.ProductosIntermediosElaborados)
+                .HasForeignKey(x => x.IdElaborado);
+            builder.HasOne(x => x.Autorizador)
+                .WithMany(wm => wm.ProductosIntermediosAutorizados)
+                .HasForeignKey(x => x.IdAutorizado);
 
             builder.HasOne(x => x.Modificador)
                 .WithMany(wm => wm.ProductosIntermediosModificados)

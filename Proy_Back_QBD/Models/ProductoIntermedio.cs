@@ -13,8 +13,8 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public string? Um { get; set; }
         public DateTimeOffset FechaEmision { get; set; }
         public DateTimeOffset FechaVencimiento { get; set; }
-        public string? Elaborado { get; set; }
-        public string? Autorizado { get; set; }
+        public int? IdElaborado { get; set; }
+        public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; }
         public int IdEmpaque { get; set; }
         public int IdEtiqueta { get; set; }
@@ -34,6 +34,8 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         // Navigation Properties
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
+        public Usuario? Elaborador { get; set; }
+        public Usuario? Autorizador { get; set; }
         public Empaque? Empaque { get; set; }
         public Insumo? Insumo { get; set; }
     }

@@ -66,7 +66,7 @@ namespace proy_back_Qbd.Services
                 Um = s.Insumo.UnidadMedida,
                 FechaEmision = s.FechaEmision,
                 FechaVencimiento = s.FechaVencimiento,
-                Elaborado = s.Elaborado
+                Elaborado = s.Elaborador.Codigo
             })
             .AsNoTracking()
             .ToListAsync();
