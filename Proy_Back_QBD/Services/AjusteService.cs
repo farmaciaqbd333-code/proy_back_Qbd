@@ -170,6 +170,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     Saldo = s.StockDisponible,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
+                    Clasificacion = s.Insumo!.Clasificacion ?? "MP",
                     Observacion = s.AjusteInsumos!
                         .Where(a => a.IdCompraInsumo == s.Id)
                         .OrderByDescending(a => a.FechaCreacion)
