@@ -14,7 +14,6 @@ namespace Proy_back_QBD.Request
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; } = string.Empty;
         public int? IdEmpaque { get; set; }
-        public int? IdEtiqueta { get; set; }
         public string? Aspecto { get; set; } = string.Empty;
         public string? Color { get; set; } = string.Empty;
         public string? Olor { get; set; } = string.Empty;

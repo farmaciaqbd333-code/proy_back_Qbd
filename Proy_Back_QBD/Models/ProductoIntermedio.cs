@@ -17,19 +17,14 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; }
         public int IdEmpaque { get; set; }
-        public int IdEtiqueta { get; set; }
-        public string? CodTermo { get; set; }
-        public string? CodEtiqueta1 { get; set; }
-        public string? CodEtiqueta2 { get; set; }
-        public string? CodAdicional { get; set; }
         public string? Aspecto { get; set; }
         public string? Color { get; set; }
         public string? Olor { get; set; }
         public string? Ph { get; set; }
         public DateTimeOffset FechaCreacion { get; set; }
-        public DateTimeOffset FechaModificacion { get; set; }
+        public DateTimeOffset? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
-        public int IdModificador { get; set; }
+        public int? IdModificador { get; set; }
 
         // Navigation Properties
         public Usuario? Creador { get; set; }
