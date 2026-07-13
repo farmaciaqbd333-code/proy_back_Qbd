@@ -52,20 +52,6 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.IdEmpaque)
                 .HasColumnName("id_empaque");
 
-            builder.Property(x => x.IdEtiqueta)
-                .HasColumnName("id_etiqueta");
-
-            builder.Property(x => x.CodTermo)
-                .HasColumnName("cod_termo");
-
-            builder.Property(x => x.CodEtiqueta1)
-                .HasColumnName("cod_etiqueta1");
-
-            builder.Property(x => x.CodEtiqueta2)
-                .HasColumnName("cod_etiqueta2");
-
-            builder.Property(x => x.CodAdicional)
-                .HasColumnName("cod_adicional");
 
             builder.Property(x => x.Aspecto)
                 .HasColumnName("aspecto");

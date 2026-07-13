@@ -27,9 +27,9 @@ public class InsumoProductoIntermedio
 
     [Column("csp")] public bool Csp { get; set; }
 
-    [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+    [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }
 
-    [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
+    [Column("fecha_modificacion")] public DateTimeOffset? FechaModificacion { get; set; }
 
     [Column("creador")] public Usuario? Creador { get; set; }
 
