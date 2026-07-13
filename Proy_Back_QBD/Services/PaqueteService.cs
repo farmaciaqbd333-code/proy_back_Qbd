@@ -77,6 +77,7 @@ namespace proy_back_Qbd.Services
                 IdCompraInsumo = req.IdCompraInsumo
             };
             _context.PaqueteInsumos.Add(paqueteInsumo);
+            compraInsumo.StockDisponible += paqueteEntrante;
             await _context.SaveChangesAsync();
             return paquete.Id;
 

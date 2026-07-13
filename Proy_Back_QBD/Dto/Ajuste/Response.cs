@@ -10,6 +10,7 @@ namespace proy_back_Qbd.Models.Ajuste.response
         public required string Lote { get; set; }
         public decimal Saldo { get; set; }
         public string? Observacion { get; set; }
+        public string? Clasificacion { get; set; }
     }
     public class DetalleAjusteRes
     {

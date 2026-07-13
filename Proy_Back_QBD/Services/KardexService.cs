@@ -68,7 +68,8 @@ namespace proy_back_Qbd.Services
         {
             List<StockRes> responseMP = familia switch
             {
-                "MP" => await ObtenerMateriaPrima(),
+                "MP" => await ObtenerMateriaPrima("MP"),
+                "PI" => await ObtenerMateriaPrima("PI"),
                 "ME" => await ObtenerMateriaEmpaque(),
                 "ECO" => await ObtenerEconomato(),
                 "PT" => await ObtenerProductoTerminado(),
@@ -124,9 +125,10 @@ namespace proy_back_Qbd.Services
             }
 
         }
-        private async Task<List<StockRes>> ObtenerMateriaPrima()
+        private async Task<List<StockRes>> ObtenerMateriaPrima(string clasificacion)
         {
             return await _context.Insumos
+            .Where(i => i.Clasificacion == clasificacion || (clasificacion == "MP" && i.Clasificacion == null))
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
             {
@@ -137,7 +139,7 @@ namespace proy_back_Qbd.Services
                 Salidas = s.Sum(x => x.DetalleNotaSalidaInsumo!.Sum(s2 => s2.Cantidad) + x.ProductoIntermedio!.Sum(s => s.Cantidad)),
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
-            .Where(ci => ci.FechaVencimiento >= DateTimeOffset.UtcNow)
+            .Where(ci => ci.FechaVencimiento < DateTimeOffset.UtcNow)
             .Sum(ci => ci.StockDisponible))
             }).ToListAsync()
             ;
@@ -155,7 +157,7 @@ namespace proy_back_Qbd.Services
                             Salidas = s.Sum(x => x.DetalleNotaSalidaEmpaques!.Sum(s2 => s2.Cantidad) + x.ProductosIntermedios!.Count()),
                             Ajustes = s.Sum(s => s.CompraEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
                             Baja = s.Sum(x => x.CompraEmpaques
-    .Where(ce => ce.FechaVencimiento >= DateTimeOffset.UtcNow)
+    .Where(ce => ce.FechaVencimiento < DateTimeOffset.UtcNow)
     .Sum(ce => ce.StockDisponible))
                         }).ToListAsync()
                         ;

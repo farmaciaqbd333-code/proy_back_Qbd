@@ -115,6 +115,40 @@ namespace Proy_back_QBD.Service.AjusteService
 
                     }).ToListAsync();
                 }
+                if (familia == "PT")
+                {
+                    response = await _context.AjusteProductoTerminados
+                    .AsNoTracking()
+                    .Where(w => w.IdCompraProducto == registroId)
+                    .OrderByDescending(odb => odb.FechaCreacion)
+                    .Select(s => new DetalleAjusteRes()
+                    {
+                        FechaCreacion = s.FechaCreacion,
+                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
+                        Stock = s.StockAnterior,
+                        Diferencia = s.Ajuste,
+                        StockFinal = s.StockNuevo,
+                        Observacion = s.Observacion ?? ""
+
+                    }).ToListAsync();
+                }
+                if (familia == "ECO")
+                {
+                    response = await _context.AjusteEconomatos
+                    .AsNoTracking()
+                    .Where(w => w.IdCompraEconomato == registroId)
+                    .OrderByDescending(odb => odb.FechaCreacion)
+                    .Select(s => new DetalleAjusteRes()
+                    {
+                        FechaCreacion = s.FechaCreacion,
+                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
+                        Stock = s.StockAnterior,
+                        Diferencia = s.Ajuste,
+                        StockFinal = s.StockNuevo,
+                        Observacion = s.Observacion ?? ""
+
+                    }).ToListAsync();
+                }
                 return response;
             }
             else
@@ -136,6 +170,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     Saldo = s.StockDisponible,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
+                    Clasificacion = s.Insumo!.Clasificacion ?? "MP",
                     Observacion = s.AjusteInsumos!
                         .Where(a => a.IdCompraInsumo == s.Id)
                         .OrderByDescending(a => a.FechaCreacion)

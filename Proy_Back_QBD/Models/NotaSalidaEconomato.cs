@@ -27,7 +27,7 @@ namespace proy_back_Qbd.Models
 
         [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; } = null!;
 
-        [ForeignKey(nameof(IdEconomato))] public Producto? Producto { get; set; } = null!;
+        [ForeignKey(nameof(IdEconomato))] public Economato? Economato { get; set; } = null!;
 
         [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; } = null!;
 
