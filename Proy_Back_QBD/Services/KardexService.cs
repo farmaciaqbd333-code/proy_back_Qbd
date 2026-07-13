@@ -68,7 +68,8 @@ namespace proy_back_Qbd.Services
         {
             List<StockRes> responseMP = familia switch
             {
-                "MP" => await ObtenerMateriaPrima(),
+                "MP" => await ObtenerMateriaPrima("MP"),
+                "PI" => await ObtenerMateriaPrima("PI"),
                 "ME" => await ObtenerMateriaEmpaque(),
                 "ECO" => await ObtenerEconomato(),
                 "PT" => await ObtenerProductoTerminado(),
@@ -124,9 +125,10 @@ namespace proy_back_Qbd.Services
             }
 
         }
-        private async Task<List<StockRes>> ObtenerMateriaPrima()
+        private async Task<List<StockRes>> ObtenerMateriaPrima(string clasificacion)
         {
             return await _context.Insumos
+            .Where(i => i.Clasificacion == clasificacion || (clasificacion == "MP" && i.Clasificacion == null))
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
             {
