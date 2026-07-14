@@ -7,7 +7,7 @@ namespace Proy_back_QBD.Services
 {
     public interface IFormulaRService
     {
-        Task<List<FormulaRRes>?> Listar();
+        Task<List<FormulaRRes>?> Listar(string clasificacion);
         Task<string> Crear(FormulaRCreReq request);
         Task<string> Actualizar(int id, FormulaRUpdReq request);
         Task<string> Eliminar(int formulaRId);

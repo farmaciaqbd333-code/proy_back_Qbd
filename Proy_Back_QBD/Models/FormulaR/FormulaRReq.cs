@@ -21,6 +21,7 @@ namespace Proy_back_QBD.Dto.Auxiliares
         public string? Aspecto { get; set; }  // Puede ser nulo
         public string? Color { get; set; }  // Puede ser nulo
         public string? Olor { get; set; }  // Puede ser nulo
+        public string? Clasificacion { get; set; }  // Puede ser nulo
         public string? Ph { get; set; }  // Puede ser nulo
         public int CreadorId { get; set; }
         public int? SedeId { get; set; }  // Puede ser nulo

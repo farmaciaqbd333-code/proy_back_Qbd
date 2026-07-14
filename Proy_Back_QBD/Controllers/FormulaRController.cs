@@ -23,10 +23,10 @@ public class FormulaRController : ControllerBase
 
     [HttpGet]
     [SwaggerResponse(200, "Creacion exitosa", typeof(FormulaRRes))]
-    public async Task<IActionResult> ListaFormulaR()
+    public async Task<IActionResult> ListaFormulaR(string clasificacion)
     {
 
-        List<FormulaRRes>? response = await _formulaRService.Listar();
+        List<FormulaRRes>? response = await _formulaRService.Listar(clasificacion);
 
         return Ok(response);
     }
@@ -59,7 +59,7 @@ public class FormulaRController : ControllerBase
 
         return Ok(response);
     }
-    
+
     [HttpDelete("{id}")]
     [SwaggerResponse(200, "Actualizar exitosa", typeof(string))]
     public async Task<IActionResult> EliminarFormulaR(int id)
@@ -69,5 +69,5 @@ public class FormulaRController : ControllerBase
 
         return Ok(response);
     }
-    
+
 }

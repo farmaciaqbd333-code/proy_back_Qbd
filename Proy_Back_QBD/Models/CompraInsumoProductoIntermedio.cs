@@ -6,17 +6,29 @@ using Proy_back_QBD.Models;
 
 public class CompraInsumoProductoIntermedio
 {
-    [Column("id"), DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int Id { get; set; }
-    [Column("id_insumo_producto_intermedio")] public int IdInsumoProductoIntermedio { get; set; }
-    [Column("cantidad")] public decimal Cantidad { get; set; }
-    [Column("unidad_medida")] public string UnidadMedida { get; set; } = "G";
-    [Column("fecha_creacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTimeOffset FechaCreacion { get; set; }
-    [Column("id_creador")] public int IdCreador { get; set; }
-    [Column("id_compra_insumo")] public int IdCompraInsumo { get; set; }
-    [Column("id_modificador")] public int? IdModificador { get; set; }
-    [Column("fecha_modificacion")] public DateTimeOffset? FechaModificacion { get; set; }
-    [ForeignKey(nameof(IdInsumoProductoIntermedio))] public InsumoProductoIntermedio? InsumoProductoIntermedio { get; set; }
-    [ForeignKey(nameof(IdCompraInsumo))] public CompraInsumos? CompraInsumo { get; set; }
-    [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
-    [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; }
+    public int Id { get; set; }
+
+    public int IdInsumoProductoIntermedio { get; set; }
+
+    public decimal Cantidad { get; set; }
+
+    public string UnidadMedida { get; set; } = "G";
+
+    public DateTimeOffset FechaCreacion { get; set; }
+
+    public int IdCreador { get; set; }
+
+    public int IdCompraInsumo { get; set; }
+
+    public int? IdModificador { get; set; }
+
+    public DateTimeOffset? FechaModificacion { get; set; }
+
+    public InsumoProductoIntermedio? InsumoProductoIntermedio { get; set; }
+
+    public CompraInsumos? CompraInsumo { get; set; }
+
+    public Usuario? Creador { get; set; }
+
+    public Usuario? Modificador { get; set; }
 }

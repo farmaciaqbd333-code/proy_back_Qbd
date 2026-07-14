@@ -17,7 +17,7 @@ namespace Proy_back_QBD.Request
         public string? Aspecto { get; set; } = string.Empty;
         public string? Color { get; set; } = string.Empty;
         public string? Olor { get; set; } = string.Empty;
-        public decimal Ph { get; set; }
+        public decimal Ph { get; set; } 
         public int IdCreador { get; set; }
         public List<InsumoProductoIntermedioReq> Insumos { get; set; } = new();
     }
@@ -31,10 +31,7 @@ namespace Proy_back_QBD.Request
         public decimal Dilucion { get; set; }
         public required string UnidadMedida { get; set; }
         public decimal CantidadLote { get; set; }
-        public string? Practica { get; set; }
+        public decimal? Practica { get; set; }
         public bool Csp { get; set; }
-        public DateTimeOffset FechaCreacion { get; set; }
-        public int IdCreador { get; set; }
-        public int IdProductoIntermedio { get; set; }
     }
 }

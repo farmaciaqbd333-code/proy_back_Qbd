@@ -2,40 +2,31 @@ using System.ComponentModel.DataAnnotations.Schema;
 using proy_back_Qbd.Models.ProductoIntermedio;
 using Proy_back_QBD.Models;
 
-[Table("insumo_producto_intermedio")]
 public class InsumoProductoIntermedio
 {
-    [Column("id")] public int Id { get; set; }
+    public int Id { get; set; }
+    public int IdInsumo { get; set; }
+    public decimal Porcentaje { get; set; }
+    public required string Variable { get; set; }
+    public decimal CantidadUnidad { get; set; }
+    public decimal FactorCorrecion { get; set; }
+    public decimal Dilucion { get; set; }
+    public required string UnidadMedida { get; set; }
+    public decimal CantidadLote { get; set; }
+    public decimal Practica { get; set; }
+    public bool Csp { get; set; }
+    public DateTimeOffset FechaCreacion { get; set; }
+    public DateTimeOffset? FechaModificacion { get; set; }
 
-    [Column("id_insumo")] public int IdInsumo { get; set; }
+    public Usuario? Creador { get; set; }
+    public Usuario? Modificador { get; set; }
 
-    [Column("porcentaje")] public decimal Porcentaje { get; set; }
+    public int IdProductoIntermedio { get; set; }
+    public int IdCreador { get; set; }
+    public int IdModificador { get; set; }
 
-    [Column("v")] public required string Variable { get; set; }
+    public Insumo? Insumo { get; set; }
+    public ProductoIntermedio? ProductoIntermedio { get; set; }
 
-    [Column("cantidad_unidad")] public decimal CantidadUnidad { get; set; }
-
-    [Column("factor_correcion")] public decimal FactorCorrecion { get; set; }
-
-    [Column("dilucion")] public decimal Dilucion { get; set; }
-
-    [Column("unidad_medida")] public required string UnidadMedida { get; set; }
-
-    [Column("cantidad_lote")] public decimal CantidadLote { get; set; }
-
-    [Column("practica")] public decimal Practica { get; set; }
-
-    [Column("csp")] public bool Csp { get; set; }
-
-    [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }
-
-    [Column("fecha_modificacion")] public DateTimeOffset? FechaModificacion { get; set; }
-
-    [Column("creador")] public Usuario? Creador { get; set; }
-
-    [Column("modificador")] public Usuario? Modificador { get; set; }
-    [Column("id_producto_intermedio")] public int IdProductoIntermedio { get; set; }
-    [ForeignKey(nameof(IdInsumo))] public required Insumo Insumo { get; set; }
-    [ForeignKey(nameof(IdProductoIntermedio))] public required ProductoIntermedio ProductoIntermedio { get; set; }
     public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
 }

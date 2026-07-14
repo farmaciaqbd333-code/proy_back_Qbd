@@ -27,6 +27,8 @@ namespace Proy_back_QBD.Models
         public string? Color { get; set; }  // Puede ser nulo
         [Column("olor")]
         public string? Olor { get; set; }  // Puede ser nulo
+        [Column("clasificacion")]
+        public string? Clasificacion { get; set; }  // Puede ser nulo
         [Column("ph")]
         public string? Ph { get; set; }  // Puede ser nulo
         [Column("fecha_creacion")]

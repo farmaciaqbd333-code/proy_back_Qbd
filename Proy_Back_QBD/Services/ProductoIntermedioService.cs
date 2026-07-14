@@ -1,5 +1,8 @@
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
+using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.ProductoIntermedio;
 using proy_back_Qbd.Util;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
@@ -17,9 +20,76 @@ namespace proy_back_Qbd.Services
             _context = context;
         }
 
-        public Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
+        public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
         {
-            throw new NotImplementedException();
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                ProductoIntermedio productoIntermedio = new ProductoIntermedioMapper().CrearProductoIntermedio(request);
+                _context.ProductosIntermedios.Add(productoIntermedio);
+                foreach (var fInsumo in request.Insumos)
+                {
+                    List<CompraInsumos> compraInsumos = await _context.CompraInsumos
+                    .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible != 0 && w.FechaVencimiento >= DateTimeOffset.UtcNow)
+                    .OrderBy(w => w.FechaVencimiento)
+                    .ToListAsync();
+                    if (!compraInsumos.Any()) throw new NotFoundException("No hay compraInsumos de este insumo");
+                    decimal stockDisponibleTotal = compraInsumos.Sum(s => s.StockDisponible);
+                    decimal cantidadUsar = fInsumo.CantidadLote;
+                    InsumoProductoIntermedio insumoProductoIntermedio = new ProductoIntermedioMapper().CrearInsumosProductoIntermedio(fInsumo);
+                    insumoProductoIntermedio.IdCreador = request.IdCreador;
+                    insumoProductoIntermedio.ProductoIntermedio = productoIntermedio;
+                    _context.InsumoProductoIntermedios.Add(insumoProductoIntermedio);
+
+                    if (stockDisponibleTotal < cantidadUsar) throw new NotFoundException("No hay suficiente stock para realizar este pedido, solo se cuenta con" + stockDisponibleTotal);
+                    foreach (var compraInsumo in compraInsumos)
+                    {
+                        if (compraInsumo.StockDisponible < cantidadUsar)
+                        {
+                            compraInsumo.CompraInsumoProductoIntermedio.Add(new CompraInsumoProductoIntermedio()
+                            {
+                                Cantidad = compraInsumo.StockDisponible,
+                                IdCreador = request.IdCreador,
+                                InsumoProductoIntermedio = insumoProductoIntermedio,
+                                IdCompraInsumo = compraInsumo.Id
+                            });
+                            cantidadUsar -= compraInsumo.StockDisponible;
+                            compraInsumo.StockDisponible = 0;
+                        }
+                        else
+                        {
+                            compraInsumo.CompraInsumoProductoIntermedio.Add(new CompraInsumoProductoIntermedio()
+                            {
+                                Cantidad = cantidadUsar,
+                                IdCreador = request.IdCreador,
+                                InsumoProductoIntermedio = insumoProductoIntermedio,
+                                IdCompraInsumo = compraInsumo.Id
+                            });
+                            compraInsumo.StockDisponible = compraInsumo.StockDisponible - cantidadUsar;
+                            break;
+                        }
+
+                    }
+
+                }
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return productoIntermedio.Id;
+            }
+            catch (NotFoundException ex)
+            {
+                try
+                {
+                    await transaction.RollbackAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Console.WriteLine($"Rollback falló: {rollbackEx}");
+                }
+
+                throw;
+            }
+
         }
 
         public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)

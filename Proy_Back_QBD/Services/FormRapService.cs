@@ -140,9 +140,10 @@ namespace Proy_back_QBD.Services
         }
 
 
-        public async Task<List<FormulaRRes>?> Listar()
+        public async Task<List<FormulaRRes>?> Listar(string clasificacion)
         {
             List<FormulaRRes> response = await _context.FormulasR
+            .Where(w => w.Clasificacion == clasificacion)
                                                         .OrderBy(obd => obd.FechaCreacion)
                                                         .Select(s => new FormulaRRes
                                                         {

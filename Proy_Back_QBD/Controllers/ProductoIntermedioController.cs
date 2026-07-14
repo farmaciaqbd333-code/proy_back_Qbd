@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Proy_back_QBD.Interface;
+using Proy_back_QBD.Request;
 
 namespace Proy_back_QBD.Controllers
 {
@@ -22,6 +23,11 @@ namespace Proy_back_QBD.Controllers
         public async Task<IActionResult> DetalleConsumo(int idProductoIntermedio)
         {
             return Ok(await _productoIntermedioService.DetalleConsumo(idProductoIntermedio));
+        }
+        [HttpPost]
+        public async Task<IActionResult> Crear(CrearProductoIntermedioReq request)
+        {
+            return Ok(await _productoIntermedioService.CrearProductoIntermedio(request));
         }
 
 
