@@ -15,8 +15,8 @@ namespace proy_back_Qbd.Models
     }
     public class PaqueteEmpaqueCrearReq
     {
-        public decimal CantidadPaquete { get; set; }
-        public decimal PesoUnitario { get; set; }
+        public int CantidadPaquete { get; set; }
+        public int PesoUnitario { get; set; }
         public decimal Tara { get; set; }
         public int IdCreador { get; set; }
         public int IdCompraEmpaque { get; set; }

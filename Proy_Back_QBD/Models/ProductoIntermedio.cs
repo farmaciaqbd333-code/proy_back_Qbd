@@ -16,7 +16,6 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public int? IdElaborado { get; set; }
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; }
-        public int? IdEmpaque { get; set; }
         public string? Aspecto { get; set; }
         public string? Color { get; set; }
         public string? Olor { get; set; }
@@ -31,8 +30,8 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public Usuario? Modificador { get; set; }
         public Usuario? Elaborador { get; set; }
         public Usuario? Autorizador { get; set; }
-        public Empaque? Empaque { get; set; }
         public Insumo? Insumo { get; set; }
         public List<InsumoProductoIntermedio>? InsumoProductoIntermedio { get; set; } = new();
+        public List<EmpaqueProductoIntermedio>? EmpaqueProductoIntermedios { get; set; } = new();
     }
 }

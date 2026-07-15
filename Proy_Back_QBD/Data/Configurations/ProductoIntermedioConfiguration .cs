@@ -49,8 +49,6 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.Procedimiento)
                 .HasColumnName("procedimiento");
 
-            builder.Property(x => x.IdEmpaque)
-                .HasColumnName("id_empaque");
 
 
             builder.Property(x => x.Aspecto)
@@ -84,10 +82,6 @@ namespace proy_back_Qbd.Data.Configurations
             .WithMany()
             .HasForeignKey(x => x.IdInsumo)
             ;
-
-            builder.HasOne(x => x.Empaque)
-            .WithMany()
-            .HasForeignKey(x => x.IdEmpaque);
 
             builder.HasOne(x => x.Creador)
                 .WithMany(wm => wm.ProductosIntermediosCreados)

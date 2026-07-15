@@ -56,6 +56,8 @@ namespace Proy_back_QBD.Data
         public DbSet<InsumoR> InsumosR { get; set; }
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Fabricante> Fabricantes { get; set; }
+        public DbSet<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; }
+        public DbSet<CompraEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);
@@ -81,7 +83,6 @@ namespace Proy_back_QBD.Data
 
             modelBuilder.Entity<ProductoIntermedio>((e) =>
             {
-                e.HasOne(ho => ho.Empaque).WithMany(wm => wm.ProductosIntermedios).HasForeignKey(hfk => hfk.IdEmpaque);
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.ProductoIntermedio).HasForeignKey(hfk => hfk.IdInsumo);
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.ProductosIntermediosCreados).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ProductosIntermediosModificados).HasForeignKey(hfk => hfk.IdModificador);

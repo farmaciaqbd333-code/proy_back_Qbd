@@ -13,11 +13,11 @@ namespace Proy_back_QBD.Request
         public required int IdElaborado { get; set; }
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; } = string.Empty;
-        public int? IdEmpaque { get; set; }
+        public List<int> IdEmpaques { get; set; } = new();
         public string? Aspecto { get; set; } = string.Empty;
         public string? Color { get; set; } = string.Empty;
         public string? Olor { get; set; } = string.Empty;
-        public decimal Ph { get; set; } 
+        public decimal Ph { get; set; }
         public int IdCreador { get; set; }
         public List<InsumoProductoIntermedioReq> Insumos { get; set; } = new();
     }
