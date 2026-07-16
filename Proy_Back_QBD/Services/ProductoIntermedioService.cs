@@ -218,6 +218,7 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
                 LoteEstandar = s.LoteEstandar,
                 Tipo = s.Tipo,
+                TipoUso = s.TipoUso,
                 Cantidad = s.Cantidad,
                 Um = s.Insumo.UnidadMedida,
                 FechaEmision = s.FechaEmision,
