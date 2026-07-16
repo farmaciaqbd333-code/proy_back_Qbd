@@ -20,9 +20,9 @@ namespace Proy_back_QBD.Dto
 
         public string? Um { get; set; } // Unidad de medida
 
-        public DateTimeOffset? FechaEmision { get; set; }
+        public DateTime? FechaEmision { get; set; }
 
-        public DateTimeOffset? FechaVencimiento { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
 
         public string? Elaborado { get; set; }
     }
