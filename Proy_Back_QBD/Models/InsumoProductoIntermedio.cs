@@ -23,7 +23,7 @@ public class InsumoProductoIntermedio
 
     public int IdProductoIntermedio { get; set; }
     public int IdCreador { get; set; }
-    public int IdModificador { get; set; }
+    public int? IdModificador { get; set; }
 
     public Insumo? Insumo { get; set; }
     public ProductoIntermedio? ProductoIntermedio { get; set; }

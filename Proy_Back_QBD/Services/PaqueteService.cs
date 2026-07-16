@@ -85,7 +85,7 @@ namespace proy_back_Qbd.Services
         public async Task<int> CrearPaqueteEmpaque(PaqueteEmpaqueCrearReq req)
         {
             //CONSULTA
-            CompraEmpaques compraEmpaque = await _context.CompraEmpaques
+            CompraEmpaque compraEmpaque = await _context.CompraEmpaques
                 .Include(i => i.PaqueteEmpaques!)
                 .ThenInclude(p => p.Paquete)
                 .FirstOrDefaultAsync(f => f.Id == req.IdCompraEmpaque) ?? throw new NotFoundException("No se encontró la compra Empaque");
@@ -139,7 +139,7 @@ namespace proy_back_Qbd.Services
             }
             else
             {
-                CompraEmpaques compraEmpaque = await _context.PaqueteEmpaques
+                CompraEmpaque compraEmpaque = await _context.PaqueteEmpaques
            .Where(w => w.IdPaquete == idPaquete)
            .Select(s => s.CompraEmpaques)
            .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra empaque"); ;
@@ -212,7 +212,7 @@ namespace proy_back_Qbd.Services
             .ThenInclude(th => th!.CompraEmpaques)
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             PaqueteEmpaque paqueteEmpaques = paquete.PaqueteEmpaques ?? throw new NotFoundException("No se encontró paquetes empaques");
-            CompraEmpaques CompraEmpaque = paqueteEmpaques.CompraEmpaques ?? throw new NotFoundException("No hay Compra empaque");
+            CompraEmpaque CompraEmpaque = paqueteEmpaques.CompraEmpaques ?? throw new NotFoundException("No hay Compra empaque");
             if (paquete.PaqueteEmpaques == null) throw new NotFoundException("No se encontró paquetes Empaques");
             var totales = await _context.PaqueteEmpaques.Where(w => w.IdCompraEmpaque == paquete.PaqueteEmpaques.IdCompraEmpaque)
                                     .GroupBy(g => g.IdCompraEmpaque)

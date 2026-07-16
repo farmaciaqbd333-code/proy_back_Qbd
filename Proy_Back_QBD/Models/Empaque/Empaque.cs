@@ -36,8 +36,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public Familia? Familia { get; set; }
-        public List<ProductoIntermedio> ProductosIntermedios { get; set; } = [];
-        public List<CompraEmpaques>? CompraEmpaques { get; set; }
+        public List<CompraEmpaque>? CompraEmpaques { get; set; }
         public List<Empaque>? ListaCajas { get; set; }
         public List<Empaque>? ListaFundas { get; set; }
         public List<Empaque>? ListaEtiquetas1 { get; set; }

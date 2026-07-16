@@ -51,7 +51,7 @@ namespace proy_back_Qbd.Services
                 List<ActualizarEmpaqueReq> empaques = request.Empaques;
                 IEnumerable<int> idEmpaques = empaques.Select(s => s.IdCompraEmpaque).ToList();
 
-                List<CompraEmpaques> compraEmpaque = await _context.CompraEmpaques
+                List<CompraEmpaque> compraEmpaque = await _context.CompraEmpaques
                 .Where(w => w.IdCompra == idCompra && idEmpaques.Contains(w.Id)).ToListAsync();
                 if (compraEmpaque.Count == 0) throw new NotFoundException("No se encontro");
 

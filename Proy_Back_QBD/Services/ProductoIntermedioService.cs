@@ -61,44 +61,56 @@ namespace proy_back_Qbd.Services
                     .ToDictionary(g => g.Key, g => (decimal)g.Count());
                     foreach (var conteoEmpaque in conteoEmpaques)
                     {
-                        List<CompraEmpaques> compraEmpaques = await _context.CompraEmpaques
+                        decimal cantidadPendiente = conteoEmpaque.Value;
+                        List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
                     .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTimeOffset.UtcNow)
                     .OrderBy(w => w.FechaVencimiento)
                     .ToListAsync();
                         decimal stockDisponibleTotal = compraEmpaques.Sum(s => s.StockDisponible);
-                        if (!compraEmpaques.Any()) throw new NotFoundException("No hay stock disponible para este Empaque");
+
+                        if (stockDisponibleTotal < conteoEmpaque.Value) throw new BadRequestException("Stock insuficiente");
+
+                        if (compraEmpaques.Count() == 0) throw new NotFoundException("No hay stock disponible para este Empaque");
                         EmpaqueProductoIntermedio empaqueProductoIntermedio = new()
                         {
                             IdEmpaque = conteoEmpaque.Key,
                             ProductoIntermedio = productoIntermedio
                         };
                         _context.EmpaqueProductoIntermedios.Add(empaqueProductoIntermedio);
-                        foreach (var compraEmpaque in compraEmpaques)
+                        foreach (CompraEmpaque compraEmpaque in compraEmpaques)
                         {
-                            if (compraEmpaque.StockDisponible >= conteoEmpaque.Value)
+                            CompraEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio = new();
+                            if (compraEmpaque.StockDisponible >= cantidadPendiente)
                             {
-                                CompraEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio = new()
+                                compraEmpaqueProductoIntermedio = new()
                                 {
-                                    Cantidad = conteoEmpaque.Value,
+                                    Cantidad = cantidadPendiente,
                                     IdCompraEmpaque = compraEmpaque.Id,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
+
+                                compraEmpaque.StockDisponible -= cantidadPendiente;
+                                _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                                 break;
                             }
                             else
                             {
-                                conteoEmpaques[conteoEmpaque.Key] -= compraEmpaque.StockDisponible;
-                                CompraEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio = new()
+                                compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = compraEmpaque.StockDisponible,
                                     IdCompraEmpaque = compraEmpaque.Id,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
+                                cantidadPendiente -= compraEmpaque.StockDisponible;
+                                compraEmpaque.StockDisponible = 0;
+                                _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                             }
 
                         }
+                        if (cantidadPendiente > 0)
+                            throw new BadRequestException("No se pudo completar el consumo del empaque");
                     }
                 }
                 foreach (var fInsumo in request.Insumos)

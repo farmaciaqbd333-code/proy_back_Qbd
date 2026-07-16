@@ -79,16 +79,18 @@ namespace proy_back_Qbd.Data.Configurations
             // Relaciones
 
             builder.HasOne(x => x.Insumo)
-            .WithMany()
+            .WithMany(x => x.ProductoIntermedio)
             .HasForeignKey(x => x.IdInsumo)
             ;
 
             builder.HasOne(x => x.Creador)
                 .WithMany(wm => wm.ProductosIntermediosCreados)
                 .HasForeignKey(x => x.IdCreador);
+                
             builder.HasOne(x => x.Elaborador)
                 .WithMany(wm => wm.ProductosIntermediosElaborados)
                 .HasForeignKey(x => x.IdElaborado);
+
             builder.HasOne(x => x.Autorizador)
                 .WithMany(wm => wm.ProductosIntermediosAutorizados)
                 .HasForeignKey(x => x.IdAutorizado);

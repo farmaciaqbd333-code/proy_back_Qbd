@@ -43,7 +43,9 @@ public class InsumoProductoIntermedioConfiguration : IEntityTypeConfiguration<In
             .HasColumnName("csp");
 
         builder.Property(x => x.FechaCreacion)
-            .HasColumnName("fecha_creacion");
+            .HasColumnName("fecha_creacion")
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        ;
 
         builder.Property(x => x.FechaModificacion)
             .HasColumnName("fecha_modificacion");

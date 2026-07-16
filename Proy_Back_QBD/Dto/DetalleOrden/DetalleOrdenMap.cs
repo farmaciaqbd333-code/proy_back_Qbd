@@ -40,7 +40,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
             // DetalleEmpaquesCreateReq -> DetalleCompraEmpaque
-            CreateMap<DetalleEmpaquesCreateReq, CompraEmpaques>(MemberList.None)
+            CreateMap<DetalleEmpaquesCreateReq, CompraEmpaque>(MemberList.None)
             .ForMember(dest => dest.IdEmpaque, opt => opt.MapFrom(src => src.IdEmpaque))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
@@ -48,7 +48,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
             // DetalleEmpaquesUpdateReq -> DetalleCompraEmpaque
-            CreateMap<DetalleEmpaquesUpdateReq, CompraEmpaques>(MemberList.None)
+            CreateMap<DetalleEmpaquesUpdateReq, CompraEmpaque>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdEmpaque, opt => opt.MapFrom(src => src.IdEmpaque))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))

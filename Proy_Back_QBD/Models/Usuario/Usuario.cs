@@ -148,9 +148,9 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<CompraOtros>? DetalleComprasModificadas { get; set; }
         [JsonIgnore]
-        public List<CompraEmpaques>? DetalleComprasEmpaquesCreadas { get; set; }
+        public List<CompraEmpaque>? DetalleComprasEmpaquesCreadas { get; set; }
         [JsonIgnore]
-        public List<CompraEmpaques>? DetalleComprasEmpaquesModificadas { get; set; }
+        public List<CompraEmpaque>? DetalleComprasEmpaquesModificadas { get; set; }
         [JsonIgnore]
         public List<CompraProductos>? DetalleCompraProductoCreadas { get; set; }
         [JsonIgnore]

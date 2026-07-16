@@ -139,7 +139,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleEmpaques = request.DetallesEmpaques
                                         .Select(s => s.IdDetalleEmpaque);
-                List<CompraEmpaques> detallesEmpaques = await _context.CompraEmpaques
+                List<CompraEmpaque> detallesEmpaques = await _context.CompraEmpaques
                     .Where(w => idsDetalleEmpaques.Contains(w.Id))
                     .ToListAsync();
 

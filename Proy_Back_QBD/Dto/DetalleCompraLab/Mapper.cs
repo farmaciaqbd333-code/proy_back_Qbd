@@ -10,7 +10,7 @@ namespace proy_back_Qbd.Models.DetalleCompraLab
     public partial class DetalleCompraLabMapper
     {
         public partial void ActualizarInsumo(ActualizarInsumoReq source, CompraInsumos target);
-        public partial void ActualizarEmpaque(ActualizarEmpaqueReq source, CompraEmpaques target);
+        public partial void ActualizarEmpaque(ActualizarEmpaqueReq source, CompraEmpaque target);
 
     }
 }

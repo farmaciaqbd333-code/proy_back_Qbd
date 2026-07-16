@@ -339,7 +339,7 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var item in request.DetalleCompraEmpaques)
                     {
-                        CompraEmpaques detalleCompra = _mapper.Map<CompraEmpaques>(item);
+                        CompraEmpaque detalleCompra = _mapper.Map<CompraEmpaque>(item);
                         detalleCompra.IdCompra = compra.Id;
                         detalleCompra.IdCreador = request.IdCreador;
                         _context.CompraEmpaques.Add(detalleCompra);
@@ -503,7 +503,7 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var item in request.DetalleCompraEmpaquesNuevos)
                     {
-                        CompraEmpaques detalle = _mapper.Map<CompraEmpaques>(item);
+                        CompraEmpaque detalle = _mapper.Map<CompraEmpaque>(item);
                         detalle.IdCompra = idOC;
                         detalle.IdCreador = request.IdModificadorCreador;
                         _context.CompraEmpaques.Add(detalle);
@@ -513,7 +513,7 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var item in request.DetalleCompraEmpaquesUpd)
                     {
-                        CompraEmpaques? detalle = await _context.CompraEmpaques.FindAsync(item.Id);
+                        CompraEmpaque? detalle = await _context.CompraEmpaques.FindAsync(item.Id);
                         if (detalle != null)
                         {
                             _mapper.Map(item, detalle);
@@ -766,7 +766,7 @@ namespace proy_back_Qbd.Services
             }
             else if (famNorm.Contains("ME") || famNorm.Contains("EMPAQUE"))
             {
-                CompraEmpaques? detail = await _context.CompraEmpaques.FindAsync(id);
+                CompraEmpaque? detail = await _context.CompraEmpaques.FindAsync(id);
                 if (detail == null) return false;
                 detail.Pdf = pdf;
             }

@@ -8,7 +8,7 @@ using Proy_back_QBD.Models;
 namespace proy_back_Qbd.Models
 {
     [Table("compra_empaque")]
-    public class CompraEmpaques
+    public class CompraEmpaque
     {
         [Column("id")] public int Id { get; set; }
         [Column("id_empaque")] public int IdEmpaque { get; set; }

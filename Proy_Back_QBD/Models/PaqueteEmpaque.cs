@@ -15,6 +15,6 @@ namespace proy_back_Qbd.Models
         [Column("id_compra_empaque")] public int IdCompraEmpaque { get; set; }
         [Column("id_paquete")] public int IdPaquete { get; set; }
         public Paquete? Paquete { get; set; }
-        public CompraEmpaques? CompraEmpaques { get; set; }
+        public CompraEmpaque? CompraEmpaques { get; set; }
     }
 }

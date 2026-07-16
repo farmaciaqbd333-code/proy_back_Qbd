@@ -260,7 +260,7 @@ namespace Proy_back_QBD.Service.AjusteService
             foreach (var item in ajusteEmpaques)
             {
                 AjusteEmpaque ajusteEmpaque = item;
-                CompraEmpaques compraEmpaque = await _context.CompraEmpaques
+                CompraEmpaque compraEmpaque = await _context.CompraEmpaques
                 .Where(w => w.Id == ajusteEmpaque.IdCompraEmpaque)
                 .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
                 compraEmpaque.StockDisponible += ajusteEmpaque.Ajuste;

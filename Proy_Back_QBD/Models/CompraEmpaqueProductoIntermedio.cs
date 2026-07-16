@@ -12,7 +12,7 @@ public class CompraEmpaqueProductoIntermedio
 
     public string UnidadMedida { get; set; } = string.Empty;
 
-    public virtual CompraEmpaques CompraEmpaque { get; set; } = null!;
+    public virtual CompraEmpaque CompraEmpaque { get; set; } = null!;
 
     public virtual EmpaqueProductoIntermedio EmpaqueProductoIntermedio { get; set; } = null!;
 }

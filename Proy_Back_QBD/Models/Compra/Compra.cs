@@ -45,7 +45,7 @@ namespace proy_back_Qbd.Models
         public List<CompraOtros>? CompraOtros { get; set; }
         public List<CompraInsumos>? CompraInsumos { get; set; }
         public List<CompraEconomatos>? CompraEconomatos { get; set; }
-        public List<CompraEmpaques>? CompraEmpaques { get; set; }
+        public List<CompraEmpaque>? CompraEmpaques { get; set; }
         public List<CompraProductos>? CompraProductos { get; set; }
     }
 

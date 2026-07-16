@@ -32,7 +32,7 @@ namespace Proy_back_QBD.Data
         public DbSet<CompraInsumos> CompraInsumos { get; set; }
         public DbSet<CompraOtros> CompraOtros { get; set; }
         public DbSet<CompraEconomatos> CompraEconomatos { get; set; }
-        public DbSet<CompraEmpaques> CompraEmpaques { get; set; }
+        public DbSet<CompraEmpaque> CompraEmpaques { get; set; }
         public DbSet<CompraProductos> CompraProductos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
@@ -81,12 +81,6 @@ namespace Proy_back_QBD.Data
                e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
            });
 
-            modelBuilder.Entity<ProductoIntermedio>((e) =>
-            {
-                e.HasOne(ho => ho.Insumo).WithMany(wm => wm.ProductoIntermedio).HasForeignKey(hfk => hfk.IdInsumo);
-                e.HasOne(ho => ho.Creador).WithMany(wm => wm.ProductosIntermediosCreados).HasForeignKey(hfk => hfk.IdCreador);
-                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.ProductosIntermediosModificados).HasForeignKey(hfk => hfk.IdModificador);
-            });
             modelBuilder.Entity<PaqueteSa>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.PaquetesSACreados).HasForeignKey(hfk => hfk.IdCreador);
@@ -149,7 +143,7 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(x => x.Familia).WithMany(x => x.Economatos).HasForeignKey(x => x.IdFamilia);
             });
-            modelBuilder.Entity<CompraEmpaques>((e) =>
+            modelBuilder.Entity<CompraEmpaque>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraEmpaques).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);

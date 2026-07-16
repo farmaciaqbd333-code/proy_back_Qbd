@@ -12,7 +12,7 @@ namespace proy_back_Qbd.Dto.Meson
     {
         public partial void ActualizarInsumos(MesonDetInsumoConvReq source, CompraInsumos target);
         public partial void ActualizarOtros(MesonDetOtrosConvReq source, CompraOtros target);
-        public partial void ActualizarEmpaques(MesonDetEmpaqueConvReq source, CompraEmpaques target);
+        public partial void ActualizarEmpaques(MesonDetEmpaqueConvReq source, CompraEmpaque target);
         public partial void ActualizarEconomatos(MesonDetEconomatoConvReq source, CompraEconomatos target);
         public partial void ActualizarProductos(MesonDetProductoConvReq source, CompraProductos target);
     }
