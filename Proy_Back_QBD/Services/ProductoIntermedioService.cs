@@ -230,5 +230,30 @@ namespace proy_back_Qbd.Services
 
             return response;
         }
+
+        public async Task<IEnumerable<MasterPIRes>> ListaMaestraPI(string tipoUso)
+        {
+            var query = _context.Insumos
+                .Where(i => i.Clasificacion == "PI" && i.Tipo != null && i.Tipo.ToLower() == tipoUso.ToLower());
+
+            var insumos = await query
+                .Select(i => new MasterPIRes
+                {
+                    IdInsumo = i.Id,
+                    Codigo = UtilFamilia.CodigoInsumo(i.Id),
+                    Descripcion = i.Descripcion,
+                    TipoUso = i.Tipo,
+                    Um = i.UnidadMedida,
+                    UltimoProductoIntermedioId = _context.ProductosIntermedios
+                        .Where(pi => pi.IdInsumo == i.Id)
+                        .OrderByDescending(pi => pi.Id)
+                        .Select(pi => (int?)pi.Id)
+                        .FirstOrDefault()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return insumos;
+        }
     }
 }
