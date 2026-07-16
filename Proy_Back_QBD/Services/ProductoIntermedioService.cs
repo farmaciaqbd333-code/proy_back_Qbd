@@ -28,7 +28,7 @@ namespace proy_back_Qbd.Services
             {
                 ProductoIntermedio productoIntermedio = new ProductoIntermedioMapper().CrearProductoIntermedio(request);
                 _context.ProductosIntermedios.Add(productoIntermedio);
-                List<int> listaEmpaques = request.IdEmpaques;
+                List<int> listaEmpaques = request.IdEmpaques.ToList();
                 if (listaEmpaques.Any())
                 {
 
