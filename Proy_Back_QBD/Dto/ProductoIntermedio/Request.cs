@@ -6,6 +6,7 @@ namespace Proy_back_QBD.Request
         public int IdInsumo { get; set; }
         public required string LoteEstandar { get; set; }
         public required string Tipo { get; set; } = string.Empty;
+        public string? TipoUso { get; set; }
         public decimal Cantidad { get; set; }
         public required string Um { get; set; } = string.Empty;
         public DateTime? FechaEmision { get; set; }

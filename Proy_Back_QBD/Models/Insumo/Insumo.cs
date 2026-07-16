@@ -38,6 +38,7 @@ namespace Proy_back_QBD.Models
         [Column("densidad")] public decimal? Densidad { get; set; }
         [Column("codigo_ubicacion")] public string? CodigoUbicacion { get; set; }
         [Column("clasificacion")] public string? Clasificacion { get; set; } = "MP";
+        [Column("tipo")] public string? Tipo { get; set; }
         public Usuario Creador { get; set; } = null!;
         public Usuario? Modificador { get; set; } = null!;
         public Familia Familia { get; set; } = null!;

@@ -17,10 +17,9 @@ namespace Proy_back_QBD.Dto
         public string? Tipo { get; set; }
 
         public decimal Cantidad { get; set; }
-
-        public string? Um { get; set; } // Unidad de medida
-
-        public DateTime? FechaEmision { get; set; }
+        public required string Um { get; set; }
+        public string? TipoUso { get; set; }
+        public DateTime FechaEmision { get; set; }
 
         public DateTime? FechaVencimiento { get; set; }
 
