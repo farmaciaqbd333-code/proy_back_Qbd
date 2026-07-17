@@ -39,5 +39,10 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.ListaMaestraPI(tipoUso));
         }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            return Ok(await _productoIntermedioService.EliminarProductoIntermedio(id));
+        }
     }
 }

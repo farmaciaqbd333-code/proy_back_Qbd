@@ -8,8 +8,8 @@ namespace Proy_back_QBD.Request
         public required string Tipo { get; set; } = string.Empty;
         public decimal Cantidad { get; set; }
         public required string Um { get; set; } = string.Empty;
-        public DateTimeOffset? FechaEmision { get; set; }
-        public DateTimeOffset? FechaVencimiento { get; set; }
+        public DateTime? FechaEmision { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
         public required int IdElaborado { get; set; }
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; } = string.Empty;

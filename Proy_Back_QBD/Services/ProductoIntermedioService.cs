@@ -457,5 +457,63 @@ namespace proy_back_Qbd.Services
 
             return insumos;
         }
+        public async Task<int> EliminarProductoIntermedio(int id)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // 1. Cargar el ProductoIntermedio con todas sus relaciones de consumo
+                ProductoIntermedio productoIntermedio = await _context.ProductosIntermedios
+                    .Include(p => p.EmpaqueProductoIntermedios)
+                        .ThenInclude(e => e.CompraEmpaqueProductoIntermedios)
+                            .ThenInclude(c => c.CompraEmpaque)
+                    .Include(p => p.InsumoProductoIntermedio)
+                        .ThenInclude(i => i.CompraInsumoProductoIntermedio)
+                            .ThenInclude(c => c.CompraInsumo)
+                    .FirstOrDefaultAsync(p => p.Id == id)
+                    ?? throw new NotFoundException("No existe este ProductoIntermedio con id " + id);
+
+                // 2. REVERTIR stock de Empaques ya consumidos
+                foreach (var empaqueProdInt in productoIntermedio.EmpaqueProductoIntermedios.ToList())
+                {
+                    foreach (var compraEmpaqueProdInt in empaqueProdInt.CompraEmpaqueProductoIntermedios.ToList())
+                    {
+                        compraEmpaqueProdInt.CompraEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
+                        _context.CompraEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
+                    }
+                    _context.EmpaqueProductoIntermedios.Remove(empaqueProdInt);
+                }
+
+                // 3. REVERTIR stock de Insumos ya consumidos
+                foreach (var insumoProdInt in productoIntermedio.InsumoProductoIntermedio.ToList())
+                {
+                    foreach (var compraInsumoProdInt in insumoProdInt.CompraInsumoProductoIntermedio.ToList())
+                    {
+                        compraInsumoProdInt.CompraInsumo.StockDisponible += compraInsumoProdInt.Cantidad;
+                        _context.CompraInsumoProductoIntermedios.Remove(compraInsumoProdInt);
+                    }
+                    _context.InsumoProductoIntermedios.Remove(insumoProdInt);
+                }
+
+                // 4. Eliminar el ProductoIntermedio
+                _context.ProductosIntermedios.Remove(productoIntermedio);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return productoIntermedio.Id;
+            }
+            catch (Exception ex) when (ex is NotFoundException || ex is BadRequestException)
+            {
+                try
+                {
+                    await transaction.RollbackAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    Console.WriteLine($"Rollback falló: {rollbackEx}");
+                }
+                throw;
+            }
+        }
     }
 }
