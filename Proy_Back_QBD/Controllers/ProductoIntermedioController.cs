@@ -34,6 +34,10 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.ActualizarProductoIntermedio(id, request));
         }
-
+        [HttpGet("maestros/{tipoUso}")]
+        public async Task<IActionResult> Maestros(string tipoUso)
+        {
+            return Ok(await _productoIntermedioService.ListaMaestraPI(tipoUso));
+        }
     }
 }

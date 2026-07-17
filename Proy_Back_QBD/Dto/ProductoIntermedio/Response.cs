@@ -17,12 +17,11 @@ namespace Proy_back_QBD.Dto
         public string? Tipo { get; set; }
 
         public decimal Cantidad { get; set; }
+        public required string Um { get; set; }
+        public string? TipoUso { get; set; }
+        public DateTime FechaEmision { get; set; }
 
-        public string? Um { get; set; } // Unidad de medida
-
-        public DateTimeOffset? FechaEmision { get; set; }
-
-        public DateTimeOffset? FechaVencimiento { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
 
         public string? Elaborado { get; set; }
     }
@@ -43,4 +42,13 @@ namespace Proy_back_QBD.Dto
         public bool? CSP { get; set; }
     }
 
+    public class MasterPIRes
+    {
+        public int IdInsumo { get; set; }
+        public string? Codigo { get; set; }
+        public string? Descripcion { get; set; }
+        public string? TipoUso { get; set; }
+        public string? Um { get; set; }
+        public int? UltimoProductoIntermedioId { get; set; }
+    }
 }

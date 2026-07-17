@@ -30,7 +30,7 @@ namespace proy_back_Qbd.Services
             {
                 ProductoIntermedio productoIntermedio = new ProductoIntermedioMapper().CrearProductoIntermedio(request);
                 _context.ProductosIntermedios.Add(productoIntermedio);
-                List<int> listaEmpaques = request.IdEmpaques;
+                List<int> listaEmpaques = request.IdEmpaques.ToList();
                 if (listaEmpaques.Any())
                 {
 
@@ -420,6 +420,7 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
                 LoteEstandar = s.LoteEstandar,
                 Tipo = s.Tipo,
+                TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
                 Cantidad = s.Cantidad,
                 Um = s.Insumo.UnidadMedida,
                 FechaEmision = s.FechaEmision,
@@ -430,6 +431,31 @@ namespace proy_back_Qbd.Services
             .ToListAsync();
 
             return response;
+        }
+
+        public async Task<IEnumerable<MasterPIRes>> ListaMaestraPI(string tipoUso)
+        {
+            var query = _context.Insumos
+                .Where(i => i.Clasificacion == "PI" && i.Tipo != null && i.Tipo.ToLower() == tipoUso.ToLower());
+
+            var insumos = await query
+                .Select(i => new MasterPIRes
+                {
+                    IdInsumo = i.Id,
+                    Codigo = UtilFamilia.CodigoInsumo(i.Id),
+                    Descripcion = i.Descripcion,
+                    TipoUso = i.Tipo,
+                    Um = i.UnidadMedida,
+                    UltimoProductoIntermedioId = _context.ProductosIntermedios
+                        .Where(pi => pi.IdInsumo == i.Id)
+                        .OrderByDescending(pi => pi.Id)
+                        .Select(pi => (int?)pi.Id)
+                        .FirstOrDefault()
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            return insumos;
         }
     }
 }

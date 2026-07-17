@@ -140,7 +140,8 @@ namespace proy_back_Qbd.Services
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTimeOffset.UtcNow)
-            .Sum(ci => ci.StockDisponible))
+            .Sum(ci => ci.StockDisponible)),
+                Tipo = s.Select(x => x.Tipo).FirstOrDefault()
             }).ToListAsync()
             ;
         }
