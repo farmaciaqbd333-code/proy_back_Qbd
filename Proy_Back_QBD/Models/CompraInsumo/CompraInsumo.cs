@@ -41,9 +41,9 @@ namespace proy_back_Qbd.Models
         public Usuario? Modificador { get; set; }
         public Insumo? Insumo { get; set; }
         public Compra? Compra { get; set; }
-        public List<AjusteInsumo>? AjusteInsumos { get; set; }
-        public List<PaqueteInsumo>? PaqueteInsumos { get; set; }
         public Fabricante? Fabricante { get; set; }
+        public List<AjusteInsumo> AjusteInsumos { get; set; } = new();
+        public List<PaqueteInsumo> PaqueteInsumos { get; set; } = new();
         public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
     }
 

@@ -29,7 +29,11 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.CrearProductoIntermedio(request));
         }
-
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Actualizar(int id, ActualizarProductoIntermedioReq request)
+        {
+            return Ok(await _productoIntermedioService.ActualizarProductoIntermedio(id, request));
+        }
 
     }
 }
