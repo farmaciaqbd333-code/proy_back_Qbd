@@ -27,6 +27,8 @@ namespace Proy_back_QBD.Models
         public string? Color { get; set; }  // Puede ser nulo
         [Column("olor")]
         public string? Olor { get; set; }  // Puede ser nulo
+        [Column("cantidad")]
+        public decimal? Cantidad { get; set; }  // Puede ser nulo
         [Column("clasificacion")]
         public string? Clasificacion { get; set; }  // Puede ser nulo
         [Column("ph")]
@@ -47,5 +49,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; }
         [JsonIgnore]
         public List<InsumoR>? InsumoR { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<FormulaRapidaSede>? FormulaRSedes { get; set; }  // Puede ser nulo
     }
 }

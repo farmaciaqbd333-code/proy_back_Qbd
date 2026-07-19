@@ -58,6 +58,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Fabricante> Fabricantes { get; set; }
         public DbSet<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; }
         public DbSet<CompraEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
+        public DbSet<FormulaRapidaSede> FormulaRSedes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);

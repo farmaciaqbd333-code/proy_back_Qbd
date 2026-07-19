@@ -20,6 +20,8 @@ namespace Proy_back_QBD.Models
         public required Insumo Insumo { get; set; }  // Puede ser nulo    
         [Column("porcentaje")]
         public decimal Porcentaje { get; set; }  // Puede ser nulo    
+        [Column("cantidad")]
+        public decimal Cantidad { get; set; }  // Puede ser nulo    
         [Column("fecha_creacion")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime? FechaCreacion { get; set; }  // Puede ser nulo

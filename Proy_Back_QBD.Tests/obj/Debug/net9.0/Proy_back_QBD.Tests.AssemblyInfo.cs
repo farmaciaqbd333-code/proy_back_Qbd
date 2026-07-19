@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Proy_back_QBD.Tests")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+36bee88b909c3ab5492db7d8797647b91adfbee7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5b6f85f9b8303f3d1ab9f790cea351f7fa5b8436")]
 [assembly: System.Reflection.AssemblyProductAttribute("Proy_back_QBD.Tests")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Proy_back_QBD.Tests")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
