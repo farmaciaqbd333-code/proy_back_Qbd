@@ -45,13 +45,13 @@ namespace Proy_back_QBD.Services
                 }
 
                 // Relación fórmula-sede
-                FormulaRapidaSede formulaRapidaSede = new()
-                {
-                    IdSede = request.FormulaR.IdSede,
-                    IdFormular = formulaR.Id
-                };
+                // FormulaRapidaSede formulaRapidaSede = new()
+                // {
+                //     IdSede = request.FormulaR.IdSede,
+                //     IdFormular = formulaR.Id
+                // };
 
-                await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
+                // await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
 
                 await _context.SaveChangesAsync();
 
