@@ -14,6 +14,10 @@ namespace Proy_back_QBD.Dto
 
         public string? LoteEstandar { get; set; }
 
+        public decimal? PesoUnidad { get; set; }
+
+        public decimal? LoteEstTotal { get; set; }
+
         public string? Tipo { get; set; }
 
         public decimal Cantidad { get; set; }

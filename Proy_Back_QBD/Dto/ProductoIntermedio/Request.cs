@@ -5,6 +5,8 @@ namespace Proy_back_QBD.Request
         public required string Lote { get; set; }
         public int IdInsumo { get; set; }
         public required string LoteEstandar { get; set; }
+        public decimal? PesoUnidad { get; set; }
+        public decimal? LoteEstTotal { get; set; }
         public required string Tipo { get; set; } = string.Empty;
         public string? TipoUso { get; set; }
         public decimal Cantidad { get; set; }
