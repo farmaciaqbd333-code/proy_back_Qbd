@@ -92,7 +92,7 @@ namespace proy_back_Qbd.Services
                         Registro = Alfanumerico.ConvertToBase36(s.Id),
                         Codigo = s.Insumo.Id.ToString("d4"),
                         Descripcion = s.Insumo.Descripcion,
-                        Estado = (DateTimeOffset.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTimeOffset.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
+                        Estado = (DateTime.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTime.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
                         Lote = s.Lote,
                         FechaFabricacion = s.FechaFabricacion,
                         FechaVencimiento = s.FechaVencimiento,
@@ -108,7 +108,7 @@ namespace proy_back_Qbd.Services
                         Registro = Alfanumerico.ConvertToBase36(s.Id),
                         Codigo = s.Empaque.Id.ToString("d4"),
                         Descripcion = s.Empaque.Descripcion,
-                        Estado = (DateTimeOffset.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTimeOffset.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
+                        Estado = (DateTime.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTime.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
                         Lote = s.Lote,
                         FechaFabricacion = s.FechaFabricacion,
                         FechaVencimiento = s.FechaVencimiento,
@@ -139,7 +139,7 @@ namespace proy_back_Qbd.Services
                 Salidas = s.Sum(x => x.NotaSalidaInsumos!.Sum(s2 => s2.Cantidad) + x.ProductoIntermedio!.Sum(s => s.Cantidad)),
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
-            .Where(ci => ci.FechaVencimiento < DateTimeOffset.UtcNow)
+            .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
             .Sum(ci => ci.StockDisponible)),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault()
             }).ToListAsync()
@@ -158,7 +158,7 @@ namespace proy_back_Qbd.Services
                             Salidas = s.Sum(x => x.DetalleNotaSalidaEmpaques!.Sum(s2 => s2.Cantidad) + x.EmpaqueProductoIntermedios!.Count()),
                             Ajustes = s.Sum(s => s.CompraEmpaques!.Sum(s => s.AjusteEmpaques!.Sum(s => s.Ajuste))),
                             Baja = s.Sum(x => x.CompraEmpaques!
-    .Where(ce => ce.FechaVencimiento < DateTimeOffset.UtcNow)
+    .Where(ce => ce.FechaVencimiento < DateTime.UtcNow)
     .Sum(ce => ce.StockDisponible))
                         }).ToListAsync()
                         ;
