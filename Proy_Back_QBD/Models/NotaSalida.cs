@@ -16,11 +16,11 @@ namespace proy_back_Qbd.Models
         public required string Destino { get; set; }
         public string? Observacion { get; set; }
         public DateTimeOffset FechaCreacion { get; set; }
-        public DateTimeOffset FechaModificacion { get; set; }
+        public DateTimeOffset? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
-        public int IdModificador { get; set; }
-
+        public int? IdModificador { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
+        public List<NotaSalidaFamilias>? NotaSalidaFamilias { get; set; }
     }
 }

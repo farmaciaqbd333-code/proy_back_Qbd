@@ -20,5 +20,6 @@ namespace proy_back_Qbd.Models
         public List<Economato>? Economatos { get; set; }
         public List<Empaque>? Empaques { get; set; }
         public List<CompraOtros>? CompraOtros { get; set; }
+        public List<NotaSalidaFamilias>? NotaSalidaFamilias { get; set; }
     }
 }

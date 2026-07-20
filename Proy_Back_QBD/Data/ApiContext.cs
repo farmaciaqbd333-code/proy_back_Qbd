@@ -23,10 +23,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<PaqueteInsumo> PaqueteInsumos { get; set; }
         public DbSet<PaqueteEmpaque> PaqueteEmpaques { get; set; }
-        public DbSet<NotaSalidaInsumo> NotaSalidaInsumo { get; set; }
-        public DbSet<NotaSalidaEmpaque> NotaSalidaEmpaques { get; set; }
-        public DbSet<NotaSalidaEconomato> NotaSalidaEconomatos { get; set; }
-        public DbSet<NotaSalidaProducto> NotaSalidaProductos { get; set; }
+        public DbSet<NotaSalidaFamilias> NotaSalidaFamilias { get; set; }
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<CompraInsumos> CompraInsumos { get; set; }
@@ -107,7 +104,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(p => p.Paquete).WithOne(w => w.PaqueteInsumos).HasForeignKey<PaqueteInsumo>(h => h.IdPaquete);
                 e.HasOne(p => p.CompraInsumo).WithMany(w => w.PaqueteInsumos).HasForeignKey(h => h.IdCompraInsumo);
             });
-            modelBuilder.Entity<NotaSalidaInsumo>((e) =>
+            modelBuilder.Entity<NotaSalidaFamilias>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.NotaSalidaInsumoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.NotaSalidaInsumoModificadas).HasForeignKey(hfk => hfk.IdModificador);

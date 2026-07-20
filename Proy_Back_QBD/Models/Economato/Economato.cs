@@ -14,7 +14,6 @@ namespace proy_back_Qbd.Models
         [Column("unidad_medida")] public string? UnidadMedida { get; set; }
         [Column("id_familia")] public int IdFamilia { get; set; }
         public List<CompraEconomatos>? CompraEconomatos { get; set; }
-        public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }
         public Familia? Familia { get; set; } = null!;
     }
 }

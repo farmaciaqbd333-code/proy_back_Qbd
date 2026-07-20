@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using proy_back_Qbd.Models;
 
-public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalidaInsumo>
+public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalidaFamilias>
 {
-    public void Configure(EntityTypeBuilder<NotaSalidaInsumo> builder)
+    public void Configure(EntityTypeBuilder<NotaSalidaFamilias> builder)
     {
-        builder.ToTable("nota_salida_insumo");
+        builder.ToTable("nota_salida_familias");
 
         builder.HasKey(e => e.Id);
 
@@ -14,8 +14,11 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
             .HasColumnName("id")
             .ValueGeneratedOnAdd();
 
-        builder.Property(e => e.IdInsumo)
-            .HasColumnName("id_insumo");
+        builder.Property(e => e.IdNotaSalida)
+            .HasColumnName("id_nota_salida");
+
+        builder.Property(e => e.IdFamilia)
+            .HasColumnName("id_familia");
 
         builder.Property(e => e.Cantidad)
             .HasColumnName("cantidad");
@@ -55,19 +58,24 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
         builder.Property(e => e.CantidadPaquete)
             .HasColumnName("cantidad_paquete");
 
-        builder.HasOne(e => e.Insumo)
-            .WithMany(wm => wm.NotaSalidaInsumos)
-            .HasForeignKey(e => e.IdInsumo)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(e => e.Familia)
+            .WithMany(wm => wm.NotaSalidaFamilias)
+            .HasForeignKey(e => e.IdFamilia)
+            .OnDelete(DeleteBehavior.Cascade);
+            
+        builder.HasOne(e => e.NotaSalida)
+            .WithMany(wm => wm.NotaSalidaFamilias)
+            .HasForeignKey(e => e.IdNotaSalida)
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.Creador)
             .WithMany(wm => wm.NotaSalidaInsumoCreadas)
             .HasForeignKey(e => e.IdCreador)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.Modificador)
             .WithMany(wm => wm.NotaSalidaInsumoModificadas)
             .HasForeignKey(e => e.IdModificador)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
