@@ -418,7 +418,7 @@ namespace proy_back_Qbd.Services
                 Lote = s.Lote,
                 Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
                 Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
-                LoteEstandar = s.LoteEstandar,
+                LoteEstandar = s.LoteEstandar ?? 0,
                 Tipo = s.Tipo,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
                 Cantidad = s.Cantidad,
