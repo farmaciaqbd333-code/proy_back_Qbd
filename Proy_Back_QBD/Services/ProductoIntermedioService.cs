@@ -64,8 +64,8 @@ namespace proy_back_Qbd.Services
                     foreach (var conteoEmpaque in conteoEmpaques)
                     {
                         decimal cantidadPendiente = conteoEmpaque.Value;
-                        List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
-                    .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTimeOffset.UtcNow)
+                    List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
+                    .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
                     .OrderBy(w => w.FechaVencimiento)
                     .ToListAsync();
                         decimal stockDisponibleTotal = compraEmpaques.Sum(s => s.StockDisponible);
@@ -118,7 +118,7 @@ namespace proy_back_Qbd.Services
                 foreach (var fInsumo in request.Insumos)
                 {
                     List<CompraInsumos> compraInsumos = await _context.CompraInsumos
-                    .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.FechaVencimiento >= DateTimeOffset.UtcNow)
+                    .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
                     .OrderBy(w => w.FechaVencimiento)
                     .ToListAsync();
                     decimal stockDisponibleTotal = compraInsumos.Sum(s => s.StockDisponible);
@@ -262,7 +262,7 @@ namespace proy_back_Qbd.Services
                     {
                         decimal cantidadPendiente = conteoEmpaque.Value;
                         List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
-                            .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTimeOffset.UtcNow)
+                            .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
                             .OrderBy(w => w.FechaVencimiento)
                             .ToListAsync();
                         decimal stockDisponibleTotal = compraEmpaques.Sum(s => s.StockDisponible);
@@ -317,7 +317,7 @@ namespace proy_back_Qbd.Services
                 foreach (var fInsumo in request.Insumos)
                 {
                     List<CompraInsumos> compraInsumos = await _context.CompraInsumos
-                        .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.FechaVencimiento >= DateTimeOffset.UtcNow)
+                        .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
                         .OrderBy(w => w.FechaVencimiento)
                         .ToListAsync();
                     decimal stockDisponibleTotal = compraInsumos.Sum(s => s.StockDisponible);
