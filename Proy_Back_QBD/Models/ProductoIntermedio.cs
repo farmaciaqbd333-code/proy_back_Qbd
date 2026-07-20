@@ -7,7 +7,9 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public int Id { get; set; }
         public string? Lote { get; set; }
         public int IdInsumo { get; set; }
-        public int LoteEstandar { get; set; }
+        public int? LoteEstandar { get; set; }
+        public decimal? PesoUnidad { get; set; }
+        public decimal? LoteEstTotal { get; set; }
         public string? Tipo { get; set; }
         public string? TipoUso { get; set; }
         public decimal Cantidad { get; set; }
@@ -21,8 +23,8 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public string? Color { get; set; }
         public string? Olor { get; set; }
         public decimal? Ph { get; set; }
-        public DateTimeOffset FechaCreacion { get; set; }
-        public DateTimeOffset? FechaModificacion { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
 

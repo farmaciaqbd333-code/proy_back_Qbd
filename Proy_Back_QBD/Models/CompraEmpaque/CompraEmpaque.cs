@@ -19,15 +19,15 @@ namespace proy_back_Qbd.Models
         [Column("id_compra")] public int IdCompra { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Column("id_modificador")] public int? IdModificador { get; set; }
-        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; }
-        [Column("fecha_modificacion")] public DateTimeOffset? FechaModificacion { get; set; }
+        [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
         [Column("conformidad")] public bool? Conformidad { get; set; }
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
         [Column("coa")] public bool? Coa { get; set; }
         [Column("lote")] public string? Lote { get; set; }
-        [Column("fecha_fabricacion")] public DateTimeOffset? FechaFabricacion { get; set; }
-        [Column("fecha_vencimiento")] public DateTimeOffset? FechaVencimiento { get; set; }
+        [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
+        [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; } = "";
         [Column("pdf")] public string? Pdf { get; set; }
         [Column("observacion")] public string? Observacion { get; set; }

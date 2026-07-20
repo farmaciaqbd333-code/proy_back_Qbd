@@ -15,8 +15,8 @@ public class InsumoProductoIntermedio
     public decimal CantidadLote { get; set; }
     public decimal Practica { get; set; }
     public bool Csp { get; set; }
-    public DateTimeOffset FechaCreacion { get; set; }
-    public DateTimeOffset? FechaModificacion { get; set; }
+    public DateTime FechaCreacion { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 
     public Usuario? Creador { get; set; }
     public Usuario? Modificador { get; set; }

@@ -25,6 +25,12 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.LoteEstandar)
                 .HasColumnName("lote_estandar");
 
+            builder.Property(x => x.PesoUnidad)
+                .HasColumnName("peso_unidad");
+
+            builder.Property(x => x.LoteEstTotal)
+                .HasColumnName("lote_est_total");
+
             builder.Property(x => x.Tipo)
                 .HasColumnName("tipo");
 
