@@ -24,7 +24,6 @@ namespace Proy_back_QBD.Models
         [JsonIgnore] public Familia? Familia { get; set; } = null!;
         [JsonIgnore] public List<ProdTerm>? ProdTerm { get; set; } = new List<ProdTerm>();
         [JsonIgnore] public List<CompraProductos>? CompraProductos { get; set; } = new List<CompraProductos>();
-        [JsonIgnore] public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; } = new List<NotaSalidaProducto>();
     }
 
 }
