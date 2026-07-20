@@ -14,7 +14,7 @@ public class CompraInsumoProductoIntermedio
 
     public string UnidadMedida { get; set; } = "G";
 
-    public DateTimeOffset FechaCreacion { get; set; }
+    public DateTime FechaCreacion { get; set; }
 
     public int IdCreador { get; set; }
 
@@ -22,7 +22,7 @@ public class CompraInsumoProductoIntermedio
 
     public int? IdModificador { get; set; }
 
-    public DateTimeOffset? FechaModificacion { get; set; }
+    public DateTime? FechaModificacion { get; set; }
 
     public InsumoProductoIntermedio? InsumoProductoIntermedio { get; set; }
 
