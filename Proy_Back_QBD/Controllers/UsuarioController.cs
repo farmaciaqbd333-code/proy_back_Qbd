@@ -85,4 +85,15 @@ public class UsuarioController : ControllerBase
         return Ok(usuario);
     }
     
+    [HttpPut("estado/{id}")]
+    [SwaggerResponse(200, "Operación exitosa", typeof(Usuario))]
+    public async Task<IActionResult> CambiarEstado(int id, [FromBody] bool estado)
+    {
+        Usuario? usuario = await _userService.CambiarEstado(id, estado);
+        if (usuario == null)
+        {
+            return NotFound("Usuario no encontrado.");
+        }
+        return Ok(usuario);
+    }
 }

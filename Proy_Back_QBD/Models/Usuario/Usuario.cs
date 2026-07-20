@@ -39,6 +39,8 @@ namespace Proy_back_QBD.Models
         public TimeOnly? HorarioEntrada { get; set; }  // Puede ser nulo
         [Column("horario_salida")]
         public TimeOnly? HorarioSalida { get; set; }  // Puede ser nulo
+        [Column("estado")]
+        public bool Estado { get; set; } = true;
         [JsonIgnore]
         public Persona? Persona { get; set; }  // Puede ser nulo
         [Column("persona_id")]
