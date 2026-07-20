@@ -6,5 +6,6 @@ using Riok.Mapperly.Abstractions;
 public partial class ProductoIntermedioMapper
 {
     public partial ProductoIntermedio CrearProductoIntermedio(CrearProductoIntermedioReq source);
+    public partial void ActualizarProductoIntermedio(ActualizarProductoIntermedioReq source, ProductoIntermedio target);
     public partial InsumoProductoIntermedio CrearInsumosProductoIntermedio(InsumoProductoIntermedioReq source);
 }

@@ -24,7 +24,7 @@ namespace Proy_back_QBD.Dto.Auxiliares
         public string? Clasificacion { get; set; }  // Puede ser nulo
         public string? Ph { get; set; }  // Puede ser nulo
         public int CreadorId { get; set; }
-        public int? SedeId { get; set; }  // Puede ser nulo
+        public int? IdSede { get; set; }  // Puede ser nulo
     }
     public class FormularRUpdTReq
     {

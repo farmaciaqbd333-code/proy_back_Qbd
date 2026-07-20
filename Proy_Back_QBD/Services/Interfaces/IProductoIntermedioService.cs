@@ -8,8 +8,8 @@ namespace Proy_back_QBD.Interface
         public Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio();
         public Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id);
         public Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request);
+        public Task<int> ActualizarProductoIntermedio(int id, ActualizarProductoIntermedioReq request);
         public Task<IEnumerable<MasterPIRes>> ListaMaestraPI(string tipoUso);
-        // public Task<PanelPIRes> ModificarProductoIntermedio();
-        // public Task<PanelPIRes> EliminarProductoIntermedio();
+        public Task<int> EliminarProductoIntermedio(int id);
     }
 }

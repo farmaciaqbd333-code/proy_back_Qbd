@@ -23,37 +23,45 @@ namespace Proy_back_QBD.Services
 
         public async Task<string> Crear(FormulaRCreReq request)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
             try
             {
-                int result;
-                // Mapeamos la formulaR
+                // Fórmula
                 FormulaR formulaR = _mapper.Map<FormulaR>(request.FormulaR);
+                formulaR.Clasificacion = "FORMULA";
                 formulaR.ModificadorId = formulaR.CreadorId;
+
                 await _context.FormulasR.AddAsync(formulaR);
-                result = await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
+
+                // Insumos
                 foreach (var item in request.InsumosR)
                 {
                     InsumoR insumoR = _mapper.Map<InsumoR>(item);
                     insumoR.FormulaRId = formulaR.Id;
+
                     await _context.InsumosR.AddAsync(insumoR);
                 }
 
-                // Intentamos guardar los cambios en la base de datos
-                result = await _context.SaveChangesAsync();
+                // Relación fórmula-sede
+                // FormulaRapidaSede formulaRapidaSede = new()
+                // {
+                //     IdSede = request.FormulaR.IdSede,
+                //     IdFormular = formulaR.Id
+                // };
 
-                if (result > 0)
-                {
-                    return "Registro Exitoso";
-                }
-                else
-                {
-                    return "No se pudo guardar el registro. Intente nuevamente.";
-                }
+                // await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
+
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                return "Registro Exitoso";
             }
             catch (Exception ex)
             {
-                // Registro de error y manejo de excepciones
-                // Aquí podrías usar un logger para registrar el error
+                await transaction.RollbackAsync();
                 return $"Error: {ex.Message}";
             }
         }
@@ -140,10 +148,14 @@ namespace Proy_back_QBD.Services
         }
 
 
-        public async Task<List<FormulaRRes>?> Listar(string clasificacion)
+        public async Task<List<FormulaRRes>?> Listar()
         {
+            // List<int> idFormulasR = await _context.FormulaRSedes
+            // .Where(w => w.IdSede == idSede)
+            // .Select(s => s.IdFormular).ToListAsync();
+
             List<FormulaRRes> response = await _context.FormulasR
-            .Where(w => w.Clasificacion == clasificacion)
+            // .Where(w => w.Clasificacion == clasificacion)
                                                         .OrderBy(obd => obd.FechaCreacion)
                                                         .Select(s => new FormulaRRes
                                                         {
@@ -172,5 +184,49 @@ namespace Proy_back_QBD.Services
             return response;
         }
 
+        public async Task<string> ActualizarSedes(FormulaRapidaSedeUpdReq request)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                var actuales = await _context.FormulaRSedes
+                    .Where(x => x.IdFormular == request.IdFormular)
+                    .ToListAsync();
+
+                // Eliminar relaciones que ya no existen
+                var eliminar = actuales
+                    .Where(x => !request.IdsSede.Contains(x.IdSede))
+                    .ToList();
+
+                if (eliminar.Any())
+                    _context.FormulaRSedes.RemoveRange(eliminar);
+
+                // Agregar nuevas relaciones
+                var existentes = actuales
+                    .Select(x => x.IdSede)
+                    .ToHashSet();
+
+                var agregar = request.IdsSede
+                    .Where(id => !existentes.Contains(id))
+                    .Select(id => new FormulaRapidaSede
+                    {
+                        IdFormular = request.IdFormular,
+                        IdSede = id
+                    });
+
+                await _context.FormulaRSedes.AddRangeAsync(agregar);
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return "Registro actualizado correctamente.";
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                return $"Error: {ex.Message}";
+            }
+        }
     }
 }

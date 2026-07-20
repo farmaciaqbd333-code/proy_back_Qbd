@@ -9,32 +9,38 @@ using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
 {
-    [Table("nota_salida_insumo")]
     public class NotaSalidaInsumo
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity), Column("id")] public int Id { get; set; }
+        public int Id { get; set; }
 
-        [Column("id_insumo")] public int IdInsumo { get; set; }
+        public int IdInsumo { get; set; }
 
-        [Column("cantidad")] public decimal Cantidad { get; set; }
+        public decimal Cantidad { get; set; }
 
-        [Column("um")] public string? Um { get; set; }
+        public string? Um { get; set; }
 
-        [Column("lote")] public string? Lote { get; set; }
+        public string? Lote { get; set; }
 
-        [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
+        public DateTime FechaCreacion { get; set; }
 
-        [Column("fecha_modificacion")] public DateTime FechaModificacion { get; set; }
+        public DateTime FechaModificacion { get; set; }
 
-        [Column("id_creador")] public int IdCreador { get; set; }
+        public int IdCreador { get; set; }
 
-        [Column("id_modificador")] public int IdModificador { get; set; }
+        public int IdModificador { get; set; }
 
-        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
+        public decimal? Tara { get; set; }
 
-        [ForeignKey(nameof(IdInsumo))] public Insumo? Insumo { get; set; }
+        public decimal? PesoBruto { get; set; }
 
-        [ForeignKey(nameof(IdModificador))] public Usuario? Modificador { get; set; }
+        public decimal? PesoNeto { get; set; }
+        public int Paquete { get; set; }
+        public decimal CantidadPaquete { get; set; }
 
+        public Usuario? Creador { get; set; }
+
+        public Insumo? Insumo { get; set; }
+
+        public Usuario? Modificador { get; set; }
     }
 }

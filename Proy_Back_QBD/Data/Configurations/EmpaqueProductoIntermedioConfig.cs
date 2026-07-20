@@ -10,7 +10,9 @@ public class EmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<EmpaqueP
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("id");
+            .HasColumnName("id")
+            .ValueGeneratedOnAdd();
+            ;
 
         builder.Property(x => x.IdEmpaque)
             .HasColumnName("id_empaque")
