@@ -10,7 +10,7 @@ public class FormulaRapidaSedeConfiguration : IEntityTypeConfiguration<FormulaRa
 
         builder.HasKey(x => x.Id);
 
-        builder.Property(x => x.Id).HasColumnName("id");
+        builder.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd(); ;
         builder.Property(x => x.IdFormular).HasColumnName("id_formula_rapida");
         builder.Property(x => x.IdSede).HasColumnName("id_sede");
 

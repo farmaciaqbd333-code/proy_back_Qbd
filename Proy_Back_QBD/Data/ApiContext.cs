@@ -109,8 +109,8 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<NotaSalidaInsumo>((e) =>
             {
-                e.HasOne(ho => ho.Creador).WithMany(wm => wm.DetalleNotaSalidaCreadas).HasForeignKey(hfk => hfk.IdCreador);
-                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleNotaSalidaModificadas).HasForeignKey(hfk => hfk.IdModificador);
+                e.HasOne(ho => ho.Creador).WithMany(wm => wm.NotaSalidaInsumoCreadas).HasForeignKey(hfk => hfk.IdCreador);
+                e.HasOne(ho => ho.Modificador).WithMany(wm => wm.NotaSalidaInsumoModificadas).HasForeignKey(hfk => hfk.IdModificador);
             });
             modelBuilder.Entity<CompraOtros>((e) =>
             {

@@ -10,7 +10,9 @@ public class AjusteProductoTerminadoConfiguration : IEntityTypeConfiguration<Aju
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasColumnName("id");
+            .HasColumnName("id")
+            .ValueGeneratedOnAdd();
+            ;
 
         builder.Property(x => x.Ajuste)
             .HasColumnName("ajuste")

@@ -12,7 +12,7 @@ namespace Proy_back_QBD.Dto
 
         public string? Descripcion { get; set; }
 
-        public string? LoteEstandar { get; set; }
+        public int LoteEstandar { get; set; }
 
         public string? Tipo { get; set; }
 

@@ -7,7 +7,7 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public int Id { get; set; }
         public string? Lote { get; set; }
         public int IdInsumo { get; set; }
-        public string? LoteEstandar { get; set; }
+        public int LoteEstandar { get; set; }
         public string? Tipo { get; set; }
         public string? TipoUso { get; set; }
         public decimal Cantidad { get; set; }
