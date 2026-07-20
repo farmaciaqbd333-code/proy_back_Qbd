@@ -446,6 +446,7 @@ namespace proy_back_Qbd.Services
                     Descripcion = i.Descripcion,
                     TipoUso = i.Tipo,
                     Um = i.UnidadMedida,
+                    FormaFarmaceutica = i.FormaFarmaceutica,
                     UltimoProductoIntermedioId = _context.ProductosIntermedios
                         .Where(pi => pi.IdInsumo == i.Id)
                         .OrderByDescending(pi => pi.Id)

@@ -53,6 +53,7 @@ namespace Proy_back_QBD.Dto
         public string? Descripcion { get; set; }
         public string? TipoUso { get; set; }
         public string? Um { get; set; }
+        public string? FormaFarmaceutica { get; set; }
         public int? UltimoProductoIntermedioId { get; set; }
     }
 }
