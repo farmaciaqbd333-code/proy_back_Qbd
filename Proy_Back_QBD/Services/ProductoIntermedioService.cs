@@ -64,10 +64,10 @@ namespace proy_back_Qbd.Services
                     foreach (var conteoEmpaque in conteoEmpaques)
                     {
                         decimal cantidadPendiente = conteoEmpaque.Value;
-                    List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
-                    .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
-                    .OrderBy(w => w.FechaVencimiento)
-                    .ToListAsync();
+                        List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
+                        .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
+                        .OrderBy(w => w.FechaVencimiento)
+                        .ToListAsync();
                         decimal stockDisponibleTotal = compraEmpaques.Sum(s => s.StockDisponible);
 
                         if (stockDisponibleTotal < conteoEmpaque.Value) throw new BadRequestException("Stock insuficiente");
@@ -514,6 +514,17 @@ namespace proy_back_Qbd.Services
                 }
                 throw;
             }
+        }
+
+        public async Task<string> ObtenerRegistro()
+        {
+            int nextValue = await _context.Database
+    .SqlQuery<int>($"""
+        SELECT nextval('base_y_insumo_sequence') AS "Value"
+    """)
+    .SingleAsync();
+
+            return Alfanumerico.ConvertToBase36(nextValue);
         }
     }
 }

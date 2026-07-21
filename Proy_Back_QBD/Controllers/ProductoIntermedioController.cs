@@ -29,7 +29,7 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.CrearProductoIntermedio(request));
         }
-        
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Actualizar(int id, ActualizarProductoIntermedioReq request)
         {
@@ -39,6 +39,11 @@ namespace Proy_back_QBD.Controllers
         public async Task<IActionResult> Maestros(string tipoUso)
         {
             return Ok(await _productoIntermedioService.ListaMaestraPI(tipoUso));
+        }
+        [HttpGet("registro/")]
+        public async Task<IActionResult> Registro()
+        {
+            return Ok(await _productoIntermedioService.ObtenerRegistro());
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Eliminar(int id)
