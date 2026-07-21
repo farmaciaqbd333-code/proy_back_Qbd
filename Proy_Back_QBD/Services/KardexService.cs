@@ -68,8 +68,8 @@ namespace proy_back_Qbd.Services
         {
             List<StockRes> responseMP = familia switch
             {
-                "MP" => await ObtenerMateriaPrima("MP"),
-                "PI" => await ObtenerMateriaPrima("PI"),
+                "MP" => await ObtenerMateriaPrima(),
+                "PI" => await ObtenerProductosIntermedios(),
                 "ME" => await ObtenerMateriaEmpaque(),
                 "ECO" => await ObtenerEconomato(),
                 "PT" => await ObtenerProductoTerminado(),
@@ -125,22 +125,42 @@ namespace proy_back_Qbd.Services
             }
 
         }
-        private async Task<List<StockRes>> ObtenerMateriaPrima(string clasificacion)
+        private async Task<List<StockRes>> ObtenerMateriaPrima()
         {
             return await _context.Insumos
-            .Where(i => i.Clasificacion == clasificacion || (clasificacion == "MP" && i.Clasificacion == null))
+            .Where(i => i.Clasificacion == "MP" || i.Clasificacion == null)
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
             {
                 Codigo = s.Key.Id + "",
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
-                Entradas = s.Sum(s => s!.CompraInsumos!.Sum(s => s.PaqueteInsumos!.Sum(s => s.Paquete!.CantidadPaquete * s.Paquete.PesoUnitario))),
+                Entradas = s.Sum(s => s!.CompraInsumos!.Sum(s2 => s2.CantidadSolicitada)),
                 Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias!.Sum(s2 => s2.Cantidad) + x.ProductoIntermedio!.Sum(s => s.LoteEstTotal)),
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
             .Sum(ci => ci.StockDisponible)),
+                Tipo = s.Select(x => x.Tipo).FirstOrDefault()
+            }).ToListAsync()
+            ;
+        }
+        private async Task<List<StockRes>> ObtenerProductosIntermedios()
+        {
+            return await _context.Insumos
+            .Where(i => i.Clasificacion == "PI")
+            .GroupBy(g => new { g.Id })
+            .Select(s => new StockRes()
+            {
+                Codigo = s.Key.Id + "",
+                Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
+                Entradas = s.Sum(s => s!.ProductoIntermedio!.Sum(s2 => s2.Tipo == "CAPSULA" ? s2.LoteEstandar : s2.LoteEstTotal)),
+                Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias!.Sum(s2 => s2.Cantidad)),
+                Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
+                Baja = s.Sum(x => x.ProductoIntermedio!
+            .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
+            .Sum(s2 => s2.Tipo == "CAPSULA" ? s2.LoteEstandar : s2.LoteEstTotal)),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault()
             }).ToListAsync()
             ;
