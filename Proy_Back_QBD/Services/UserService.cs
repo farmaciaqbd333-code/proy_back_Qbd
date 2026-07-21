@@ -35,6 +35,8 @@ namespace Proy_back_QBD.Services
                 Dni = a.Persona.Dni,
                 SedeId = a.Sede.Id,
                 Id = a.Id,
+                Estado = a.Estado,
+                HorarioSalida = a.HorarioSalida,
             })
             .FirstOrDefaultAsync();
 
@@ -101,6 +103,7 @@ namespace Proy_back_QBD.Services
                 TipoUsuario = a.Tipo.Nombre,
                 TipoUsuarioId = a.TipoId,
                 Codigo = a.Codigo,
+                Estado = a.Estado,
                 PersonaRes = new PersonaRes
                 {
                     Id = a.Persona.Id,
@@ -132,6 +135,7 @@ namespace Proy_back_QBD.Services
                 CQFP = a.CQFP,
                 TipoUsuario = a.Tipo.Nombre,
                 Codigo = a.Codigo,
+                Estado = a.Estado,
                 PersonaRes = new PersonaRes
                 {
                     Id = a.Persona.Id,

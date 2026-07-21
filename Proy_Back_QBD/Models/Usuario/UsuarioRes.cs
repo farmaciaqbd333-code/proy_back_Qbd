@@ -24,6 +24,8 @@ namespace Proy_back_QBD.Dto.Response
         public string? Dni { get; set; }
         public int? SedeId { get; set; }
         public int? Id { get; set; }
+        public bool? Estado { get; set; }
+        public TimeOnly? HorarioSalida { get; set; }
     }
     public class UsuarioListaRes
     {
@@ -38,6 +40,7 @@ namespace Proy_back_QBD.Dto.Response
         public string? TipoUsuario { get; set; }
         public int? TipoUsuarioId { get; set; }
         public string? Codigo { get; set; }
+        public bool? Estado { get; set; }
     }
     public class UsuarioByIdRes
     {
@@ -51,5 +54,6 @@ namespace Proy_back_QBD.Dto.Response
         public PersonaRes? PersonaRes { get; set; }
         public string? TipoUsuario { get; set; }
         public string? Codigo { get; set; }
+        public bool? Estado { get; set; }
     }
 }
