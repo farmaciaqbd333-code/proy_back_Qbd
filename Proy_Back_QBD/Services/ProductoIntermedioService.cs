@@ -528,9 +528,54 @@ namespace proy_back_Qbd.Services
             return Alfanumerico.ConvertToBase36(currentValue + 1);
         }
 
-        public Task<string> ObtenerPI()
+
+        public async Task<ObtenerProductoIntermedioReq?> ObtenerPI(int id)
         {
-            throw new NotImplementedException();
+            return await _context.ProductosIntermedios
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .Select(x => new ObtenerProductoIntermedioReq
+                {
+                    Lote = x.Lote,
+                    IdInsumo = x.IdInsumo,
+                    LoteEstandar = x.LoteEstandar.Value,
+                    PesoUnidad = x.PesoUnidad,
+                    LoteEstTotal = x.LoteEstTotal,
+                    Tipo = x.Tipo,
+                    TipoUso = x.TipoUso,
+                    Um = x.Um,
+                    FechaEmision = x.FechaEmision,
+                    FechaVencimiento = x.FechaVencimiento,
+                    IdElaborado = x.IdElaborado.Value,
+                    IdAutorizado = x.IdAutorizado,
+                    Procedimiento = x.Procedimiento,
+                    Aspecto = x.Aspecto,
+                    Color = x.Color,
+                    Olor = x.Olor,
+                    Ph = x.Ph.Value,
+
+                    IdEmpaques = x.EmpaqueProductoIntermedios
+                        .Select(e => e.IdEmpaque)
+                        .ToList(),
+
+                    Insumos = x.InsumoProductoIntermedio
+                        .Select(i => new InsumoProductoIntermedioReq
+                        {
+                            IdInsumo = i.IdInsumo,
+                            Porcentaje = i.Porcentaje,
+                            Variable = i.Variable,
+                            CantidadUnidad = i.CantidadUnidad,
+                            FactorCorrecion = i.FactorCorrecion,
+                            Dilucion = i.Dilucion,
+                            UnidadMedida = i.UnidadMedida,
+                            CantidadLote = i.CantidadLote,
+                            Practica = i.Practica,
+                            Csp = i.Csp
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
         }
+
     }
 }

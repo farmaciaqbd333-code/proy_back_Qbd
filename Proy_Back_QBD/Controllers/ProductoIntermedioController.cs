@@ -45,10 +45,15 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.ObtenerRegistro());
         }
-        [HttpGet("obtener/")]
-        public async Task<IActionResult> ObtenerPI()
+        [HttpGet("{id}")]
+        public async Task<IActionResult> ObtenerPI(int id)
         {
-            return Ok(await _productoIntermedioService.ObtenerRegistro());
+            var producto = await _productoIntermedioService.ObtenerPI(id);
+
+            if (producto is null)
+                return NotFound();
+
+            return Ok(producto);
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Eliminar(int id)
