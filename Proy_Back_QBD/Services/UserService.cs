@@ -25,7 +25,7 @@ namespace Proy_back_QBD.Services
             .Include(a => a.Persona)
             .Include(a => a.Sede)
             .Include(a => a.Tipo)
-            .Where(a => a.Codigo.Trim() == codigo && a.Contrasena.Trim() == contrasena)
+            .Where(a => a.Codigo.Trim() == codigo && a.Contrasena.Trim() == contrasena && a.Estado == true)
             .Select(a => new UsuarioLoginDataRes
             {
                 NombreCompleto = $"{a.Persona.NombreCompleto}",
@@ -35,6 +35,8 @@ namespace Proy_back_QBD.Services
                 Dni = a.Persona.Dni,
                 SedeId = a.Sede.Id,
                 Id = a.Id,
+                Estado = a.Estado,
+                HorarioSalida = a.HorarioSalida,
             })
             .FirstOrDefaultAsync();
 
@@ -101,6 +103,7 @@ namespace Proy_back_QBD.Services
                 TipoUsuario = a.Tipo.Nombre,
                 TipoUsuarioId = a.TipoId,
                 Codigo = a.Codigo,
+                Estado = a.Estado,
                 PersonaRes = new PersonaRes
                 {
                     Id = a.Persona.Id,
@@ -132,6 +135,7 @@ namespace Proy_back_QBD.Services
                 CQFP = a.CQFP,
                 TipoUsuario = a.Tipo.Nombre,
                 Codigo = a.Codigo,
+                Estado = a.Estado,
                 PersonaRes = new PersonaRes
                 {
                     Id = a.Persona.Id,
@@ -174,6 +178,19 @@ namespace Proy_back_QBD.Services
             }
             return lista;
         }
-    }
 
+        public async Task<Usuario?> CambiarEstado(int id, bool estado)
+        {
+            var usuario = await _context.Usuarios.FindAsync(id);
+            if (usuario == null)
+            {
+                return null;
+            }
+
+            usuario.Estado = estado;
+            _context.Usuarios.Update(usuario);
+            await _context.SaveChangesAsync();
+            return usuario;
+        }
+    }
 }

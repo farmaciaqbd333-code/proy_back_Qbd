@@ -14,5 +14,6 @@ namespace Proy_back_QBD.Services
         Task<List<UsuarioListaRes>?> Listar();
         Task<List<AutorizadoEla>?> Lista2(int sedeId);
         Task<UsuarioByIdRes?> ObtenerById(int id);
+        Task<Usuario?> CambiarEstado(int id, bool estado);
     }
 }
