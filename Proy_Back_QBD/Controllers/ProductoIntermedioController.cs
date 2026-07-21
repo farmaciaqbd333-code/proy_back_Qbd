@@ -40,8 +40,13 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.ListaMaestraPI(tipoUso));
         }
-        [HttpGet("registro/")]
+        [HttpGet("registro")]
         public async Task<IActionResult> Registro()
+        {
+            return Ok(await _productoIntermedioService.ObtenerRegistro());
+        }
+        [HttpGet("obtener/")]
+        public async Task<IActionResult> ObtenerPI()
         {
             return Ok(await _productoIntermedioService.ObtenerRegistro());
         }

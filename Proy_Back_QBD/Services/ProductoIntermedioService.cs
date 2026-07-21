@@ -421,7 +421,6 @@ namespace proy_back_Qbd.Services
                 LoteEstandar = s.LoteEstandar ?? 0,
                 Tipo = s.Tipo,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
-                Cantidad = s.Cantidad,
                 Um = s.Insumo.UnidadMedida,
                 FechaEmision = s.FechaEmision,
                 FechaVencimiento = s.FechaVencimiento,
@@ -519,13 +518,19 @@ namespace proy_back_Qbd.Services
 
         public async Task<string> ObtenerRegistro()
         {
-            int nextValue = await _context.Database
+            int currentValue = await _context.Database
     .SqlQuery<int>($"""
-        SELECT nextval('base_y_insumo_sequence') AS "Value"
+        SELECT last_value AS "Value"
+        FROM base_y_insumo_sequence
     """)
     .SingleAsync();
 
-            return Alfanumerico.ConvertToBase36(nextValue);
+            return Alfanumerico.ConvertToBase36(currentValue + 1);
+        }
+
+        public Task<string> ObtenerPI()
+        {
+            throw new NotImplementedException();
         }
     }
 }

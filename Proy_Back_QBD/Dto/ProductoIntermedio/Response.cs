@@ -56,4 +56,5 @@ namespace Proy_back_QBD.Dto
         public string? FormaFarmaceutica { get; set; }
         public int? UltimoProductoIntermedioId { get; set; }
     }
+    
 }
