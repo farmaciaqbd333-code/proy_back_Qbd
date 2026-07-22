@@ -8,7 +8,8 @@ namespace Proy_back_QBD.Dto.Auxiliares
     public class InsumoRCreateReq
     {
         public int InsumoId { get; set; }  // Puede ser nulo  
-        public decimal? Porcentaje { get; set; }  // Puede ser nulo    
+        public decimal? Porcentaje { get; set; }  
+        public decimal? Cantidad { get; set; }  
         public int? CreadorId { get; set; }  // Puede ser nulo
     }
     public class InsumoRUpdateReq

@@ -44,14 +44,13 @@ namespace Proy_back_QBD.Services
                     await _context.InsumosR.AddAsync(insumoR);
                 }
 
-                // Relación fórmula-sede
-                // FormulaRapidaSede formulaRapidaSede = new()
-                // {
-                //     IdSede = request.FormulaR.IdSede,
-                //     IdFormular = formulaR.Id
-                // };
+                FormulaRapidaSede formulaRapidaSede = new()
+                {
+                    IdSede = request.FormulaR.IdSede.Value,
+                    IdFormular = formulaR.Id
+                };
 
-                // await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
+                await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
 
                 await _context.SaveChangesAsync();
 
@@ -148,14 +147,14 @@ namespace Proy_back_QBD.Services
         }
 
 
-        public async Task<List<FormulaRRes>?> Listar()
+        public async Task<List<FormulaRRes>?> Listar(int idSede, string clasificacion)
         {
-            // List<int> idFormulasR = await _context.FormulaRSedes
-            // .Where(w => w.IdSede == idSede)
-            // .Select(s => s.IdFormular).ToListAsync();
+            List<int> idFormulasR = await _context.FormulaRSedes
+            .Where(w => w.IdSede == idSede)
+            .Select(s => s.IdFormular).ToListAsync();
 
             List<FormulaRRes> response = await _context.FormulasR
-            // .Where(w => w.Clasificacion == clasificacion)
+            .Where(w => w.Clasificacion == clasificacion)
                                                         .OrderBy(obd => obd.FechaCreacion)
                                                         .Select(s => new FormulaRRes
                                                         {
@@ -177,7 +176,8 @@ namespace Proy_back_QBD.Services
                                                                 Descripcion = i.Insumo.Descripcion,
                                                                 UnidadMedida = i.Insumo.UnidadMedida,
                                                                 FactorCorreccion = i.Insumo.FactorCorreccion,
-                                                                Dilucion = i.Insumo.Dilucion
+                                                                Dilucion = i.Insumo.Dilucion,
+                                                                Cantidad = i.Cantidad * 1000
                                                             }).ToList()
                                                         })
                                                         .ToListAsync();
