@@ -1,5 +1,5 @@
 public class FormulaRapidaSedeUpdReq
 {
-    public int IdFormular { get; set; }
+    public int IdFormulaRapida { get; set; }
     public List<int> IdsSede { get; set; } = [];
 }

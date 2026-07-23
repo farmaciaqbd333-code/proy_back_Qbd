@@ -28,8 +28,7 @@ namespace Proy_back_QBD.Services
             try
             {
                 // Fórmula
-                FormulaR formulaR = _mapper.Map<FormulaR>(request.FormulaR);
-                formulaR.Clasificacion = "FORMULA";
+                FormulaRapida formulaR = _mapper.Map<FormulaRapida>(request.FormulaR);
                 formulaR.ModificadorId = formulaR.CreadorId;
 
                 await _context.FormulasR.AddAsync(formulaR);
@@ -47,7 +46,7 @@ namespace Proy_back_QBD.Services
                 FormulaRapidaSede formulaRapidaSede = new()
                 {
                     IdSede = request.FormulaR.IdSede.Value,
-                    IdFormular = formulaR.Id
+                    IdFormulaRapida = formulaR.Id
                 };
 
                 await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
@@ -151,7 +150,7 @@ namespace Proy_back_QBD.Services
         {
             List<int> idFormulasR = await _context.FormulaRSedes
             .Where(w => w.IdSede == idSede)
-            .Select(s => s.IdFormular).ToListAsync();
+            .Select(s => s.IdFormulaRapida).ToListAsync();
 
             List<FormulaRRes> response = await _context.FormulasR
             .Where(w => w.Clasificacion == clasificacion)
@@ -191,7 +190,7 @@ namespace Proy_back_QBD.Services
             try
             {
                 var actuales = await _context.FormulaRSedes
-                    .Where(x => x.IdFormular == request.IdFormular)
+                    .Where(x => x.IdFormulaRapida == request.IdFormulaRapida)
                     .ToListAsync();
 
                 // Eliminar relaciones que ya no existen
@@ -211,7 +210,7 @@ namespace Proy_back_QBD.Services
                     .Where(id => !existentes.Contains(id))
                     .Select(id => new FormulaRapidaSede
                     {
-                        IdFormular = request.IdFormular,
+                        IdFormulaRapida = request.IdFormulaRapida,
                         IdSede = id
                     });
 

@@ -49,7 +49,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Economato> Economatos { get; set; }
         public DbSet<FormulaCC> FormulasCC { get; set; }  // Para la tabla de lab        
         public DbSet<Empaque> Empaques { get; set; }
-        public DbSet<FormulaR> FormulasR { get; set; }
+        public DbSet<FormulaRapida> FormulasR { get; set; }
         public DbSet<InsumoR> InsumosR { get; set; }
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Fabricante> Fabricantes { get; set; }
@@ -175,7 +175,7 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
-            modelBuilder.Entity<FormulaR>((e) =>
+            modelBuilder.Entity<FormulaRapida>((e) =>
             {
                 e.HasOne(x => x.Creador).WithMany(x => x.FormulaRsCreadas).HasForeignKey(x => x.CreadorId);
                 e.HasOne(x => x.Modificador).WithMany(x => x.FormulasRsModificadas).HasForeignKey(x => x.ModificadorId);

@@ -134,9 +134,9 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<InsumoR>? InsumoRsModificadas { get; set; }
         [JsonIgnore]
-        public List<FormulaR>? FormulaRsCreadas { get; set; }
+        public List<FormulaRapida>? FormulaRsCreadas { get; set; }
         [JsonIgnore]
-        public List<FormulaR>? FormulasRsModificadas { get; set; }
+        public List<FormulaRapida>? FormulasRsModificadas { get; set; }
         [JsonIgnore]
         public List<Compra>? ComprasCreadas { get; set; }
         [JsonIgnore]

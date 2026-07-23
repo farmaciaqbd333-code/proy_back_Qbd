@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Proy_back_QBD.Models
 {
     [Table("formulasR")]
-    public class FormulaR
+    public class FormulaRapida
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
