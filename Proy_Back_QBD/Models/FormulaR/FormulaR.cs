@@ -16,7 +16,7 @@ namespace Proy_back_QBD.Models
         [Column("descripcion")]
         public required string Descripcion { get; set; }  // Puede ser nulo
         [Column("empaqueId")]
-        public int? EmpaqueId { get; set; }  // Puede ser nulo
+        public int? IdEmpaque { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public Empaque? Empaque { get; set; }  // Puede ser nulo
         [Column("procedimiento")]
