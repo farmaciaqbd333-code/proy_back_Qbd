@@ -42,7 +42,7 @@ namespace Proy_back_QBD.Dto
         public decimal? Dilucion { get; set; }
         public string? Um { get; set; } // Unidad de medida
         public decimal CantidadLote { get; set; }
-        public decimal? Practica { get; set; } 
+        public decimal? Practica { get; set; }
         public bool? CSP { get; set; }
     }
 
@@ -56,5 +56,11 @@ namespace Proy_back_QBD.Dto
         public string? FormaFarmaceutica { get; set; }
         public int? UltimoProductoIntermedioId { get; set; }
     }
-    
+    public class RegistroPIRes
+    {
+        public string? NroReg { get; set; }
+        public string? Lote { get; set; }
+
+    }
+
 }

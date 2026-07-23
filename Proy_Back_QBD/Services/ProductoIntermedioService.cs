@@ -516,7 +516,7 @@ namespace proy_back_Qbd.Services
             }
         }
 
-        public async Task<string> ObtenerRegistro()
+        public async Task<RegistroPIRes> ObtenerRegistro()
         {
             int currentValue = await _context.Database
     .SqlQuery<int>($"""
@@ -525,7 +525,22 @@ namespace proy_back_Qbd.Services
     """)
     .SingleAsync();
 
-            return Alfanumerico.ConvertToBase36(currentValue + 1);
+            var hoy = DateTime.Today;
+
+            var siguienteNumero = await _context.ProductosIntermedios
+     .CountAsync(x => x.FechaCreacion.Date == hoy) + 1;
+
+
+            string lote = $"PI-{hoy:yyyyMMdd}{siguienteNumero}";
+
+            string registro = Alfanumerico.ConvertToBase36(currentValue + 1);
+
+            RegistroPIRes response = new()
+            {
+                Lote = lote,
+                NroReg = registro
+            };
+            return response;
         }
 
 
