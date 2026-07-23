@@ -47,6 +47,7 @@ namespace Proy_back_QBD.Request
     public class InsumoProductoIntermedioReq
     {
         public int IdInsumo { get; set; }
+        public required string CodigoInsumo { get; set; }
         public decimal Porcentaje { get; set; }
         public required string Variable { get; set; }
         public decimal CantidadUnidad { get; set; }

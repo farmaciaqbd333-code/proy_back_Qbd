@@ -577,6 +577,7 @@ namespace proy_back_Qbd.Services
                         .Select(i => new InsumoProductoIntermedioReq
                         {
                             IdInsumo = i.IdInsumo,
+                            CodigoInsumo = UtilFamilia.CodigoInsumo(i.IdInsumo),
                             Porcentaje = i.Porcentaje,
                             Variable = i.Variable,
                             CantidadUnidad = i.CantidadUnidad,
