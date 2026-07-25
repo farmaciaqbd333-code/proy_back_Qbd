@@ -136,7 +136,7 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas = s.Sum(s => s!.CompraInsumos!.Sum(s2 => s2.CantidadSolicitada)),
-                Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias!.Sum(s2 => s2.Cantidad) + x.ProductoIntermedio!.Sum(s => s.LoteEstTotal)),
+                Salidas = s.Sum(x => x.ProductoIntermedio!.Sum(s => s.LoteEstTotal)),
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
@@ -156,7 +156,7 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas = s.Sum(s => s!.ProductoIntermedio!.Sum(s2 => s2.Tipo == "CAPSULA" ? s2.LoteEstandar : s2.LoteEstTotal)),
-                Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias!.Sum(s2 => s2.Cantidad)),
+                Salidas = 0,
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.ProductoIntermedio!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
@@ -175,7 +175,7 @@ namespace proy_back_Qbd.Services
                             Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                             Um = "Und",
                             Entradas = s.Sum(s => s.CompraEmpaques!.Sum(s => s.PaqueteEmpaques!.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario))),
-                            Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias!.Sum(s2 => s2.Cantidad) + x.EmpaqueProductoIntermedios.Count()),
+                            Salidas = 0,
                             Ajustes = s.Sum(s => s.CompraEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
                             Baja = s.Sum(x => x.CompraEmpaques
     .Where(ce => ce.FechaVencimiento < DateTimeOffset.UtcNow)
@@ -193,7 +193,7 @@ namespace proy_back_Qbd.Services
                             Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                             Um = s.Select(s => s.UnidadMedida).FirstOrDefault() ?? "Und",
                             Entradas = s.Sum(s => s.CompraEconomatos.Sum(ce => ce.CantidadSolicitada)),
-                            Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias.Sum(s2 => s2.Cantidad)),
+                            Salidas = 0,
                             Ajustes = s.Sum(s => s.CompraEconomatos.Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste))),
                             Baja = 0
                         }).ToListAsync();
@@ -208,7 +208,7 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = "UND",
                 Entradas = s.Sum(s => s.CompraProductos.Sum(s => s.CantidadSolicitada)),
-                Salidas = s.Sum(x => x.Familia.NotaSalidaFamilias.Sum(s2 => s2.Cantidad)),
+                Salidas = 0,
                 Ajustes = s.Sum(s => s.CompraProductos.Sum(s => s.AjusteProductoTerminados.Sum(s => s.Ajuste))),
                 Baja = 0
             }).ToListAsync()

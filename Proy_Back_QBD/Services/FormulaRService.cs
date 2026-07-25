@@ -161,6 +161,7 @@ namespace Proy_back_QBD.Services
                                                             Descripcion = s.Descripcion,
                                                             IdEmpaque = s.IdEmpaque,
                                                             Procedimiento = s.Procedimiento,
+                                                            Clasificacion = s.Clasificacion,
                                                             Aspecto = s.Aspecto,
                                                             Color = s.Color,
                                                             Olor = s.Olor,
