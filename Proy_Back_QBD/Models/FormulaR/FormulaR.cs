@@ -15,10 +15,14 @@ namespace Proy_back_QBD.Models
         public int Id { get; set; }  // Puede ser nulo
         [Column("descripcion")]
         public required string Descripcion { get; set; }  // Puede ser nulo
-        [Column("empaqueId")]
-        public int? IdEmpaque { get; set; }  // Puede ser nulo
+        [Column("id_insumo")]
+        public int? IdInsumo { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public Insumo? Insumo { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public Empaque? Empaque { get; set; }  // Puede ser nulo
+        [Column("empaqueId")]
+        public int? IdEmpaque { get; set; }  // Puede ser nulo
         [Column("procedimiento")]
         public string? Procedimiento { get; set; }  // Puede ser nulo
         [Column("aspecto")]

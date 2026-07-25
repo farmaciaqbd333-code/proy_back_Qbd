@@ -9,11 +9,12 @@ using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Models
 {
-    public class NotaSalidaFamilias
+    public class NotaSalidaDetalle
     {
         public int Id { get; set; }
 
         public int IdFamilia { get; set; }
+
         public int IdNotaSalida { get; set; }
 
         public decimal Cantidad { get; set; }

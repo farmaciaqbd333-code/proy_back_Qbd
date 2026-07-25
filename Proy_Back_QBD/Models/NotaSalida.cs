@@ -21,6 +21,6 @@ namespace proy_back_Qbd.Models
         public int? IdModificador { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
-        public List<NotaSalidaFamilias>? NotaSalidaFamilias { get; set; }
+        public List<NotaSalidaDetalle>? NotaSalidaFamilias { get; set; }
     }
 }

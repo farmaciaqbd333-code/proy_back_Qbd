@@ -16,7 +16,8 @@ namespace Proy_back_QBD.Dto.Auxiliares
     public class FormularRReq
     {
         public required string Descripcion { get; set; }  // Puede ser nulo
-        public string? Empaque { get; set; }  // Puede ser nulo
+        public int? IdEmpaque { get; set; }  // Puede ser nulo
+        public int? IdInsumo { get; set; }  // Puede ser nulo
         public decimal? Cantidad { get; set; }  // Puede ser nulo
         public string? Procedimiento { get; set; }  // Puede ser nulo
         public string? Aspecto { get; set; }  // Puede ser nulo
@@ -30,7 +31,8 @@ namespace Proy_back_QBD.Dto.Auxiliares
     public class FormularRUpdTReq
     {
         public required string Descripcion { get; set; }  // Puede ser nulo
-        public string? Empaque { get; set; }  // Puede ser nulo
+        public int? IdEmpaque { get; set; }  // Puede ser nulo
+        public int? IdInsumo { get; set; }  // Puede ser nulo
         public string? Procedimiento { get; set; }  // Puede ser nulo
         public string? Aspecto { get; set; }  // Puede ser nulo
         public string? Color { get; set; }  // Puede ser nulo

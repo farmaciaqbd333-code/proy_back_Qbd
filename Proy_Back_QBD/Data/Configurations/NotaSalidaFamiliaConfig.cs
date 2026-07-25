@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using proy_back_Qbd.Models;
 
-public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalidaFamilias>
+public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalidaDetalle>
 {
-    public void Configure(EntityTypeBuilder<NotaSalidaFamilias> builder)
+    public void Configure(EntityTypeBuilder<NotaSalidaDetalle> builder)
     {
         builder.ToTable("nota_salida_familias");
 

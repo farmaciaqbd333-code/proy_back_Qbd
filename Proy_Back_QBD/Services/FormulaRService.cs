@@ -160,6 +160,7 @@ namespace Proy_back_QBD.Services
                                                             Id = s.Id,
                                                             Descripcion = s.Descripcion,
                                                             IdEmpaque = s.IdEmpaque,
+                                                            IdInsumo = s.IdInsumo,
                                                             Procedimiento = s.Procedimiento,
                                                             Clasificacion = s.Clasificacion,
                                                             Aspecto = s.Aspecto,
