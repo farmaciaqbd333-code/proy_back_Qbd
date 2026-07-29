@@ -11,5 +11,5 @@ public class EmpaqueProductoIntermedio
     public virtual Empaque? Empaque { get; set; }
 
     public virtual ProductoIntermedio? ProductoIntermedio { get; set; }
-    public List<CompraEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; } = new();
+    public List<StockEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; } = new();
 }

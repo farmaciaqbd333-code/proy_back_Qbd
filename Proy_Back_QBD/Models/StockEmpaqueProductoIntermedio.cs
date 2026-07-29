@@ -1,6 +1,6 @@
 using proy_back_Qbd.Models;
 
-public class CompraEmpaqueProductoIntermedio
+public class StockEmpaqueProductoIntermedio
 {
     public int Id { get; set; }
 
@@ -12,7 +12,7 @@ public class CompraEmpaqueProductoIntermedio
 
     public string UnidadMedida { get; set; } = string.Empty;
 
-    public virtual CompraEmpaque CompraEmpaque { get; set; } = null!;
+    public virtual StockEmpaque StockEmpaque { get; set; } = null!;
 
     public virtual EmpaqueProductoIntermedio EmpaqueProductoIntermedio { get; set; } = null!;
 }

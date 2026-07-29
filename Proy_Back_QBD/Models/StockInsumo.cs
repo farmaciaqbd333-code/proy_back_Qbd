@@ -1,0 +1,15 @@
+using proy_back_Qbd.Models;
+using Proy_back_QBD.Models;
+
+public class StockInsumo
+{
+    public int Id { get; set; }
+    public int IdCompraInsumo { get; set; }
+    public decimal StockDisponible { get; set; }
+    public string UnidadMedida { get; set; } = null!;
+    public int IdSede { get; set; }
+
+    public CompraInsumos CompraInsumo { get; set; } = null!;
+    public List<StockInsumoProductoIntermedio>? StockInsumoProductoIntermedio { get; set; } = null!;
+    public Sede Sede { get; set; } = null!;
+}

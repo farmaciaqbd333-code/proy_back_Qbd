@@ -24,32 +24,32 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar Principal
         /// </summary>
-        [HttpGet("lista/{familia}")]
-        public async Task<IActionResult> ObtenerStock(string familia)
+        [HttpGet]
+        public async Task<IActionResult> ObtenerStock(string familia, int idSede)
         {
-            List<StockRes> response = await _kardexService.StockListaPrincipal(familia);
+            List<StockRes> response = await _kardexService.StockListaPrincipal(familia, idSede);
 
             return Ok(response);
         }
-        [HttpGet("detalle-insumo/{insumoId:int}")]
-        public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId)
+        [HttpGet("detalle-insumo")]
+        public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId, int idSede)
         {
-            var resultado = await _kardexService.ObtenerDetalleInsumo(insumoId);
+            var resultado = await _kardexService.ObtenerDetalleInsumo(insumoId, idSede);
 
             return Ok(resultado);
         }
 
-        [HttpGet("detalle-empaque/{empaqueId:int}")]
-        public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId)
+        [HttpGet("detalle-empaque")]
+        public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId, int idSede)
         {
-            var resultado = await _kardexService.ObtenerDetalleEmpaque(empaqueId);
+            var resultado = await _kardexService.ObtenerDetalleEmpaque(empaqueId, idSede);
 
             return Ok(resultado);
         }
         [HttpGet("vencidos")]
-        public async Task<IActionResult> ObtenerVencidos(string familia)
+        public async Task<IActionResult> ObtenerVencidos(string familia, int idSede)
         {
-            var resultado = await _kardexService.ObtenerComprasVencidas(familia);
+            var resultado = await _kardexService.ObtenerComprasVencidas(familia, idSede);
 
             return Ok(resultado);
         }

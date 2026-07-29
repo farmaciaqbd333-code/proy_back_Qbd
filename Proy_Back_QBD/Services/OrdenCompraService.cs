@@ -16,13 +16,11 @@ namespace proy_back_Qbd.Services
     public class OrdenCompraService : IOrdenCompraService
     {
         private readonly ApiContext _context;
-        private readonly IDetalleOrdenCompraService _serviceDOC;
         private readonly IMapper _mapper;
-        public OrdenCompraService(ApiContext context, IMapper mapper, IDetalleOrdenCompraService serviceDOC)
+        public OrdenCompraService(ApiContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _serviceDOC = serviceDOC;
         }
 
         public async Task<OrdenCompraGetRes?> ObtenerOrdenCompra(int id)

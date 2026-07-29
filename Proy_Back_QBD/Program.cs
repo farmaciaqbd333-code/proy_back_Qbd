@@ -66,7 +66,6 @@ builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
 builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
 builder.Services.AddScoped<IEconomatoService, EconomatoService>();
-builder.Services.AddScoped<IDetalleOrdenCompraService, DetalleOrdenCompraService>();
 builder.Services.AddScoped<ICompraLaboratorioService, CompraLaboratorioService>();
 builder.Services.AddScoped<IPaqueteService, PaqueteService>();
 builder.Services.AddScoped<IMesonService, MesonService>();

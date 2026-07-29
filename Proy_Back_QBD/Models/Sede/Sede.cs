@@ -57,6 +57,14 @@ namespace Proy_back_QBD.Models
         public List<Compra>? Compras { get; set; }
         [JsonIgnore]
         public List<FormulaRapidaSede>? FormulaRSedes { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<StockInsumo>? StockInsumos { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<StockEmpaque>? StockEmpaques { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<StockEconomato>? StockEconomatos { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<StockProductoTerminado>? StockProductoTerminados { get; set; }  // Puede ser nulo
     }
 
 }

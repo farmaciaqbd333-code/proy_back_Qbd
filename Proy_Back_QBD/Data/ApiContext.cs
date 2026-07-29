@@ -13,7 +13,7 @@ namespace Proy_back_QBD.Data
         {
         }
         public DbSet<ProductoIntermedio> ProductosIntermedios { get; set; }
-        public DbSet<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedios { get; set; }
+        public DbSet<StockInsumoProductoIntermedio> StockInsumoProductoIntermedios { get; set; }
         public DbSet<InsumoProductoIntermedio> InsumoProductoIntermedios { get; set; }
         public DbSet<AjusteEmpaque> AjusteEmpaques { get; set; }
         public DbSet<AjusteInsumo> AjusteInsumos { get; set; }
@@ -54,8 +54,12 @@ namespace Proy_back_QBD.Data
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Fabricante> Fabricantes { get; set; }
         public DbSet<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; }
-        public DbSet<CompraEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
+        public DbSet<StockEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
         public DbSet<FormulaRapidaSede> FormulaRSedes { get; set; }
+        public DbSet<StockEconomato> StockEconomatos { get; set; }
+        public DbSet<StockEmpaque> StockEmpaques { get; set; }
+        public DbSet<StockProductoTerminado> StockProductoTerminados { get; set; }
+        public DbSet<StockInsumo> StockInsumos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);
@@ -365,13 +369,13 @@ namespace Proy_back_QBD.Data
                         j => j.HasOne<Fabricante>().WithMany().HasForeignKey("id_fabricante")
                     );
             });
-            modelBuilder.Entity<CompraInsumoProductoIntermedio>()
+            modelBuilder.Entity<StockInsumoProductoIntermedio>()
                    .HasOne(x => x.Creador)
                    .WithMany(x => x.CompraInsumoProductoIntermedioCreados)
                    .HasForeignKey(x => x.IdCreador)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CompraInsumoProductoIntermedio>()
+            modelBuilder.Entity<StockInsumoProductoIntermedio>()
                 .HasOne(x => x.Modificador)
                 .WithMany(x => x.CompraInsumoProductoIntermedioModificados)
                 .HasForeignKey(x => x.IdModificador)

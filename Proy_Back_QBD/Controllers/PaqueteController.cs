@@ -51,27 +51,27 @@ namespace proy_back_Qbd.Controllers
         /// Modificar Paquete Insumo a Detalle Compra
         /// </summary>
         [HttpPut("insumo/{idPaquete}")]
-        public async Task<IActionResult> ModificarPaqueteInsumo(int idPaquete, [FromBody] PaqueteInsumoModificarReq req)
+        public async Task<IActionResult> ModificarPaqueteInsumo(int idSede, int idPaquete, [FromBody] PaqueteInsumoModificarReq req)
         {
-            string response = await _servicePaquete.ModificarPaqueteInsumo(idPaquete, req);
+            string response = await _servicePaquete.ModificarPaqueteInsumo(idSede, idPaquete, req);
             return Ok(response);
         }
         /// <summary>
         /// Modificar Paquete Empaque a Detalle Compra
         /// </summary>
         [HttpPut("empaque/{idPaquete}")]
-        public async Task<IActionResult> ModificarPaqueteEmpaque(int idPaquete, [FromBody] PaqueteEmpaqueModificarReq req)
+        public async Task<IActionResult> ModificarPaqueteEmpaque(int idSede, int idPaquete, [FromBody] PaqueteEmpaqueModificarReq req)
         {
-            string response = await _servicePaquete.ModificarPaqueteEmpaque(idPaquete, req);
+            string response = await _servicePaquete.ModificarPaqueteEmpaque(idSede, idPaquete, req);
             return Ok(response);
         }
         /// <summary>
         /// Eliminar Paquete
         /// </summary>
         [HttpDelete("{idPaquete}/{empaqueInsumo}")]
-        public async Task<IActionResult> EliminarPaquete(int idPaquete, int empaqueInsumo)
+        public async Task<IActionResult> EliminarPaquete(int idPaquete, int empaqueInsumo, int idSede)
         {
-            string response = await _servicePaquete.EliminarPaquete(idPaquete, empaqueInsumo);
+            string response = await _servicePaquete.EliminarPaquete(idPaquete, empaqueInsumo, idSede);
             return Ok(response);
         }
     }

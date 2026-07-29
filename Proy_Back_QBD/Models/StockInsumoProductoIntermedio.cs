@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Models;
 
-public class CompraInsumoProductoIntermedio
+public class StockInsumoProductoIntermedio
 {
     public int Id { get; set; }
 
@@ -26,7 +26,7 @@ public class CompraInsumoProductoIntermedio
 
     public InsumoProductoIntermedio? InsumoProductoIntermedio { get; set; }
 
-    public CompraInsumos? CompraInsumo { get; set; }
+    public StockInsumo? StockInsumo { get; set; }
 
     public Usuario? Creador { get; set; }
 
