@@ -8,7 +8,7 @@ using Proy_back_QBD.Models;
 namespace proy_back_Qbd.Models
 {
     [Table("compra_economato")]
-    public class CompraEconomatos
+    public class CompraEconomato
     {
         [Column("id")] public int Id { get; set; }
         [Column("id_economato")] public int IdEconomato { get; set; }
@@ -29,6 +29,7 @@ namespace proy_back_Qbd.Models
         public Economato? Economato { get; set; }
         public List<AjusteEconomato>? AjusteEconomatos { get; set; }
         public List<StockEconomato>? StockEconomatos { get; set; }
+        public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
     }

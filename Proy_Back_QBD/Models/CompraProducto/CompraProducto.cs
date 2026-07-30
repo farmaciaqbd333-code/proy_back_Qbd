@@ -8,7 +8,7 @@ using Proy_back_QBD.Models;
 namespace proy_back_Qbd.Models
 {
     [Table("compra_producto")]
-    public class CompraProductos
+    public class CompraProducto
     {
         [Column("id")] public int Id { get; set; }
         [Column("id_producto")] public int IdProducto { get; set; }
@@ -31,6 +31,7 @@ namespace proy_back_Qbd.Models
         public Compra? Compra { get; set; }
         public Producto? Producto { get; set; }
         public List<AjusteProductoTerminado>? AjusteProductoTerminados { get; set; }
+        public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }
         public List<StockProductoTerminado> StockProductoTerminados { get; set; } = new();
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }

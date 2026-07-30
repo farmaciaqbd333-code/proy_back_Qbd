@@ -9,6 +9,6 @@ public class StockEconomato
     public string UnidadMedida { get; set; } = null!;
     public int IdSede { get; set; }
 
-    public CompraEconomatos CompraEconomato { get; set; } = null!;
+    public CompraEconomato CompraEconomato { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }

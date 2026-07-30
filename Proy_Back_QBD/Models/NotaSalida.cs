@@ -19,9 +19,12 @@ namespace proy_back_Qbd.Models
         public DateTimeOffset? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
-        
+
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
-        public List<NotaSalidaInsumo>? NotaSalidaFamilias { get; set; }
+        public List<NotaSalidaInsumo>? NotaSalidaInsumos { get; set; }
+        public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }
+        public List<NotaSalidaEmpaque>? NotaSalidaEmpaques { get; set; }
+        public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }
     }
 }

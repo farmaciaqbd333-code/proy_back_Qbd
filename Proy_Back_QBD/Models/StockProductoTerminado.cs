@@ -9,6 +9,6 @@ public class StockProductoTerminado
     public string UnidadMedida { get; set; } = null!;
     public int IdSede { get; set; }
 
-    public CompraProductos CompraProducto { get; set; } = null!;
+    public CompraProducto CompraProducto { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }

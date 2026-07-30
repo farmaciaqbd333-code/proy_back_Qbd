@@ -154,13 +154,13 @@ namespace Proy_back_QBD.Models
         [JsonIgnore]
         public List<CompraEmpaque>? DetalleComprasEmpaquesModificadas { get; set; }
         [JsonIgnore]
-        public List<CompraProductos>? DetalleCompraProductoCreadas { get; set; }
+        public List<CompraProducto>? DetalleCompraProductoCreadas { get; set; }
         [JsonIgnore]
-        public List<CompraProductos>? DetalleCompraProductoModificadas { get; set; }
+        public List<CompraProducto>? DetalleCompraProductoModificadas { get; set; }
         [JsonIgnore]
-        public List<CompraEconomatos>? DetalleCompraEconomatoCreadas { get; set; }
+        public List<CompraEconomato>? DetalleCompraEconomatoCreadas { get; set; }
         [JsonIgnore]
-        public List<CompraEconomatos>? DetalleCompraEconomatoModificadas { get; set; }
+        public List<CompraEconomato>? DetalleCompraEconomatoModificadas { get; set; }
         [JsonIgnore]
         public List<Proveedor>? ProveedoresCreados { get; set; }
         [JsonIgnore]
@@ -189,6 +189,12 @@ namespace Proy_back_QBD.Models
         [JsonIgnore] public List<ProductoIntermedio>? ProductosIntermediosAutorizados { get; set; }
         [JsonIgnore] public List<StockInsumoProductoIntermedio> CompraInsumoProductoIntermedioCreados { get; set; } = new();
         [JsonIgnore] public List<StockInsumoProductoIntermedio> CompraInsumoProductoIntermedioModificados { get; set; } = new();
+        [JsonIgnore] public List<NotaSalidaEmpaque> NotaSalidaEmpaqueModificados { get; set; } = new();
+        [JsonIgnore] public List<NotaSalidaEconomato> NotaSalidaEconomatoModificados { get; set; } = new();
+        [JsonIgnore] public List<NotaSalidaProducto> NotaSalidaProductoModificados { get; set; } = new();
+        [JsonIgnore] public List<NotaSalidaEmpaque> NotaSalidaEmpaqueCreados { get; set; } = new();
+        [JsonIgnore] public List<NotaSalidaEconomato> NotaSalidaEconomatoCreados { get; set; } = new();
+        [JsonIgnore] public List<NotaSalidaProducto> NotaSalidaProductoCreados { get; set; } = new();
     }
     [Table("tipos_usuario")]
     public class TipoUsuario
