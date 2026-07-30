@@ -65,6 +65,8 @@ namespace Proy_back_QBD.Models
         public List<StockEconomato>? StockEconomatos { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public List<StockProductoTerminado>? StockProductoTerminados { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<NotaSalida>? NotaSalidas { get; set; }  // Puede ser nulo
     }
 
 }

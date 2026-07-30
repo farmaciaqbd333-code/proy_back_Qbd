@@ -13,7 +13,7 @@ namespace proy_back_Qbd.Models
     {
         public int Id { get; set; }
         public DateTimeOffset FechaSalida { get; set; }
-        public required string Destino { get; set; }
+        public int IdSede { get; set; }
         public string? Observacion { get; set; }
         public DateTimeOffset FechaCreacion { get; set; }
         public DateTimeOffset? FechaModificacion { get; set; }
@@ -21,6 +21,7 @@ namespace proy_back_Qbd.Models
         public int? IdModificador { get; set; }
 
         public Usuario? Creador { get; set; }
+        public Sede? Sede { get; set; }
         public Usuario? Modificador { get; set; }
         public List<NotaSalidaInsumo>? NotaSalidaInsumos { get; set; }
         public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }

@@ -14,6 +14,11 @@ public class StockEmpaqueConfiguration : IEntityTypeConfiguration<StockEmpaque>
         builder.Property(x => x.StockDisponible).HasColumnName("stock_disponible").HasPrecision(18, 4);
         builder.Property(x => x.UnidadMedida).HasColumnName("unidad_medida").HasMaxLength(20);
         builder.Property(x => x.IdSede).HasColumnName("id_sede");
+        builder.Property(x => x.IdNotaSalidaEmpaque).HasColumnName("id_nota_salida_empaque");
+
+        builder.HasOne(x => x.NotaSalidaEmpaque)
+            .WithOne(wm => wm.StockEmpaque)
+            .HasForeignKey<StockEmpaque>(x => x.IdCompraEmpaque);
 
         builder.HasOne(x => x.CompraEmpaque)
             .WithMany(w => w.StockEmpaques)

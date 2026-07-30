@@ -8,7 +8,8 @@ public class StockProductoTerminado
     public decimal StockDisponible { get; set; }
     public string UnidadMedida { get; set; } = null!;
     public int IdSede { get; set; }
-
+    public int? IdNotaSalidaProducto { get; set; }
     public CompraProducto CompraProducto { get; set; } = null!;
+    public NotaSalidaProducto NotaSalidaProducto { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }

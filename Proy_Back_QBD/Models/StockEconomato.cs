@@ -8,7 +8,8 @@ public class StockEconomato
     public decimal StockDisponible { get; set; }
     public string UnidadMedida { get; set; } = null!;
     public int IdSede { get; set; }
-
+    public int? IdNotaSalidaEconomato { get; set; }
+    public NotaSalidaEconomato NotaSalidaEconomato { get; set; } = null!;
     public CompraEconomato CompraEconomato { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }
