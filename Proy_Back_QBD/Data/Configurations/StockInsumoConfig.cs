@@ -14,7 +14,12 @@ public class StockInsumoConfiguration : IEntityTypeConfiguration<StockInsumo>
         builder.Property(x => x.StockDisponible).HasColumnName("stock_disponible").HasPrecision(18, 4);
         builder.Property(x => x.UnidadMedida).HasColumnName("unidad_medida").HasMaxLength(20);
         builder.Property(x => x.IdSede).HasColumnName("id_sede");
+        builder.Property(x => x.IdNotaSalidaInsumo).HasColumnName("id_nota_salida_insumo");
 
+        builder.HasOne(x => x.NotaSalidaInsumo)
+            .WithOne(wm => wm.StockInsumo)
+            .HasForeignKey<StockInsumo>(x => x.IdCompraInsumo);
+            
         builder.HasOne(x => x.CompraInsumo)
             .WithMany(wm => wm.StockInsumos)
             .HasForeignKey(x => x.IdCompraInsumo);

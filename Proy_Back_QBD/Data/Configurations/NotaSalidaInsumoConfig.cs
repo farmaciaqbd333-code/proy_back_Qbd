@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using proy_back_Qbd.Models;
 
-public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalidaDetalle>
+public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalidaInsumo>
 {
-    public void Configure(EntityTypeBuilder<NotaSalidaDetalle> builder)
+    public void Configure(EntityTypeBuilder<NotaSalidaInsumo> builder)
     {
         builder.ToTable("nota_salida_familias");
 
@@ -17,8 +17,8 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
         builder.Property(e => e.IdNotaSalida)
             .HasColumnName("id_nota_salida");
 
-        builder.Property(e => e.IdFamilia)
-            .HasColumnName("id_familia");
+        builder.Property(e => e.IdCompraInsumo)
+            .HasColumnName("id_compra_insumo");
 
         builder.Property(e => e.Cantidad)
             .HasColumnName("cantidad");
@@ -43,29 +43,20 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
         builder.Property(e => e.IdModificador)
             .HasColumnName("id_modificador");
 
-        builder.Property(e => e.Tara)
-            .HasColumnName("tara");
-
-        builder.Property(e => e.PesoBruto)
-            .HasColumnName("peso_bruto");
-
-        builder.Property(e => e.PesoNeto)
-            .HasColumnName("peso_neto");
-
         builder.Property(e => e.Paquete)
             .HasColumnName("paquete");
 
         builder.Property(e => e.CantidadPaquete)
             .HasColumnName("cantidad_paquete");
 
-        builder.HasOne(e => e.Familia)
-            .WithMany(wm => wm.NotaSalidaFamilias)
-            .HasForeignKey(e => e.IdFamilia)
-            .OnDelete(DeleteBehavior.Cascade);
-            
         builder.HasOne(e => e.NotaSalida)
             .WithMany(wm => wm.NotaSalidaFamilias)
             .HasForeignKey(e => e.IdNotaSalida)
+            .OnDelete(DeleteBehavior.Cascade);        
+
+        builder.HasOne(e => e.CompraInsumos)
+            .WithMany(wm => wm.NotaSalidaInsumos)
+            .HasForeignKey(e => e.IdCompraInsumo)
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.Creador)

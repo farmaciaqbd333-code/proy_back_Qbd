@@ -8,8 +8,10 @@ public class StockInsumo
     public decimal StockDisponible { get; set; }
     public string UnidadMedida { get; set; } = null!;
     public int IdSede { get; set; }
+    public int? IdNotaSalidaInsumo { get; set; }
 
     public CompraInsumos CompraInsumo { get; set; } = null!;
+    public NotaSalidaInsumo NotaSalidaInsumo { get; set; } = null!;
     public List<StockInsumoProductoIntermedio>? StockInsumoProductoIntermedio { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }
