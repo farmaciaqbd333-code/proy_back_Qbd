@@ -18,7 +18,7 @@ public class StockEmpaqueConfiguration : IEntityTypeConfiguration<StockEmpaque>
 
         builder.HasOne(x => x.NotaSalidaEmpaque)
             .WithOne(wm => wm.StockEmpaque)
-            .HasForeignKey<StockEmpaque>(x => x.IdCompraEmpaque);
+            .HasForeignKey<StockEmpaque>(x => x.IdNotaSalidaEmpaque);
 
         builder.HasOne(x => x.CompraEmpaque)
             .WithMany(w => w.StockEmpaques)

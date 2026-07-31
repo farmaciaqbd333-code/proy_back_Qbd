@@ -18,7 +18,7 @@ public class StockProductoTerminadoConfiguration : IEntityTypeConfiguration<Stoc
 
         builder.HasOne(x => x.NotaSalidaProducto)
             .WithOne(wm => wm.StockProductoTerminado)
-            .HasForeignKey<StockProductoTerminado>(x => x.IdCompraProducto);
+            .HasForeignKey<StockProductoTerminado>(x => x.IdNotaSalidaProducto);
             
         builder.HasOne(x => x.CompraProducto)
             .WithMany(w => w.StockProductoTerminados)

@@ -18,7 +18,8 @@ public class StockEconomatoConfiguration : IEntityTypeConfiguration<StockEconoma
 
         builder.HasOne(x => x.NotaSalidaEconomato)
             .WithOne(wm => wm.StockEconomato)
-            .HasForeignKey<StockEconomato>(x => x.IdCompraEconomato);
+            .HasForeignKey<StockEconomato>(x => x.IdNotaSalidaEconomato);
+
         builder.HasOne(x => x.CompraEconomato)
             .WithMany(w => w.StockEconomatos)
             .HasForeignKey(x => x.IdCompraEconomato);
