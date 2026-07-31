@@ -61,7 +61,7 @@ namespace Proy_back_QBD.Data
         public DbSet<FormulaRapidaSede> FormulaRSedes { get; set; }
         public DbSet<StockEconomato> StockEconomatos { get; set; }
         public DbSet<StockEmpaque> StockEmpaques { get; set; }
-        public DbSet<StockProductoTerminado> StockProductoTerminados { get; set; }
+        public DbSet<StockProductoTerminado> StockProductos { get; set; }
         public DbSet<StockInsumo> StockInsumos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

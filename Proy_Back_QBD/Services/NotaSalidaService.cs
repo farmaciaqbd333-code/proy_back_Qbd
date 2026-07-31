@@ -175,7 +175,194 @@ public class NotaSalidaService : INotaSalidaService
             "Finalizó creación de detalle de insumo. NotaSalida={NotaSalida}",
             idNotaSalida);
     }
+    public async Task ActualizarAsync(int id, NotaSalidaCreateReq request)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
 
+        try
+        {
+            var notaSalida = await _context.NotaSalidas
+                .Include(x => x.NotaSalidaInsumos)
+                .Include(x => x.NotaSalidaEmpaques)
+                .Include(x => x.NotaSalidaEconomatos)
+                .Include(x => x.NotaSalidaProductos)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (notaSalida == null)
+                throw new Exception("Nota salida no encontrada.");
+
+            // 1. Revertir stock anterior
+            await RevertirStockInsumo(notaSalida.Id);
+            await RevertirStockEmpaque(notaSalida.Id);
+            await RevertirStockEconomato(notaSalida.Id);
+            await RevertirStockProducto(notaSalida.Id);
+
+
+            // 2. Eliminar detalles anteriores
+            _context.NotaSalidaInsumos.RemoveRange(notaSalida.NotaSalidaInsumos);
+            _context.NotaSalidaEmpaques.RemoveRange(notaSalida.NotaSalidaEmpaques);
+            _context.NotaSalidaEconomatos.RemoveRange(notaSalida.NotaSalidaEconomatos);
+            _context.NotaSalidaProductos.RemoveRange(notaSalida.NotaSalidaProductos);
+
+
+            // 3. Actualizar cabecera
+            notaSalida.FechaSalida = request.FechaSalida;
+            notaSalida.IdSedeOrigen = request.IdSedeOrigen;
+            notaSalida.IdSedeDestino = request.IdSedeDestino;
+            notaSalida.Observacion = request.Observacion;
+
+
+            await _context.SaveChangesAsync();
+
+
+            // 4. Crear nuevamente detalles y stock
+            foreach (var item in request.ListaFamilias)
+            {
+                switch (item.Familia.ToUpper())
+                {
+                    case "MP":
+                        await CrearDetalleInsumo(notaSalida.Id, request, item);
+                        break;
+
+                    case "ME":
+                        await CrearDetalleEmpaque(notaSalida.Id, request, item);
+                        break;
+
+                    case "ECO":
+                        await CrearDetalleEconomato(notaSalida.Id, request, item);
+                        break;
+
+                    case "PT":
+                        await CrearDetalleProducto(notaSalida.Id, request, item);
+                        break;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+    private async Task RevertirStockInsumo(int idNotaSalida)
+    {
+        var stocksDestino = await _context.StockInsumos
+            .Where(x => x.IdNotaSalidaInsumo != null &&
+                        x.IdNotaSalidaInsumo == idNotaSalida)
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // Buscar stock origen
+            var stockOrigen = await _context.StockInsumos
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraInsumo == stockDestino.IdCompraInsumo &&
+                    x.IdSede != stockDestino.IdSede &&
+                    x.IdNotaSalidaInsumo == null);
+
+
+            if (stockOrigen != null)
+            {
+                // devolver cantidad
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            // eliminar movimiento creado
+            _context.StockInsumos.Remove(stockDestino);
+        }
+    }
+    private async Task RevertirStockEmpaque(int idNotaSalida)
+    {
+        var stocksDestino = await _context.StockEmpaques
+            .Where(x => x.IdNotaSalidaEmpaque != null &&
+                        x.IdNotaSalidaEmpaque == idNotaSalida)
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // Buscar stock origen
+            var stockOrigen = await _context.StockEmpaques
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraEmpaque == stockDestino.IdCompraEmpaque &&
+                    x.IdSede != stockDestino.IdSede &&
+                    x.IdNotaSalidaEmpaque == null);
+
+
+            if (stockOrigen != null)
+            {
+                // devolver cantidad
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            // eliminar movimiento creado
+            _context.StockEmpaques.Remove(stockDestino);
+        }
+    }
+    private async Task RevertirStockEconomato(int idNotaSalida)
+    {
+        var stocksDestino = await _context.StockEconomatos
+            .Where(x => x.IdNotaSalidaEconomato != null &&
+                        x.IdNotaSalidaEconomato == idNotaSalida)
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // Buscar stock origen
+            var stockOrigen = await _context.StockEconomatos
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraEconomato == stockDestino.IdCompraEconomato &&
+                    x.IdSede != stockDestino.IdSede &&
+                    x.IdNotaSalidaEconomato == null);
+
+
+            if (stockOrigen != null)
+            {
+                // devolver cantidad
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            // eliminar movimiento creado
+            _context.StockEconomatos.Remove(stockDestino);
+        }
+    }
+    private async Task RevertirStockProducto(int idNotaSalida)
+    {
+        var stocksDestino = await _context.StockProductos
+            .Where(x => x.IdNotaSalidaProducto != null &&
+                        x.IdNotaSalidaProducto == idNotaSalida)
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // Buscar stock origen
+            var stockOrigen = await _context.StockProductos
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraProducto == stockDestino.IdCompraProducto &&
+                    x.IdSede != stockDestino.IdSede &&
+                    x.IdNotaSalidaProducto == null);
+
+
+            if (stockOrigen != null)
+            {
+                // devolver cantidad
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            // eliminar movimiento creado
+            _context.StockProductos.Remove(stockDestino);
+        }
+    }
     private async Task CrearDetalleEconomato(
         int idNotaSalida,
         NotaSalidaCreateReq request,
@@ -264,7 +451,7 @@ public class NotaSalidaService : INotaSalidaService
         NotaSalidaCreateReq request,
         NotaSalidaFamiliasCreateReq item)
     {
-        var stockOrigen = await _context.StockProductoTerminados
+        var stockOrigen = await _context.StockProductos
             .FirstOrDefaultAsync(x =>
                 x.IdCompraProducto == item.Registro &&
                 x.IdSede == request.IdSedeOrigen);
@@ -291,7 +478,7 @@ public class NotaSalidaService : INotaSalidaService
 
         _context.NotaSalidaProductos.Add(detalle);
 
-        _context.StockProductoTerminados.Add(new StockProductoTerminado
+        _context.StockProductos.Add(new StockProductoTerminado
         {
             IdCompraProducto = stockOrigen.IdCompraProducto,
             StockDisponible = item.Cantidad,
