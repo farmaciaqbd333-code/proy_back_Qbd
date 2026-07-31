@@ -40,5 +40,12 @@ namespace proy_back_Qbd.Controllers
             return Ok(lista);
         }
 
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Eliminar(int id)
+        {
+            await _serviceNotaSalida.EliminarAsync(id);
+            return Ok();
+        }
+
     }
 }

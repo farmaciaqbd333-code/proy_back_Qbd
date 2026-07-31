@@ -487,4 +487,182 @@ public class NotaSalidaService : INotaSalidaService
             NotaSalidaProducto = detalle // EF asignará el Id automáticamente
         });
     }
+
+    public async Task EliminarAsync(int id)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        try
+        {
+            var notaSalida = await _context.NotaSalidas
+                .Include(x => x.NotaSalidaInsumos)
+                .Include(x => x.NotaSalidaEmpaques)
+                .Include(x => x.NotaSalidaEconomatos)
+                .Include(x => x.NotaSalidaProductos)
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (notaSalida == null)
+                throw new Exception("Nota salida no encontrada.");
+
+
+            // Revertir movimientos de stock
+            await EliminarStockInsumo(notaSalida.NotaSalidaInsumos);
+            await EliminarStockEmpaque(notaSalida.NotaSalidaEmpaques);
+            await EliminarStockEconomato(notaSalida.NotaSalidaEconomatos);
+            await EliminarStockProducto(notaSalida.NotaSalidaProductos);
+
+
+
+            // Eliminar detalles
+            _context.NotaSalidaInsumos.RemoveRange(notaSalida.NotaSalidaInsumos);
+            _context.NotaSalidaEmpaques.RemoveRange(notaSalida.NotaSalidaEmpaques);
+            _context.NotaSalidaEconomatos.RemoveRange(notaSalida.NotaSalidaEconomatos);
+            _context.NotaSalidaProductos.RemoveRange(notaSalida.NotaSalidaProductos);
+
+
+            // Eliminar cabecera
+            _context.NotaSalidas.Remove(notaSalida);
+
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
+    }
+    private async Task EliminarStockInsumo(
+    List<NotaSalidaInsumo> detalles)
+    {
+        var idsDetalle = detalles
+            .Select(x => x.Id)
+            .ToList();
+
+
+        var stocksDestino = await _context.StockInsumos
+            .Where(x => x.IdNotaSalidaInsumo != null &&
+                        idsDetalle.Contains(x.IdNotaSalidaInsumo.Value))
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // buscar stock origen
+            var stockOrigen = await _context.StockInsumos
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraInsumo == stockDestino.IdCompraInsumo &&
+                    x.IdNotaSalidaInsumo == null &&
+                    x.IdSede != stockDestino.IdSede);
+
+
+            if (stockOrigen != null)
+            {
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            _context.StockInsumos.Remove(stockDestino);
+        }
+    }
+    private async Task EliminarStockEmpaque(
+    List<NotaSalidaEmpaque> detalles)
+    {
+        var idsDetalle = detalles
+            .Select(x => x.Id)
+            .ToList();
+
+
+        var stocksDestino = await _context.StockEmpaques
+            .Where(x => x.IdNotaSalidaEmpaque != null &&
+                        idsDetalle.Contains(x.IdNotaSalidaEmpaque.Value))
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // buscar stock origen
+            var stockOrigen = await _context.StockEmpaques
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraEmpaque == stockDestino.IdCompraEmpaque &&
+                    x.IdNotaSalidaEmpaque == null &&
+                    x.IdSede != stockDestino.IdSede);
+
+
+            if (stockOrigen != null)
+            {
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            _context.StockEmpaques.Remove(stockDestino);
+        }
+    }
+    private async Task EliminarStockEconomato(
+    List<NotaSalidaEconomato> detalles)
+    {
+        var idsDetalle = detalles
+            .Select(x => x.Id)
+            .ToList();
+
+
+        var stocksDestino = await _context.StockEconomatos
+            .Where(x => x.IdNotaSalidaEconomato != null &&
+                        idsDetalle.Contains(x.IdNotaSalidaEconomato.Value))
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // buscar stock origen
+            var stockOrigen = await _context.StockEconomatos
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraEconomato == stockDestino.IdCompraEconomato &&
+                    x.IdNotaSalidaEconomato == null &&
+                    x.IdSede != stockDestino.IdSede);
+
+
+            if (stockOrigen != null)
+            {
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            _context.StockEconomatos.Remove(stockDestino);
+        }
+    }
+    private async Task EliminarStockProducto(
+    List<NotaSalidaProducto> detalles)
+    {
+        var idsDetalle = detalles
+            .Select(x => x.Id)
+            .ToList();
+
+
+        var stocksDestino = await _context.StockProductos
+            .Where(x => x.IdNotaSalidaProducto != null &&
+                        idsDetalle.Contains(x.IdNotaSalidaProducto.Value))
+            .ToListAsync();
+
+
+        foreach (var stockDestino in stocksDestino)
+        {
+            // buscar stock origen
+            var stockOrigen = await _context.StockProductos
+                .FirstOrDefaultAsync(x =>
+                    x.IdCompraProducto == stockDestino.IdCompraProducto &&
+                    x.IdNotaSalidaProducto == null &&
+                    x.IdSede != stockDestino.IdSede);
+
+
+            if (stockOrigen != null)
+            {
+                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+            }
+
+
+            _context.StockProductos.Remove(stockDestino);
+        }
+    }
 }
