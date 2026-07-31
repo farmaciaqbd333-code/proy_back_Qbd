@@ -36,15 +36,38 @@ namespace Proy_back_QBD.Services
 
         public async Task<List<SedeFindAllResponse?>> Obtener()
         {
-            List<SedeFindAllResponse>? response = await _context.Sedes
-            .Select(a => new SedeFindAllResponse
-            {
-                Id = a.Id,
-                Nombre = a.Nombre,
-                Direccion = a.Direccion,
-                Encargado = a.Encargado,
-                Telefono = a.Telefono,
-            }).ToListAsync();
+            var sedes = await _context.Sedes.ToListAsync();
+            var personas = await _context.Personas.ToListAsync();
+            var usuarios = await _context.Usuarios.Include(u => u.Persona).ToListAsync();
+
+            var personaDict = personas.ToDictionary(p => p.Id.ToString(), p => p.NombreCompleto ?? "");
+            var usuarioDict = usuarios.Where(u => u.Persona != null).ToDictionary(u => u.Id.ToString(), u => u.Persona!.NombreCompleto ?? "");
+
+            List<SedeFindAllResponse> response = sedes.Select(a => {
+                string encargadoNombre = a.Encargado ?? "";
+                if (!string.IsNullOrWhiteSpace(a.Encargado))
+                {
+                    string key = a.Encargado.Trim();
+                    if (personaDict.TryGetValue(key, out var nombrePersona) && !string.IsNullOrWhiteSpace(nombrePersona))
+                    {
+                        encargadoNombre = nombrePersona;
+                    }
+                    else if (usuarioDict.TryGetValue(key, out var nombreUsuario) && !string.IsNullOrWhiteSpace(nombreUsuario))
+                    {
+                        encargadoNombre = nombreUsuario;
+                    }
+                }
+
+                return new SedeFindAllResponse
+                {
+                    Id = a.Id,
+                    Nombre = a.Nombre,
+                    Direccion = a.Direccion,
+                    Encargado = encargadoNombre,
+                    Telefono = a.Telefono,
+                };
+            }).ToList();
+
             return response;
         }
 
