@@ -55,9 +55,9 @@ namespace proy_back_Qbd.Controllers
             return Ok(lista);
         }
         [HttpGet("articulo/{id}")]
-        public async Task<ActionResult<List<RegistrosListaRes>>> Get(int id, string familia)
+        public async Task<ActionResult<List<RegistrosListaRes>>> Get(int id, string familia, int idSede)
         {
-            var lista = await _serviceNotaSalida.ObtenerRegistros(id, familia);
+            var lista = await _serviceNotaSalida.ObtenerRegistros(id, familia, idSede);
             return Ok(lista);
         }
 

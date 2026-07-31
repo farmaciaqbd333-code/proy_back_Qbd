@@ -666,14 +666,18 @@ public class NotaSalidaService : INotaSalidaService
         }
     }
 
-    public async Task<List<RegistrosListaRes>> ObtenerRegistros(int idArticulo, string familia)
+    public async Task<List<RegistrosListaRes>> ObtenerRegistros(int idArticulo, string familia, int idSede)
     {
         familia = familia?.Trim().ToUpper();
 
         return familia switch
         {
             "MP" => await _context.CompraInsumos
-                .Where(x => x.IdInsumo == idArticulo )
+                .Where(x => x.IdInsumo == idArticulo &&
+                (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                x.StockInsumos
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
                     Registro = x.Id,
@@ -682,7 +686,11 @@ public class NotaSalidaService : INotaSalidaService
                 .ToListAsync(),
 
             "ME" => await _context.CompraEmpaques
-                .Where(x => x.IdEmpaque == idArticulo)
+                .Where(x => x.IdEmpaque == idArticulo &&
+                (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                x.StockEmpaques
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
                     Registro = x.Id,
@@ -691,7 +699,10 @@ public class NotaSalidaService : INotaSalidaService
                 .ToListAsync(),
 
             "ECO" => await _context.CompraEconomatos
-                .Where(x => x.IdEconomato == idArticulo)
+                .Where(x => x.IdEconomato == idArticulo  &&
+                x.StockEconomatos
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
                     Registro = x.Id,
@@ -700,7 +711,11 @@ public class NotaSalidaService : INotaSalidaService
                 .ToListAsync(),
 
             "PT" => await _context.CompraProductos
-                .Where(x => x.IdProducto == idArticulo)
+                .Where(x => x.IdProducto == idArticulo &&
+                (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                x.StockProductoTerminados
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
                     Registro = x.Id,
