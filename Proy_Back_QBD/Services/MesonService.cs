@@ -423,10 +423,17 @@ namespace proy_back_Qbd.Services
             }
 
             var responsable = "";
-            if (s.Sede != null)
+            if (s.Sede != null && !string.IsNullOrWhiteSpace(s.Sede.Encargado))
             {
-                var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id.ToString() == s.Sede.Encargado);
-                responsable = persona?.NombreCompleto ?? s.Sede.Encargado;
+                if (int.TryParse(s.Sede.Encargado.Trim(), out int encargadoId))
+                {
+                    var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id == encargadoId);
+                    responsable = persona?.NombreCompleto ?? s.Sede.Encargado;
+                }
+                else
+                {
+                    responsable = s.Sede.Encargado;
+                }
             }
 
             var response = new MesonDetalleRes

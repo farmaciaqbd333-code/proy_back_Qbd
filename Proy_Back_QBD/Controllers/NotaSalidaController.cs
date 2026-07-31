@@ -23,14 +23,29 @@ namespace proy_back_Qbd.Controllers
         [HttpPost]
         public async Task<ActionResult<int>> CrearNotaSalida([FromBody] NotaSalidaCreateReq request)
         {
-            int num = await _serviceNotaSalida.CrearAsync(request);
-            return Ok(num);
+            try
+            {
+                int num = await _serviceNotaSalida.CrearAsync(request);
+                return Ok(num);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
+
         [HttpPut("{id}")]
         public async Task<ActionResult<int>> ActualizarNotaSalida(int id, [FromBody] NotaSalidaCreateReq request)
         {
-            await _serviceNotaSalida.ActualizarAsync(id, request);
-            return Ok();
+            try
+            {
+                await _serviceNotaSalida.ActualizarAsync(id, request);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
 
         [HttpGet("{id}")]
