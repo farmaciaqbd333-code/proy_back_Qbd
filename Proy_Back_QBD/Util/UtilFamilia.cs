@@ -14,5 +14,13 @@ namespace proy_back_Qbd.Util.Familias
         {
             return "ME-QbD-" + id.ToString().PadLeft(4, '0');
         }
+        public static string CodigoEconomato(int id)
+        {
+            return "ECO-QbD-" + id.ToString().PadLeft(4, '0');
+        }
+        public static string CodigoProducto(int id)
+        {
+            return "PT-QbD-" + id.ToString().PadLeft(4, '0');
+        }
     }
 }
