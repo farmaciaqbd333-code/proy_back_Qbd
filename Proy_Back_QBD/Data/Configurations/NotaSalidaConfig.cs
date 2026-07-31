@@ -18,7 +18,10 @@ public class NotaSalidaConfiguration : IEntityTypeConfiguration<NotaSalida>
             .HasColumnName("fecha_salida");
 
         builder.Property(e => e.IdSedeOrigen)
-            .HasColumnName("id_sede")
+            .HasColumnName("id_sede_origen")
+            .IsRequired();
+        builder.Property(e => e.IdSedeDestino)
+            .HasColumnName("id_sede_destino")
             .IsRequired();
 
         builder.Property(e => e.Observacion)
@@ -47,7 +50,7 @@ public class NotaSalidaConfiguration : IEntityTypeConfiguration<NotaSalida>
             .WithMany(w => w.NotaSalidasDestino)
             .HasForeignKey(e => e.IdSedeDestino)
             .OnDelete(DeleteBehavior.Restrict);
-            
+
         builder.HasOne(e => e.SedeOrigen)
             .WithMany(w => w.NotaSalidasOrigen)
             .HasForeignKey(e => e.IdSedeOrigen)

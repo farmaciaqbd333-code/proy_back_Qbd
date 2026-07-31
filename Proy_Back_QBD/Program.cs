@@ -71,6 +71,7 @@ builder.Services.AddScoped<IPaqueteService, PaqueteService>();
 builder.Services.AddScoped<IMesonService, MesonService>();
 builder.Services.AddScoped<IAjusteService, AjusteService>();
 builder.Services.AddScoped<IProductoIntermedioService, ProductoIntermedioService>();
+builder.Services.AddScoped<INotaSalidaService, NotaSalidaService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

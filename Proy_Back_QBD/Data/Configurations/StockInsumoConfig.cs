@@ -18,7 +18,7 @@ public class StockInsumoConfiguration : IEntityTypeConfiguration<StockInsumo>
 
         builder.HasOne(x => x.NotaSalidaInsumo)
             .WithOne(wm => wm.StockInsumo)
-            .HasForeignKey<StockInsumo>(x => x.IdCompraInsumo);
+            .HasForeignKey<StockInsumo>(x => x.IdNotaSalidaInsumo);
 
         builder.HasOne(x => x.CompraInsumo)
             .WithMany(wm => wm.StockInsumos)

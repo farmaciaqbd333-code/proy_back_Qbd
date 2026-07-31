@@ -21,10 +21,17 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<MesonDetalleRes>> ObtenerOrdenCompra(NotaSalidaCreateReq request)
+        public async Task<ActionResult<int>> ObtenerOrdenCompra([FromBody] NotaSalidaCreateReq request)
         {
             int num = await _serviceNotaSalida.CrearAsync(request);
             return Ok(num);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<List<NotaSalidaListaRes>>> Get(int id)
+        {
+            var lista = await _serviceNotaSalida.ObtenerListaAsync(id);
+            return Ok(lista);
         }
 
     }

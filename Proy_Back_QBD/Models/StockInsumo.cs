@@ -10,8 +10,8 @@ public class StockInsumo
     public int IdSede { get; set; }
     public int? IdNotaSalidaInsumo { get; set; }
 
-    public CompraInsumos CompraInsumo { get; set; } = null!;
-    public NotaSalidaInsumo NotaSalidaInsumo { get; set; } = null!;
+    public CompraInsumos? CompraInsumo { get; set; } 
+    public NotaSalidaInsumo? NotaSalidaInsumo { get; set; } 
     public List<StockInsumoProductoIntermedio>? StockInsumoProductoIntermedio { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }

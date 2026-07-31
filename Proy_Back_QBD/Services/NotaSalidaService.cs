@@ -6,10 +6,11 @@ using Proy_back_QBD.Data;
 public class NotaSalidaService : INotaSalidaService
 {
     private readonly ApiContext _context;
-
-    public NotaSalidaService(ApiContext context)
+    private readonly ILogger<NotaSalidaService> _logger;
+    public NotaSalidaService(ApiContext context, ILogger<NotaSalidaService> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     public async Task<int> CrearAsync(NotaSalidaCreateReq request)
@@ -87,23 +88,54 @@ public class NotaSalidaService : INotaSalidaService
             .ToListAsync();
     }
     private async Task CrearDetalleInsumo(
-        int idNotaSalida,
-        NotaSalidaCreateReq request,
-        NotaSalidaFamiliasCreateReq item)
+     int idNotaSalida,
+     NotaSalidaCreateReq request,
+     NotaSalidaFamiliasCreateReq item)
     {
+        _logger.LogInformation(
+            "Iniciando creación de detalle de insumo. NotaSalida={NotaSalida}, Registro={Registro}, Cantidad={Cantidad}, SedeOrigen={SedeOrigen}, SedeDestino={SedeDestino}",
+            idNotaSalida,
+            item.Registro,
+            item.Cantidad,
+            request.IdSedeOrigen,
+            request.IdSedeDestino);
+
         var stockOrigen = await _context.StockInsumos
             .FirstOrDefaultAsync(x =>
                 x.IdCompraInsumo == item.Registro &&
                 x.IdSede == request.IdSedeOrigen);
 
         if (stockOrigen == null)
+        {
+            _logger.LogWarning(
+                "No se encontró stock. Registro={Registro}, SedeOrigen={SedeOrigen}",
+                item.Registro,
+                request.IdSedeOrigen);
+
             throw new Exception("No existe stock en la sede proveniente.");
+        }
+
+        _logger.LogInformation(
+            "Stock encontrado. StockActual={StockActual}, CantidadSolicitada={CantidadSolicitada}",
+            stockOrigen.StockDisponible,
+            item.Cantidad);
 
         if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
+        {
+            _logger.LogWarning(
+                "Stock insuficiente. Disponible={Disponible}, Solicitado={Solicitado}",
+                stockOrigen.StockDisponible,
+                item.Cantidad);
 
-        // Descontar stock de origen
+            throw new Exception("Stock insuficiente.");
+        }
+
+        // Descontar stock
         stockOrigen.StockDisponible -= item.Cantidad;
+
+        _logger.LogInformation(
+            "Stock actualizado. NuevoStock={NuevoStock}",
+            stockOrigen.StockDisponible);
 
         var detalle = new NotaSalidaInsumo
         {
@@ -112,19 +144,36 @@ public class NotaSalidaService : INotaSalidaService
             Cantidad = item.Cantidad,
             Um = item.Um,
             Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
             CantidadPaquete = item.CantidadPaquete
         };
 
         _context.NotaSalidaInsumos.Add(detalle);
 
-        _context.StockInsumos.Add(new StockInsumo
+        _logger.LogInformation(
+            "Detalle de NotaSalidaInsumo agregado. Registro={Registro}",
+            item.Registro);
+
+        var nuevoStockDestino = new StockInsumo
         {
-            IdCompraInsumo = stockOrigen.IdCompraInsumo,
+            IdCompraInsumo = item.Registro,
             StockDisponible = item.Cantidad,
             UnidadMedida = stockOrigen.UnidadMedida,
             IdSede = request.IdSedeDestino,
-            NotaSalidaInsumo = detalle // EF asignará el Id automáticamente
-        });
+            NotaSalidaInsumo = detalle
+        };
+
+        _context.StockInsumos.Add(nuevoStockDestino);
+
+        _logger.LogInformation(
+            "Stock creado para sede destino. Registro={Registro}, SedeDestino={SedeDestino}, Stock={Stock}",
+            item.Registro,
+            request.IdSedeDestino,
+            item.Cantidad);
+
+        _logger.LogInformation(
+            "Finalizó creación de detalle de insumo. NotaSalida={NotaSalida}",
+            idNotaSalida);
     }
 
     private async Task CrearDetalleEconomato(
@@ -153,6 +202,7 @@ public class NotaSalidaService : INotaSalidaService
             Cantidad = item.Cantidad,
             Um = item.Um,
             Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
             CantidadPaquete = item.CantidadPaquete
         };
 
@@ -194,6 +244,7 @@ public class NotaSalidaService : INotaSalidaService
             Cantidad = item.Cantidad,
             Um = item.Um,
             Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
             CantidadPaquete = item.CantidadPaquete
         };
 
@@ -234,6 +285,7 @@ public class NotaSalidaService : INotaSalidaService
             Cantidad = item.Cantidad,
             Um = item.Um,
             Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
             CantidadPaquete = item.CantidadPaquete
         };
 
