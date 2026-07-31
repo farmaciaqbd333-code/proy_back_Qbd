@@ -8,14 +8,13 @@ using Proy_back_QBD.Models;
 namespace proy_back_Qbd.Models
 {
     [Table("compra_producto")]
-    public class CompraProductos
+    public class CompraProducto
     {
         [Column("id")] public int Id { get; set; }
         [Column("id_producto")] public int IdProducto { get; set; }
         [Column("cantidad_solicitada")] public decimal CantidadSolicitada { get; set; }
         [Column("costo_unitario")] public decimal CostoUnitario { get; set; }
         [Column("costo_total")] public decimal CostoTotal { get; set; }
-        [Column("stock_disponible")] public decimal StockDisponible { get; set; }
         [Column("id_compra")] public int IdCompra { get; set; }
         [Column("um")] public string? Um { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
@@ -32,6 +31,8 @@ namespace proy_back_Qbd.Models
         public Compra? Compra { get; set; }
         public Producto? Producto { get; set; }
         public List<AjusteProductoTerminado>? AjusteProductoTerminados { get; set; }
+        public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }
+        public List<StockProductoTerminado> StockProductoTerminados { get; set; } = new();
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
     }

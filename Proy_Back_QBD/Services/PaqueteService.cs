@@ -63,9 +63,9 @@ namespace proy_back_Qbd.Services
             else throw new NotFoundException("Unidad de Medida no apta");
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
-            decimal pesoTotalPaquete = paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario);
-            decimal pesoPaqueteNuevo = paqueteEntrante + pesoTotalPaquete;
-            // if (pesoTotalCompra < pesoPaqueteNuevo) throw new BadRequestException("Se ha pasado el límite del peso solicitado");
+            decimal pesoPaquetesActual = paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario);
+            decimal pesoPaqueteNuevo = paqueteEntrante + pesoPaquetesActual;
+            if (pesoTotalCompra < pesoPaqueteNuevo) throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
             Paquete paquete = PaqueteMapper.CrearPaqueteInsumo(req);
             paquete.FechaCreacion = DateTime.Now;
@@ -77,7 +77,20 @@ namespace proy_back_Qbd.Services
                 IdCompraInsumo = req.IdCompraInsumo
             };
             _context.PaqueteInsumos.Add(paqueteInsumo);
-            compraInsumo.StockDisponible += paqueteEntrante;
+            StockInsumo? stockInsumos = await _context.StockInsumos.Where(w => w.IdCompraInsumo == compraInsumo.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
+            if (stockInsumos == null)
+            {
+                StockInsumo stockInsumo = new()
+                {
+                    IdCompraInsumo = compraInsumo.Id,
+                    StockDisponible = paqueteEntrante
+                };
+            }
+            else
+            {
+                stockInsumos.StockDisponible += paqueteEntrante;
+            }
+
             await _context.SaveChangesAsync();
             return paquete.Id;
 
@@ -118,24 +131,39 @@ namespace proy_back_Qbd.Services
                 IdCompraEmpaque = req.IdCompraEmpaque
             };
             _context.PaqueteEmpaques.Add(paqueteEmpaque);
-            compraEmpaque.StockDisponible += paqueteEntrante;
+
+            StockEmpaque? stockInsumos = await _context.StockEmpaques.Where(w => w.IdCompraEmpaque == compraEmpaque.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
+            if (stockInsumos == null)
+            {
+                StockEmpaque stockEmpaque = new()
+                {
+                    IdCompraEmpaque = compraEmpaque.Id,
+                    StockDisponible = paqueteEntrante
+                };
+            }
+            else
+            {
+                stockInsumos.StockDisponible += paqueteEntrante;
+            }
             await _context.SaveChangesAsync();
 
             return paquete.Id;
 
         }
 
-        public async Task<string> EliminarPaquete(int idPaquete, int empaqueInsumo)
+        public async Task<string> EliminarPaquete(int idPaquete, int empaqueInsumo, int idSede)
         {
             Paquete paquete = await _context.Paquetes.FindAsync(idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             _context.Paquetes.Remove(paquete);
+            decimal stockEliminar = paquete.CantidadPaquete * paquete.PesoUnitario;
             if (empaqueInsumo == 0)
             {
                 CompraInsumos compraInsumo = await _context.PaqueteInsumos
                            .Where(w => w.IdPaquete == idPaquete)
                            .Select(s => s.CompraInsumo)
                            .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra insumo"); ;
-                compraInsumo.StockDisponible -= paquete.PesoUnitario * paquete.CantidadPaquete;
+                StockInsumo? stockInsumo = await _context.StockInsumos.Where(w => w.IdCompraInsumo == compraInsumo.Id && w.IdSede == idSede).FirstOrDefaultAsync();
+                stockInsumo.StockDisponible -= stockEliminar;
             }
             else
             {
@@ -143,23 +171,28 @@ namespace proy_back_Qbd.Services
            .Where(w => w.IdPaquete == idPaquete)
            .Select(s => s.CompraEmpaques)
            .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra empaque"); ;
-                compraEmpaque.StockDisponible -= paquete.PesoUnitario * paquete.CantidadPaquete;
+                StockEmpaque? stockEmpaque = await _context.StockEmpaques.Where(w => w.IdCompraEmpaque == compraEmpaque.Id && w.IdSede == idSede).FirstOrDefaultAsync();
+                stockEmpaque.StockDisponible -= stockEliminar;
             }
 
             await _context.SaveChangesAsync();
             return "Se Elimino el paquete id " + idPaquete;
         }
 
-        public async Task<string> ModificarPaqueteInsumo(int idPaquete, PaqueteInsumoModificarReq req)
+        public async Task<string> ModificarPaqueteInsumo(int idPaquete, int idSede, PaqueteInsumoModificarReq req)
         {
 
             Paquete paquete = await _context.Paquetes
+            .Include(i => i.PaqueteInsumos)
+            .ThenInclude(th => th!.CompraInsumo)
+            .ThenInclude(th => th!.StockInsumos)
             .Include(i => i.PaqueteInsumos)
             .ThenInclude(th => th!.CompraInsumo)
             .ThenInclude(th => th!.Insumo)
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             PaqueteInsumo paqueteInsumo = paquete.PaqueteInsumos ?? throw new NotFoundException("No se encontró paquetes insumos");
             CompraInsumos compraInsumo = paqueteInsumo.CompraInsumo ?? throw new NotFoundException("No hay Compra Insumos");
+            StockInsumo stockInsumo = paqueteInsumo.CompraInsumo.StockInsumos.FirstOrDefault(w => w.IdSede == idSede) ?? throw new NotFoundException("No hay stock insumo");
             Insumo insumo = compraInsumo.Insumo ?? throw new NotFoundException("No hay Insumo");
 
             var totales = await _context.PaqueteInsumos
@@ -199,20 +232,22 @@ namespace proy_back_Qbd.Services
 
             //ACTUALIZAR PESO
             PaqueteMapper.ModificarPaqueteInsumo(req, paquete);
-            compraInsumo.StockDisponible = compraInsumo.StockDisponible - paquetePesoActual + paquetePesoEntrante;
+            stockInsumo.StockDisponible = stockInsumo.StockDisponible - paquetePesoActual + paquetePesoEntrante;
             await _context.SaveChangesAsync();
 
             return "Modificacion Exitosa";
         }
-        public async Task<string> ModificarPaqueteEmpaque(int idPaquete, PaqueteEmpaqueModificarReq req)
+        public async Task<string> ModificarPaqueteEmpaque(int idSede, int idPaquete, PaqueteEmpaqueModificarReq req)
         {
 
             Paquete? paquete = await _context.Paquetes
             .Include(i => i.PaqueteEmpaques)
             .ThenInclude(th => th!.CompraEmpaques)
+            .ThenInclude(th => th!.StockEmpaques)
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             PaqueteEmpaque paqueteEmpaques = paquete.PaqueteEmpaques ?? throw new NotFoundException("No se encontró paquetes empaques");
             CompraEmpaque CompraEmpaque = paqueteEmpaques.CompraEmpaques ?? throw new NotFoundException("No hay Compra empaque");
+            StockEmpaque stockEmpaque = paqueteEmpaques.CompraEmpaques.StockEmpaques.FirstOrDefault(f => f.IdSede == idSede) ?? throw new NotFoundException("No hay Stock empaque");
             if (paquete.PaqueteEmpaques == null) throw new NotFoundException("No se encontró paquetes Empaques");
             var totales = await _context.PaqueteEmpaques.Where(w => w.IdCompraEmpaque == paquete.PaqueteEmpaques.IdCompraEmpaque)
                                     .GroupBy(g => g.IdCompraEmpaque)
@@ -227,10 +262,10 @@ namespace proy_back_Qbd.Services
             decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
             decimal paquetePesoEntrante = req.CantidadPaquete * req.PesoUnitario;
             decimal nuevaCantidad = paquetePesoEntrante + totales.PesoTotalPaquete - paquetePesoActual;
-            // if (totales.PesoTotalCompra < nuevaCantidad)
-            //     throw new BadRequestException("Se ha pasado el límite de cantidad solicitada");
+            if (totales.PesoTotalCompra < nuevaCantidad)
+                throw new BadRequestException("Se ha pasado el límite de cantidad solicitada");
             PaqueteMapper.ModificarPaqueteEmpaque(req, paquete);
-            CompraEmpaque.StockDisponible = CompraEmpaque.StockDisponible - paquetePesoActual + paquetePesoEntrante;
+            stockEmpaque.StockDisponible = stockEmpaque.StockDisponible - paquetePesoActual + paquetePesoEntrante;
             await _context.SaveChangesAsync();
 
             return "Modificacion Exitosa";

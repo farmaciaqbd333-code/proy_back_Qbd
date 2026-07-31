@@ -83,7 +83,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleProductos = request.DetallesProductos
                                         .Select(s => s.IdDetalleProducto);
-                List<CompraProductos> detallesProductos = await _context.CompraProductos
+                List<CompraProducto> detallesProductos = await _context.CompraProductos
                     .Where(w => idsDetalleProductos.Contains(w.Id))
                     .ToListAsync();
 
@@ -113,7 +113,7 @@ namespace proy_back_Qbd.Services
                 //Actualizar detalles de la compra
                 var idsDetalleEconomatos = request.DetallesEconomatos
                                         .Select(s => s.IdDetalleEconomato);
-                List<CompraEconomatos> detallesEconomatos = await _context.CompraEconomatos
+                List<CompraEconomato> detallesEconomatos = await _context.CompraEconomatos
                     .Where(w => idsDetalleEconomatos.Contains(w.Id))
                     .ToListAsync();
 

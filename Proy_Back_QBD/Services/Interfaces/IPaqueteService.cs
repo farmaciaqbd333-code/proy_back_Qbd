@@ -12,8 +12,8 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<PaqueteInsumoDetalleRes> GetDetallePaquetes(int idCompra);
         Task<int> CrearPaqueteInsumo(PaqueteInsumoCrearReq req);
         Task<int> CrearPaqueteEmpaque(PaqueteEmpaqueCrearReq req);
-        Task<string> ModificarPaqueteEmpaque(int idPaquete, PaqueteEmpaqueModificarReq req);
-        Task<string> ModificarPaqueteInsumo(int idInsumo, PaqueteInsumoModificarReq req);
-        Task<string> EliminarPaquete(int idPaquete, int empaqueInsumo);
+        Task<string> ModificarPaqueteEmpaque(int idSede, int idPaquete, PaqueteEmpaqueModificarReq req);
+        Task<string> ModificarPaqueteInsumo(int idSede, int idInsumo, PaqueteInsumoModificarReq req);
+        Task<string> EliminarPaquete(int idPaquete, int empaqueInsumo,int idSede);
     }
 }

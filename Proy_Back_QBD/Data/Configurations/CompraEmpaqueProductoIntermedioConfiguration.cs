@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class CompraEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<CompraEmpaqueProductoIntermedio>
+public class CompraEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<StockEmpaqueProductoIntermedio>
 {
-    public void Configure(EntityTypeBuilder<CompraEmpaqueProductoIntermedio> builder)
+    public void Configure(EntityTypeBuilder<StockEmpaqueProductoIntermedio> builder)
     {
         builder.ToTable("compra_empaque_producto_intermedio");
 
@@ -31,8 +31,8 @@ public class CompraEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<Co
             .HasMaxLength(50)
             .IsRequired();
 
-        builder.HasOne(x => x.CompraEmpaque)
-            .WithMany(x => x.CompraEmpaqueProductoIntermedios)
+        builder.HasOne(x => x.StockEmpaque)
+            .WithMany(x => x.StockEmpaqueProductoIntermedio)
             .HasForeignKey(x => x.IdCompraEmpaque);
 
         builder.HasOne(x => x.EmpaqueProductoIntermedio)

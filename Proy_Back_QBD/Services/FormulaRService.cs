@@ -28,8 +28,7 @@ namespace Proy_back_QBD.Services
             try
             {
                 // Fórmula
-                FormulaR formulaR = _mapper.Map<FormulaR>(request.FormulaR);
-                formulaR.Clasificacion = "FORMULA";
+                FormulaRapida formulaR = _mapper.Map<FormulaRapida>(request.FormulaR);
                 formulaR.ModificadorId = formulaR.CreadorId;
 
                 await _context.FormulasR.AddAsync(formulaR);
@@ -44,14 +43,13 @@ namespace Proy_back_QBD.Services
                     await _context.InsumosR.AddAsync(insumoR);
                 }
 
-                // Relación fórmula-sede
-                // FormulaRapidaSede formulaRapidaSede = new()
-                // {
-                //     IdSede = request.FormulaR.IdSede,
-                //     IdFormular = formulaR.Id
-                // };
+                FormulaRapidaSede formulaRapidaSede = new()
+                {
+                    IdSede = request.FormulaR.IdSede.Value,
+                    IdFormulaRapida = formulaR.Id
+                };
 
-                // await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
+                await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
 
                 await _context.SaveChangesAsync();
 
@@ -148,21 +146,23 @@ namespace Proy_back_QBD.Services
         }
 
 
-        public async Task<List<FormulaRRes>?> Listar()
+        public async Task<List<FormulaRRes>?> Listar(int idSede, string clasificacion)
         {
-            // List<int> idFormulasR = await _context.FormulaRSedes
-            // .Where(w => w.IdSede == idSede)
-            // .Select(s => s.IdFormular).ToListAsync();
+            List<int> idFormulasR = await _context.FormulaRSedes
+            .Where(w => w.IdSede == idSede)
+            .Select(s => s.IdFormulaRapida).ToListAsync();
 
             List<FormulaRRes> response = await _context.FormulasR
-            // .Where(w => w.Clasificacion == clasificacion)
+            .Where(w => w.Clasificacion == clasificacion)
                                                         .OrderBy(obd => obd.FechaCreacion)
                                                         .Select(s => new FormulaRRes
                                                         {
                                                             Id = s.Id,
                                                             Descripcion = s.Descripcion,
-                                                            EmpaqueId = s.EmpaqueId,
+                                                            IdEmpaque = s.IdEmpaque,
+                                                            IdInsumo = s.IdInsumo,
                                                             Procedimiento = s.Procedimiento,
+                                                            Clasificacion = s.Clasificacion,
                                                             Aspecto = s.Aspecto,
                                                             Color = s.Color,
                                                             Olor = s.Olor,
@@ -177,7 +177,8 @@ namespace Proy_back_QBD.Services
                                                                 Descripcion = i.Insumo.Descripcion,
                                                                 UnidadMedida = i.Insumo.UnidadMedida,
                                                                 FactorCorreccion = i.Insumo.FactorCorreccion,
-                                                                Dilucion = i.Insumo.Dilucion
+                                                                Dilucion = i.Insumo.Dilucion,
+                                                                Cantidad = i.Cantidad * 1000
                                                             }).ToList()
                                                         })
                                                         .ToListAsync();
@@ -191,7 +192,7 @@ namespace Proy_back_QBD.Services
             try
             {
                 var actuales = await _context.FormulaRSedes
-                    .Where(x => x.IdFormular == request.IdFormular)
+                    .Where(x => x.IdFormulaRapida == request.IdFormulaRapida)
                     .ToListAsync();
 
                 // Eliminar relaciones que ya no existen
@@ -211,7 +212,7 @@ namespace Proy_back_QBD.Services
                     .Where(id => !existentes.Contains(id))
                     .Select(id => new FormulaRapidaSede
                     {
-                        IdFormular = request.IdFormular,
+                        IdFormulaRapida = request.IdFormulaRapida,
                         IdSede = id
                     });
 

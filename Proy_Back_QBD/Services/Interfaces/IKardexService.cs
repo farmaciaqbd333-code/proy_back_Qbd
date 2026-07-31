@@ -8,10 +8,10 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface IKardexService
     {
-        public Task<List<StockRes>> StockListaPrincipal(string familia);
-        public Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int insumoId);
-        public Task<List<DetalleEmpaqueRes>> ObtenerDetalleEmpaque(int empaqueId);
-        public Task<List<ComprasVencidasRes>> ObtenerComprasVencidas(string familia);
+        public Task<List<StockRes>> StockListaPrincipal(string familia, int idSede);
+        public Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int insumoId,int idSede);
+        public Task<List<DetalleEmpaqueRes>> ObtenerDetalleEmpaque(int empaqueId,int idSede);
+        public Task<List<ComprasVencidasRes>> ObtenerComprasVencidas(string familia,int idSede);
         
     }
 }

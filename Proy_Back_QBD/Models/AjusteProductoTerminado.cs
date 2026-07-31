@@ -25,7 +25,7 @@ public class AjusteProductoTerminado
 
     public string? Observacion { get; set; }
 
-    public virtual CompraProductos CompraProducto { get; set; } = null!;
+    public virtual CompraProducto CompraProducto { get; set; } = null!;
 
     public virtual Usuario Creador { get; set; } = null!;
 }

@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class CompraInsumoProductoIntermedioConfiguration
-    : IEntityTypeConfiguration<CompraInsumoProductoIntermedio>
+public class StockInsumoProductoIntermedioConfiguration
+    : IEntityTypeConfiguration<StockInsumoProductoIntermedio>
 {
-    public void Configure(EntityTypeBuilder<CompraInsumoProductoIntermedio> builder)
+    public void Configure(EntityTypeBuilder<StockInsumoProductoIntermedio> builder)
     {
         builder.ToTable("compra_insumo_producto_intermedio");
 
@@ -43,8 +43,8 @@ public class CompraInsumoProductoIntermedioConfiguration
             .WithMany(x => x.CompraInsumoProductoIntermedio)
             .HasForeignKey(x => x.IdInsumoProductoIntermedio);
 
-        builder.HasOne(x => x.CompraInsumo)
-            .WithMany(x => x.CompraInsumoProductoIntermedio)
+        builder.HasOne(x => x.StockInsumo)
+            .WithMany(x => x.StockInsumoProductoIntermedio)
             .HasForeignKey(x => x.IdCompraInsumo);
 
         builder.HasOne(x => x.Creador)

@@ -167,7 +167,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     Registro = Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Insumo!.Descripcion,
                     Lote = s.Lote ?? "",
-                    Saldo = s.StockDisponible,
+                    Saldo = s.StockInsumos.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Clasificacion = s.Insumo!.Clasificacion ?? "MP",
@@ -188,7 +188,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     Registro = Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Empaque!.Descripcion ?? "",
                     Lote = s.Lote ?? "",
-                    Saldo = s.StockDisponible,
+                    Saldo = s.StockEmpaques.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.AjusteEmpaques!
@@ -208,7 +208,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     Registro = Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Economato!.Descripcion,
                     Lote = "",
-                    Saldo = s.StockDisponible,
+                    Saldo = s.StockEconomatos.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
                     FechaFabricacion = null,
                     FechaVencimiento = null,
                     Observacion = s.AjusteEconomatos!
@@ -228,7 +228,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     Registro = Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Producto!.Descripcion ?? "",
                     Lote = s.Lote ?? "",
-                    Saldo = s.StockDisponible,
+                    Saldo = s.StockProductoTerminados.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.AjusteProductoTerminados!
@@ -247,10 +247,10 @@ namespace Proy_back_QBD.Service.AjusteService
             foreach (var item in ajusteInsumos)
             {
                 AjusteInsumo ajusteInsumo = item;
-                CompraInsumos compraInsumo = await _context.CompraInsumos
-                .Where(w => w.Id == ajusteInsumo.IdCompraInsumo)
+                StockInsumo stockInsumo = await _context.StockInsumos
+                .Where(w => w.IdCompraInsumo == ajusteInsumo.IdCompraInsumo && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraInsumo no encontrada");
-                compraInsumo.StockDisponible += ajusteInsumo.Ajuste;
+                stockInsumo.StockDisponible += ajusteInsumo.Ajuste;
                 _context.AjusteInsumos.Add(ajusteInsumo);
             }
         }
@@ -260,8 +260,8 @@ namespace Proy_back_QBD.Service.AjusteService
             foreach (var item in ajusteEmpaques)
             {
                 AjusteEmpaque ajusteEmpaque = item;
-                CompraEmpaque compraEmpaque = await _context.CompraEmpaques
-                .Where(w => w.Id == ajusteEmpaque.IdCompraEmpaque)
+                StockEmpaque compraEmpaque = await _context.StockEmpaques
+                .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdCompraEmpaque && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
                 compraEmpaque.StockDisponible += ajusteEmpaque.Ajuste;
                 _context.AjusteEmpaques.Add(ajusteEmpaque);
@@ -273,10 +273,10 @@ namespace Proy_back_QBD.Service.AjusteService
             foreach (var item in ajusteEconomatos)
             {
                 AjusteEconomato ajusteEconomato = item;
-                CompraEconomatos compraEconomato = await _context.CompraEconomatos
-                .Where(w => w.Id == ajusteEconomato.IdCompraEconomato)
+                StockEconomato stockEconomato = await _context.StockEconomatos
+                .Where(w => w.IdCompraEconomato == ajusteEconomato.IdCompraEconomato && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraEconomato no encontrada");
-                compraEconomato.StockDisponible += ajusteEconomato.Ajuste;
+                stockEconomato.StockDisponible += ajusteEconomato.Ajuste;
                 _context.AjusteEconomatos.Add(ajusteEconomato);
             }
         }
@@ -286,8 +286,8 @@ namespace Proy_back_QBD.Service.AjusteService
             foreach (var item in ajusteProductoTerminados)
             {
                 AjusteProductoTerminado ajusteProductoTerminado = item;
-                CompraProductos compraProductoTerminado = await _context.CompraProductos
-                .Where(w => w.Id == ajusteProductoTerminado.IdCompraProducto)
+                StockProductoTerminado compraProductoTerminado = await _context.StockProductos
+                .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdCompraProducto && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraProductoTerminado no encontrada");
                 compraProductoTerminado.StockDisponible += ajusteProductoTerminado.Ajuste;
                 _context.AjusteProductoTerminados.Add(ajusteProductoTerminado);

@@ -13,7 +13,7 @@ namespace Proy_back_QBD.Models
         [Column("formulaR_id")]
         public int FormulaRId { get; set; }  // Puede ser nulo    
         [JsonIgnore]
-        public required FormulaR FormulaR { get; set; }  // Puede ser nulo    
+        public required FormulaRapida FormulaR { get; set; }  // Puede ser nulo    
         [Column("insumo_id")]
         public int InsumoId { get; set; }  // Puede ser nulo  
         [JsonIgnore]

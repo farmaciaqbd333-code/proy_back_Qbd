@@ -13,7 +13,7 @@ namespace Proy_back_QBD.Data
         {
         }
         public DbSet<ProductoIntermedio> ProductosIntermedios { get; set; }
-        public DbSet<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedios { get; set; }
+        public DbSet<StockInsumoProductoIntermedio> StockInsumoProductoIntermedios { get; set; }
         public DbSet<InsumoProductoIntermedio> InsumoProductoIntermedios { get; set; }
         public DbSet<AjusteEmpaque> AjusteEmpaques { get; set; }
         public DbSet<AjusteInsumo> AjusteInsumos { get; set; }
@@ -23,14 +23,17 @@ namespace Proy_back_QBD.Data
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<PaqueteInsumo> PaqueteInsumos { get; set; }
         public DbSet<PaqueteEmpaque> PaqueteEmpaques { get; set; }
-        public DbSet<NotaSalidaFamilias> NotaSalidaFamilias { get; set; }
+        public DbSet<NotaSalidaInsumo> NotaSalidaInsumos { get; set; }
+        public DbSet<NotaSalidaEmpaque> NotaSalidaEmpaques { get; set; }
+        public DbSet<NotaSalidaEconomato> NotaSalidaEconomatos { get; set; }
+        public DbSet<NotaSalidaProducto> NotaSalidaProductos { get; set; }
         public DbSet<NotaSalida> NotaSalidas { get; set; }
         public DbSet<Proveedor> Proveedores { get; set; }
         public DbSet<CompraInsumos> CompraInsumos { get; set; }
         public DbSet<CompraOtros> CompraOtros { get; set; }
-        public DbSet<CompraEconomatos> CompraEconomatos { get; set; }
+        public DbSet<CompraEconomato> CompraEconomatos { get; set; }
         public DbSet<CompraEmpaque> CompraEmpaques { get; set; }
-        public DbSet<CompraProductos> CompraProductos { get; set; }
+        public DbSet<CompraProducto> CompraProductos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
         public DbSet<Sede> Sedes { get; set; }  // Para la tabla de secciones
@@ -49,13 +52,17 @@ namespace Proy_back_QBD.Data
         public DbSet<Economato> Economatos { get; set; }
         public DbSet<FormulaCC> FormulasCC { get; set; }  // Para la tabla de lab        
         public DbSet<Empaque> Empaques { get; set; }
-        public DbSet<FormulaR> FormulasR { get; set; }
+        public DbSet<FormulaRapida> FormulasR { get; set; }
         public DbSet<InsumoR> InsumosR { get; set; }
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Fabricante> Fabricantes { get; set; }
         public DbSet<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; }
-        public DbSet<CompraEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
+        public DbSet<StockEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
         public DbSet<FormulaRapidaSede> FormulaRSedes { get; set; }
+        public DbSet<StockEconomato> StockEconomatos { get; set; }
+        public DbSet<StockEmpaque> StockEmpaques { get; set; }
+        public DbSet<StockProductoTerminado> StockProductos { get; set; }
+        public DbSet<StockInsumo> StockInsumos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);
@@ -104,7 +111,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(p => p.Paquete).WithOne(w => w.PaqueteInsumos).HasForeignKey<PaqueteInsumo>(h => h.IdPaquete);
                 e.HasOne(p => p.CompraInsumo).WithMany(w => w.PaqueteInsumos).HasForeignKey(h => h.IdCompraInsumo);
             });
-            modelBuilder.Entity<NotaSalidaFamilias>((e) =>
+            modelBuilder.Entity<NotaSalidaInsumo>((e) =>
             {
                 e.HasOne(ho => ho.Creador).WithMany(wm => wm.NotaSalidaInsumoCreadas).HasForeignKey(hfk => hfk.IdCreador);
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.NotaSalidaInsumoModificadas).HasForeignKey(hfk => hfk.IdModificador);
@@ -128,7 +135,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Insumo).WithMany(wm => wm.CompraInsumos).HasForeignKey(hfk => hfk.IdInsumo).IsRequired(false);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompras).HasForeignKey(hfk => hfk.IdFabricante);
             });
-            modelBuilder.Entity<CompraEconomatos>((e) =>
+            modelBuilder.Entity<CompraEconomato>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraEconomatos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
@@ -150,7 +157,7 @@ namespace Proy_back_QBD.Data
                 e.HasOne(ho => ho.Modificador).WithMany(wm => wm.DetalleComprasEmpaquesModificadas).HasForeignKey(hfk => hfk.IdModificador);
                 e.HasOne(ho => ho.Fabricante).WithMany(wm => wm.DetalleCompraEmpaques).HasForeignKey(hfk => hfk.IdFabricante);
             });
-            modelBuilder.Entity<CompraProductos>((e) =>
+            modelBuilder.Entity<CompraProducto>((e) =>
             {
                 e.Property(p => p.Id).ValueGeneratedOnAdd();
                 e.HasOne(ho => ho.Compra).WithMany(wm => wm.CompraProductos).HasForeignKey(hfk => hfk.IdCompra).IsRequired(false);
@@ -175,7 +182,7 @@ namespace Proy_back_QBD.Data
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
                 e.Property(p => p.FechaModificacion).ValueGeneratedOnAddOrUpdate();
             });
-            modelBuilder.Entity<FormulaR>((e) =>
+            modelBuilder.Entity<FormulaRapida>((e) =>
             {
                 e.HasOne(x => x.Creador).WithMany(x => x.FormulaRsCreadas).HasForeignKey(x => x.CreadorId);
                 e.HasOne(x => x.Modificador).WithMany(x => x.FormulasRsModificadas).HasForeignKey(x => x.ModificadorId);
@@ -365,13 +372,13 @@ namespace Proy_back_QBD.Data
                         j => j.HasOne<Fabricante>().WithMany().HasForeignKey("id_fabricante")
                     );
             });
-            modelBuilder.Entity<CompraInsumoProductoIntermedio>()
+            modelBuilder.Entity<StockInsumoProductoIntermedio>()
                    .HasOne(x => x.Creador)
                    .WithMany(x => x.CompraInsumoProductoIntermedioCreados)
                    .HasForeignKey(x => x.IdCreador)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<CompraInsumoProductoIntermedio>()
+            modelBuilder.Entity<StockInsumoProductoIntermedio>()
                 .HasOne(x => x.Modificador)
                 .WithMany(x => x.CompraInsumoProductoIntermedioModificados)
                 .HasForeignKey(x => x.IdModificador)

@@ -57,7 +57,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
             // DetalleProductosCreateReq -> DetalleCompraProducto
-            CreateMap<DetalleProductosCreateReq, CompraProductos>(MemberList.None)
+            CreateMap<DetalleProductosCreateReq, CompraProducto>(MemberList.None)
             .ForMember(dest => dest.IdProducto, opt => opt.MapFrom(src => src.IdProducto))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
@@ -65,7 +65,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
             // DetalleProductosUpdateReq -> DetalleCompraProducto
-            CreateMap<DetalleProductosUpdateReq, CompraProductos>(MemberList.None)
+            CreateMap<DetalleProductosUpdateReq, CompraProducto>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdProducto, opt => opt.MapFrom(src => src.IdProducto))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
@@ -74,7 +74,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
             // DetalleEconomatosCreateReq -> DetalleCompraEconomato
-            CreateMap<DetalleEconomatosCreateReq, CompraEconomatos>(MemberList.None)
+            CreateMap<DetalleEconomatosCreateReq, CompraEconomato>(MemberList.None)
             .ForMember(dest => dest.IdEconomato, opt => opt.MapFrom(src => src.IdEconomato))
             .ForMember(dest => dest.CantidadSolicitada, opt => opt.MapFrom(src => src.Cantidad))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))
@@ -82,7 +82,7 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.CostoTotal, opt => opt.MapFrom(src => src.CostoTotal));
 
             // DetalleEconomatosUpdateReq -> DetalleCompraEconomato
-            CreateMap<DetalleEconomatosUpdateReq, CompraEconomatos>(MemberList.None)
+            CreateMap<DetalleEconomatosUpdateReq, CompraEconomato>(MemberList.None)
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.IdEconomato, opt => opt.MapFrom(src => src.IdEconomato))
             .ForMember(dest => dest.Um, opt => opt.MapFrom(src => src.Um))

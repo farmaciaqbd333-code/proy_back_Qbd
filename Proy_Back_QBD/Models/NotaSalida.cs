@@ -13,14 +13,21 @@ namespace proy_back_Qbd.Models
     {
         public int Id { get; set; }
         public DateTimeOffset FechaSalida { get; set; }
-        public required string Destino { get; set; }
+        public int IdSedeOrigen { get; set; }
+        public int IdSedeDestino { get; set; }
         public string? Observacion { get; set; }
         public DateTimeOffset FechaCreacion { get; set; }
         public DateTimeOffset? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
+
         public Usuario? Creador { get; set; }
+        public Sede? SedeOrigen { get; set; }
+        public Sede? SedeDestino { get; set; }
         public Usuario? Modificador { get; set; }
-        public List<NotaSalidaFamilias>? NotaSalidaFamilias { get; set; }
+        public List<NotaSalidaInsumo>? NotaSalidaInsumos { get; set; }
+        public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }
+        public List<NotaSalidaEmpaque>? NotaSalidaEmpaques { get; set; }
+        public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }
     }
 }

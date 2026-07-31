@@ -64,35 +64,35 @@ namespace proy_back_Qbd.Services
                     foreach (var conteoEmpaque in conteoEmpaques)
                     {
                         decimal cantidadPendiente = conteoEmpaque.Value;
-                    List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
-                    .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
-                    .OrderBy(w => w.FechaVencimiento)
-                    .ToListAsync();
-                        decimal stockDisponibleTotal = compraEmpaques.Sum(s => s.StockDisponible);
+                        List<StockEmpaque> stockEmpaques = await _context.StockEmpaques
+                        .Where(w => w.CompraEmpaque.IdEmpaque == conteoEmpaque.Key && w.IdSede == 30 && w.CompraEmpaque.FechaVencimiento >= DateTime.UtcNow)
+                        .OrderBy(w => w.CompraEmpaque.FechaVencimiento)
+                        .ToListAsync();
+                        decimal stockDisponibleTotal = stockEmpaques.Sum(s => s.StockDisponible);
 
                         if (stockDisponibleTotal < conteoEmpaque.Value) throw new BadRequestException("Stock insuficiente");
 
-                        if (compraEmpaques.Count() == 0) throw new NotFoundException("No hay stock disponible para este Empaque");
+                        if (stockEmpaques.Count() == 0) throw new NotFoundException("No hay stock disponible para este Empaque");
                         EmpaqueProductoIntermedio empaqueProductoIntermedio = new()
                         {
                             IdEmpaque = conteoEmpaque.Key,
                             ProductoIntermedio = productoIntermedio
                         };
                         _context.EmpaqueProductoIntermedios.Add(empaqueProductoIntermedio);
-                        foreach (CompraEmpaque compraEmpaque in compraEmpaques)
+                        foreach (StockEmpaque stockEmpaque in stockEmpaques)
                         {
-                            CompraEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio = new();
-                            if (compraEmpaque.StockDisponible >= cantidadPendiente)
+                            StockEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio = new();
+                            if (stockDisponibleTotal >= cantidadPendiente)
                             {
                                 compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadPendiente,
-                                    IdCompraEmpaque = compraEmpaque.Id,
+                                    IdCompraEmpaque = stockEmpaque.IdCompraEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
 
-                                compraEmpaque.StockDisponible -= cantidadPendiente;
+                                stockEmpaque.StockDisponible -= cantidadPendiente;
                                 _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                                 break;
                             }
@@ -100,13 +100,13 @@ namespace proy_back_Qbd.Services
                             {
                                 compraEmpaqueProductoIntermedio = new()
                                 {
-                                    Cantidad = compraEmpaque.StockDisponible,
-                                    IdCompraEmpaque = compraEmpaque.Id,
+                                    Cantidad = stockEmpaque.StockDisponible,
+                                    IdCompraEmpaque = stockEmpaque.IdCompraEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
-                                cantidadPendiente -= compraEmpaque.StockDisponible;
-                                compraEmpaque.StockDisponible = 0;
+                                cantidadPendiente -= stockEmpaque.StockDisponible;
+                                stockEmpaque.StockDisponible = 0;
                                 _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                             }
 
@@ -117,43 +117,43 @@ namespace proy_back_Qbd.Services
                 }
                 foreach (var fInsumo in request.Insumos)
                 {
-                    List<CompraInsumos> compraInsumos = await _context.CompraInsumos
-                    .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
-                    .OrderBy(w => w.FechaVencimiento)
+                    List<StockInsumo> stockInsumos = await _context.StockInsumos
+                    .Where(w => w.CompraInsumo.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
+                    .OrderBy(w => w.CompraInsumo.FechaVencimiento)
                     .ToListAsync();
-                    decimal stockDisponibleTotal = compraInsumos.Sum(s => s.StockDisponible);
+                    decimal stockDisponibleTotal = stockInsumos.Sum(s => s.StockDisponible);
                     decimal cantidadUsar = fInsumo.CantidadLote;
-                    if (!compraInsumos.Any() || stockDisponibleTotal < cantidadUsar) throw new NotFoundException("No hay stock disponible para este insumo, " + stockDisponibleTotal);
+                    if (!stockInsumos.Any() || stockDisponibleTotal < cantidadUsar) throw new NotFoundException("No hay stock disponible para este insumo, " + stockDisponibleTotal);
                     InsumoProductoIntermedio insumoProductoIntermedio = new ProductoIntermedioMapper().CrearInsumosProductoIntermedio(fInsumo);
                     insumoProductoIntermedio.IdCreador = request.IdCreador;
                     insumoProductoIntermedio.ProductoIntermedio = productoIntermedio;
                     _context.InsumoProductoIntermedios.Add(insumoProductoIntermedio);
 
 
-                    foreach (var compraInsumo in compraInsumos)
+                    foreach (var stockInsumo in stockInsumos)
                     {
-                        if (compraInsumo.StockDisponible < cantidadUsar)
+                        if (stockInsumo.StockDisponible < cantidadUsar)
                         {
-                            compraInsumo.CompraInsumoProductoIntermedio.Add(new CompraInsumoProductoIntermedio()
+                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
                             {
-                                Cantidad = compraInsumo.StockDisponible,
+                                Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdCreador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = compraInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
-                            cantidadUsar -= compraInsumo.StockDisponible;
-                            compraInsumo.StockDisponible = 0;
+                            cantidadUsar -= stockInsumo.StockDisponible;
+                            stockInsumo.StockDisponible = 0;
                         }
                         else
                         {
-                            compraInsumo.CompraInsumoProductoIntermedio.Add(new CompraInsumoProductoIntermedio()
+                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
                             {
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdCreador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = compraInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
-                            compraInsumo.StockDisponible = compraInsumo.StockDisponible - cantidadUsar;
+                            stockInsumo.StockDisponible = stockInsumo.StockDisponible - cantidadUsar;
                             break;
                         }
 
@@ -189,10 +189,10 @@ namespace proy_back_Qbd.Services
                 ProductoIntermedio productoIntermedio = await _context.ProductosIntermedios
                     .Include(p => p.EmpaqueProductoIntermedios)
                         .ThenInclude(e => e.CompraEmpaqueProductoIntermedios)
-                            .ThenInclude(c => c.CompraEmpaque)
+                            .ThenInclude(c => c.StockEmpaque)
                     .Include(p => p.InsumoProductoIntermedio)
                         .ThenInclude(i => i.CompraInsumoProductoIntermedio)
-                            .ThenInclude(c => c.CompraInsumo)
+                            .ThenInclude(c => c.StockInsumo)
                     .FirstOrDefaultAsync(p => p.Id == id)
                     ?? throw new NotFoundException("No existe este ProductoIntermedio con id " + id);
 
@@ -201,7 +201,7 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var compraEmpaqueProdInt in empaqueProdInt.CompraEmpaqueProductoIntermedios.ToList())
                     {
-                        compraEmpaqueProdInt.CompraEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
+                        compraEmpaqueProdInt.StockEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
                         _context.CompraEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
                     }
                     _context.EmpaqueProductoIntermedios.Remove(empaqueProdInt);
@@ -212,8 +212,8 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var compraInsumoProdInt in insumoProdInt.CompraInsumoProductoIntermedio.ToList())
                     {
-                        compraInsumoProdInt.CompraInsumo.StockDisponible += compraInsumoProdInt.Cantidad;
-                        _context.CompraInsumoProductoIntermedios.Remove(compraInsumoProdInt);
+                        compraInsumoProdInt.StockInsumo.StockDisponible += compraInsumoProdInt.Cantidad;
+                        _context.StockInsumoProductoIntermedios.Remove(compraInsumoProdInt);
                     }
                     _context.InsumoProductoIntermedios.Remove(insumoProdInt);
                 }
@@ -261,14 +261,14 @@ namespace proy_back_Qbd.Services
                     foreach (var conteoEmpaque in conteoEmpaques)
                     {
                         decimal cantidadPendiente = conteoEmpaque.Value;
-                        List<CompraEmpaque> compraEmpaques = await _context.CompraEmpaques
-                            .Where(w => w.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
-                            .OrderBy(w => w.FechaVencimiento)
+                        List<StockEmpaque> stockEmpaques = await _context.StockEmpaques
+                            .Where(w => w.CompraEmpaque.IdEmpaque == conteoEmpaque.Key && w.StockDisponible > 0 && w.CompraEmpaque.FechaVencimiento >= DateTime.UtcNow)
+                            .OrderBy(w => w.CompraEmpaque.FechaVencimiento)
                             .ToListAsync();
-                        decimal stockDisponibleTotal = compraEmpaques.Sum(s => s.StockDisponible);
+                        decimal stockDisponibleTotal = stockEmpaques.Sum(s => s.StockDisponible);
 
                         if (stockDisponibleTotal < conteoEmpaque.Value) throw new BadRequestException("Stock insuficiente");
-                        if (compraEmpaques.Count() == 0) throw new NotFoundException("No hay stock disponible para este Empaque");
+                        if (stockEmpaques.Count() == 0) throw new NotFoundException("No hay stock disponible para este Empaque");
 
                         EmpaqueProductoIntermedio empaqueProductoIntermedio = new()
                         {
@@ -277,19 +277,19 @@ namespace proy_back_Qbd.Services
                         };
                         _context.EmpaqueProductoIntermedios.Add(empaqueProductoIntermedio);
 
-                        foreach (CompraEmpaque compraEmpaque in compraEmpaques)
+                        foreach (StockEmpaque stockEmpaque in stockEmpaques)
                         {
-                            CompraEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio;
-                            if (compraEmpaque.StockDisponible >= cantidadPendiente)
+                            StockEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio;
+                            if (stockEmpaque.StockDisponible >= cantidadPendiente)
                             {
                                 compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadPendiente,
-                                    IdCompraEmpaque = compraEmpaque.Id,
+                                    IdCompraEmpaque = stockEmpaque.IdCompraEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
-                                compraEmpaque.StockDisponible -= cantidadPendiente;
+                                stockEmpaque.StockDisponible -= cantidadPendiente;
                                 cantidadPendiente = 0;
                                 _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                                 break;
@@ -298,13 +298,13 @@ namespace proy_back_Qbd.Services
                             {
                                 compraEmpaqueProductoIntermedio = new()
                                 {
-                                    Cantidad = compraEmpaque.StockDisponible,
-                                    IdCompraEmpaque = compraEmpaque.Id,
+                                    Cantidad = stockEmpaque.StockDisponible,
+                                    IdCompraEmpaque = stockEmpaque.IdCompraEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
-                                cantidadPendiente -= compraEmpaque.StockDisponible;
-                                compraEmpaque.StockDisponible = 0;
+                                cantidadPendiente -= stockEmpaque.StockDisponible;
+                                stockEmpaque.StockDisponible = 0;
                                 _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                             }
                         }
@@ -316,14 +316,14 @@ namespace proy_back_Qbd.Services
                 // 6. Volver a recorrer Insumos con los NUEVOS datos del request (misma lógica que Crear)
                 foreach (var fInsumo in request.Insumos)
                 {
-                    List<CompraInsumos> compraInsumos = await _context.CompraInsumos
-                        .Where(w => w.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.FechaVencimiento >= DateTime.UtcNow)
-                        .OrderBy(w => w.FechaVencimiento)
+                    List<StockInsumo> stockInsumos = await _context.StockInsumos
+                        .Where(w => w.CompraInsumo.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
+                        .OrderBy(w => w.CompraInsumo.FechaVencimiento)
                         .ToListAsync();
-                    decimal stockDisponibleTotal = compraInsumos.Sum(s => s.StockDisponible);
+                    decimal stockDisponibleTotal = stockInsumos.Sum(s => s.StockDisponible);
                     decimal cantidadUsar = fInsumo.CantidadLote;
 
-                    if (!compraInsumos.Any() || stockDisponibleTotal < cantidadUsar)
+                    if (!stockInsumos.Any() || stockDisponibleTotal < cantidadUsar)
                     {
                         _logger.LogInformation("stock disponible total: {cantidad}", stockDisponibleTotal);
                         throw new NotFoundException("No hay stock disponible para este insumo, " + stockDisponibleTotal);
@@ -334,30 +334,30 @@ namespace proy_back_Qbd.Services
                     insumoProductoIntermedio.ProductoIntermedio = productoIntermedio;
                     _context.InsumoProductoIntermedios.Add(insumoProductoIntermedio);
 
-                    foreach (var compraInsumo in compraInsumos)
+                    foreach (var stockInsumo in stockInsumos)
                     {
-                        if (compraInsumo.StockDisponible < cantidadUsar)
+                        if (stockInsumo.StockDisponible < cantidadUsar)
                         {
-                            compraInsumo.CompraInsumoProductoIntermedio.Add(new CompraInsumoProductoIntermedio()
+                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
                             {
-                                Cantidad = compraInsumo.StockDisponible,
+                                Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = compraInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
-                            cantidadUsar -= compraInsumo.StockDisponible;
-                            compraInsumo.StockDisponible = 0;
+                            cantidadUsar -= stockInsumo.StockDisponible;
+                            stockInsumo.StockDisponible = 0;
                         }
                         else
                         {
-                            compraInsumo.CompraInsumoProductoIntermedio.Add(new CompraInsumoProductoIntermedio()
+                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
                             {
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = compraInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
-                            compraInsumo.StockDisponible -= cantidadUsar;
+                            stockInsumo.StockDisponible -= cantidadUsar;
                             break;
                         }
                     }
@@ -382,7 +382,7 @@ namespace proy_back_Qbd.Services
         }
         public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
         {
-            IEnumerable<ConsumoPIRes> response = await _context.CompraInsumoProductoIntermedios
+            IEnumerable<ConsumoPIRes> response = await _context.StockInsumoProductoIntermedios
             .Where(w => w.InsumoProductoIntermedio.IdProductoIntermedio == id)
             .OrderBy(ob => ob.InsumoProductoIntermedio.Variable)
             .Select(s => new ConsumoPIRes()
@@ -391,7 +391,7 @@ namespace proy_back_Qbd.Services
                 Porcentaje = s.InsumoProductoIntermedio.Porcentaje,
                 Descripcion = s.InsumoProductoIntermedio.Insumo.Descripcion,
                 V = s.InsumoProductoIntermedio.Variable,
-                Lote = s.CompraInsumo.Lote,
+                Lote = s.StockInsumo.CompraInsumo.Lote,
                 Registro = Alfanumerico.ConvertToBase36(s.IdCompraInsumo),
                 CantidadUnidad = s.Cantidad,
                 FactorCorreccion = s.InsumoProductoIntermedio.FactorCorrecion,
@@ -421,7 +421,6 @@ namespace proy_back_Qbd.Services
                 LoteEstandar = s.LoteEstandar ?? 0,
                 Tipo = s.Tipo,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
-                Cantidad = s.Cantidad,
                 Um = s.Insumo.UnidadMedida,
                 FechaEmision = s.FechaEmision,
                 FechaVencimiento = s.FechaVencimiento,
@@ -467,10 +466,10 @@ namespace proy_back_Qbd.Services
                 ProductoIntermedio productoIntermedio = await _context.ProductosIntermedios
                     .Include(p => p.EmpaqueProductoIntermedios)
                         .ThenInclude(e => e.CompraEmpaqueProductoIntermedios)
-                            .ThenInclude(c => c.CompraEmpaque)
+                            .ThenInclude(c => c.StockEmpaque)
                     .Include(p => p.InsumoProductoIntermedio)
                         .ThenInclude(i => i.CompraInsumoProductoIntermedio)
-                            .ThenInclude(c => c.CompraInsumo)
+                            .ThenInclude(c => c.StockInsumo)
                     .FirstOrDefaultAsync(p => p.Id == id)
                     ?? throw new NotFoundException("No existe este ProductoIntermedio con id " + id);
 
@@ -479,7 +478,7 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var compraEmpaqueProdInt in empaqueProdInt.CompraEmpaqueProductoIntermedios.ToList())
                     {
-                        compraEmpaqueProdInt.CompraEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
+                        compraEmpaqueProdInt.StockEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
                         _context.CompraEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
                     }
                     _context.EmpaqueProductoIntermedios.Remove(empaqueProdInt);
@@ -490,8 +489,8 @@ namespace proy_back_Qbd.Services
                 {
                     foreach (var compraInsumoProdInt in insumoProdInt.CompraInsumoProductoIntermedio.ToList())
                     {
-                        compraInsumoProdInt.CompraInsumo.StockDisponible += compraInsumoProdInt.Cantidad;
-                        _context.CompraInsumoProductoIntermedios.Remove(compraInsumoProdInt);
+                        compraInsumoProdInt.StockInsumo.StockDisponible += compraInsumoProdInt.Cantidad;
+                        _context.StockInsumoProductoIntermedios.Remove(compraInsumoProdInt);
                     }
                     _context.InsumoProductoIntermedios.Remove(insumoProdInt);
                 }
@@ -516,5 +515,83 @@ namespace proy_back_Qbd.Services
                 throw;
             }
         }
+
+        public async Task<RegistroPIRes> ObtenerRegistro()
+        {
+            int currentValue = await _context.Database
+    .SqlQuery<int>($"""
+        SELECT last_value AS "Value"
+        FROM base_y_insumo_sequence
+    """)
+    .SingleAsync();
+
+            var hoy = DateTime.Today;
+
+            var siguienteNumero = await _context.ProductosIntermedios
+     .CountAsync(x => x.FechaCreacion.Date == hoy) + 1;
+
+
+            string lote = $"PI-{hoy:yyyyMMdd}{siguienteNumero}";
+
+            string registro = Alfanumerico.ConvertToBase36(currentValue + 1);
+
+            RegistroPIRes response = new()
+            {
+                Lote = lote,
+                NroReg = registro
+            };
+            return response;
+        }
+
+
+        public async Task<ObtenerProductoIntermedioReq?> ObtenerPI(int id)
+        {
+            return await _context.ProductosIntermedios
+                .AsNoTracking()
+                .Where(x => x.Id == id)
+                .Select(x => new ObtenerProductoIntermedioReq
+                {
+                    Lote = x.Lote,
+                    IdInsumo = x.IdInsumo,
+                    LoteEstandar = x.LoteEstandar.Value,
+                    PesoUnidad = x.PesoUnidad,
+                    LoteEstTotal = x.LoteEstTotal,
+                    Tipo = x.Tipo,
+                    TipoUso = x.TipoUso,
+                    Um = x.Um,
+                    FechaEmision = x.FechaEmision,
+                    FechaVencimiento = x.FechaVencimiento,
+                    IdElaborado = x.IdElaborado.Value,
+                    IdAutorizado = x.IdAutorizado,
+                    Procedimiento = x.Procedimiento,
+                    Aspecto = x.Aspecto,
+                    Color = x.Color,
+                    Olor = x.Olor,
+                    Ph = x.Ph.Value,
+
+                    IdEmpaques = x.EmpaqueProductoIntermedios
+                        .Select(e => e.IdEmpaque)
+                        .ToList(),
+
+                    Insumos = x.InsumoProductoIntermedio
+                        .Select(i => new InsumoProductoIntermedioReq
+                        {
+                            IdInsumo = i.IdInsumo,
+                            CodigoInsumo = UtilFamilia.CodigoInsumo(i.IdInsumo),
+                            Porcentaje = i.Porcentaje,
+                            Variable = i.Variable,
+                            CantidadUnidad = i.CantidadUnidad,
+                            FactorCorrecion = i.FactorCorrecion,
+                            Dilucion = i.Dilucion,
+                            UnidadMedida = i.UnidadMedida,
+                            CantidadLote = i.CantidadLote,
+                            Practica = i.Practica,
+                            Csp = i.Csp
+                        })
+                        .ToList()
+                })
+                .FirstOrDefaultAsync();
+        }
+
     }
 }

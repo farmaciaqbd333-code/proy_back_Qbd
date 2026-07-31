@@ -37,9 +37,6 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.TipoUso)
                 .HasColumnName("tipo_uso");
 
-            builder.Property(x => x.Cantidad)
-                .HasColumnName("cantidad");
-
             builder.Property(x => x.Um)
                 .HasColumnName("um");
 

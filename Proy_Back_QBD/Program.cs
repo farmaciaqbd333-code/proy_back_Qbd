@@ -66,12 +66,12 @@ builder.Services.AddScoped<ICajaService, CajaService>();
 builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
 builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
 builder.Services.AddScoped<IEconomatoService, EconomatoService>();
-builder.Services.AddScoped<IDetalleOrdenCompraService, DetalleOrdenCompraService>();
 builder.Services.AddScoped<ICompraLaboratorioService, CompraLaboratorioService>();
 builder.Services.AddScoped<IPaqueteService, PaqueteService>();
 builder.Services.AddScoped<IMesonService, MesonService>();
 builder.Services.AddScoped<IAjusteService, AjusteService>();
 builder.Services.AddScoped<IProductoIntermedioService, ProductoIntermedioService>();
+builder.Services.AddScoped<INotaSalidaService, NotaSalidaService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

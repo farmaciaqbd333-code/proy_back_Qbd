@@ -11,6 +11,7 @@ namespace proy_back_Qbd.Models
         public decimal PesoUnitario { get; set; }
         public decimal Tara { get; set; }
         public int IdCreador { get; set; }
+        public int IdSede { get; set; }
         public int IdCompraInsumo { get; set; }
     }
     public class PaqueteEmpaqueCrearReq
@@ -19,6 +20,7 @@ namespace proy_back_Qbd.Models
         public int PesoUnitario { get; set; }
         public decimal Tara { get; set; }
         public int IdCreador { get; set; }
+        public int IdSede { get; set; }
         public int IdCompraEmpaque { get; set; }
     }
     public class PaqueteInsumoModificarReq

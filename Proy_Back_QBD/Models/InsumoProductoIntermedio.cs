@@ -28,5 +28,5 @@ public class InsumoProductoIntermedio
     public Insumo? Insumo { get; set; }
     public ProductoIntermedio? ProductoIntermedio { get; set; }
 
-    public List<CompraInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
+    public List<StockInsumoProductoIntermedio> CompraInsumoProductoIntermedio { get; set; } = new();
 }
