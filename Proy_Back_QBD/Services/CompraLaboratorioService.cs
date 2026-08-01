@@ -131,57 +131,79 @@ namespace proy_back_Qbd.Services
             return obtenerDetalleCompraLabReq;
         }
 
-        public async Task<CompraLabDetIdRes> GetDetalleCompraLab(int IdCompra)
+        public async Task<CompraLabDetIdRes> GetDetalleCompraLab(int idCompra)
         {
-            CompraLabDetIdRes? response = await _context.Compras
-           .Where(w => w.Id == IdCompra)
-           .Select(s => new CompraLabDetIdRes()
-           {
-               CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
-               Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-               NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-               CodFacQbd = s.CodFacQBD,
-               ListaInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new CompraLabDetInsumosRes()
-               {
-                   Id = s2.Id,
-                   Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura : "",
-                   Conformidad = s2.Conformidad == true ? "SI" : "NO",
-                   Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                   CodigoInsumo = s2.IdInsumo.ToString(),
-                   DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
-                   Coa = s2.Coa,
-                   Lote = s2.Lote ?? "",
-                   Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ML" : (s2.Um ?? "").ToUpper(),
-                   Potencia = s2.Potencia,
-                   FechaFabricacion = s2.FechaFabricacion,
-                   FechaVencimiento = s2.FechaVencimiento,
-                   CantidadPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
-                   CantidadRecibida = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
-                   Densidad = s2.Insumo.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
-                   DescripcionFactura = s2.DescripcionFactura ?? "",
-                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
-                   CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
-               }).ToList() : null,
-               ListaEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s2 => new CompraLabDetEmpRes()
-               {
-                   Id = s2.Id,
-                   Familia = (s2.Empaque != null && s2.Empaque.Familia != null) ? s2.Empaque.Familia.Abreviatura : "",
-                   Conformidad = s2.Conformidad == true ? "SI" : "NO",
-                   Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                   Coa = s2.Coa != null ? s2.Coa.Value : false,
-                   Codigo = s2.IdEmpaque.ToString(),
-                   DescripcionQBD = s2.Empaque != null ? s2.Empaque.Descripcion ?? "" : "",
-                   Lote = s2.Lote ?? "",
-                   Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ML" : (s2.Um ?? "").ToUpper(),
-                   FechaFabricacion = s2.FechaFabricacion,
-                   FechaVencimiento = s2.FechaVencimiento,
-                   CantidadPaquetes = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0m,
-                   CantidadRecibida = s2.PaqueteEmpaques != null ? s2.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.PesoUnitario : 0) : 0m,
-                   DescripcionFactura = s2.DescripcionFactura ?? "",
-                   Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
-                   CondicionAlmacenamiento = s2.CondicionAlmacenamiento ?? ""
-               }).ToList() : null
-           }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró la compra");
+            var response = await _context.Compras
+                .AsNoTracking()
+                .Where(c => c.Id == idCompra)
+                .Select(c => new CompraLabDetIdRes
+                {
+                    CodigoProveedor = c.Proveedor!.CodigoProvedor ?? "",
+                    Ruc = c.Proveedor != null ? c.Proveedor.NumeroProv : "",
+                    NumProvedor = c.Proveedor != null ? c.Proveedor.NumeroProv : "",
+                    CodFacQbd = c.CodFacQBD,
+
+                    ListaInsumos = c.CompraInsumos.Select(i => new CompraLabDetInsumosRes
+                    {
+                        Id = i.Id,
+                        Familia = i.Insumo != null ? i.Insumo.Familia!.Abreviatura : "",
+                        Conformidad = (bool)i.Conformidad ? "SI" : "NO",
+                        CodigoInsumo = i.IdInsumo.ToString(),
+                        DescripcionQBD = i.Insumo != null ? i.Insumo.Descripcion : "",
+                        Coa = i.Coa,
+                        Lote = i.Lote ?? "",
+                        Um = i.Um != null &&
+                             (i.Um.ToUpper() == "L" || i.Um.ToUpper() == "LITRO")
+                                ? "ML"
+                                : (i.Um ?? "").ToUpper(),
+                        Potencia = i.Potencia,
+                        FechaFabricacion = i.FechaFabricacion,
+                        FechaVencimiento = i.FechaVencimiento,
+                        CantidadPaquetes = i.PaqueteInsumos.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete : 0),
+                        CantidadRecibida = i.PaqueteInsumos.Sum(p => p.Paquete != null ? p.Paquete.PesoUnitario : 0),
+                        Densidad = i.Insumo != null ? i.Insumo.Densidad : null,
+                        DescripcionFactura = i.DescripcionFactura ?? "",
+                        Fabricante = i.Fabricante != null
+                            ? $"{i.Fabricante.Codigo ?? i.Fabricante.Nombre} ({i.Fabricante.Pais})"
+                            : "",
+                        CondicionAlmacenamiento = i.CondicionAlmacenamiento ?? ""
+                    }).ToList(),
+
+                    ListaEmpaques = c.CompraEmpaques.Select(e => new CompraLabDetEmpRes
+                    {
+                        Id = e.Id,
+                        Familia = e.Empaque != null ? e.Empaque.Familia!.Abreviatura : "",
+                        Conformidad = (bool)e.Conformidad ? "SI" : "NO",
+                        Codigo = e.IdEmpaque.ToString(),
+                        Coa = e.Coa ?? false,
+                        DescripcionQBD = e.Empaque != null
+    ? (e.Empaque.Descripcion ?? "")
+    : "",
+                        Lote = e.Lote ?? "",
+                        Um = e.Um != null &&
+                             (e.Um.ToUpper() == "L" || e.Um.ToUpper() == "LITRO")
+                                ? "ML"
+                                : (e.Um ?? "").ToUpper(),
+                        FechaFabricacion = e.FechaFabricacion,
+                        FechaVencimiento = e.FechaVencimiento,
+                        CantidadPaquetes = e.PaqueteEmpaques.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete : 0),
+                        CantidadRecibida = e.PaqueteEmpaques.Sum(p => p.Paquete != null ? p.Paquete.PesoUnitario : 0),
+                        DescripcionFactura = e.DescripcionFactura ?? "",
+                        Fabricante = e.Fabricante != null
+                            ? $"{e.Fabricante.Codigo ?? e.Fabricante.Nombre} ({e.Fabricante.Pais})"
+                            : "",
+                        CondicionAlmacenamiento = e.CondicionAlmacenamiento ?? ""
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync()
+                ?? throw new NotFoundException("No se encontró la compra");
+
+            // Lógica que EF Core no puede traducir
+            foreach (var item in response.ListaInsumos)
+                item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(4, '0');
+
+            foreach (var item in response.ListaEmpaques)
+                item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(4, '0');
 
             return response;
         }

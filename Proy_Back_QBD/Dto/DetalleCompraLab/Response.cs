@@ -67,9 +67,9 @@ public class CompraLabDetIdRes
 public class CompraLabDetInsumosRes
 {
     public required int Id { get; set; }
-    public required string Conformidad { get; set; }
+    public string? Conformidad { get; set; }
     public required string Familia { get; set; }
-    public required string Reg { get; set; }
+    public string? Reg { get; set; }
     public required string CodigoInsumo { get; set; }
     public required string DescripcionQBD { get; set; }
     public required bool Coa { get; set; }
@@ -88,9 +88,9 @@ public class CompraLabDetInsumosRes
 public class CompraLabDetEmpRes
 {
     public required int Id { get; set; }
-    public required string Conformidad { get; set; }
+    public string? Conformidad { get; set; }
     public required string Familia { get; set; }
-    public required string Reg { get; set; }
+    public string? Reg { get; set; }
     public required string Codigo { get; set; }
     public required bool Coa { get; set; }
     public required string DescripcionQBD { get; set; }
