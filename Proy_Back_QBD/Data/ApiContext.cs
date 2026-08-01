@@ -44,14 +44,14 @@ namespace Proy_back_QBD.Data
         public DbSet<Medico> Medicos { get; set; }  // Para la tabla de secciones
         public DbSet<Formula> Formulas { get; set; }  // Para la tabla de secciones
         public DbSet<ProdTerm> ProdTerms { get; set; }  // Para la tabla de secciones
-        public DbSet<Producto> Productos { get; set; }  // Para la tabla de secciones
         public DbSet<Cobro> Cobros { get; set; }  // Para la tabla de secciones        
         public DbSet<Laboratorio> Laboratorios { get; set; }  // Para la tabla de lab        
         public DbSet<Especialidad> Especialidads { get; set; }  // Para la tabla de lab        
+        public DbSet<Producto> Productos { get; set; } 
         public DbSet<Insumo> Insumos { get; set; }
         public DbSet<Economato> Economatos { get; set; }
-        public DbSet<FormulaCC> FormulasCC { get; set; }  // Para la tabla de lab        
         public DbSet<Empaque> Empaques { get; set; }
+        public DbSet<FormulaCC> FormulasCC { get; set; }  // Para la tabla de lab        
         public DbSet<FormulaRapida> FormulasR { get; set; }
         public DbSet<InsumoR> InsumosR { get; set; }
         public DbSet<Familia> Familias { get; set; }

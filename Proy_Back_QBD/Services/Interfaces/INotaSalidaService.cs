@@ -5,4 +5,5 @@ public interface INotaSalidaService
     Task<List<NotaSalidaListaRes>> ObtenerListaAsync(int idSede);
     Task ActualizarAsync(int id, NotaSalidaCreateReq request);
     Task EliminarAsync(int id);
+    Task<List<FamiliasListaRes>> ObtenerFamiliaAsync(FamiliasListaReq request);
 }

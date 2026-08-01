@@ -67,6 +67,20 @@ namespace proy_back_Qbd.Controllers
             await _serviceNotaSalida.EliminarAsync(id);
             return Ok();
         }
-
+        [HttpPost("familias")]
+        [ProducesResponseType(typeof(List<FamiliasListaRes>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<List<FamiliasListaRes>>> Lista([FromBody] FamiliasListaReq request)
+        {
+            try
+            {
+                var resultado = await _serviceNotaSalida.ObtenerFamiliaAsync(request);
+                return Ok(resultado);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

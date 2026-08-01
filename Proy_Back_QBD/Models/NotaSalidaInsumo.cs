@@ -22,6 +22,9 @@ namespace proy_back_Qbd.Models
         public DateTimeOffset? FechaModificacion { get; set; }
         public int Paquete { get; set; }
         public decimal CantidadPaquete { get; set; }
+        public decimal PesoNeto { get; set; }
+        public decimal Tara { get; set; }
+        public decimal PesoBruto { get; set; }
         public int? IdCompraInsumo { get; set; }
 
         public Usuario? Creador { get; set; }
