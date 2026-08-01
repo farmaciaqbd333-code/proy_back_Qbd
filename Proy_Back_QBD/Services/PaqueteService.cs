@@ -179,7 +179,7 @@ namespace proy_back_Qbd.Services
             return "Se Elimino el paquete id " + idPaquete;
         }
 
-        public async Task<string> ModificarPaqueteInsumo(int idPaquete, int idSede, PaqueteInsumoModificarReq req)
+        public async Task<string> ModificarPaqueteInsumo(int idSede, int idPaquete, PaqueteInsumoModificarReq req)
         {
 
             Paquete paquete = await _context.Paquetes

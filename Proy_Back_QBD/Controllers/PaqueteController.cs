@@ -51,7 +51,7 @@ namespace proy_back_Qbd.Controllers
         /// Modificar Paquete Insumo a Detalle Compra
         /// </summary>
         [HttpPut("insumo/{idPaquete}")]
-        public async Task<IActionResult> ModificarPaqueteInsumo(int idSede, int idPaquete, [FromBody] PaqueteInsumoModificarReq req)
+        public async Task<IActionResult> ModificarPaqueteInsumo(int idPaquete, [FromBody] PaqueteInsumoModificarReq req, [FromQuery] int idSede = 1)
         {
             string response = await _servicePaquete.ModificarPaqueteInsumo(idSede, idPaquete, req);
             return Ok(response);
@@ -60,7 +60,7 @@ namespace proy_back_Qbd.Controllers
         /// Modificar Paquete Empaque a Detalle Compra
         /// </summary>
         [HttpPut("empaque/{idPaquete}")]
-        public async Task<IActionResult> ModificarPaqueteEmpaque(int idSede, int idPaquete, [FromBody] PaqueteEmpaqueModificarReq req)
+        public async Task<IActionResult> ModificarPaqueteEmpaque(int idPaquete, [FromBody] PaqueteEmpaqueModificarReq req, [FromQuery] int idSede = 1)
         {
             string response = await _servicePaquete.ModificarPaqueteEmpaque(idSede, idPaquete, req);
             return Ok(response);
@@ -69,10 +69,11 @@ namespace proy_back_Qbd.Controllers
         /// Eliminar Paquete
         /// </summary>
         [HttpDelete("{idPaquete}/{empaqueInsumo}")]
-        public async Task<IActionResult> EliminarPaquete(int idPaquete, int empaqueInsumo, int idSede)
+        public async Task<IActionResult> EliminarPaquete(int idPaquete, int empaqueInsumo, [FromQuery] int idSede = 1)
         {
             string response = await _servicePaquete.EliminarPaquete(idPaquete, empaqueInsumo, idSede);
             return Ok(response);
         }
+
     }
 }
