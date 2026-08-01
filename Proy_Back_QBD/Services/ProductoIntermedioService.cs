@@ -407,6 +407,16 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
+        public async Task<bool> ActualizarCondicionAlmacenamiento(int id, string condicion)
+        {
+            var pi = await _context.ProductosIntermedios.FindAsync(id);
+            if (pi == null) return false;
+
+            pi.CondicionAlmacenamiento = condicion;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio()
         {
             IEnumerable<TablaPIRes> response = await _context.ProductosIntermedios

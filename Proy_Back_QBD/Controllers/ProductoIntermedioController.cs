@@ -35,6 +35,12 @@ namespace Proy_back_QBD.Controllers
         {
             return Ok(await _productoIntermedioService.ActualizarProductoIntermedio(id, request));
         }
+
+        [HttpPut("{id}/condicion-almacenamiento")]
+        public async Task<IActionResult> ActualizarCondicion(int id, [FromBody] ActualizarCondicionReq req)
+        {
+            return Ok(await _productoIntermedioService.ActualizarCondicionAlmacenamiento(id, req.CondicionAlmacenamiento));
+        }
         [HttpGet("maestros/{tipoUso}")]
         public async Task<IActionResult> Maestros(string tipoUso)
         {

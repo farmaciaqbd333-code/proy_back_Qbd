@@ -1,5 +1,10 @@
 namespace Proy_back_QBD.Request
 {
+    public class ActualizarCondicionReq
+    {
+        public string? CondicionAlmacenamiento { get; set; }
+    }
+
     public class ActualizarProductoIntermedioReq
     {
         public required string Lote { get; set; }
