@@ -54,6 +54,20 @@ namespace proy_back_Qbd.Controllers
             var lista = await _serviceNotaSalida.ObtenerListaAsync(id);
             return Ok(lista);
         }
+
+        [HttpGet("detalle/{id}")]
+        public async Task<ActionResult<List<NotaSalidaDetalleRes>>> GetDetalle(int id)
+        {
+            try
+            {
+                var detalles = await _serviceNotaSalida.ObtenerDetalleAsync(id);
+                return Ok(detalles);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
+        }
         [HttpGet("articulo/{id}")]
         public async Task<ActionResult<List<RegistrosListaRes>>> Get(int id, string familia, int idSede)
         {

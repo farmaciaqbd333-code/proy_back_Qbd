@@ -774,4 +774,123 @@ public class NotaSalidaService : INotaSalidaService
             _ => throw new ArgumentException("Familia no válida.")
         };
     }
+
+    public async Task<List<NotaSalidaDetalleRes>> ObtenerDetalleAsync(int idNotaSalida)
+    {
+        var resultado = new List<NotaSalidaDetalleRes>();
+
+        // 1. Insumos (MP)
+        var insumos = await _context.NotaSalidaInsumos
+            .AsNoTracking()
+            .Include(x => x.CompraInsumos)
+                .ThenInclude(ci => ci!.Insumo)
+            .Where(x => x.IdNotaSalida == idNotaSalida)
+            .ToListAsync();
+
+        foreach (var item in insumos)
+        {
+            var idInsumo = item.CompraInsumos?.IdInsumo ?? 0;
+            resultado.Add(new NotaSalidaDetalleRes
+            {
+                Familia = "MP",
+                Codigo = idInsumo > 0 ? UtilFamilia.CodigoInsumo(idInsumo) : "",
+                DescripcionQBD = item.CompraInsumos?.Insumo?.Descripcion ?? "",
+                Registro = item.IdCompraInsumo.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraInsumo.Value) : "",
+                Cantidad = item.Cantidad,
+                Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (item.CompraInsumos?.Um?.ToUpper() ?? "G"),
+                Tara = item.Tara,
+                PesoNeto = item.PesoNeto,
+                PesoBruto = item.PesoBruto,
+                Lote = item.CompraInsumos?.Lote ?? item.Lote ?? "",
+                FFabric = item.CompraInsumos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                FVcto = item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+            });
+        }
+
+        // 2. Empaques (ME)
+        var empaques = await _context.NotaSalidaEmpaques
+            .AsNoTracking()
+            .Include(x => x.CompraEmpaques)
+                .ThenInclude(ce => ce!.Empaque)
+            .Where(x => x.IdNotaSalida == idNotaSalida)
+            .ToListAsync();
+
+        foreach (var item in empaques)
+        {
+            var idEmpaque = item.CompraEmpaques?.IdEmpaque ?? 0;
+            resultado.Add(new NotaSalidaDetalleRes
+            {
+                Familia = "ME",
+                Codigo = idEmpaque > 0 ? UtilFamilia.CodigoEmpaque(idEmpaque) : "",
+                DescripcionQBD = item.CompraEmpaques?.Empaque?.Descripcion ?? "",
+                Registro = item.IdCompraEmpaque.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEmpaque.Value) : "",
+                Cantidad = item.Cantidad,
+                Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
+                Tara = 0,
+                PesoNeto = 0,
+                PesoBruto = 0,
+                Lote = item.CompraEmpaques?.Lote ?? item.Lote ?? "",
+                FFabric = item.CompraEmpaques?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                FVcto = item.CompraEmpaques?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+            });
+        }
+
+        // 3. Economatos (ECO)
+        var economatos = await _context.NotaSalidaEconomatos
+            .AsNoTracking()
+            .Include(x => x.CompraEconomatos)
+                .ThenInclude(ce => ce!.Economato)
+            .Where(x => x.IdNotaSalida == idNotaSalida)
+            .ToListAsync();
+
+        foreach (var item in economatos)
+        {
+            var idEco = item.CompraEconomatos?.IdEconomato ?? 0;
+            resultado.Add(new NotaSalidaDetalleRes
+            {
+                Familia = "ECO",
+                Codigo = idEco > 0 ? UtilFamilia.CodigoEconomato(idEco) : "",
+                DescripcionQBD = item.CompraEconomatos?.Economato?.Descripcion ?? "",
+                Registro = item.IdCompraEconomato.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEconomato.Value) : "",
+                Cantidad = item.Cantidad,
+                Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
+                Tara = 0,
+                PesoNeto = 0,
+                PesoBruto = 0,
+                Lote = item.CompraEconomatos?.Lote ?? item.Lote ?? "",
+                FFabric = item.CompraEconomatos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                FVcto = item.CompraEconomatos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+            });
+        }
+
+        // 4. Productos Terminados (PT)
+        var productos = await _context.NotaSalidaProductos
+            .AsNoTracking()
+            .Include(x => x.CompraProductos)
+                .ThenInclude(cp => cp!.Producto)
+            .Where(x => x.IdNotaSalida == idNotaSalida)
+            .ToListAsync();
+
+        foreach (var item in productos)
+        {
+            var idPt = item.CompraProductos?.IdProducto ?? 0;
+            resultado.Add(new NotaSalidaDetalleRes
+            {
+                Familia = "PT",
+                Codigo = idPt > 0 ? UtilFamilia.CodigoProducto(idPt) : "",
+                DescripcionQBD = item.CompraProductos?.Producto?.Descripcion ?? "",
+                Registro = item.IdCompraProducto.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraProducto.Value) : "",
+                Cantidad = item.Cantidad,
+                Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
+                Tara = 0,
+                PesoNeto = 0,
+                PesoBruto = 0,
+                Lote = item.CompraProductos?.Lote ?? item.Lote ?? "",
+                FFabric = item.CompraProductos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                FVcto = item.CompraProductos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+            });
+        }
+
+        return resultado;
+    }
 }
