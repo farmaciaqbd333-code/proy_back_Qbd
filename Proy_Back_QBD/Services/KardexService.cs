@@ -150,7 +150,13 @@ namespace proy_back_Qbd.Services
                 Codigo = s.Key.Id + "",
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
-                Entradas = s.Sum(s => s!.CompraInsumos!.Sum(s2 => s2.CantidadSolicitada)),
+                Entradas = s.Sum(x => x.CompraInsumos!.Sum(ci => 
+                    ci.StockInsumos.Any(w => w.IdSede == idSede)
+                        ? ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible)
+                        : (ci.StockInsumos.Any()
+                            ? ci.StockInsumos.Sum(sm => sm.StockDisponible)
+                            : ci.PaqueteInsumos.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario : 0))
+                )),
                 Salidas = s.Sum(x => x.ProductoIntermedio!.Sum(s => s.LoteEstTotal)),
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
@@ -189,7 +195,13 @@ namespace proy_back_Qbd.Services
                             Codigo = s.Key.Id + "",
                             Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                             Um = "Und",
-                            Entradas = s.Sum(s => s.CompraEmpaques!.Sum(s => s.PaqueteEmpaques!.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario))),
+                            Entradas = s.Sum(x => x.CompraEmpaques!.Sum(ce => 
+                                ce.StockEmpaques.Any(w => w.IdSede == idSede)
+                                    ? ce.StockEmpaques.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible)
+                                    : (ce.StockEmpaques.Any()
+                                        ? ce.StockEmpaques.Sum(sm => sm.StockDisponible)
+                                        : ce.PaqueteEmpaques.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario : 0))
+                            )),
                             Salidas = 0,
                             Ajustes = s.Sum(s => s.CompraEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
                             Baja = s.Sum(x => x.CompraEmpaques
