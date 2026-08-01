@@ -27,19 +27,26 @@ namespace proy_back_Qbd.Services
             var resultado = new List<DetalleInsumoRes>();
 
             resultado = await _context.CompraInsumos
-            .Include(w => w.Compra)
-            .Where(w => w.IdInsumo == idInsumo)
-            .Select(s => new DetalleInsumoRes
-            {
-                Registro = Alfanumerico.ConvertToBase36(s.Id),
-                Lote = s.Lote ?? "",
-                Saldo = s.StockInsumos.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible),
-                FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
-                FechaFabricacion = s.FechaFabricacion,
-                FechaVencimiento = s.FechaVencimiento,
-                Observacion = s.Observacion
-            })
-            .ToListAsync();
+                .Include(w => w.Compra)
+                .Include(w => w.StockInsumos)
+                .Include(w => w.PaqueteInsumos!)
+                .ThenInclude(p => p.Paquete)
+                .Where(w => w.IdInsumo == idInsumo)
+                .Select(s => new DetalleInsumoRes
+                {
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockInsumos.Any(w => w.IdSede == idSede)
+                        ? s.StockInsumos.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible)
+                        : (s.StockInsumos.Any()
+                            ? s.StockInsumos.Sum(s2 => s2.StockDisponible)
+                            : s.PaqueteInsumos.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario : 0)),
+                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.Observacion
+                })
+                .ToListAsync();
 
             return resultado;
         }
@@ -48,19 +55,26 @@ namespace proy_back_Qbd.Services
         {
             var resultado = new List<DetalleEmpaqueRes>();
             resultado = await _context.CompraEmpaques
-      .Include(w => w.Compra)
-      .Where(w => w.IdEmpaque == empaqueId)
-      .Select(s => new DetalleEmpaqueRes
-      {
-          Registro = Alfanumerico.ConvertToBase36(s.Id),
-          Lote = s.Lote ?? "",
-          Saldo = s.StockEmpaques.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible),
-          FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
-          FechaFabricacion = s.FechaFabricacion,
-          FechaVencimiento = s.FechaVencimiento,
-          Observacion = s.Observacion
-      })
-      .ToListAsync();
+                .Include(w => w.Compra)
+                .Include(w => w.StockEmpaques)
+                .Include(w => w.PaqueteEmpaques!)
+                .ThenInclude(p => p.Paquete)
+                .Where(w => w.IdEmpaque == empaqueId)
+                .Select(s => new DetalleEmpaqueRes
+                {
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockEmpaques.Any(w => w.IdSede == idSede)
+                        ? s.StockEmpaques.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible)
+                        : (s.StockEmpaques.Any()
+                            ? s.StockEmpaques.Sum(s2 => s2.StockDisponible)
+                            : s.PaqueteEmpaques.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario : 0)),
+                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.Observacion
+                })
+                .ToListAsync();
 
             return resultado;
         }
