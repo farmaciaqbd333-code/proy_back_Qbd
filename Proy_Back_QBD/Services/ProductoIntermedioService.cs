@@ -118,6 +118,7 @@ namespace proy_back_Qbd.Services
                 foreach (var fInsumo in request.Insumos)
                 {
                     List<StockInsumo> stockInsumos = await _context.StockInsumos
+                    .Include(w => w.StockInsumoProductoIntermedio)
                     .Where(w => w.CompraInsumo.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
                     .OrderBy(w => w.CompraInsumo.FechaVencimiento)
                     .ToListAsync();
@@ -132,6 +133,8 @@ namespace proy_back_Qbd.Services
 
                     foreach (var stockInsumo in stockInsumos)
                     {
+                        stockInsumo.StockInsumoProductoIntermedio ??= new List<StockInsumoProductoIntermedio>();
+
                         if (stockInsumo.StockDisponible < cantidadUsar)
                         {
                             stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
@@ -164,7 +167,7 @@ namespace proy_back_Qbd.Services
                 await transaction.CommitAsync();
                 return productoIntermedio.Id;
             }
-            catch (Exception ex) when (ex is NotFoundException || ex is BadRequestException)
+            catch (Exception)
             {
                 try
                 {
@@ -317,6 +320,7 @@ namespace proy_back_Qbd.Services
                 foreach (var fInsumo in request.Insumos)
                 {
                     List<StockInsumo> stockInsumos = await _context.StockInsumos
+                        .Include(w => w.StockInsumoProductoIntermedio)
                         .Where(w => w.CompraInsumo.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
                         .OrderBy(w => w.CompraInsumo.FechaVencimiento)
                         .ToListAsync();
@@ -336,6 +340,8 @@ namespace proy_back_Qbd.Services
 
                     foreach (var stockInsumo in stockInsumos)
                     {
+                        stockInsumo.StockInsumoProductoIntermedio ??= new List<StockInsumoProductoIntermedio>();
+
                         if (stockInsumo.StockDisponible < cantidadUsar)
                         {
                             stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
