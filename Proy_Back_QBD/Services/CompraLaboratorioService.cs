@@ -77,6 +77,7 @@ namespace proy_back_Qbd.Services
         public async Task<ObtenerCompraLabRes> ModalPaquetes(int idCompra)
         {
             ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
+            .AsNoTracking()
             .Where(w => w.Id == idCompra)
             .Select(s => new ObtenerCompraLabRes()
             {
@@ -102,7 +103,7 @@ namespace proy_back_Qbd.Services
                     TotalPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
                     TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
                     Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
-                    Densidad = s2.Insumo.Densidad ?? (s2.Insumo != null ? s2.Insumo.Densidad : null),
+                    Densidad = s2.Insumo != null ? s2.Insumo.Densidad : null,
                     DescripcionFactura = s2.DescripcionFactura ?? "",
                     Observacion = s2.Observacion ?? ""
                 }).ToList() : new List<CompraLabInsumoModalRes>(),
