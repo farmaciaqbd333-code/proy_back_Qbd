@@ -74,62 +74,140 @@ namespace proy_back_Qbd.Services
 
         }
 
+        private static readonly HashSet<string> UnidadesVolumen = new(StringComparer.OrdinalIgnoreCase) { "L", "LITRO" };
+
+        private static (string Um, decimal Cantidad) NormalizarUnidad(string? um, decimal cantidadSolicitada)
+        {
+            var umUpper = (um ?? "").ToUpper();
+            return UnidadesVolumen.Contains(umUpper)
+                ? ("ML", cantidadSolicitada * 1000)
+                : (umUpper, cantidadSolicitada);
+        }
+
+        private static string FormatearFabricante(string? codigo, string? nombre, string? pais)
+            => string.IsNullOrEmpty(codigo) && string.IsNullOrEmpty(nombre)
+                ? ""
+                : $"{codigo ?? nombre} ({pais})";
+
         public async Task<ObtenerCompraLabRes> ModalPaquetes(int idCompra)
         {
-            ObtenerCompraLabRes? obtenerDetalleCompraLabReq = await _context.Compras
-            .AsNoTracking()
-            .Where(w => w.Id == idCompra)
-            .Select(s => new ObtenerCompraLabRes()
-            {
-                CodigoProveedor = s.Proveedor != null && s.Proveedor.CodigoProvedor != null ? s.Proveedor.CodigoProvedor : "",
-                Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                CodFacQbd = s.CodFacQBD,
-                DetalleInsumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new CompraLabInsumoModalRes()
+            var compra = await _context.Compras
+                .AsNoTracking()
+                .Where(w => w.Id == idCompra)
+                .AsSplitQuery()
+                .Select(s => new
                 {
-                    Id = s2.Id,
-                    Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
-                    Familia = (s2.Insumo != null && s2.Insumo.Familia != null) ? s2.Insumo.Familia.Abreviatura : "",
-                    Codigo = s2.IdInsumo.ToString(),
-                    DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
-                    Coa = s2.Coa,
-                    Lote = s2.Lote ?? "",
-                    Um = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? "ML" : (s2.Um ?? "").ToUpper(),
-                    CantidadRecibida = (s2.Um != null && (s2.Um.ToUpper() == "L" || s2.Um.ToUpper() == "LITRO")) ? s2.CantidadSolicitada * 1000 : s2.CantidadSolicitada,
-                    Potencia = s2.Potencia,
-                    FechaFabricacion = s2.FechaFabricacion,
-                    FechaVencimiento = s2.FechaVencimiento,
-                    CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
-                    TotalPaquetes = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
-                    TotalPeso = s2.PaqueteInsumos != null ? s2.PaqueteInsumos.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
-                    Fabricante = s2.Fabricante != null ? $"{s2.Fabricante.Codigo ?? s2.Fabricante.Nombre} ({s2.Fabricante.Pais})" : "",
-                    Densidad = s2.Insumo != null ? s2.Insumo.Densidad : null,
-                    DescripcionFactura = s2.DescripcionFactura ?? "",
-                    Observacion = s2.Observacion ?? ""
-                }).ToList() : new List<CompraLabInsumoModalRes>(),
-                DetalleEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new CompraLabEmpaqueModalRes()
-                {
-                    Id = s3.Id,
-                    Reg = Alfanumerico.ConvertToBase36(s3.Id).PadLeft(4, '0'),
-                    Familia = (s3.Empaque != null && s3.Empaque.Familia != null) ? s3.Empaque.Familia.Abreviatura : "",
-                    Codigo = s3.IdEmpaque.ToString(),
-                    DescripcionQBD = s3.Empaque != null ? s3.Empaque.Descripcion ?? "" : "",
-                    Coa = s3.Coa,
-                    Lote = s3.Lote ?? "",
-                    Um = (s3.Um != null && (s3.Um.ToUpper() == "L" || s3.Um.ToUpper() == "LITRO")) ? "ML" : (s3.Um ?? "").ToUpper(),
-                    CantidadRecibida = (s3.Um != null && (s3.Um.ToUpper() == "L" || s3.Um.ToUpper() == "LITRO")) ? s3.CantidadSolicitada * 1000 : s3.CantidadSolicitada,
-                    FechaFabricacion = s3.FechaFabricacion,
-                    FechaVencimiento = s3.FechaVencimiento,
-                    CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
-                    TotalPaquetes = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? s.Paquete.CantidadPaquete : 0) : 0,
-                    TotalPeso = s3.PaqueteEmpaques != null ? s3.PaqueteEmpaques.Sum(s => s.Paquete != null ? (s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario) : 0) : 0,
-                    Fabricante = s3.Fabricante != null ? $"{s3.Fabricante.Codigo ?? s3.Fabricante.Nombre} ({s3.Fabricante.Pais})" : "",
-                    DescripcionFactura = s3.DescripcionFactura ?? "",
-                    Observacion = s3.Observacion ?? ""
-                }).ToList() : new List<CompraLabEmpaqueModalRes>()
-            }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Compra");
+                    CodigoProveedor = s.Proveedor != null ? s.Proveedor.CodigoProvedor ?? "" : "",
+                    Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                    NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+                    CodFacQbd = s.CodFacQBD,
+                    Insumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new
+                    {
+                        s2.Id,
+                        Familia = s2.Insumo != null && s2.Insumo.Familia != null ? s2.Insumo.Familia.Abreviatura : "",
+                        Codigo = s2.IdInsumo,
+                        DescripcionQBD = s2.Insumo != null ? s2.Insumo.Descripcion : "",
+                        s2.Coa,
+                        Lote = s2.Lote ?? "",
+                        s2.Um,
+                        CantidadSolicitada = s2.CantidadSolicitada,
+                        s2.Potencia,
+                        s2.FechaFabricacion,
+                        s2.FechaVencimiento,
+                        CondicionALmacenamiento = s2.CondicionAlmacenamiento ?? "",
+                        TotalPaquetes = s2.PaqueteInsumos.Sum(p => p.Paquete.CantidadPaquete),
+                        TotalPeso = s2.PaqueteInsumos.Sum(p => p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario),
+                        FabCodigo = s2.Fabricante != null ? s2.Fabricante.Codigo : null,
+                        FabNombre = s2.Fabricante != null ? s2.Fabricante.Nombre : null,
+                        FabPais = s2.Fabricante != null ? s2.Fabricante.Pais : null,
+                        Densidad = s2.Insumo != null ? s2.Insumo.Densidad : null,
+                        DescripcionFactura = s2.DescripcionFactura ?? "",
+                        Observacion = s2.Observacion ?? ""
+                    }).ToList() : null,
+                    Empaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new
+                    {
+                        s3.Id,
+                        Familia = s3.Empaque != null && s3.Empaque.Familia != null ? s3.Empaque.Familia.Abreviatura : "",
+                        Codigo = s3.IdEmpaque,
+                        DescripcionQBD = s3.Empaque != null ? s3.Empaque.Descripcion ?? "" : "",
+                        s3.Coa,
+                        Lote = s3.Lote ?? "",
+                        s3.Um,
+                        CantidadSolicitada = s3.CantidadSolicitada,
+                        s3.FechaFabricacion,
+                        s3.FechaVencimiento,
+                        CondicionALmacenamiento = s3.CondicionAlmacenamiento ?? "",
+                        TotalPaquetes = s3.PaqueteEmpaques.Sum(p => p.Paquete.CantidadPaquete),
+                        TotalPeso = s3.PaqueteEmpaques.Sum(p => p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario),
+                        FabCodigo = s3.Fabricante != null ? s3.Fabricante.Codigo : null,
+                        FabNombre = s3.Fabricante != null ? s3.Fabricante.Nombre : null,
+                        FabPais = s3.Fabricante != null ? s3.Fabricante.Pais : null,
+                        DescripcionFactura = s3.DescripcionFactura ?? "",
+                        Observacion = s3.Observacion ?? ""
+                    }).ToList() : null
+                })
+                .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontro Compra");
 
-            return obtenerDetalleCompraLabReq;
+            // Normalización de unidades y formateo se hace en memoria, una sola vez por fila
+            var result = new ObtenerCompraLabRes
+            {
+                CodigoProveedor = compra.CodigoProveedor,
+                Ruc = compra.Ruc,
+                NumProvedor = compra.NumProvedor,
+                CodFacQbd = compra.CodFacQbd,
+                DetalleInsumos = compra.Insumos?.Select(s2 =>
+                {
+                    var (um, cantidad) = NormalizarUnidad(s2.Um, s2.CantidadSolicitada);
+                    return new CompraLabInsumoModalRes
+                    {
+                        Id = s2.Id,
+                        Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                        Familia = s2.Familia,
+                        Codigo = s2.Codigo.ToString(),
+                        DescripcionQBD = s2.DescripcionQBD,
+                        Coa = s2.Coa,
+                        Lote = s2.Lote,
+                        Um = um,
+                        CantidadRecibida = cantidad,
+                        Potencia = s2.Potencia,
+                        FechaFabricacion = s2.FechaFabricacion,
+                        FechaVencimiento = s2.FechaVencimiento,
+                        CondicionALmacenamiento = s2.CondicionALmacenamiento,
+                        TotalPaquetes = s2.TotalPaquetes,
+                        TotalPeso = s2.TotalPeso,
+                        Fabricante = FormatearFabricante(s2.FabCodigo, s2.FabNombre, s2.FabPais),
+                        Densidad = s2.Densidad,
+                        DescripcionFactura = s2.DescripcionFactura,
+                        Observacion = s2.Observacion
+                    };
+                }).ToList() ?? new List<CompraLabInsumoModalRes>(),
+                DetalleEmpaques = compra.Empaques?.Select(s3 =>
+                {
+                    var (um, cantidad) = NormalizarUnidad(s3.Um, s3.CantidadSolicitada);
+                    return new CompraLabEmpaqueModalRes
+                    {
+                        Id = s3.Id,
+                        Reg = Alfanumerico.ConvertToBase36(s3.Id).PadLeft(4, '0'),
+                        Familia = s3.Familia,
+                        Codigo = s3.Codigo.ToString(),
+                        DescripcionQBD = s3.DescripcionQBD,
+                        Coa = s3.Coa,
+                        Lote = s3.Lote,
+                        Um = um,
+                        CantidadRecibida = cantidad,
+                        FechaFabricacion = s3.FechaFabricacion,
+                        FechaVencimiento = s3.FechaVencimiento,
+                        CondicionALmacenamiento = s3.CondicionALmacenamiento,
+                        TotalPaquetes = s3.TotalPaquetes,
+                        TotalPeso = s3.TotalPeso,
+                        Fabricante = FormatearFabricante(s3.FabCodigo, s3.FabNombre, s3.FabPais),
+                        DescripcionFactura = s3.DescripcionFactura,
+                        Observacion = s3.Observacion
+                    };
+                }).ToList() ?? new List<CompraLabEmpaqueModalRes>()
+            };
+
+            return result;
         }
 
         public async Task<CompraLabDetIdRes> GetDetalleCompraLab(int idCompra)
