@@ -27,19 +27,32 @@ namespace proy_back_Qbd.Controllers
         [HttpGet]
         public async Task<ActionResult<List<MesonListaRes>>> ListarOrdenesLaboratorio()
         {
-            List<LabListaRes> response = await _serviceCompraLab.Listar(["LABORATORIO"]);
-
-            return Ok(response);
+            try
+            {
+                List<LabListaRes> response = await _serviceCompraLab.Listar(["LABORATORIO"]);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
+
         /// <summary>
         /// Obtener datos para actualizar datos de laboratorio
         /// </summary>
         [HttpGet("modal/{idCompra}")]
         public async Task<ActionResult<ObtenerCompraLabRes>> CompraLaboratorioModal(int idCompra)
         {
-            ObtenerCompraLabRes response = await _serviceCompraLab.ModalPaquetes(idCompra);
-
-            return Ok(response);
+            try
+            {
+                ObtenerCompraLabRes response = await _serviceCompraLab.ModalPaquetes(idCompra);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
 
         /// <summary>
@@ -48,9 +61,15 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{idCompra}")]
         public async Task<ActionResult<CompraLabDetIdRes>> DetalleCompraLaboratorio(int idCompra)
         {
-            CompraLabDetIdRes response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
-
-            return Ok(response);
+            try
+            {
+                CompraLabDetIdRes response = await _serviceCompraLab.GetDetalleCompraLab(idCompra);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
 
         /// <summary>
@@ -59,28 +78,49 @@ namespace proy_back_Qbd.Controllers
         [HttpPatch("{idCompra}")]
         public async Task<IActionResult> UpdateDetalleLab(int idCompra, [FromBody] ActualizarDetCompraLabReq request)
         {
-            await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
-            return Ok("Actualización correcta");
+            try
+            {
+                await _serviceCompraLab.UpdateDetalleLab(idCompra, request);
+                return Ok("Actualización correcta");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
+
         /// <summary>
         /// Obtener datos para etiqueta insumo
         /// </summary>
         [HttpGet("etiqueta/insumo/{idCompra}")]
         public async Task<ActionResult<EtiquetaCompra>> EtiquetaCompraInsumo(int idCompra)
         {
-            EtiquetaCompra response = await _serviceCompraLab.GetEtiquetaCompraInsumo(idCompra);
-
-            return Ok(response);
+            try
+            {
+                EtiquetaCompra response = await _serviceCompraLab.GetEtiquetaCompraInsumo(idCompra);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
+
         /// <summary>
         /// Obtener datos para etiqueta Empaque
         /// </summary>
         [HttpGet("etiqueta/empaque/{idCompra}")]
         public async Task<ActionResult<EtiquetaCompra>> EtiquetaCompraEmpaque(int idCompra)
         {
-            EtiquetaCompra response = await _serviceCompraLab.GetEtiquetaCompraEmpaque(idCompra);
-
-            return Ok(response);
+            try
+            {
+                EtiquetaCompra response = await _serviceCompraLab.GetEtiquetaCompraEmpaque(idCompra);
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
     }
 }
