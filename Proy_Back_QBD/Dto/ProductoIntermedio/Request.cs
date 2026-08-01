@@ -18,6 +18,7 @@ namespace Proy_back_QBD.Request
         public string? Color { get; set; } = string.Empty;
         public string? Olor { get; set; } = string.Empty;
         public decimal Ph { get; set; }
+        public string? CondicionAlmacenamiento { get; set; }
         public int IdModificador { get; set; }
         public List<InsumoProductoIntermedioReq> Insumos { get; set; } = new();
     }
@@ -41,6 +42,7 @@ namespace Proy_back_QBD.Request
         public string? Color { get; set; } = string.Empty;
         public string? Olor { get; set; } = string.Empty;
         public decimal Ph { get; set; }
+        public string? CondicionAlmacenamiento { get; set; }
         public int IdCreador { get; set; }
         public List<InsumoProductoIntermedioReq> Insumos { get; set; } = new();
     }
@@ -78,6 +80,7 @@ namespace Proy_back_QBD.Request
         public string? Color { get; set; } = string.Empty;
         public string? Olor { get; set; } = string.Empty;
         public decimal Ph { get; set; }
+        public string? CondicionAlmacenamiento { get; set; }
         public List<InsumoProductoIntermedioReq> Insumos { get; set; } = new();
     }
 }

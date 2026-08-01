@@ -69,6 +69,9 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.Ph)
                 .HasColumnName("ph");
 
+            builder.Property(x => x.CondicionAlmacenamiento)
+                .HasColumnName("condicion_almacenamiento");
+
             builder.Property(x => x.FechaCreacion)
                 .HasColumnName("fecha_creacion")
                 .ValueGeneratedOnAddOrUpdate();

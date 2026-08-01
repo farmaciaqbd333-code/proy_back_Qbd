@@ -424,7 +424,8 @@ namespace proy_back_Qbd.Services
                 Um = s.Insumo.UnidadMedida,
                 FechaEmision = s.FechaEmision,
                 FechaVencimiento = s.FechaVencimiento,
-                Elaborado = s.Elaborador.Codigo
+                Elaborado = s.Elaborador.Codigo,
+                CondicionAlmacenamiento = s.CondicionAlmacenamiento
             })
             .AsNoTracking()
             .ToListAsync();
