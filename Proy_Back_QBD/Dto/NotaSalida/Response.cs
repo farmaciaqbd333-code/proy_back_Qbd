@@ -9,6 +9,7 @@ public class NotaSalidaListaRes
 }
 public class RegistrosListaRes
 {
-    public int Registro { get; set; }
+    public int IdRegistro { get; set; }
+    public required string Registro { get; set; }
     public required string Codigo { get; set; }
 }
