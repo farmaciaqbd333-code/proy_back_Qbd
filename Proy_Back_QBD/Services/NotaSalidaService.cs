@@ -76,7 +76,7 @@ public class NotaSalidaService : INotaSalidaService
             .Include(n => n.SedeOrigen)
             .Include(n => n.Creador)
             .OrderByDescending(n => n.FechaCreacion)
-            .Where(w => w.IdSedeOrigen == idSede)
+            .Where(w => idSede == 0 || w.IdSedeOrigen == idSede)
             .Select(n => new NotaSalidaListaRes
             {
                 IdNotaSalida = n.Id,
