@@ -26,15 +26,15 @@ namespace proy_back_Qbd.Services
 
         public async Task UpdateDetalleLab(int idCompra, ActualizarDetCompraLabReq request)
         {
+            if (request == null) return;
             int x = 0;
-            if (request.Insumos.Any())
+            if (request.Insumos != null && request.Insumos.Any())
             {
                 List<ActualizarInsumoReq> insumos = request.Insumos;
                 IEnumerable<int> idInsumos = insumos.Select(s => s.IdCompraInsumo).ToList();
 
                 List<CompraInsumos> detalleCompras = await _context.CompraInsumos
-                .Where(w => w.IdCompra == idCompra && idInsumos.Contains(w.Id)).ToListAsync();
-                if (detalleCompras.Count == 0) throw new NotFoundException("No se encontro");
+                    .Where(w => w.IdCompra == idCompra && idInsumos.Contains(w.Id)).ToListAsync();
 
                 foreach (var item in detalleCompras)
                 {
@@ -46,14 +46,13 @@ namespace proy_back_Qbd.Services
                     }
                 }
             }
-            if (request.Empaques.Any())
+            if (request.Empaques != null && request.Empaques.Any())
             {
                 List<ActualizarEmpaqueReq> empaques = request.Empaques;
                 IEnumerable<int> idEmpaques = empaques.Select(s => s.IdCompraEmpaque).ToList();
 
                 List<CompraEmpaque> compraEmpaque = await _context.CompraEmpaques
-                .Where(w => w.IdCompra == idCompra && idEmpaques.Contains(w.Id)).ToListAsync();
-                if (compraEmpaque.Count == 0) throw new NotFoundException("No se encontro");
+                    .Where(w => w.IdCompra == idCompra && idEmpaques.Contains(w.Id)).ToListAsync();
 
                 foreach (var item in compraEmpaque)
                 {
@@ -67,11 +66,13 @@ namespace proy_back_Qbd.Services
             }
             if (x == 1)
             {
-                Compra? compra = await _context.Compras.FindAsync(idCompra) ?? throw new NotFoundException("No se encontro Compra");
-                compra.FechaLab = DateTime.Now;
+                Compra? compra = await _context.Compras.FindAsync(idCompra);
+                if (compra != null)
+                {
+                    compra.FechaLab = DateTime.Now;
+                }
                 await _context.SaveChangesAsync();
             }
-
         }
 
         private static readonly HashSet<string> UnidadesVolumen = new(StringComparer.OrdinalIgnoreCase) { "L", "LITRO" };
