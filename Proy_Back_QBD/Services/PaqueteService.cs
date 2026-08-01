@@ -83,8 +83,10 @@ namespace proy_back_Qbd.Services
                 StockInsumo stockInsumo = new()
                 {
                     IdCompraInsumo = compraInsumo.Id,
+                    IdSede = req.IdSede,
                     StockDisponible = paqueteEntrante
                 };
+                _context.StockInsumos.Add(stockInsumo);
             }
             else
             {
@@ -138,8 +140,10 @@ namespace proy_back_Qbd.Services
                 StockEmpaque stockEmpaque = new()
                 {
                     IdCompraEmpaque = compraEmpaque.Id,
+                    IdSede = req.IdSede,
                     StockDisponible = paqueteEntrante
                 };
+                _context.StockEmpaques.Add(stockEmpaque);
             }
             else
             {
@@ -192,47 +196,24 @@ namespace proy_back_Qbd.Services
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             PaqueteInsumo paqueteInsumo = paquete.PaqueteInsumos ?? throw new NotFoundException("No se encontró paquetes insumos");
             CompraInsumos compraInsumo = paqueteInsumo.CompraInsumo ?? throw new NotFoundException("No hay Compra Insumos");
-            StockInsumo stockInsumo = paqueteInsumo.CompraInsumo.StockInsumos.FirstOrDefault(w => w.IdSede == idSede) ?? throw new NotFoundException("No hay stock insumo");
+            // Busca stock para el idSede dado; si no existe, busca cualquier stock de esa compra
+            StockInsumo? stockInsumo = paqueteInsumo.CompraInsumo.StockInsumos.FirstOrDefault(w => w.IdSede == idSede)
+                ?? paqueteInsumo.CompraInsumo.StockInsumos.FirstOrDefault();
             Insumo insumo = compraInsumo.Insumo ?? throw new NotFoundException("No hay Insumo");
 
-            var totales = await _context.PaqueteInsumos
-                                    .Where(w => w.IdCompraInsumo == compraInsumo.Id)
-                                    .GroupBy(g => g.IdCompraInsumo)
-                                    .Select(s => new
-                                    {
-                                        paquetePesoTotal = s.Sum(s2 => s2.Paquete != null ? (s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario) : 0),
-                                        PesoTotalCompra = s.Sum(s3 => s3.CompraInsumo != null ? s3.CompraInsumo.CantidadSolicitada * 1000 : 0)
-                                    }).FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el detalle compra");
-
             //CONVERSION A GRAMOS
-            decimal pesoTotalCompra;
-            string Um = compraInsumo.Um;
-            decimal CantidadSolicitada = compraInsumo.CantidadSolicitada;
-            if (Um == "G")
-            {
-                pesoTotalCompra = CantidadSolicitada;
-            }
-            else if (Um == "KG")
-            {
-                pesoTotalCompra = CantidadSolicitada * 1000;
-            }
-            else if (Um == "L")
-            {
-                decimal densidad = insumo.Densidad ?? throw new NotFoundException("No se encontró la densidad del insumo"); ;
-                pesoTotalCompra = CantidadSolicitada * densidad;
-            }
-            else throw new NotFoundException("Unidad de Medida no apta");
-
-            //VALIDACION DE CANTIDAD DE PESO COMPRA
             decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
             decimal paquetePesoEntrante = req.CantidadPaquete * req.PesoUnitario;
-            decimal nuevoPeso = paquetePesoEntrante + totales.paquetePesoTotal - paquetePesoActual;
-            // if (pesoTotalCompra < nuevoPeso)
-            //     throw new BadRequestException("Se ha pasado el límite del peso solicitado");
 
-            //ACTUALIZAR PESO
+            //ACTUALIZAR PAQUETE
             PaqueteMapper.ModificarPaqueteInsumo(req, paquete);
-            stockInsumo.StockDisponible = stockInsumo.StockDisponible - paquetePesoActual + paquetePesoEntrante;
+
+            // Actualizar stock solo si existe el registro
+            if (stockInsumo != null)
+            {
+                stockInsumo.StockDisponible = stockInsumo.StockDisponible - paquetePesoActual + paquetePesoEntrante;
+            }
+
             await _context.SaveChangesAsync();
 
             return "Modificacion Exitosa";
@@ -247,25 +228,22 @@ namespace proy_back_Qbd.Services
             .FirstOrDefaultAsync(f => f.Id == idPaquete) ?? throw new NotFoundException("No se encontró el paquete");
             PaqueteEmpaque paqueteEmpaques = paquete.PaqueteEmpaques ?? throw new NotFoundException("No se encontró paquetes empaques");
             CompraEmpaque CompraEmpaque = paqueteEmpaques.CompraEmpaques ?? throw new NotFoundException("No hay Compra empaque");
-            StockEmpaque stockEmpaque = paqueteEmpaques.CompraEmpaques.StockEmpaques.FirstOrDefault(f => f.IdSede == idSede) ?? throw new NotFoundException("No hay Stock empaque");
-            if (paquete.PaqueteEmpaques == null) throw new NotFoundException("No se encontró paquetes Empaques");
-            var totales = await _context.PaqueteEmpaques.Where(w => w.IdCompraEmpaque == paquete.PaqueteEmpaques.IdCompraEmpaque)
-                                    .GroupBy(g => g.IdCompraEmpaque)
-                                    .Select(s => new
-                                    {
-                                        PesoTotalPaquete = s.Sum(s2 => s2.Paquete != null ? (s2.Paquete.CantidadPaquete * s2.Paquete.PesoUnitario) : 0),
-                                        PesoTotalCompra = s.Sum(s3 => s3.CompraEmpaques != null ? s3.CompraEmpaques.CantidadSolicitada * 1000 : 0m)
-                                    }).FirstOrDefaultAsync()
-                                    ;
-            if (totales == null)
-                throw new NotFoundException("No se encontró el detalle compra");
+
+            // Busca stock para el idSede dado; si no existe, busca cualquier stock de esa compra
+            StockEmpaque? stockEmpaque = paqueteEmpaques.CompraEmpaques.StockEmpaques.FirstOrDefault(f => f.IdSede == idSede)
+                ?? paqueteEmpaques.CompraEmpaques.StockEmpaques.FirstOrDefault();
+
             decimal paquetePesoActual = paquete.CantidadPaquete * paquete.PesoUnitario;
             decimal paquetePesoEntrante = req.CantidadPaquete * req.PesoUnitario;
-            decimal nuevaCantidad = paquetePesoEntrante + totales.PesoTotalPaquete - paquetePesoActual;
-            if (totales.PesoTotalCompra < nuevaCantidad)
-                throw new BadRequestException("Se ha pasado el límite de cantidad solicitada");
+
             PaqueteMapper.ModificarPaqueteEmpaque(req, paquete);
-            stockEmpaque.StockDisponible = stockEmpaque.StockDisponible - paquetePesoActual + paquetePesoEntrante;
+
+            // Actualizar stock solo si existe el registro
+            if (stockEmpaque != null)
+            {
+                stockEmpaque.StockDisponible = stockEmpaque.StockDisponible - paquetePesoActual + paquetePesoEntrante;
+            }
+
             await _context.SaveChangesAsync();
 
             return "Modificacion Exitosa";
