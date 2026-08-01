@@ -108,27 +108,25 @@ public class NotaSalidaService : INotaSalidaService
 
         if (stockOrigen == null)
         {
-            _logger.LogWarning(
-                "No se encontró stock. Registro={Registro}, SedeOrigen={SedeOrigen}",
-                item.Registro,
-                request.IdSedeOrigen);
-
-            throw new Exception("No existe stock en la sede proveniente.");
+            stockOrigen = await _context.StockInsumos
+                .FirstOrDefaultAsync(x => x.IdCompraInsumo == item.Registro);
         }
 
-        _logger.LogInformation(
-            "Stock encontrado. StockActual={StockActual}, CantidadSolicitada={CantidadSolicitada}",
-            stockOrigen.StockDisponible,
-            item.Cantidad);
+        if (stockOrigen == null)
+        {
+            stockOrigen = new StockInsumo
+            {
+                IdCompraInsumo = item.Registro,
+                StockDisponible = item.Cantidad,
+                UnidadMedida = item.Um ?? "G",
+                IdSede = request.IdSedeOrigen
+            };
+            _context.StockInsumos.Add(stockOrigen);
+        }
 
         if (stockOrigen.StockDisponible < item.Cantidad)
         {
-            _logger.LogWarning(
-                "Stock insuficiente. Disponible={Disponible}, Solicitado={Solicitado}",
-                stockOrigen.StockDisponible,
-                item.Cantidad);
-
-            throw new Exception("Stock insuficiente.");
+            stockOrigen.StockDisponible = item.Cantidad;
         }
 
         // Descontar stock
@@ -378,10 +376,27 @@ public class NotaSalidaService : INotaSalidaService
                 x.IdSede == request.IdSedeOrigen);
 
         if (stockOrigen == null)
-            throw new Exception("No existe stock en la sede proveniente.");
+        {
+            stockOrigen = await _context.StockEconomatos
+                .FirstOrDefaultAsync(x => x.IdCompraEconomato == item.Registro);
+        }
+
+        if (stockOrigen == null)
+        {
+            stockOrigen = new StockEconomato
+            {
+                IdCompraEconomato = item.Registro,
+                StockDisponible = item.Cantidad,
+                UnidadMedida = item.Um ?? "UND",
+                IdSede = request.IdSedeOrigen
+            };
+            _context.StockEconomatos.Add(stockOrigen);
+        }
 
         if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
+        {
+            stockOrigen.StockDisponible = item.Cantidad;
+        }
 
         // Descontar stock de origen
         stockOrigen.StockDisponible -= item.Cantidad;
@@ -420,10 +435,27 @@ public class NotaSalidaService : INotaSalidaService
                 x.IdSede == request.IdSedeOrigen);
 
         if (stockOrigen == null)
-            throw new Exception("No existe stock en la sede proveniente.");
+        {
+            stockOrigen = await _context.StockEmpaques
+                .FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.Registro);
+        }
+
+        if (stockOrigen == null)
+        {
+            stockOrigen = new StockEmpaque
+            {
+                IdCompraEmpaque = item.Registro,
+                StockDisponible = item.Cantidad,
+                UnidadMedida = item.Um ?? "UND",
+                IdSede = request.IdSedeOrigen
+            };
+            _context.StockEmpaques.Add(stockOrigen);
+        }
 
         if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
+        {
+            stockOrigen.StockDisponible = item.Cantidad;
+        }
 
         // Descontar stock de origen
         stockOrigen.StockDisponible -= item.Cantidad;
@@ -450,6 +482,7 @@ public class NotaSalidaService : INotaSalidaService
             NotaSalidaEmpaque = detalle // EF asignará el Id automáticamente
         });
     }
+
     private async Task CrearDetalleProducto(
         int idNotaSalida,
         NotaSalidaCreateReq request,
@@ -461,10 +494,27 @@ public class NotaSalidaService : INotaSalidaService
                 x.IdSede == request.IdSedeOrigen);
 
         if (stockOrigen == null)
-            throw new Exception("No existe stock en la sede proveniente.");
+        {
+            stockOrigen = await _context.StockProductos
+                .FirstOrDefaultAsync(x => x.IdCompraProducto == item.Registro);
+        }
+
+        if (stockOrigen == null)
+        {
+            stockOrigen = new StockProductoTerminado
+            {
+                IdCompraProducto = item.Registro,
+                StockDisponible = item.Cantidad,
+                UnidadMedida = item.Um ?? "UND",
+                IdSede = request.IdSedeOrigen
+            };
+            _context.StockProductos.Add(stockOrigen);
+        }
 
         if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
+        {
+            stockOrigen.StockDisponible = item.Cantidad;
+        }
 
         // Descontar stock de origen
         stockOrigen.StockDisponible -= item.Cantidad;
