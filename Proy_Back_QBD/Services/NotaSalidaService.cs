@@ -838,56 +838,56 @@ public class NotaSalidaService : INotaSalidaService
         // 3. Economatos (ECO)
         var economatos = await _context.NotaSalidaEconomatos
             .AsNoTracking()
-            .Include(x => x.CompraEconomatos)
+            .Include(x => x.CompraEconomato)
                 .ThenInclude(ce => ce!.Economato)
             .Where(x => x.IdNotaSalida == idNotaSalida)
             .ToListAsync();
 
         foreach (var item in economatos)
         {
-            var idEco = item.CompraEconomatos?.IdEconomato ?? 0;
+            var idEco = item.CompraEconomato?.IdEconomato ?? 0;
             resultado.Add(new NotaSalidaDetalleRes
             {
                 Familia = "ECO",
                 Codigo = idEco > 0 ? UtilFamilia.CodigoEconomato(idEco) : "",
-                DescripcionQBD = item.CompraEconomatos?.Economato?.Descripcion ?? "",
+                DescripcionQBD = item.CompraEconomato?.Economato?.Descripcion ?? "",
                 Registro = item.IdCompraEconomato.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEconomato.Value) : "",
                 Cantidad = item.Cantidad,
                 Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
                 Tara = 0,
                 PesoNeto = 0,
                 PesoBruto = 0,
-                Lote = item.CompraEconomatos?.Lote ?? item.Lote ?? "",
-                FFabric = item.CompraEconomatos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                FVcto = item.CompraEconomatos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+                Lote = item.CompraEconomato?.Lote ?? item.Lote ?? "",
+                FFabric = item.CompraEconomato?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                FVcto = item.CompraEconomato?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
             });
         }
 
         // 4. Productos Terminados (PT)
         var productos = await _context.NotaSalidaProductos
             .AsNoTracking()
-            .Include(x => x.CompraProductos)
+            .Include(x => x.CompraProducto)
                 .ThenInclude(cp => cp!.Producto)
             .Where(x => x.IdNotaSalida == idNotaSalida)
             .ToListAsync();
 
         foreach (var item in productos)
         {
-            var idPt = item.CompraProductos?.IdProducto ?? 0;
+            var idPt = item.CompraProducto?.IdProducto ?? 0;
             resultado.Add(new NotaSalidaDetalleRes
             {
                 Familia = "PT",
                 Codigo = idPt > 0 ? UtilFamilia.CodigoProducto(idPt) : "",
-                DescripcionQBD = item.CompraProductos?.Producto?.Descripcion ?? "",
+                DescripcionQBD = item.CompraProducto?.Producto?.Descripcion ?? "",
                 Registro = item.IdCompraProducto.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraProducto.Value) : "",
                 Cantidad = item.Cantidad,
                 Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
                 Tara = 0,
                 PesoNeto = 0,
                 PesoBruto = 0,
-                Lote = item.CompraProductos?.Lote ?? item.Lote ?? "",
-                FFabric = item.CompraProductos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                FVcto = item.CompraProductos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+                Lote = item.CompraProducto?.Lote ?? item.Lote ?? "",
+                FFabric = item.CompraProducto?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                FVcto = item.CompraProducto?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
             });
         }
 
