@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
+using proy_back_Qbd.Util;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 
@@ -680,7 +681,8 @@ public class NotaSalidaService : INotaSalidaService
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    Registro = x.Id,
+                    IdRegistro = x.Id,
+                    Registro = Alfanumerico.ConvertToBase36(x.Id),
                     Codigo = UtilFamilia.CodigoInsumo(x.Id)
                 })
                 .ToListAsync(),
@@ -693,19 +695,21 @@ public class NotaSalidaService : INotaSalidaService
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    Registro = x.Id,
+                    IdRegistro = x.Id,
+                    Registro = Alfanumerico.ConvertToBase36(x.Id),
                     Codigo = UtilFamilia.CodigoEmpaque(x.Id)
                 })
                 .ToListAsync(),
 
             "ECO" => await _context.CompraEconomatos
-                .Where(x => x.IdEconomato == idArticulo  &&
+                .Where(x => x.IdEconomato == idArticulo &&
                 x.StockEconomatos
                     .Where(s => s.IdSede == idSede)
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    Registro = x.Id,
+                    IdRegistro = x.Id,
+                    Registro = Alfanumerico.ConvertToBase36(x.Id),
                     Codigo = UtilFamilia.CodigoEconomato(x.Id)
                 })
                 .ToListAsync(),
@@ -718,7 +722,8 @@ public class NotaSalidaService : INotaSalidaService
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    Registro = x.Id,
+                    IdRegistro = x.Id,
+                    Registro = Alfanumerico.ConvertToBase36(x.Id),
                     Codigo = UtilFamilia.CodigoProducto(x.Id)
                 })
                 .ToListAsync(),
