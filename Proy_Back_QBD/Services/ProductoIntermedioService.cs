@@ -142,7 +142,8 @@ namespace proy_back_Qbd.Services
                                 Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdCreador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = stockInsumo.IdCompraInsumo
+                                StockInsumo = stockInsumo,
+                                IdCompraInsumo = stockInsumo.Id
                             });
                             cantidadUsar -= stockInsumo.StockDisponible;
                             stockInsumo.StockDisponible = 0;
@@ -154,7 +155,8 @@ namespace proy_back_Qbd.Services
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdCreador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = stockInsumo.IdCompraInsumo
+                                StockInsumo = stockInsumo,
+                                IdCompraInsumo = stockInsumo.Id
                             });
                             stockInsumo.StockDisponible = stockInsumo.StockDisponible - cantidadUsar;
                             break;
@@ -163,11 +165,21 @@ namespace proy_back_Qbd.Services
                     }
 
                 }
+                
+                if (productoIntermedio.FechaEmision.Kind == DateTimeKind.Unspecified)
+                {
+                    productoIntermedio.FechaEmision = DateTime.SpecifyKind(productoIntermedio.FechaEmision, DateTimeKind.Utc);
+                }
+                if (productoIntermedio.FechaVencimiento.Kind == DateTimeKind.Unspecified)
+                {
+                    productoIntermedio.FechaVencimiento = DateTime.SpecifyKind(productoIntermedio.FechaVencimiento, DateTimeKind.Utc);
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return productoIntermedio.Id;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 try
                 {
@@ -178,7 +190,9 @@ namespace proy_back_Qbd.Services
                     Console.WriteLine($"Rollback falló: {rollbackEx}");
                 }
 
-                throw;
+                _logger.LogError(ex, "Error al crear ProductoIntermedio: {Detail}", ex.InnerException?.Message ?? ex.Message);
+                var innerMsg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                throw new BadRequestException(innerMsg);
             }
 
         }
@@ -349,7 +363,8 @@ namespace proy_back_Qbd.Services
                                 Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = stockInsumo.IdCompraInsumo
+                                StockInsumo = stockInsumo,
+                                IdCompraInsumo = stockInsumo.Id
                             });
                             cantidadUsar -= stockInsumo.StockDisponible;
                             stockInsumo.StockDisponible = 0;
@@ -361,7 +376,8 @@ namespace proy_back_Qbd.Services
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdCompraInsumo = stockInsumo.IdCompraInsumo
+                                StockInsumo = stockInsumo,
+                                IdCompraInsumo = stockInsumo.Id
                             });
                             stockInsumo.StockDisponible -= cantidadUsar;
                             break;
