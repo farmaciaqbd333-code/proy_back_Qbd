@@ -857,9 +857,9 @@ public class NotaSalidaService : INotaSalidaService
                 Tara = 0,
                 PesoNeto = 0,
                 PesoBruto = 0,
-                Lote = item.CompraEconomato?.Lote ?? item.Lote ?? "",
-                FFabric = item.CompraEconomato?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                FVcto = item.CompraEconomato?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+                Lote = item.Lote ?? "",
+                FFabric = "",
+                FVcto = ""
             });
         }
 
