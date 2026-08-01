@@ -38,6 +38,7 @@ namespace Proy_back_QBD.Service.AjusteService
 
         public async Task RegistrarAjuste(CrearAjusteReq request)
         {
+
             string familia = request.Familia;
             int idCreador = request.IdCreador;
             if (FamiliasAptas.Contains(familia))
@@ -58,8 +59,7 @@ namespace Proy_back_QBD.Service.AjusteService
                         case "PT":
                             await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador); break;
                         default: throw new BadRequestException("Familia no apta");
-                    }
-                    ;
+                    };
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -74,6 +74,7 @@ namespace Proy_back_QBD.Service.AjusteService
             {
                 throw new BadRequestException("Familia no apta");
             }
+
         }
 
         public async Task<List<DetalleAjusteRes>> DetalleAjuste(int registroId, string familia)
@@ -95,7 +96,6 @@ namespace Proy_back_QBD.Service.AjusteService
                         Diferencia = s.Ajuste,
                         StockFinal = s.StockNuevo,
                         Observacion = s.Observacion
-
                     }).ToListAsync();
                 }
                 if (familia == "ME")

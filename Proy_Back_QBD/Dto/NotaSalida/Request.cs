@@ -15,6 +15,9 @@ public class NotaSalidaFamiliasCreateReq
     public required string Um { get; set; }
     public int Paquete { get; set; }
     public decimal CantidadPaquete { get; set; }
+    public decimal PesoNeto { get; set; }
+    public decimal Tara { get; set; }
+    public decimal PesoBruto { get; set; }
 }
 public class FamiliasListaReq
 {

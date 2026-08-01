@@ -145,6 +145,9 @@ public class NotaSalidaService : INotaSalidaService
             Cantidad = item.Cantidad,
             Um = item.Um,
             Paquete = item.Paquete,
+            PesoBruto = item.PesoBruto,
+            Tara = item.Tara,
+            PesoNeto = item.PesoNeto,
             IdCreador = request.IdCreador,
             CantidadPaquete = item.CantidadPaquete
         };
@@ -731,6 +734,7 @@ public class NotaSalidaService : INotaSalidaService
             _ => new List<RegistrosListaRes>()
         };
     }
+    
     public async Task<List<FamiliasListaRes>> ObtenerFamiliaAsync(FamiliasListaReq request)
     {
         return request.Familia.ToUpper() switch
