@@ -665,4 +665,65 @@ public class NotaSalidaService : INotaSalidaService
             _context.StockProductos.Remove(stockDestino);
         }
     }
+
+    public async Task<List<RegistrosListaRes>> ObtenerRegistros(int idArticulo, string familia, int idSede)
+    {
+        familia = familia?.Trim().ToUpper();
+
+        return familia switch
+        {
+            "MP" => await _context.CompraInsumos
+                .Where(x => x.IdInsumo == idArticulo &&
+                (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                x.StockInsumos
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
+                .Select(x => new RegistrosListaRes
+                {
+                    Registro = x.Id,
+                    Codigo = UtilFamilia.CodigoInsumo(x.Id)
+                })
+                .ToListAsync(),
+
+            "ME" => await _context.CompraEmpaques
+                .Where(x => x.IdEmpaque == idArticulo &&
+                (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                x.StockEmpaques
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
+                .Select(x => new RegistrosListaRes
+                {
+                    Registro = x.Id,
+                    Codigo = UtilFamilia.CodigoEmpaque(x.Id)
+                })
+                .ToListAsync(),
+
+            "ECO" => await _context.CompraEconomatos
+                .Where(x => x.IdEconomato == idArticulo  &&
+                x.StockEconomatos
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
+                .Select(x => new RegistrosListaRes
+                {
+                    Registro = x.Id,
+                    Codigo = UtilFamilia.CodigoEconomato(x.Id)
+                })
+                .ToListAsync(),
+
+            "PT" => await _context.CompraProductos
+                .Where(x => x.IdProducto == idArticulo &&
+                (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                x.StockProductoTerminados
+                    .Where(s => s.IdSede == idSede)
+                    .Sum(s => s.StockDisponible) > 0)
+                .Select(x => new RegistrosListaRes
+                {
+                    Registro = x.Id,
+                    Codigo = UtilFamilia.CodigoProducto(x.Id)
+                })
+                .ToListAsync(),
+
+            _ => new List<RegistrosListaRes>()
+        };
+    }
 }
