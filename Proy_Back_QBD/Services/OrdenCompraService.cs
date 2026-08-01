@@ -29,17 +29,41 @@ namespace proy_back_Qbd.Services
                 .AsNoTracking()
                 .Include(x => x.Sede)
                 .Include(x => x.Proveedor)
-                .Include(x => x.CompraInsumos!).ThenInclude(i => i.Insumo!).ThenInclude(f => f.Familia)
-                .Include(x => x.CompraInsumos!).ThenInclude(i => i.Fabricante)
-                .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Empaque)
-                .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Fabricante)
-                .Include(x => x.CompraProductos!).ThenInclude(i => i.Producto)
-                .Include(x => x.CompraEconomatos!).ThenInclude(i => i.Economato)
-                .Include(x => x.CompraOtros!).ThenInclude(i => i.Familia)
-                .AsSplitQuery()
                 .FirstOrDefaultAsync(w => w.Id == id);
 
             if (s == null) return null;
+
+            var compraInsumos = await _context.CompraInsumos
+                .AsNoTracking()
+                .Include(i => i.Insumo!).ThenInclude(f => f.Familia)
+                .Include(i => i.Fabricante)
+                .Where(i => i.IdCompra == id)
+                .ToListAsync();
+
+            var compraEmpaques = await _context.CompraEmpaques
+                .AsNoTracking()
+                .Include(i => i.Empaque)
+                .Include(i => i.Fabricante)
+                .Where(i => i.IdCompra == id)
+                .ToListAsync();
+
+            var compraProductos = await _context.CompraProductos
+                .AsNoTracking()
+                .Include(i => i.Producto)
+                .Where(i => i.IdCompra == id)
+                .ToListAsync();
+
+            var compraEconomatos = await _context.CompraEconomatos
+                .AsNoTracking()
+                .Include(i => i.Economato)
+                .Where(i => i.IdCompra == id)
+                .ToListAsync();
+
+            var compraOtros = await _context.CompraOtros
+                .AsNoTracking()
+                .Include(i => i.Familia)
+                .Where(i => i.IdCompra == id)
+                .ToListAsync();
 
             var response = new OrdenCompraGetRes
             {
@@ -51,7 +75,7 @@ namespace proy_back_Qbd.Services
                 CodigoProveedor = s.Proveedor?.NumeroProv ?? "",
                 RUC = s.Proveedor?.NumeroProv ?? "",
                 RazonSocial = s.Proveedor?.Datos ?? "",
-                DetalleCompraInsumos = s.CompraInsumos?.Select(s2 => new DetalleInsumosRes
+                DetalleCompraInsumos = compraInsumos.Select(s2 => new DetalleInsumosRes
                 {
                     Id = s2.Id,
                     IdInsumo = s2.IdInsumo,
@@ -74,7 +98,7 @@ namespace proy_back_Qbd.Services
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento
                 }).ToList(),
-                DetalleEmpaques = s.CompraEmpaques?.Select(s2 => new DetalleEmpaquesRes
+                DetalleEmpaques = compraEmpaques.Select(s2 => new DetalleEmpaquesRes
                 {
                     Id = s2.Id,
                     IdEmpaque = s2.IdEmpaque,
@@ -93,7 +117,7 @@ namespace proy_back_Qbd.Services
                     Conforme = s2.Conformidad ?? false,
                     IdFabricante = s2.IdFabricante
                 }).ToList(),
-                DetalleProductos = s.CompraProductos?.Select(s2 => new DetalleProductosRes
+                DetalleProductos = compraProductos.Select(s2 => new DetalleProductosRes
                 {
                     Id = s2.Id,
                     IdProducto = s2.IdProducto,
@@ -111,7 +135,7 @@ namespace proy_back_Qbd.Services
                     Conforme = s2.Conformidad ?? false,
                     IdFabricante = s2.IdFabricante
                 }).ToList(),
-                DetalleEconomatos = s.CompraEconomatos?.Select(s2 => new DetalleEconomatosRes
+                DetalleEconomatos = compraEconomatos.Select(s2 => new DetalleEconomatosRes
                 {
                     Id = s2.Id,
                     IdEconomato = s2.IdEconomato,
@@ -126,7 +150,7 @@ namespace proy_back_Qbd.Services
                     Conforme = s2.Conformidad ?? false,
                     IdFabricante = s2.IdFabricante
                 }).ToList(),
-                DetalleOtros = s.CompraOtros?.Select(s2 => new DetalleComprasOtrosRes
+                DetalleOtros = compraOtros.Select(s2 => new DetalleComprasOtrosRes
                 {
                     Id = s2.Id,
                     IdFamilia = s2.IdFamilia,
