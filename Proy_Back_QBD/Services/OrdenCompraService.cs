@@ -25,170 +25,184 @@ namespace proy_back_Qbd.Services
 
         public async Task<OrdenCompraGetRes?> ObtenerOrdenCompra(int id)
         {
-            OrdenCompraGetRes? response = await _context.Compras
-                        .Where(w => w.Id == id)
-                        .Select(s => new OrdenCompraGetRes
-                        {
-                            TC = s.TipoCambio.ToString(),
-                            Moneda = s.Moneda,
-                            FechaCotizacion = s.FechaCotizacion,
-                            Destino = s.Sede == null || s.Sede.Nombre == null ? "" : s.Sede.Nombre,
-                            Direccion = s.Sede == null || s.Sede.Direccion == null ? "" : s.Sede.Direccion,
-                            CodigoProveedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                            RUC = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                            RazonSocial = s.Proveedor != null ? s.Proveedor.Datos : "",
-                            DetalleCompraInsumos = s.CompraInsumos == null ? null : s.CompraInsumos.Select(s2 => new DetalleInsumosRes
-                            {
-                                Id = s2.Id,
-                                IdInsumo = s2.IdInsumo,
-                                Codigo = s2.IdInsumo.ToString(),
-                                DescripcionQBD = s2.Insumo == null || s2.Insumo.Descripcion == null ? "" : s2.Insumo.Descripcion,
-                                DescripcionFactura = s2.DescripcionFactura,
-                                CantidadSolicitada = s2.CantidadSolicitada,
-                                UM = s2.Um,
-                                CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal,
-                                Coa = s2.Coa,
-                                Lote = s2.Lote,
-                                RegistroSanitario = s2.RegistroSanitario,
-                                Conforme = s2.Conformidad ?? false,
-                                Familia = s2.Insumo == null || s2.Insumo.Familia == null ? "" : s2.Insumo.Familia.Abreviatura,
-                                IdFabricante = s2.IdFabricante,
-                                NombreFabricante = s2.Fabricante != null ? s2.Fabricante.Nombre : "",
-                                CodigoFabricante = s2.Fabricante != null ? s2.Fabricante.Codigo : "",
-                                Pdf = s2.Pdf,
-                                FechaFabricacion = s2.FechaFabricacion,
-                                FechaVencimiento = s2.FechaVencimiento
-                            }).ToList(),
-                            DetalleEmpaques = s.CompraEmpaques == null ? null : s.CompraEmpaques.Select(s2 => new DetalleEmpaquesRes
-                            {
-                                Id = s2.Id,
-                                IdEmpaque = s2.IdEmpaque,
-                                Codigo = s2.IdEmpaque.ToString(),
-                                DescripcionQBD = s2.Empaque == null || s2.Empaque.Descripcion == null ? "" : s2.Empaque.Descripcion,
-                                DescripcionFactura = s2.DescripcionFactura ?? "",
-                                CantidadSolicitada = s2.CantidadSolicitada,
-                                CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal,
-                                UM = s2.Um,
-                                Pdf = s2.Pdf,
-                                Coa = s2.Coa ?? false,
-                                Lote = s2.Lote,
-                                FechaFabricacion = s2.FechaFabricacion,
-                                FechaVencimiento = s2.FechaVencimiento,
-                                Conforme = s2.Conformidad ?? false,
-                                IdFabricante = s2.IdFabricante
-                            }).ToList(),
-                            DetalleProductos = s.CompraProductos == null ? null : s.CompraProductos.Select(s2 => new DetalleProductosRes
-                            {
-                                Id = s2.Id,
-                                IdProducto = s2.IdProducto,
-                                Codigo = s2.IdProducto.ToString(),
-                                DescripcionQBD = s2.Producto == null || s2.Producto.Descripcion == null ? "" : s2.Producto.Descripcion,
-                                DescripcionFactura = s2.DescripcionFactura ?? "",
-                                CantidadSolicitada = s2.CantidadSolicitada,
-                                CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal,
-                                UM = s2.Um,
-                                Lote = s2.Lote,
-                                RegistroSanitario = s2.RegistroSanitario,
-                                FechaFabricacion = s2.FechaFabricacion,
-                                FechaVencimiento = s2.FechaVencimiento,
-                                Conforme = s2.Conformidad ?? false,
-                                IdFabricante = s2.IdFabricante
-                            }).ToList(),
-                            DetalleEconomatos = s.CompraEconomatos == null ? null : s.CompraEconomatos.Select(s2 => new DetalleEconomatosRes
-                            {
-                                Id = s2.Id,
-                                IdEconomato = s2.IdEconomato,
-                                Codigo = s2.IdEconomato.ToString(),
-                                DescripcionQBD = s2.Economato == null || s2.Economato.Descripcion == null ? "" : s2.Economato.Descripcion,
-                                DescripcionFactura = s2.DescripcionFactura ?? "",
-                                CantidadSolicitada = s2.CantidadSolicitada,
-                                CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal,
-                                UM = s2.Um,
-                                Pdf = s2.Pdf,
-                                Conforme = s2.Conformidad ?? false,
-                                IdFabricante = s2.IdFabricante
-                            }).ToList(),
-                            DetalleOtros = s.CompraOtros == null ? null : s.CompraOtros.Select(s2 => new DetalleComprasOtrosRes
-                            {
-                                Id = s2.Id,
-                                IdFamilia = s2.IdFamilia,
-                                Codigo = "",
-                                DescripcionFactura = s2.DescripcionFactura ?? "",
-                                CantidadSolicitada = s2.CantidadSolicitada,
-                                CUnitario = s2.CostoUnitario,
-                                CTotal = s2.CostoTotal,
-                                UM = s2.UnidadMedida,
-                                Pdf = s2.Pdf,
-                                Conforme = s2.Conformidad ?? false
-                            }).ToList(),
-                            IdProveedor = s.IdProveedor,
-                            IncluyeImpuesto = s.Igv,
-                            Observaciones = s.Observaciones,
-                            Familia = s.Familia,
-                            Responsable = s.Sede != null ? (s.Sede.Encargado ?? "") : "",
-                            ISC = s.Isc,
-                            ICBP = s.Icbp,
-                            Guia = s.Guia,
-                            Modalidad = s.Modalidad,
-                            EstadoCompra = s.EstadoCompra,
-                            SerieComprobante = s.SerieComprobante,
-                            NumeroComprobante = s.NumeroComprobante,
-                            Factura = s.SerieComprobante + "-" + s.NumeroComprobante,
-                            CodFacQBD = s.CodFacQBD,
-                            FechaFactura = s.FechaFactura
-                        }).FirstOrDefaultAsync();
+            var s = await _context.Compras
+                .AsNoTracking()
+                .Include(x => x.Sede)
+                .Include(x => x.Proveedor)
+                .Include(x => x.CompraInsumos!).ThenInclude(i => i.Insumo!).ThenInclude(f => f.Familia)
+                .Include(x => x.CompraInsumos!).ThenInclude(i => i.Fabricante)
+                .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Empaque)
+                .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Fabricante)
+                .Include(x => x.CompraProductos!).ThenInclude(i => i.Producto)
+                .Include(x => x.CompraProductos!).ThenInclude(i => i.Fabricante)
+                .Include(x => x.CompraEconomatos!).ThenInclude(i => i.Economato)
+                .Include(x => x.CompraEconomatos!).ThenInclude(i => i.Fabricante)
+                .Include(x => x.CompraOtros!).ThenInclude(i => i.Familia)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(w => w.Id == id);
 
-            if (response != null)
+            if (s == null) return null;
+
+            var response = new OrdenCompraGetRes
             {
-                if (!string.IsNullOrWhiteSpace(response.Responsable) && int.TryParse(response.Responsable.Trim(), out int encargadoId))
+                TC = s.TipoCambio.ToString(),
+                Moneda = s.Moneda,
+                FechaCotizacion = s.FechaCotizacion,
+                Destino = s.Sede?.Nombre ?? "",
+                Direccion = s.Sede?.Direccion ?? "",
+                CodigoProveedor = s.Proveedor?.NumeroProv ?? "",
+                RUC = s.Proveedor?.NumeroProv ?? "",
+                RazonSocial = s.Proveedor?.Datos ?? "",
+                DetalleCompraInsumos = s.CompraInsumos?.Select(s2 => new DetalleInsumosRes
                 {
-                    var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id == encargadoId);
-                    if (persona != null && !string.IsNullOrWhiteSpace(persona.NombreCompleto))
-                    {
-                        response.Responsable = persona.NombreCompleto;
-                    }
-                }
-
-                var partesFamilia = new List<string>();
-
-                // Familias reales de insumos (desde su entidad Familia)
-                if (response.DetalleCompraInsumos != null && response.DetalleCompraInsumos.Any())
+                    Id = s2.Id,
+                    IdInsumo = s2.IdInsumo,
+                    Codigo = s2.IdInsumo.ToString(),
+                    DescripcionQBD = s2.Insumo?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura,
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    UM = s2.Um,
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    Coa = s2.Coa,
+                    Lote = s2.Lote,
+                    RegistroSanitario = s2.RegistroSanitario,
+                    Conforme = s2.Conformidad ?? false,
+                    Familia = s2.Insumo?.Familia?.Abreviatura ?? "",
+                    IdFabricante = s2.IdFabricante,
+                    NombreFabricante = s2.Fabricante?.Nombre ?? "",
+                    CodigoFabricante = s2.Fabricante?.Codigo ?? "",
+                    Pdf = s2.Pdf,
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento
+                }).ToList(),
+                DetalleEmpaques = s.CompraEmpaques?.Select(s2 => new DetalleEmpaquesRes
                 {
-                    var familiasInsumos = response.DetalleCompraInsumos
-                        .Select(d => d.Familia)
-                        .Where(f => !string.IsNullOrEmpty(f))
-                        .Distinct();
-                    if (familiasInsumos.Any())
-                        partesFamilia.AddRange(familiasInsumos);
-                    else
-                        partesFamilia.Add("MP");
-                }
-
-                if (response.DetalleEmpaques != null && response.DetalleEmpaques.Any())
-                    partesFamilia.Add("ME");
-
-                if (response.DetalleProductos != null && response.DetalleProductos.Any())
-                    partesFamilia.Add("PT");
-
-                if (response.DetalleEconomatos != null && response.DetalleEconomatos.Any())
-                    partesFamilia.Add("ECO");
-
-                if (response.DetalleOtros != null && response.DetalleOtros.Any())
+                    Id = s2.Id,
+                    IdEmpaque = s2.IdEmpaque,
+                    Codigo = s2.IdEmpaque.ToString(),
+                    DescripcionQBD = s2.Empaque?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    UM = s2.Um,
+                    Pdf = s2.Pdf,
+                    Coa = s2.Coa ?? false,
+                    Lote = s2.Lote,
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
+                    Conforme = s2.Conformidad ?? false,
+                    IdFabricante = s2.IdFabricante
+                }).ToList(),
+                DetalleProductos = s.CompraProductos?.Select(s2 => new DetalleProductosRes
                 {
-                    var clases1 = response.DetalleOtros
-                        .Select(d => d.IdFamilia)
-                        .Where(c => c != 0)
-                        .Distinct();
-                    List<string> clases2 = new();
-                    if (clases1.Contains(5)) clases2.Add("FXP");
-                    if (clases1.Contains(6)) clases2.Add("FXS");
-                    if (clases1.Contains(7)) clases2.Add("RH");
-                    partesFamilia.AddRange(clases2);
+                    Id = s2.Id,
+                    IdProducto = s2.IdProducto,
+                    Codigo = s2.IdProducto.ToString(),
+                    DescripcionQBD = s2.Producto?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    UM = s2.Um,
+                    Lote = s2.Lote,
+                    RegistroSanitario = s2.RegistroSanitario,
+                    FechaFabricacion = s2.FechaFabricacion,
+                    FechaVencimiento = s2.FechaVencimiento,
+                    Conforme = s2.Conformidad ?? false,
+                    IdFabricante = s2.IdFabricante
+                }).ToList(),
+                DetalleEconomatos = s.CompraEconomatos?.Select(s2 => new DetalleEconomatosRes
+                {
+                    Id = s2.Id,
+                    IdEconomato = s2.IdEconomato,
+                    Codigo = s2.IdEconomato.ToString(),
+                    DescripcionQBD = s2.Economato?.Descripcion ?? "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    UM = s2.Um,
+                    Pdf = s2.Pdf,
+                    Conforme = s2.Conformidad ?? false,
+                    IdFabricante = s2.IdFabricante
+                }).ToList(),
+                DetalleOtros = s.CompraOtros?.Select(s2 => new DetalleComprasOtrosRes
+                {
+                    Id = s2.Id,
+                    IdFamilia = s2.IdFamilia,
+                    Codigo = "",
+                    DescripcionFactura = s2.DescripcionFactura ?? "",
+                    CantidadSolicitada = s2.CantidadSolicitada,
+                    CUnitario = s2.CostoUnitario,
+                    CTotal = s2.CostoTotal,
+                    UM = s2.UnidadMedida,
+                    Pdf = s2.Pdf,
+                    Conforme = s2.Conformidad ?? false
+                }).ToList(),
+                IdProveedor = s.IdProveedor,
+                IncluyeImpuesto = s.Igv,
+                Observaciones = s.Observaciones,
+                Familia = s.Familia,
+                Responsable = s.Sede?.Encargado ?? "",
+                ISC = s.Isc,
+                ICBP = s.Icbp,
+                Guia = s.Guia,
+                Modalidad = s.Modalidad,
+                EstadoCompra = s.EstadoCompra,
+                SerieComprobante = s.SerieComprobante,
+                NumeroComprobante = s.NumeroComprobante,
+                Factura = s.SerieComprobante + "-" + s.NumeroComprobante,
+                CodFacQBD = s.CodFacQBD,
+                FechaFactura = s.FechaFactura
+            };
+
+            if (!string.IsNullOrWhiteSpace(response.Responsable) && int.TryParse(response.Responsable.Trim(), out int encargadoId))
+            {
+                var persona = await _context.Personas.AsNoTracking().FirstOrDefaultAsync(p => p.Id == encargadoId);
+                if (persona != null && !string.IsNullOrWhiteSpace(persona.NombreCompleto))
+                {
+                    response.Responsable = persona.NombreCompleto;
                 }
+            }
+
+            var partesFamilia = new List<string>();
+
+            // Familias reales de insumos (desde su entidad Familia)
+            if (response.DetalleCompraInsumos != null && response.DetalleCompraInsumos.Any())
+            {
+                var familiasInsumos = response.DetalleCompraInsumos
+                    .Select(d => d.Familia)
+                    .Where(f => !string.IsNullOrEmpty(f))
+                    .Distinct();
+                if (familiasInsumos.Any())
+                    partesFamilia.AddRange(familiasInsumos);
+                else
+                    partesFamilia.Add("MP");
+            }
+
+            if (response.DetalleEmpaques != null && response.DetalleEmpaques.Any())
+                partesFamilia.Add("ME");
+
+            if (response.DetalleProductos != null && response.DetalleProductos.Any())
+                partesFamilia.Add("PT");
+
+            if (response.DetalleEconomatos != null && response.DetalleEconomatos.Any())
+                partesFamilia.Add("ECO");
+
+            if (response.DetalleOtros != null && response.DetalleOtros.Any())
+            {
+                var clases1 = response.DetalleOtros
+                    .Select(d => d.IdFamilia)
+                    .Where(c => c != 0)
+                    .Distinct();
+                List<string> clases2 = new();
+                if (clases1.Contains(5)) clases2.Add("FXP");
+                if (clases1.Contains(6)) clases2.Add("FXS");
+                if (clases1.Contains(7)) clases2.Add("RH");
+                partesFamilia.AddRange(clases2);
+            }
 
                 response.Familia = string.Join("- ", partesFamilia.Distinct());
             }
