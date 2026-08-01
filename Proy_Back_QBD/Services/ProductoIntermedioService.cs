@@ -396,29 +396,100 @@ namespace proy_back_Qbd.Services
         }
         public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
         {
-            IEnumerable<ConsumoPIRes> response = await _context.StockInsumoProductoIntermedios
-            .Where(w => w.InsumoProductoIntermedio.IdProductoIntermedio == id)
-            .OrderBy(ob => ob.InsumoProductoIntermedio.Variable)
-            .Select(s => new ConsumoPIRes()
-            {
-                Codigo = UtilFamilia.CodigoInsumo(s.InsumoProductoIntermedio.IdInsumo),
-                Porcentaje = s.InsumoProductoIntermedio.Porcentaje,
-                Descripcion = s.InsumoProductoIntermedio.Insumo.Descripcion,
-                V = s.InsumoProductoIntermedio.Variable,
-                Lote = s.StockInsumo.CompraInsumo.Lote,
-                Registro = Alfanumerico.ConvertToBase36(s.IdCompraInsumo),
-                CantidadUnidad = s.Cantidad,
-                FactorCorreccion = s.InsumoProductoIntermedio.FactorCorrecion,
-                Dilucion = s.InsumoProductoIntermedio.Dilucion,
-                Um = s.UnidadMedida,
-                CantidadLote = s.Cantidad,
-                Practica = s.InsumoProductoIntermedio.Practica,
-                CSP = s.InsumoProductoIntermedio.Csp
-            })
-            .AsNoTracking()
-            .ToListAsync();
+            // 1. Intentar obtener consumos registrados con lotes de stock
+            var stockConsumos = await _context.StockInsumoProductoIntermedios
+                .Where(w => w.InsumoProductoIntermedio.IdProductoIntermedio == id)
+                .OrderBy(ob => ob.InsumoProductoIntermedio.Variable)
+                .Select(s => new ConsumoPIRes()
+                {
+                    Codigo = UtilFamilia.CodigoInsumo(s.InsumoProductoIntermedio.IdInsumo),
+                    Porcentaje = s.InsumoProductoIntermedio.Porcentaje,
+                    Descripcion = s.InsumoProductoIntermedio.Insumo != null ? s.InsumoProductoIntermedio.Insumo.Descripcion : "",
+                    V = s.InsumoProductoIntermedio.Variable,
+                    Lote = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? s.StockInsumo.CompraInsumo.Lote : "",
+                    Registro = s.IdCompraInsumo > 0 ? Alfanumerico.ConvertToBase36(s.IdCompraInsumo) : "",
+                    CantidadUnidad = s.Cantidad,
+                    FactorCorreccion = s.InsumoProductoIntermedio.FactorCorrecion,
+                    Dilucion = s.InsumoProductoIntermedio.Dilucion,
+                    Um = s.UnidadMedida,
+                    CantidadLote = s.Cantidad,
+                    Practica = s.InsumoProductoIntermedio.Practica,
+                    CSP = s.InsumoProductoIntermedio.Csp
+                })
+                .AsNoTracking()
+                .ToListAsync();
 
-            return response;
+            if (stockConsumos != null && stockConsumos.Any())
+            {
+                return stockConsumos;
+            }
+
+            // 2. Si no hay lotes de stock vinculados, obtener directamente de los insumos de la fórmula del producto intermedio
+            var insumosFormula = await _context.InsumoProductoIntermedios
+                .Where(w => w.IdProductoIntermedio == id)
+                .OrderBy(ob => ob.Variable)
+                .Select(s => new ConsumoPIRes()
+                {
+                    Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
+                    Porcentaje = s.Porcentaje,
+                    Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                    V = s.Variable,
+                    Lote = "",
+                    Registro = "",
+                    CantidadUnidad = s.CantidadUnidad,
+                    FactorCorreccion = s.FactorCorrecion,
+                    Dilucion = s.Dilucion,
+                    Um = s.UnidadMedida,
+                    CantidadLote = s.CantidadLote,
+                    Practica = s.Practica,
+                    CSP = s.Csp
+                })
+                .AsNoTracking()
+                .ToListAsync();
+
+            if (insumosFormula != null && insumosFormula.Any())
+            {
+                return insumosFormula;
+            }
+
+            // 3. Fallback maestro: Buscar por el IdInsumo asociado al ProductoIntermedio (fórmula patrón)
+            var pi = await _context.ProductosIntermedios.FindAsync(id);
+            if (pi != null && pi.IdInsumo.HasValue && pi.IdInsumo.Value > 0)
+            {
+                int idInsumoMaster = pi.IdInsumo.Value;
+                var latestPIId = await _context.InsumoProductoIntermedios
+                    .Where(w => w.ProductoIntermedio != null && w.ProductoIntermedio.IdInsumo == idInsumoMaster)
+                    .OrderByDescending(ob => ob.IdProductoIntermedio)
+                    .Select(s => s.IdProductoIntermedio)
+                    .FirstOrDefaultAsync();
+
+                if (latestPIId > 0)
+                {
+                    return await _context.InsumoProductoIntermedios
+                        .Where(w => w.IdProductoIntermedio == latestPIId)
+                        .OrderBy(ob => ob.Variable)
+                        .Select(s => new ConsumoPIRes()
+                        {
+                            Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
+                            Porcentaje = s.Porcentaje,
+                            Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                            V = s.Variable,
+                            Lote = "",
+                            Registro = "",
+                            CantidadUnidad = s.CantidadUnidad,
+                            FactorCorreccion = s.FactorCorrecion,
+                            Dilucion = s.Dilucion,
+                            Um = s.UnidadMedida,
+                            CantidadLote = s.CantidadLote,
+                            Practica = s.Practica,
+                            CSP = s.Csp
+                        })
+                        .AsNoTracking()
+                        .ToListAsync();
+                }
+            }
+
+            return new List<ConsumoPIRes>();
         }
 
         public async Task<bool> ActualizarCondicionAlmacenamiento(int id, string condicion)
