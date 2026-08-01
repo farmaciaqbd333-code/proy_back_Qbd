@@ -40,24 +40,28 @@ namespace proy_back_Qbd.Services
                     paquetes.Add(item.Paquete);
             }
 
-            //CONVERSION A GRAMOS
+            // CONVERSION DE UNIDAD DE MEDIDA
             decimal pesoTotalCompra;
-            string um = compraInsumo.Um;
+            string um = (compraInsumo.Um ?? "").Trim().ToUpper();
             decimal cantidadSolicitada = compraInsumo.CantidadSolicitada;
-            if (compraInsumo.Um == "G")
+            if (um == "G" || um == "GR" || um == "GRAMO" || um == "GRAMOS")
             {
                 pesoTotalCompra = cantidadSolicitada;
             }
-            else if (compraInsumo.Um == "KG")
+            else if (um == "KG" || um == "KILO" || um == "KILOS" || um == "KILOGRAMO" || um == "KILOGRAMOS")
             {
                 pesoTotalCompra = cantidadSolicitada * 1000;
             }
-            else if (compraInsumo.Um == "L")
+            else if (um == "L" || um == "LT" || um == "LITRO" || um == "LITROS" || um == "ML" || um == "MILLILITRO")
             {
-                decimal densidad = insumo.Densidad ?? throw new NotFoundException("No se encontró la densidad del insumo"); ;
-                pesoTotalCompra = cantidadSolicitada * densidad;
+                decimal densidad = insumo.Densidad ?? 1m;
+                pesoTotalCompra = cantidadSolicitada * (densidad > 0 ? densidad : 1m);
             }
-            else throw new NotFoundException("Unidad de Medida no apta");
+            else
+            {
+                pesoTotalCompra = cantidadSolicitada;
+            }
+
 
             decimal paqueteEntrante = req.CantidadPaquete * req.PesoUnitario;
             decimal pesoPaquetesActual = paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario);
