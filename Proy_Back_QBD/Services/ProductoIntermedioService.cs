@@ -454,9 +454,9 @@ namespace proy_back_Qbd.Services
 
             // 3. Fallback maestro: Buscar por el IdInsumo asociado al ProductoIntermedio (fórmula patrón)
             var pi = await _context.ProductosIntermedios.FindAsync(id);
-            if (pi != null && pi.IdInsumo.HasValue && pi.IdInsumo.Value > 0)
+            if (pi != null && pi.IdInsumo > 0)
             {
-                int idInsumoMaster = pi.IdInsumo.Value;
+                int idInsumoMaster = pi.IdInsumo;
                 var latestPIId = await _context.InsumoProductoIntermedios
                     .Where(w => w.ProductoIntermedio != null && w.ProductoIntermedio.IdInsumo == idInsumoMaster)
                     .OrderByDescending(ob => ob.IdProductoIntermedio)
