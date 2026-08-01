@@ -30,17 +30,14 @@ namespace proy_back_Qbd.Services
                 .Include(i => i.PaqueteInsumos!)
                 .ThenInclude(p => p.Paquete)
                 .FirstOrDefaultAsync(f => f.Id == req.IdCompraInsumo) ?? throw new NotFoundException("No se encontró la compra insumo");
-            List<PaqueteInsumo> paqueteInsumos = compraInsumo.PaqueteInsumos ?? throw new NotFoundException("No se encontró el paquete insumo"); ;
+            List<PaqueteInsumo> paqueteInsumos = compraInsumo.PaqueteInsumos ?? new List<PaqueteInsumo>();
             List<Paquete> paquetes = new();
             Insumo insumo = compraInsumo.Insumo ?? throw new NotFoundException("No hay Insumo");
 
-            if (paqueteInsumos.Count != 0)
+            foreach (var item in paqueteInsumos)
             {
-                foreach (var item in paqueteInsumos)
-                {
-                    if (item.Paquete == null) throw new NotFoundException("No se encontró el Paquete");
+                if (item.Paquete != null)
                     paquetes.Add(item.Paquete);
-                }
             }
 
             //CONVERSION A GRAMOS
@@ -104,15 +101,12 @@ namespace proy_back_Qbd.Services
                 .Include(i => i.PaqueteEmpaques!)
                 .ThenInclude(p => p.Paquete)
                 .FirstOrDefaultAsync(f => f.Id == req.IdCompraEmpaque) ?? throw new NotFoundException("No se encontró la compra Empaque");
-            List<PaqueteEmpaque> paqueteEmpaques = compraEmpaque.PaqueteEmpaques ?? throw new NotFoundException("No se encontró Paquete Empaque");
+            List<PaqueteEmpaque> paqueteEmpaques = compraEmpaque.PaqueteEmpaques ?? new List<PaqueteEmpaque>();
             List<Paquete> paquetes = new();
-            if (paqueteEmpaques.Count != 0)
+            foreach (var item in paqueteEmpaques)
             {
-                foreach (var item in paqueteEmpaques)
-                {
-                    if (item.Paquete == null) throw new NotFoundException("No se encontró el Paquete");
+                if (item.Paquete != null)
                     paquetes.Add(item.Paquete);
-                }
             }
 
             decimal pesoTotalPaquete = paquetes.Sum(s => s.CantidadPaquete * s.PesoUnitario);
