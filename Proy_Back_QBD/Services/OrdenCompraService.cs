@@ -129,7 +129,7 @@ namespace proy_back_Qbd.Services
                             IncluyeImpuesto = s.Igv,
                             Observaciones = s.Observaciones,
                             Familia = s.Familia,
-                            Responsable = s.Sede != null ? (_context.Personas.Where(p => p.Id.ToString() == s.Sede.Encargado).Select(p => p.NombreCompleto).FirstOrDefault() ?? s.Sede.Encargado) : "",
+                            Responsable = s.Sede != null ? (s.Sede.Encargado ?? "") : "",
                             ISC = s.Isc,
                             ICBP = s.Icbp,
                             Guia = s.Guia,
@@ -144,6 +144,15 @@ namespace proy_back_Qbd.Services
 
             if (response != null)
             {
+                if (!string.IsNullOrWhiteSpace(response.Responsable) && int.TryParse(response.Responsable.Trim(), out int encargadoId))
+                {
+                    var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id == encargadoId);
+                    if (persona != null && !string.IsNullOrWhiteSpace(persona.NombreCompleto))
+                    {
+                        response.Responsable = persona.NombreCompleto;
+                    }
+                }
+
                 var partesFamilia = new List<string>();
 
                 // Familias reales de insumos (desde su entidad Familia)
