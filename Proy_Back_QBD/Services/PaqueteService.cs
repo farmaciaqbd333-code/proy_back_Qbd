@@ -85,6 +85,7 @@ namespace proy_back_Qbd.Services
                 {
                     IdCompraInsumo = compraInsumo.Id,
                     IdSede = req.IdSede,
+                    UnidadMedida = compraInsumo.Um,
                     StockDisponible = paqueteEntrante
                 };
                 _context.StockInsumos.Add(stockInsumo);
@@ -139,6 +140,7 @@ namespace proy_back_Qbd.Services
                 {
                     IdCompraEmpaque = compraEmpaque.Id,
                     IdSede = req.IdSede,
+                    UnidadMedida = compraEmpaque.Um,
                     StockDisponible = paqueteEntrante
                 };
                 _context.StockEmpaques.Add(stockEmpaque);

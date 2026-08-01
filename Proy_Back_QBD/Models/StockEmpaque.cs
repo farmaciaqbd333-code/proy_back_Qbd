@@ -6,7 +6,7 @@ public class StockEmpaque
     public int Id { get; set; }
     public int IdCompraEmpaque { get; set; }
     public decimal StockDisponible { get; set; }
-    public string UnidadMedida { get; set; } = null!;
+    public string? UnidadMedida { get; set; }
     public int IdSede { get; set; }
     public int? IdNotaSalidaEmpaque { get; set; }
     public CompraEmpaque CompraEmpaque { get; set; } = null!;

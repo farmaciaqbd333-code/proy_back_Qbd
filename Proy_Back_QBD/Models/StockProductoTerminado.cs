@@ -6,7 +6,7 @@ public class StockProductoTerminado
     public int Id { get; set; }
     public int IdCompraProducto { get; set; }
     public decimal StockDisponible { get; set; }
-    public string UnidadMedida { get; set; } = null!;
+    public string? UnidadMedida { get; set; }
     public int IdSede { get; set; }
     public int? IdNotaSalidaProducto { get; set; }
     public CompraProducto CompraProducto { get; set; } = null!;
