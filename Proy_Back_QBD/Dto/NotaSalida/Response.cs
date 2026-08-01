@@ -13,3 +13,8 @@ public class RegistrosListaRes
     public required string Registro { get; set; }
     public required string Codigo { get; set; }
 }
+public class FamiliasListaRes
+{
+    public int IdArticulo { get; set; }
+    public required string Descripcion { get; set; }
+}

@@ -731,4 +731,43 @@ public class NotaSalidaService : INotaSalidaService
             _ => new List<RegistrosListaRes>()
         };
     }
+    public async Task<List<FamiliasListaRes>> ObtenerFamiliaAsync(FamiliasListaReq request)
+    {
+        return request.Familia.ToUpper() switch
+        {
+            "PT" => await _context.Productos
+                .Select(x => new FamiliasListaRes
+                {
+                    IdArticulo = x.Id,
+                    Descripcion = x.Descripcion
+                })
+                .ToListAsync(),
+
+            "MP" => await _context.Insumos
+                .Select(x => new FamiliasListaRes
+                {
+                    IdArticulo = x.Id,
+                    Descripcion = x.Descripcion
+                })
+                .ToListAsync(),
+
+            "ECO" => await _context.Economatos
+                .Select(x => new FamiliasListaRes
+                {
+                    IdArticulo = x.Id,
+                    Descripcion = x.Descripcion
+                })
+                .ToListAsync(),
+
+            "ME" => await _context.Empaques
+                .Select(x => new FamiliasListaRes
+                {
+                    IdArticulo = x.Id,
+                    Descripcion = x.Descripcion
+                })
+                .ToListAsync(),
+
+            _ => throw new ArgumentException("Familia no válida.")
+        };
+    }
 }

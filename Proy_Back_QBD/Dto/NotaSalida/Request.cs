@@ -16,3 +16,7 @@ public class NotaSalidaFamiliasCreateReq
     public int Paquete { get; set; }
     public decimal CantidadPaquete { get; set; }
 }
+public class FamiliasListaReq
+{
+    public required string Familia { get; set; }
+}
