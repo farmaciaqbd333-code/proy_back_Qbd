@@ -34,9 +34,7 @@ namespace proy_back_Qbd.Services
                 .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Empaque)
                 .Include(x => x.CompraEmpaques!).ThenInclude(i => i.Fabricante)
                 .Include(x => x.CompraProductos!).ThenInclude(i => i.Producto)
-                .Include(x => x.CompraProductos!).ThenInclude(i => i.Fabricante)
                 .Include(x => x.CompraEconomatos!).ThenInclude(i => i.Economato)
-                .Include(x => x.CompraEconomatos!).ThenInclude(i => i.Fabricante)
                 .Include(x => x.CompraOtros!).ThenInclude(i => i.Familia)
                 .AsSplitQuery()
                 .FirstOrDefaultAsync(w => w.Id == id);
@@ -205,12 +203,6 @@ namespace proy_back_Qbd.Services
             }
 
                 response.Familia = string.Join("- ", partesFamilia.Distinct());
-            }
-
-            if (response == null)
-            {
-                return null;
-            }
             return response;
         }
 
