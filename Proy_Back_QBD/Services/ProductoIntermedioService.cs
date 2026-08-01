@@ -133,30 +133,26 @@ namespace proy_back_Qbd.Services
 
                     foreach (var stockInsumo in stockInsumos)
                     {
-                        stockInsumo.StockInsumoProductoIntermedio ??= new List<StockInsumoProductoIntermedio>();
-
                         if (stockInsumo.StockDisponible < cantidadUsar)
                         {
-                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
+                            _context.StockInsumoProductoIntermedios.Add(new StockInsumoProductoIntermedio()
                             {
                                 Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdCreador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                StockInsumo = stockInsumo,
-                                IdCompraInsumo = stockInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
                             cantidadUsar -= stockInsumo.StockDisponible;
                             stockInsumo.StockDisponible = 0;
                         }
                         else
                         {
-                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
+                            _context.StockInsumoProductoIntermedios.Add(new StockInsumoProductoIntermedio()
                             {
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdCreador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                StockInsumo = stockInsumo,
-                                IdCompraInsumo = stockInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
                             stockInsumo.StockDisponible = stockInsumo.StockDisponible - cantidadUsar;
                             break;
@@ -354,30 +350,26 @@ namespace proy_back_Qbd.Services
 
                     foreach (var stockInsumo in stockInsumos)
                     {
-                        stockInsumo.StockInsumoProductoIntermedio ??= new List<StockInsumoProductoIntermedio>();
-
                         if (stockInsumo.StockDisponible < cantidadUsar)
                         {
-                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
+                            _context.StockInsumoProductoIntermedios.Add(new StockInsumoProductoIntermedio()
                             {
                                 Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                StockInsumo = stockInsumo,
-                                IdCompraInsumo = stockInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
                             cantidadUsar -= stockInsumo.StockDisponible;
                             stockInsumo.StockDisponible = 0;
                         }
                         else
                         {
-                            stockInsumo.StockInsumoProductoIntermedio.Add(new StockInsumoProductoIntermedio()
+                            _context.StockInsumoProductoIntermedios.Add(new StockInsumoProductoIntermedio()
                             {
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                StockInsumo = stockInsumo,
-                                IdCompraInsumo = stockInsumo.Id
+                                IdCompraInsumo = stockInsumo.IdCompraInsumo
                             });
                             stockInsumo.StockDisponible -= cantidadUsar;
                             break;
