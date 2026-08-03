@@ -24,6 +24,7 @@ public class NotaSalidaService : INotaSalidaService
             {
                 FechaSalida = request.FechaSalida,
                 IdSedeOrigen = request.IdSedeOrigen,
+                Estado = "PENDIENTE",
                 IdSedeDestino = request.IdSedeDestino,
                 Observacion = request.Observacion,
                 IdCreador = request.IdCreador
@@ -158,27 +159,112 @@ public class NotaSalidaService : INotaSalidaService
             "Detalle de NotaSalidaInsumo agregado. Registro={Registro}",
             item.Registro);
 
-        var nuevoStockDestino = new StockInsumo
-        {
-            IdCompraInsumo = item.Registro,
-            StockDisponible = item.Cantidad,
-            UnidadMedida = stockOrigen.UnidadMedida,
-            IdSede = request.IdSedeDestino,
-            NotaSalidaInsumo = detalle
-        };
-
-        _context.StockInsumos.Add(nuevoStockDestino);
-
-        _logger.LogInformation(
-            "Stock creado para sede destino. Registro={Registro}, SedeDestino={SedeDestino}, Stock={Stock}",
-            item.Registro,
-            request.IdSedeDestino,
-            item.Cantidad);
 
         _logger.LogInformation(
             "Finalizó creación de detalle de insumo. NotaSalida={NotaSalida}",
             idNotaSalida);
     }
+    private async Task CrearDetalleEconomato(
+         int idNotaSalida,
+         NotaSalidaCreateReq request,
+         NotaSalidaFamiliasCreateReq item)
+    {
+        var stockOrigen = await _context.StockEconomatos
+            .FirstOrDefaultAsync(x =>
+                x.IdCompraEconomato == item.Registro &&
+                x.IdSede == request.IdSedeOrigen);
+
+        if (stockOrigen == null)
+            throw new Exception("No existe stock en la sede proveniente.");
+
+        if (stockOrigen.StockDisponible < item.Cantidad)
+            throw new Exception("Stock insuficiente.");
+
+        // Descontar stock de origen
+        stockOrigen.StockDisponible -= item.Cantidad;
+
+        var detalle = new NotaSalidaEconomato
+        {
+            IdNotaSalida = idNotaSalida,
+            IdCompraEconomato = item.Registro,
+            Cantidad = item.Cantidad,
+            Um = item.Um,
+            Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
+            CantidadPaquete = item.CantidadPaquete
+        };
+
+        _context.NotaSalidaEconomatos.Add(detalle);
+    }
+    private async Task CrearDetalleEmpaque(
+        int idNotaSalida,
+        NotaSalidaCreateReq request,
+        NotaSalidaFamiliasCreateReq item)
+    {
+        var stockOrigen = await _context.StockEmpaques
+            .FirstOrDefaultAsync(x =>
+                x.IdCompraEmpaque == item.Registro &&
+                x.IdSede == request.IdSedeOrigen);
+
+        if (stockOrigen == null)
+            throw new Exception("No existe stock en la sede proveniente.");
+
+        if (stockOrigen.StockDisponible < item.Cantidad)
+            throw new Exception("Stock insuficiente.");
+
+        // Descontar stock de origen
+        stockOrigen.StockDisponible -= item.Cantidad;
+
+        var detalle = new NotaSalidaEmpaque
+        {
+            IdNotaSalida = idNotaSalida,
+            IdCompraEmpaque = item.Registro,
+            Cantidad = item.Cantidad,
+            Um = item.Um,
+            Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
+            CantidadPaquete = item.CantidadPaquete
+        };
+
+        _context.NotaSalidaEmpaques.Add(detalle);
+
+
+    }
+    private async Task CrearDetalleProducto(
+        int idNotaSalida,
+        NotaSalidaCreateReq request,
+        NotaSalidaFamiliasCreateReq item)
+    {
+        var stockOrigen = await _context.StockProductos
+            .FirstOrDefaultAsync(x =>
+                x.IdCompraProducto == item.Registro &&
+                x.IdSede == request.IdSedeOrigen);
+
+        if (stockOrigen == null)
+            throw new Exception("No existe stock en la sede proveniente.");
+
+        if (stockOrigen.StockDisponible < item.Cantidad)
+            throw new Exception("Stock insuficiente.");
+
+        // Descontar stock de origen
+        stockOrigen.StockDisponible -= item.Cantidad;
+
+        var detalle = new NotaSalidaProducto
+        {
+            IdNotaSalida = idNotaSalida,
+            IdCompraProducto = item.Registro,
+            Cantidad = item.Cantidad,
+            Um = item.Um,
+            Paquete = item.Paquete,
+            IdCreador = request.IdCreador,
+            CantidadPaquete = item.CantidadPaquete
+        };
+
+        _context.NotaSalidaProductos.Add(detalle);
+
+
+    }
+
     public async Task ActualizarAsync(int id, NotaSalidaCreateReq request)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -367,130 +453,9 @@ public class NotaSalidaService : INotaSalidaService
             _context.StockProductos.Remove(stockDestino);
         }
     }
-    private async Task CrearDetalleEconomato(
-        int idNotaSalida,
-        NotaSalidaCreateReq request,
-        NotaSalidaFamiliasCreateReq item)
-    {
-        var stockOrigen = await _context.StockEconomatos
-            .FirstOrDefaultAsync(x =>
-                x.IdCompraEconomato == item.Registro &&
-                x.IdSede == request.IdSedeOrigen);
 
-        if (stockOrigen == null)
-            throw new Exception("No existe stock en la sede proveniente.");
 
-        if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
 
-        // Descontar stock de origen
-        stockOrigen.StockDisponible -= item.Cantidad;
-
-        var detalle = new NotaSalidaEconomato
-        {
-            IdNotaSalida = idNotaSalida,
-            IdCompraEconomato = item.Registro,
-            Cantidad = item.Cantidad,
-            Um = item.Um,
-            Paquete = item.Paquete,
-            IdCreador = request.IdCreador,
-            CantidadPaquete = item.CantidadPaquete
-        };
-
-        _context.NotaSalidaEconomatos.Add(detalle);
-
-        _context.StockEconomatos.Add(new StockEconomato
-        {
-            IdCompraEconomato = stockOrigen.IdCompraEconomato,
-            StockDisponible = item.Cantidad,
-            UnidadMedida = stockOrigen.UnidadMedida,
-            IdSede = request.IdSedeDestino,
-            NotaSalidaEconomato = detalle // EF asignará el Id automáticamente
-        });
-    }
-
-    private async Task CrearDetalleEmpaque(
-        int idNotaSalida,
-        NotaSalidaCreateReq request,
-        NotaSalidaFamiliasCreateReq item)
-    {
-        var stockOrigen = await _context.StockEmpaques
-            .FirstOrDefaultAsync(x =>
-                x.IdCompraEmpaque == item.Registro &&
-                x.IdSede == request.IdSedeOrigen);
-
-        if (stockOrigen == null)
-            throw new Exception("No existe stock en la sede proveniente.");
-
-        if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
-
-        // Descontar stock de origen
-        stockOrigen.StockDisponible -= item.Cantidad;
-
-        var detalle = new NotaSalidaEmpaque
-        {
-            IdNotaSalida = idNotaSalida,
-            IdCompraEmpaque = item.Registro,
-            Cantidad = item.Cantidad,
-            Um = item.Um,
-            Paquete = item.Paquete,
-            IdCreador = request.IdCreador,
-            CantidadPaquete = item.CantidadPaquete
-        };
-
-        _context.NotaSalidaEmpaques.Add(detalle);
-
-        _context.StockEmpaques.Add(new StockEmpaque
-        {
-            IdCompraEmpaque = stockOrigen.IdCompraEmpaque,
-            StockDisponible = item.Cantidad,
-            UnidadMedida = stockOrigen.UnidadMedida,
-            IdSede = request.IdSedeDestino,
-            NotaSalidaEmpaque = detalle // EF asignará el Id automáticamente
-        });
-    }
-    private async Task CrearDetalleProducto(
-        int idNotaSalida,
-        NotaSalidaCreateReq request,
-        NotaSalidaFamiliasCreateReq item)
-    {
-        var stockOrigen = await _context.StockProductos
-            .FirstOrDefaultAsync(x =>
-                x.IdCompraProducto == item.Registro &&
-                x.IdSede == request.IdSedeOrigen);
-
-        if (stockOrigen == null)
-            throw new Exception("No existe stock en la sede proveniente.");
-
-        if (stockOrigen.StockDisponible < item.Cantidad)
-            throw new Exception("Stock insuficiente.");
-
-        // Descontar stock de origen
-        stockOrigen.StockDisponible -= item.Cantidad;
-
-        var detalle = new NotaSalidaProducto
-        {
-            IdNotaSalida = idNotaSalida,
-            IdCompraProducto = item.Registro,
-            Cantidad = item.Cantidad,
-            Um = item.Um,
-            Paquete = item.Paquete,
-            IdCreador = request.IdCreador,
-            CantidadPaquete = item.CantidadPaquete
-        };
-
-        _context.NotaSalidaProductos.Add(detalle);
-
-        _context.StockProductos.Add(new StockProductoTerminado
-        {
-            IdCompraProducto = stockOrigen.IdCompraProducto,
-            StockDisponible = item.Cantidad,
-            UnidadMedida = stockOrigen.UnidadMedida,
-            IdSede = request.IdSedeDestino,
-            NotaSalidaProducto = detalle // EF asignará el Id automáticamente
-        });
-    }
 
     public async Task EliminarAsync(int id)
     {
@@ -545,29 +510,27 @@ public class NotaSalidaService : INotaSalidaService
             .ToList();
 
 
-        var stocksDestino = await _context.StockInsumos
-            .Where(x => x.IdNotaSalidaInsumo != null &&
-                        idsDetalle.Contains(x.IdNotaSalidaInsumo.Value))
+        var notaSalidaDestino = await _context.NotaSalidaInsumos
+            .Where(x => idsDetalle.Contains(x.Id))
             .ToListAsync();
 
 
-        foreach (var stockDestino in stocksDestino)
+        foreach (var NSDestino in notaSalidaDestino)
         {
             // buscar stock origen
             var stockOrigen = await _context.StockInsumos
                 .FirstOrDefaultAsync(x =>
-                    x.IdCompraInsumo == stockDestino.IdCompraInsumo &&
+                    x.IdCompraInsumo == NSDestino.IdCompraInsumo &&
                     x.IdNotaSalidaInsumo == null &&
-                    x.IdSede != stockDestino.IdSede);
+                    x.IdSede == NSDestino.NotaSalida.IdSedeOrigen);
 
 
             if (stockOrigen != null)
             {
-                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+                stockOrigen.StockDisponible += NSDestino.Cantidad;
             }
 
 
-            _context.StockInsumos.Remove(stockDestino);
         }
     }
     private async Task EliminarStockEmpaque(
@@ -578,95 +541,89 @@ public class NotaSalidaService : INotaSalidaService
             .ToList();
 
 
-        var stocksDestino = await _context.StockEmpaques
-            .Where(x => x.IdNotaSalidaEmpaque != null &&
-                        idsDetalle.Contains(x.IdNotaSalidaEmpaque.Value))
+        var notaSalidaEmpaques = await _context.NotaSalidaEmpaques
+            .Where(x => idsDetalle.Contains(x.Id))
             .ToListAsync();
 
 
-        foreach (var stockDestino in stocksDestino)
+        foreach (var notaSalidaEmpaque in notaSalidaEmpaques)
         {
             // buscar stock origen
             var stockOrigen = await _context.StockEmpaques
                 .FirstOrDefaultAsync(x =>
-                    x.IdCompraEmpaque == stockDestino.IdCompraEmpaque &&
+                    x.IdCompraEmpaque == notaSalidaEmpaque.IdCompraEmpaque &&
                     x.IdNotaSalidaEmpaque == null &&
-                    x.IdSede != stockDestino.IdSede);
+                    x.IdSede == notaSalidaEmpaque.NotaSalida.IdSedeOrigen);
 
 
             if (stockOrigen != null)
             {
-                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+                stockOrigen.StockDisponible += notaSalidaEmpaque.Cantidad;
             }
 
 
-            _context.StockEmpaques.Remove(stockDestino);
         }
     }
     private async Task EliminarStockEconomato(
     List<NotaSalidaEconomato> detalles)
     {
-        var idsDetalle = detalles
+        var idsNotaSalidaEco = detalles
             .Select(x => x.Id)
             .ToList();
 
 
-        var stocksDestino = await _context.StockEconomatos
-            .Where(x => x.IdNotaSalidaEconomato != null &&
-                        idsDetalle.Contains(x.IdNotaSalidaEconomato.Value))
+        var notaSalidaEconomatos = await _context.NotaSalidaEconomatos
+            .Where(x => idsNotaSalidaEco.Contains(x.Id))
             .ToListAsync();
 
 
-        foreach (var stockDestino in stocksDestino)
+        foreach (var notaSalidaEconomato in notaSalidaEconomatos)
         {
             // buscar stock origen
             var stockOrigen = await _context.StockEconomatos
                 .FirstOrDefaultAsync(x =>
-                    x.IdCompraEconomato == stockDestino.IdCompraEconomato &&
+                    x.IdCompraEconomato == notaSalidaEconomato.IdCompraEconomato &&
                     x.IdNotaSalidaEconomato == null &&
-                    x.IdSede != stockDestino.IdSede);
+                    x.IdSede == notaSalidaEconomato.NotaSalida.IdSedeOrigen);
 
 
             if (stockOrigen != null)
             {
-                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+                stockOrigen.StockDisponible += notaSalidaEconomato.Cantidad;
             }
 
-
-            _context.StockEconomatos.Remove(stockDestino);
         }
     }
     private async Task EliminarStockProducto(
     List<NotaSalidaProducto> detalles)
     {
-        var idsDetalle = detalles
+        //Seleccionar ids de notas de salida
+        var idsNotaSalidaProd = detalles
             .Select(x => x.Id)
             .ToList();
 
-
-        var stocksDestino = await _context.StockProductos
-            .Where(x => x.IdNotaSalidaProducto != null &&
-                        idsDetalle.Contains(x.IdNotaSalidaProducto.Value))
+        //Buscar notas de salida
+        var notasSalidaProductos = await _context.NotaSalidaProductos
+            .Where(x => idsNotaSalidaProd.Contains(x.Id))
             .ToListAsync();
 
 
-        foreach (var stockDestino in stocksDestino)
+        foreach (var notasSalidaProducto in notasSalidaProductos)
         {
             // buscar stock origen
             var stockOrigen = await _context.StockProductos
                 .FirstOrDefaultAsync(x =>
-                    x.IdCompraProducto == stockDestino.IdCompraProducto &&
+                    x.IdCompraProducto == notasSalidaProducto.IdCompraProducto &&
                     x.IdNotaSalidaProducto == null &&
-                    x.IdSede != stockDestino.IdSede);
+                    x.IdSede == notasSalidaProducto.NotaSalida.IdSedeOrigen);
 
 
             if (stockOrigen != null)
             {
-                stockOrigen.StockDisponible += stockDestino.StockDisponible;
+                //Eliminamos cantidad mencionada
+                stockOrigen.StockDisponible += notasSalidaProducto.Cantidad;
             }
 
-
-            _context.StockProductos.Remove(stockDestino);
         }
     }
 
@@ -734,7 +691,7 @@ public class NotaSalidaService : INotaSalidaService
             _ => new List<RegistrosListaRes>()
         };
     }
-    
+
     public async Task<List<FamiliasListaRes>> ObtenerFamiliaAsync(FamiliasListaReq request)
     {
         return request.Familia.ToUpper() switch

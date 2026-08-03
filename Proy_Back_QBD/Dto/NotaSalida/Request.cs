@@ -1,6 +1,6 @@
 public class NotaSalidaCreateReq
 {
-    public DateTimeOffset FechaSalida { get; set; }
+    public DateTime FechaSalida { get; set; }
     public int IdSedeOrigen { get; set; }
     public int IdSedeDestino { get; set; }
     public string? Observacion { get; set; }
