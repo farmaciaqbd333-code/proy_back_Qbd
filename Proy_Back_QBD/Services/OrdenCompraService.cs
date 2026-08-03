@@ -233,6 +233,7 @@ namespace proy_back_Qbd.Services
         public async Task<List<OrdenesYComprasRes>> ListaOrdenesDeCompras()
         {
             List<OrdenesYComprasRes> response = await _context.Compras
+                            .Where(w => w.IdSede == 15)
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
@@ -766,7 +767,8 @@ namespace proy_back_Qbd.Services
             // Traer solo compras que ya son facturas (tienen NumeroComprobante)
             // y cuya columna Familia contenga la abreviatura buscada
             List<OrdenesYComprasRes> response = await _context.Compras
-                .Where(w => !string.IsNullOrEmpty(w.NumeroComprobante)
+                .Where(w => w.IdSede == 15
+                         && !string.IsNullOrEmpty(w.NumeroComprobante)
                          && w.Familia != null
                          && w.Familia.ToUpper().Contains(familiaNorm))
                 .Select(s => new OrdenesYComprasRes
