@@ -28,7 +28,7 @@ namespace proy_back_Qbd.Models
 
         public Usuario? Creador { get; set; }
         public CompraProducto? CompraProducto { get; set; }
-        public StockProductoTerminado? StockProductoTerminado { get; set; }
+        public StockProducto? StockProductoTerminado { get; set; }
         public NotaSalida? NotaSalida { get; set; }
         public Usuario? Modificador { get; set; }
     }

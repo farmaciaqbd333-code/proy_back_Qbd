@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class StockProductoTerminadoConfiguration : IEntityTypeConfiguration<StockProductoTerminado>
+public class StockProductoTerminadoConfiguration : IEntityTypeConfiguration<StockProducto>
 {
-    public void Configure(EntityTypeBuilder<StockProductoTerminado> builder)
+    public void Configure(EntityTypeBuilder<StockProducto> builder)
     {
         builder.ToTable("stock_producto_terminado");
 
@@ -18,7 +18,7 @@ public class StockProductoTerminadoConfiguration : IEntityTypeConfiguration<Stoc
 
         builder.HasOne(x => x.NotaSalidaProducto)
             .WithOne(wm => wm.StockProductoTerminado)
-            .HasForeignKey<StockProductoTerminado>(x => x.IdNotaSalidaProducto);
+            .HasForeignKey<StockProducto>(x => x.IdNotaSalidaProducto);
             
         builder.HasOne(x => x.CompraProducto)
             .WithMany(w => w.StockProductoTerminados)

@@ -1,7 +1,7 @@
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Models;
 
-public class StockProductoTerminado
+public class StockProducto
 {
     public int Id { get; set; }
     public int IdCompraProducto { get; set; }

@@ -1,14 +1,19 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 
-public interface INotaSalidaService
+namespace proy_back_Qbd.Services.Interfaces.INotaSalidaService
 {
-    Task<int> CrearAsync(NotaSalidaCreateReq request);
-    Task<List<RegistrosListaRes>> ObtenerDatosRegistro(int idRegistro, string Familia, int idSede);
-    Task<List<NotaSalidaListaRes>> ObtenerListaAsync(int idSede);
-    Task<List<NotaSalidaDetalleRes>> ObtenerDetalleAsync(int idNotaSalida);
-    Task ActualizarAsync(int id, NotaSalidaCreateReq request);
-    Task EliminarAsync(int id);
-    Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(FamiliaReq request);
+    public interface INotaSalidaService
+    {
+        Task<int> Crear(CreateReq request);
+        Task<List<RegistrosListaRes>> ObtenerDatosXRegistro(int idRegistro, string Familia, int idSede);
+        Task<List<NotaSalidaListaRes>> ObtenerLista(int idSede);
+        Task<List<NotaSalidaDetalleRes>> ObtenerDetalles(int idNotaSalida);
+        Task Actualizar(int id, CreateReq request);
+        Task Eliminar(int id);
+        Task Confirmar(ConfirmarReq request);
+        Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(ObtenerRegistroReq request);
+    }
 }
