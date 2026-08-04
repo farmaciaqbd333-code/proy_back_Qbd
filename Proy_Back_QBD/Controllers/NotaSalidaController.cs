@@ -77,10 +77,10 @@ namespace proy_back_Qbd.Controllers
         /// <summary>
         /// Listar articulos por familia, sede y id
         /// </summary>
-        [HttpGet("articulo/{id}")]
-        public async Task<ActionResult<List<RegistrosListaRes>>> Get(int id, string familia, int idSede)
+        [HttpGet("articulo/{idRegistro}")]
+        public async Task<ActionResult<List<RegistrosListaRes>>> Get(int idRegistro, string familia, int idSede)
         {
-            var lista = await _serviceNotaSalida.ObtenerRegistros(id, familia, idSede);
+            var lista = await _serviceNotaSalida.ObtenerDatosRegistro(idRegistro, familia, idSede);
             return Ok(lista);
         }
 
@@ -92,13 +92,13 @@ namespace proy_back_Qbd.Controllers
         }
         
         [HttpPost("familias")]
-        [ProducesResponseType(typeof(List<FamiliasListaRes>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<RegistrosRes>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<List<FamiliasListaRes>>> Lista([FromBody] FamiliasListaReq request)
+        public async Task<ActionResult<List<RegistrosRes>>> ListarRegistrosPorFamilia([FromBody] FamiliaReq request)
         {
             try
             {
-                var resultado = await _serviceNotaSalida.ObtenerFamiliaAsync(request);
+                var resultado = await _serviceNotaSalida.ObtenerRegistrosXFamilia(request);
                 return Ok(resultado);
             }
             catch (ArgumentException ex)

@@ -627,7 +627,7 @@ public class NotaSalidaService : INotaSalidaService
         }
     }
 
-    public async Task<List<RegistrosListaRes>> ObtenerRegistros(int idArticulo, string familia, int idSede)
+    public async Task<List<RegistrosListaRes>> ObtenerDatosRegistro(int idRegistro, string familia, int idSede)
     {
 
         familia = familia.Trim().ToUpper();
@@ -636,57 +636,57 @@ public class NotaSalidaService : INotaSalidaService
         {
 
             "MP" => await _context.CompraInsumos
-                .Where(x => x.IdInsumo == idArticulo &&
+                .Where(x => x.Id == idRegistro &&
                 (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
                 x.StockInsumos
                     .Where(s => s.IdSede == idSede)
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    IdRegistro = x.Id,
-                    Registro = Alfanumerico.ConvertToBase36(x.Id),
-                    Codigo = UtilFamilia.CodigoInsumo(x.Id)
+                    IdArticulo = x.IdInsumo,
+                    DescripcionArticulo = x.Insumo.Descripcion,
+                    CodigoArticulo = UtilFamilia.CodigoInsumo(x.Id)
                 })
                 .ToListAsync(),
 
             "ME" => await _context.CompraEmpaques
-                .Where(x => x.IdEmpaque == idArticulo &&
+                .Where(x => x.Id == idRegistro &&
                 (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
                 x.StockEmpaques
                     .Where(s => s.IdSede == idSede)
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    IdRegistro = x.Id,
-                    Registro = Alfanumerico.ConvertToBase36(x.Id),
-                    Codigo = UtilFamilia.CodigoEmpaque(x.Id)
+                    IdArticulo = x.Id,
+                    DescripcionArticulo = x.Empaque.Descripcion ?? "",
+                    CodigoArticulo = UtilFamilia.CodigoEmpaque(x.Id)
                 })
                 .ToListAsync(),
 
             "ECO" => await _context.CompraEconomatos
-                .Where(x => x.IdEconomato == idArticulo &&
+                .Where(x => x.Id == idRegistro &&
                 x.StockEconomatos
                     .Where(s => s.IdSede == idSede)
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    IdRegistro = x.Id,
-                    Registro = Alfanumerico.ConvertToBase36(x.Id),
-                    Codigo = UtilFamilia.CodigoEconomato(x.Id)
+                    IdArticulo = x.Id,
+                    DescripcionArticulo = x.Economato.Descripcion ?? "",
+                    CodigoArticulo = UtilFamilia.CodigoEconomato(x.Id)
                 })
                 .ToListAsync(),
 
             "PT" => await _context.CompraProductos
-                .Where(x => x.IdProducto == idArticulo &&
+                .Where(x => x.Id == idRegistro &&
                 (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
                 x.StockProductoTerminados
                     .Where(s => s.IdSede == idSede)
                     .Sum(s => s.StockDisponible) > 0)
                 .Select(x => new RegistrosListaRes
                 {
-                    IdRegistro = x.Id,
-                    Registro = Alfanumerico.ConvertToBase36(x.Id),
-                    Codigo = UtilFamilia.CodigoProducto(x.Id)
+                    IdArticulo = x.Id,
+                    DescripcionArticulo = x.Producto.Descripcion ?? "",
+                    CodigoArticulo = UtilFamilia.CodigoProducto(x.Id)
                 })
                 .ToListAsync(),
 
@@ -696,39 +696,47 @@ public class NotaSalidaService : INotaSalidaService
 
     }
 
-    public async Task<List<FamiliasListaRes>> ObtenerFamiliaAsync(FamiliasListaReq request)
+    public async Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(FamiliaReq request)
     {
         return request.Familia.ToUpper() switch
         {
-            "PT" => await _context.Productos
-                .Select(x => new FamiliasListaRes
+            "PT" => await _context.CompraProductos
+                .Include(i => i.StockProductoTerminados)
+                .Where(w => w.Compra.IdSede == request.IdSede)
+                .Select(x => new RegistrosRes
                 {
-                    IdArticulo = x.Id,
-                    Descripcion = x.Descripcion
+                    IdRegistro = x.Id,
+                    CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
                 })
                 .ToListAsync(),
 
-            "MP" => await _context.Insumos
-                .Select(x => new FamiliasListaRes
+            "MP" => await _context.CompraInsumos
+            .Include(i => i.StockInsumos)
+            .Where(w => w.Compra.IdSede == request.IdSede)
+                .Select(x => new RegistrosRes
                 {
-                    IdArticulo = x.Id,
-                    Descripcion = x.Descripcion
+                    IdRegistro = x.Id,
+                    CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
                 })
                 .ToListAsync(),
 
-            "ECO" => await _context.Economatos
-                .Select(x => new FamiliasListaRes
+            "ECO" => await _context.CompraEconomatos
+            .Include(i => i.StockEconomatos)
+            .Where(w => w.Compra.IdSede == request.IdSede)
+                .Select(x => new RegistrosRes
                 {
-                    IdArticulo = x.Id,
-                    Descripcion = x.Descripcion
+                    IdRegistro = x.Id,
+                    CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
                 })
                 .ToListAsync(),
 
-            "ME" => await _context.Empaques
-                .Select(x => new FamiliasListaRes
+            "ME" => await _context.CompraEmpaques
+            .Include(i => i.StockEmpaques)
+            .Where(w => w.Compra.IdSede == request.IdSede)
+                .Select(x => new RegistrosRes
                 {
-                    IdArticulo = x.Id,
-                    Descripcion = x.Descripcion
+                    IdRegistro = x.Id,
+                    CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
                 })
                 .ToListAsync(),
 

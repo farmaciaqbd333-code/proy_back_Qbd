@@ -19,11 +19,28 @@ public class NotaSalidaFamiliasCreateReq
     public decimal Tara { get; set; }
     public decimal PesoBruto { get; set; }
 }
-public class FamiliasListaReq
+public class FamiliaReq
 {
+    public int IdSede { get; set; }
     public required string Familia { get; set; }
 }
-public class Req
+public class ConfirmarNotaSalidaReq
 {
-    public required string Familia { get; set; }
+
+}
+public class ConfirmarNotaSalidaInsumoReq
+{
+
+}
+public class ConfirmarNotaSalidaEmpaqueReq
+{
+
+}
+public class ConfirmarNotaSalidaEconomatoReq
+{
+
+}
+public class ConfirmarNotaSalidaProductoReq
+{
+
 }

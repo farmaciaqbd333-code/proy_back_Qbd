@@ -9,12 +9,12 @@ public class NotaSalidaListaRes
 }
 public class RegistrosListaRes
 {
-    public int IdRegistro { get; set; }
-    public required string Registro { get; set; }
-    public required string Codigo { get; set; }
-}
-public class FamiliasListaRes
-{
     public int IdArticulo { get; set; }
-    public required string Descripcion { get; set; }
+    public required string DescripcionArticulo { get; set; }
+    public required string CodigoArticulo { get; set; }
+}
+public class RegistrosRes
+{
+    public int IdRegistro { get; set; }
+    public required string CodRegistro { get; set; }
 }
