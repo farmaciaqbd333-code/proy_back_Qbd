@@ -286,7 +286,7 @@ namespace Proy_back_QBD.Service.AjusteService
             foreach (var item in ajusteProductoTerminados)
             {
                 AjusteProductoTerminado ajusteProductoTerminado = item;
-                StockProductoTerminado compraProductoTerminado = await _context.StockProductos
+                StockProducto compraProductoTerminado = await _context.StockProductos
                 .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdCompraProducto && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraProductoTerminado no encontrada");
                 compraProductoTerminado.StockDisponible += ajusteProductoTerminado.Ajuste;

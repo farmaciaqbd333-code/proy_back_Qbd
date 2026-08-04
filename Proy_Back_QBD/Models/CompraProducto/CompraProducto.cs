@@ -32,7 +32,7 @@ namespace proy_back_Qbd.Models
         public Producto? Producto { get; set; }
         public List<AjusteProductoTerminado>? AjusteProductoTerminados { get; set; }
         public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }
-        public List<StockProductoTerminado> StockProductoTerminados { get; set; } = new();
+        public List<StockProducto> StockProductoTerminados { get; set; } = new();
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
     }

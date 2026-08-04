@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Diagnostics;
 using proy_back_Qbd.Exceptions;
 using Proy_back_QBD.Service.AjusteService;
 using Proy_back_QBD.Interface;
+using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
+using Proy_back_QBD.Services.NotaSalidaService;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);

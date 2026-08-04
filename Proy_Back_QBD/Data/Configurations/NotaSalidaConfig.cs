@@ -40,6 +40,9 @@ public class NotaSalidaConfiguration : IEntityTypeConfiguration<NotaSalida>
 
         builder.Property(e => e.IdModificador)
             .HasColumnName("id_modificador");
+            
+        builder.Property(e => e.Estado)
+            .HasColumnName("estado");
 
         builder.HasOne(e => e.Creador)
             .WithMany(w => w.NotaSalidaCreadas)

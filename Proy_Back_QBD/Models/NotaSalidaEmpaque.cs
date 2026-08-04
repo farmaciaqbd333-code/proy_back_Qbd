@@ -13,8 +13,10 @@ namespace proy_back_Qbd.Models
     {
         public int IdNotaSalida { get; set; }
         public decimal Cantidad { get; set; }
+        public decimal CantidadRecibida { get; set; }
         public string? Um { get; set; }
         public string? Lote { get; set; }
+        public string? Observacion { get; set; }
         public DateTimeOffset FechaCreacion { get; set; }
         public int IdCreador { get; set; }
         public int Id { get; set; }

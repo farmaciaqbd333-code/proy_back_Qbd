@@ -12,12 +12,13 @@ namespace proy_back_Qbd.Models
     public class NotaSalida
     {
         public int Id { get; set; }
-        public DateTimeOffset FechaSalida { get; set; }
+        public DateTime FechaSalida { get; set; }
         public int IdSedeOrigen { get; set; }
         public int IdSedeDestino { get; set; }
         public string? Observacion { get; set; }
-        public DateTimeOffset FechaCreacion { get; set; }
-        public DateTimeOffset? FechaModificacion { get; set; }
+        public required string Estado { get; set; }
+        public DateTime FechaCreacion { get; set; }
+        public DateTime? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
 

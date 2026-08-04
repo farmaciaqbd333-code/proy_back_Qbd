@@ -28,6 +28,9 @@ public class NotaSalidaEconomatoConfiguration : IEntityTypeConfiguration<NotaSal
 
         builder.Property(e => e.Lote)
             .HasColumnName("lote");
+            
+        builder.Property(e => e.Observacion)
+            .HasColumnName("observacion");
 
         builder.Property(e => e.FechaCreacion)
             .HasColumnName("fecha_creacion")
@@ -49,10 +52,13 @@ public class NotaSalidaEconomatoConfiguration : IEntityTypeConfiguration<NotaSal
         builder.Property(e => e.CantidadPaquete)
             .HasColumnName("cantidad_paquete");
 
+        builder.Property(e => e.CantidadRecibida)
+.HasColumnName("cantidad_recibida");
+
         builder.HasOne(e => e.NotaSalida)
             .WithMany(wm => wm.NotaSalidaEconomatos)
             .HasForeignKey(e => e.IdNotaSalida)
-            .OnDelete(DeleteBehavior.Cascade);        
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.CompraEconomato)
             .WithMany(wm => wm.NotaSalidaEconomatos)
