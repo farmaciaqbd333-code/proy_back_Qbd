@@ -24,12 +24,14 @@ namespace Proy_back_QBD.Dto.Response
         public string? Dni { get; set; }
         public int? SedeId { get; set; }
         public int? Id { get; set; }
+        public int? IdGeneral { get; set; }
         public bool? Estado { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
     }
     public class UsuarioListaRes
     {
         public int? Id { get; set; }
+        public int? IdGeneral { get; set; }
         public string? Contrasena { get; set; }
         public TimeOnly? HorarioEntrada { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
@@ -45,6 +47,7 @@ namespace Proy_back_QBD.Dto.Response
     public class UsuarioByIdRes
     {
         public int? Id { get; set; }
+        public int? IdGeneral { get; set; }
         public string? Contrasena { get; set; }
         public TimeOnly? HorarioEntrada { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
