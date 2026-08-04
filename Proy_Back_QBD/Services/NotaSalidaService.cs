@@ -629,10 +629,12 @@ public class NotaSalidaService : INotaSalidaService
 
     public async Task<List<RegistrosListaRes>> ObtenerRegistros(int idArticulo, string familia, int idSede)
     {
-        familia = familia?.Trim().ToUpper();
+
+        familia = familia.Trim().ToUpper();
 
         return familia switch
         {
+
             "MP" => await _context.CompraInsumos
                 .Where(x => x.IdInsumo == idArticulo &&
                 (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
@@ -689,7 +691,9 @@ public class NotaSalidaService : INotaSalidaService
                 .ToListAsync(),
 
             _ => new List<RegistrosListaRes>()
+
         };
+
     }
 
     public async Task<List<FamiliasListaRes>> ObtenerFamiliaAsync(FamiliasListaReq request)

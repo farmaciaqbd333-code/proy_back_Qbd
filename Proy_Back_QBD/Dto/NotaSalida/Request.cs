@@ -23,3 +23,7 @@ public class FamiliasListaReq
 {
     public required string Familia { get; set; }
 }
+public class Req
+{
+    public required string Familia { get; set; }
+}

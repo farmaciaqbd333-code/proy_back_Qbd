@@ -47,14 +47,19 @@ namespace proy_back_Qbd.Controllers
                 return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
             }
         }
-
+        /// <summary>
+        /// Listar Nota Salida por sede
+        /// </summary>
         [HttpGet("{id}")]
-        public async Task<ActionResult<List<NotaSalidaListaRes>>> Get(int id)
+        public async Task<ActionResult<List<NotaSalidaListaRes>>> Listar(int id)
         {
             var lista = await _serviceNotaSalida.ObtenerListaAsync(id);
             return Ok(lista);
         }
 
+        /// <summary>
+        /// Listar Detalle de Nota Salida
+        /// </summary>
         [HttpGet("detalle/{id}")]
         public async Task<ActionResult<List<NotaSalidaDetalleRes>>> GetDetalle(int id)
         {
@@ -68,6 +73,10 @@ namespace proy_back_Qbd.Controllers
                 return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
             }
         }
+
+        /// <summary>
+        /// Listar articulos por familia, sede y id
+        /// </summary>
         [HttpGet("articulo/{id}")]
         public async Task<ActionResult<List<RegistrosListaRes>>> Get(int id, string familia, int idSede)
         {
@@ -81,6 +90,7 @@ namespace proy_back_Qbd.Controllers
             await _serviceNotaSalida.EliminarAsync(id);
             return Ok();
         }
+        
         [HttpPost("familias")]
         [ProducesResponseType(typeof(List<FamiliasListaRes>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -96,5 +106,6 @@ namespace proy_back_Qbd.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        
     }
 }

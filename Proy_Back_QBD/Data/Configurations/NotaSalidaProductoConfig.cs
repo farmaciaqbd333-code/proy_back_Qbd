@@ -19,7 +19,8 @@ public class NotaSalidaProductoConfiguration : IEntityTypeConfiguration<NotaSali
 
         builder.Property(e => e.IdCompraProducto)
             .HasColumnName("id_compra_producto");
-
+        builder.Property(e => e.Observacion)
+                    .HasColumnName("observacion");
         builder.Property(e => e.Cantidad)
             .HasColumnName("cantidad");
 
@@ -49,10 +50,13 @@ public class NotaSalidaProductoConfiguration : IEntityTypeConfiguration<NotaSali
         builder.Property(e => e.CantidadPaquete)
             .HasColumnName("cantidad_paquete");
 
+        builder.Property(e => e.CantidadRecibida)
+.HasColumnName("cantidad_recibida");
+
         builder.HasOne(e => e.NotaSalida)
             .WithMany(wm => wm.NotaSalidaProductos)
             .HasForeignKey(e => e.IdNotaSalida)
-            .OnDelete(DeleteBehavior.Cascade);        
+            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(e => e.CompraProducto)
             .WithMany(wm => wm.NotaSalidaProductos)
