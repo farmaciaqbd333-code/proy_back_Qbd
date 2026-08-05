@@ -19,6 +19,7 @@ namespace Proy_back_QBD.Models
         public int? IdInsumo { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public Insumo? Insumo { get; set; }  // Puede ser nulo
+        [ForeignKey("IdEmpaque")]
         [JsonIgnore]
         public Empaque? Empaque { get; set; }  // Puede ser nulo
         [Column("empaqueId")]
