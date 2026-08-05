@@ -40,8 +40,11 @@ public class FormulaRController : ControllerBase
             return BadRequest();
         }
 
-
         string? response = await _formulaRService.Crear(request);
+        if (response != null && response.StartsWith("Error"))
+        {
+            return BadRequest(new { message = response });
+        }
 
         return Ok(response);
     }
@@ -56,6 +59,10 @@ public class FormulaRController : ControllerBase
         }
 
         string? response = await _formulaRService.Actualizar(id, request);
+        if (response != null && response.StartsWith("Error"))
+        {
+            return BadRequest(new { message = response });
+        }
 
         return Ok(response);
     }
