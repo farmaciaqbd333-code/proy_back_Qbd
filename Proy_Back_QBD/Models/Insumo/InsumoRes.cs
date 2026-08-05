@@ -37,6 +37,8 @@ namespace Proy_back_QBD.Dto.Insumo
         public string? Pdf { get; set; }
         public decimal? Densidad { get; set; }
         public string? CodigoUbicacion { get; set; }
+        public string? Clasificacion { get; set; }
+        public string? Tipo { get; set; }
     }
     public class InsumoFindIdRes
     {
