@@ -30,6 +30,8 @@ namespace Proy_back_QBD.Services
                 // Fórmula
                 FormulaRapida formulaR = _mapper.Map<FormulaRapida>(request.FormulaR);
                 formulaR.ModificadorId = formulaR.CreadorId;
+                formulaR.FechaCreacion = DateTime.Now;
+                formulaR.FechaModificacion = DateTime.Now;
 
                 await _context.FormulasR.AddAsync(formulaR);
                 await _context.SaveChangesAsync();
@@ -41,6 +43,8 @@ namespace Proy_back_QBD.Services
                     {
                         InsumoR insumoR = _mapper.Map<InsumoR>(item);
                         insumoR.FormulaRId = formulaR.Id;
+                        insumoR.FechaCreacion = DateTime.Now;
+                        insumoR.FechaModificacion = DateTime.Now;
 
                         await _context.InsumosR.AddAsync(insumoR);
                     }
@@ -66,7 +70,8 @@ namespace Proy_back_QBD.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return $"Error: {ex.Message}";
+                var innerMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return $"Error: {ex.Message} -> {innerMsg}";
             }
         }
         public async Task<string> Actualizar(int id, FormulaRUpdReq request)

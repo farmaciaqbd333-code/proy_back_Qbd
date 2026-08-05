@@ -23,11 +23,9 @@ namespace Proy_back_QBD.Models
         [Column("cantidad")]
         public decimal Cantidad { get; set; }  // Puede ser nulo    
         [Column("fecha_creacion")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime? FechaCreacion { get; set; }  // Puede ser nulo
+        public DateTime? FechaCreacion { get; set; } = DateTime.Now;  // Puede ser nulo
         [Column("fecha_modificacion")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime? FechaModificacion { get; set; }  // Puede ser nulo
+        public DateTime? FechaModificacion { get; set; } = DateTime.Now;  // Puede ser nulo
         [Column("creador_id")]
         public int? CreadorId { get; set; }  // Puede ser nulo
         [JsonIgnore]
