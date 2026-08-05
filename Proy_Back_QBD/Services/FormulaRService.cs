@@ -163,6 +163,7 @@ namespace Proy_back_QBD.Services
                                                             IdInsumo = s.IdInsumo,
                                                             Procedimiento = s.Procedimiento,
                                                             Clasificacion = s.Clasificacion,
+                                                            Cantidad = s.Cantidad,
                                                             Aspecto = s.Aspecto,
                                                             Color = s.Color,
                                                             Olor = s.Olor,

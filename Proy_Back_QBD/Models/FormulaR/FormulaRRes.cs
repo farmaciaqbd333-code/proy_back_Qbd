@@ -12,6 +12,7 @@ namespace Proy_back_QBD.Dto.Auxiliares
         public required string Descripcion { get; set; }
         public required string Clasificacion { get; set; }
         public int? IdInsumo { get; set; }  // Puede ser nulo
+        public decimal? Cantidad { get; set; }  // Puede ser nulo
         public int? IdEmpaque { get; set; }  // Puede ser nulo
         public string? Procedimiento { get; set; }  // Puede ser nulo
         public string? Aspecto { get; set; }  // Puede ser nulo
