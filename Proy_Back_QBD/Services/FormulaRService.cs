@@ -195,6 +195,7 @@ namespace Proy_back_QBD.Services
                     Procedimiento = s.Procedimiento,
                     Clasificacion = s.Clasificacion,
                     Tipo = s.Insumo.Tipo,
+                    FormaF = s.Insumo.FormaFarmaceutica,
                     Cantidad = s.Cantidad,
                     Aspecto = s.Aspecto,
                     Color = s.Color,
