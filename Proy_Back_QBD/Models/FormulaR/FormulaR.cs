@@ -21,7 +21,7 @@ namespace Proy_back_QBD.Models
         public Insumo? Insumo { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public Empaque? Empaque { get; set; }  // Puede ser nulo
-        [Column("id_empaque")]
+        [NotMapped]
         public int? IdEmpaque { get; set; }  // Puede ser nulo
         [Column("procedimiento")]
         public string? Procedimiento { get; set; }  // Puede ser nulo
