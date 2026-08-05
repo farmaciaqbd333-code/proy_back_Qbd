@@ -163,11 +163,14 @@ namespace Proy_back_QBD.Services
                 .Where(w => w.IdSede == idSede)
                 .Select(s => s.IdFormulaRapida).ToListAsync();
 
+            List<int> formulasConSede = await _context.FormulaRSedes
+                .Select(s => s.IdFormulaRapida).Distinct().ToListAsync();
+
             var query = _context.FormulasR.AsQueryable();
 
             if (idSede > 0)
             {
-                query = query.Where(w => idFormulasR.Contains(w.Id));
+                query = query.Where(w => idFormulasR.Contains(w.Id) || !formulasConSede.Contains(w.Id));
             }
 
             if (!string.IsNullOrEmpty(clasificacion) && clasificacion.ToUpper() != "TODAS")
