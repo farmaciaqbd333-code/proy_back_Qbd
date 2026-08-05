@@ -23,11 +23,9 @@ public class FormulaRController : ControllerBase
 
     [HttpGet("{idSede}")]
     [SwaggerResponse(200, "Creacion exitosa", typeof(FormulaRRes))]
-    public async Task<IActionResult> ListaFormulaR(int idSede, string clasificacion)
+    public async Task<IActionResult> ListaFormulaR(int idSede, [FromQuery] string? clasificacion = null)
     {
-
-        List<FormulaRRes>? response = await _formulaRService.Listar(idSede, clasificacion);
-
+        List<FormulaRRes>? response = await _formulaRService.Listar(idSede, clasificacion ?? "");
         return Ok(response);
     }
 
