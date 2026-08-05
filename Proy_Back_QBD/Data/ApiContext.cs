@@ -184,6 +184,9 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<FormulaRapida>((e) =>
             {
+                e.Property(p => p.IdEmpaque).HasColumnName("empaqueId");
+                e.HasOne(x => x.Empaque).WithMany().HasForeignKey(x => x.IdEmpaque);
+                e.HasOne(x => x.Insumo).WithMany().HasForeignKey(x => x.IdInsumo);
                 e.HasOne(x => x.Creador).WithMany(x => x.FormulaRsCreadas).HasForeignKey(x => x.CreadorId);
                 e.HasOne(x => x.Modificador).WithMany(x => x.FormulasRsModificadas).HasForeignKey(x => x.ModificadorId);
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();

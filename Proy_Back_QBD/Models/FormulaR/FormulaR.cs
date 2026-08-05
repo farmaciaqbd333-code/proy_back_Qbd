@@ -19,6 +19,7 @@ namespace Proy_back_QBD.Models
         public int? IdInsumo { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public Insumo? Insumo { get; set; }  // Puede ser nulo
+        [ForeignKey("IdEmpaque")]
         [JsonIgnore]
         public Empaque? Empaque { get; set; }  // Puede ser nulo
         [Column("empaqueId")]
@@ -38,11 +39,9 @@ namespace Proy_back_QBD.Models
         [Column("ph")]
         public string? Ph { get; set; }  // Puede ser nulo
         [Column("fecha_creacion")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime FechaCreacion { get; set; }           // Fecha de creación del pedido
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;           // Fecha de creación del pedido
         [Column("fecha_modificacion")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public DateTime FechaModificacion { get; set; }       // Fecha de la última modificación del pedido
+        public DateTime FechaModificacion { get; set; } = DateTime.Now;       // Fecha de la última modificación del pedido
         [Column("creador_id")]
         public int CreadorId { get; set; }
         [JsonIgnore]

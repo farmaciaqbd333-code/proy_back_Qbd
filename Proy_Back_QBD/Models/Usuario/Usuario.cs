@@ -57,6 +57,8 @@ namespace Proy_back_QBD.Models
         public TimeOnly? HorarioRegreso { get; set; }  // Puede ser nulo
         [Column("codigo")]
         public string? Codigo { get; set; }
+        [Column("id_general")]
+        public int? IdGeneral { get; set; }
         [JsonIgnore]
         public List<Asistencia>? AsistenciasCreadas { get; set; }
         [JsonIgnore]

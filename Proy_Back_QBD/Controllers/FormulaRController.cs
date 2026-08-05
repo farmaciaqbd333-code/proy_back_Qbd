@@ -23,11 +23,9 @@ public class FormulaRController : ControllerBase
 
     [HttpGet("{idSede}")]
     [SwaggerResponse(200, "Creacion exitosa", typeof(FormulaRRes))]
-    public async Task<IActionResult> ListaFormulaR(int idSede, string clasificacion)
+    public async Task<IActionResult> ListaFormulaR(int idSede, [FromQuery] string? clasificacion = null)
     {
-
-        List<FormulaRRes>? response = await _formulaRService.Listar(idSede, clasificacion);
-
+        List<FormulaRRes>? response = await _formulaRService.Listar(idSede, clasificacion ?? "");
         return Ok(response);
     }
 
@@ -40,8 +38,11 @@ public class FormulaRController : ControllerBase
             return BadRequest();
         }
 
-
         string? response = await _formulaRService.Crear(request);
+        if (response != null && response.StartsWith("Error"))
+        {
+            return BadRequest(new { message = response });
+        }
 
         return Ok(response);
     }
@@ -56,6 +57,10 @@ public class FormulaRController : ControllerBase
         }
 
         string? response = await _formulaRService.Actualizar(id, request);
+        if (response != null && response.StartsWith("Error"))
+        {
+            return BadRequest(new { message = response });
+        }
 
         return Ok(response);
     }

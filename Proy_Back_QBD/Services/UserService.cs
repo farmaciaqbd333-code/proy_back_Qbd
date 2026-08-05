@@ -35,6 +35,7 @@ namespace Proy_back_QBD.Services
                 Dni = a.Persona.Dni,
                 SedeId = a.Sede.Id,
                 Id = a.Id,
+                IdGeneral = a.IdGeneral,
                 Estado = a.Estado,
                 HorarioSalida = a.HorarioSalida,
             })
@@ -94,6 +95,7 @@ namespace Proy_back_QBD.Services
             .Select(a => new UsuarioListaRes
             {
                 Id = a.Id,
+                IdGeneral = a.IdGeneral,
                 Contrasena = a.Contrasena,
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
@@ -127,6 +129,7 @@ namespace Proy_back_QBD.Services
             .Select(a => new UsuarioByIdRes
             {
                 Id = a.Id,
+                IdGeneral = a.IdGeneral,
                 Contrasena = a.Contrasena,
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,

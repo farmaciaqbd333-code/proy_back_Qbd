@@ -29,27 +29,38 @@ namespace Proy_back_QBD.Services
             {
                 // Fórmula
                 FormulaRapida formulaR = _mapper.Map<FormulaRapida>(request.FormulaR);
+                formulaR.IdEmpaque = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
                 formulaR.ModificadorId = formulaR.CreadorId;
+                formulaR.FechaCreacion = DateTime.Now;
+                formulaR.FechaModificacion = DateTime.Now;
 
                 await _context.FormulasR.AddAsync(formulaR);
                 await _context.SaveChangesAsync();
 
                 // Insumos
-                foreach (var item in request.InsumosR)
+                if (request.InsumosR != null && request.InsumosR.Any())
                 {
-                    InsumoR insumoR = _mapper.Map<InsumoR>(item);
-                    insumoR.FormulaRId = formulaR.Id;
+                    foreach (var item in request.InsumosR)
+                    {
+                        InsumoR insumoR = _mapper.Map<InsumoR>(item);
+                        insumoR.FormulaRId = formulaR.Id;
+                        insumoR.FechaCreacion = DateTime.Now;
+                        insumoR.FechaModificacion = DateTime.Now;
 
-                    await _context.InsumosR.AddAsync(insumoR);
+                        await _context.InsumosR.AddAsync(insumoR);
+                    }
                 }
 
-                FormulaRapidaSede formulaRapidaSede = new()
+                if (request.FormulaR.IdSede.HasValue && request.FormulaR.IdSede.Value > 0)
                 {
-                    IdSede = request.FormulaR.IdSede.Value,
-                    IdFormulaRapida = formulaR.Id
-                };
+                    FormulaRapidaSede formulaRapidaSede = new()
+                    {
+                        IdSede = request.FormulaR.IdSede.Value,
+                        IdFormulaRapida = formulaR.Id
+                    };
 
-                await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
+                    await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
+                }
 
                 await _context.SaveChangesAsync();
 
@@ -60,7 +71,8 @@ namespace Proy_back_QBD.Services
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return $"Error: {ex.Message}";
+                var innerMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return $"Error: {ex.Message} -> {innerMsg}";
             }
         }
         public async Task<string> Actualizar(int id, FormulaRUpdReq request)
@@ -79,6 +91,11 @@ namespace Proy_back_QBD.Services
 
                 // Actualizamos las propiedades de FormulaR
                 _mapper.Map(request.FormulaR, formulaR);  // Esto actualiza las propiedades de formulaR con los datos de request            
+                var empaqueVal = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
+                if (empaqueVal.HasValue && empaqueVal.Value > 0)
+                {
+                    formulaR.IdEmpaque = empaqueVal.Value;
+                }
 
                 // Guardamos los cambios
 
@@ -149,40 +166,55 @@ namespace Proy_back_QBD.Services
         public async Task<List<FormulaRRes>?> Listar(int idSede, string clasificacion)
         {
             List<int> idFormulasR = await _context.FormulaRSedes
-            .Where(w => w.IdSede == idSede)
-            .Select(s => s.IdFormulaRapida).ToListAsync();
+                .Where(w => w.IdSede == idSede)
+                .Select(s => s.IdFormulaRapida).ToListAsync();
 
-            List<FormulaRRes> response = await _context.FormulasR
-            .Where(w => w.Clasificacion == clasificacion)
-                                                        .OrderBy(obd => obd.FechaCreacion)
-                                                        .Select(s => new FormulaRRes
-                                                        {
-                                                            Id = s.Id,
-                                                            Descripcion = s.Descripcion,
-                                                            IdEmpaque = s.IdEmpaque,
-                                                            IdInsumo = s.IdInsumo,
-                                                            Procedimiento = s.Procedimiento,
-                                                            Clasificacion = s.Clasificacion,
+            List<int> formulasConSede = await _context.FormulaRSedes
+                .Select(s => s.IdFormulaRapida).Distinct().ToListAsync();
+
+            var query = _context.FormulasR.AsQueryable();
+
+            if (idSede > 0)
+            {
+                query = query.Where(w => idFormulasR.Contains(w.Id) || !formulasConSede.Contains(w.Id));
+            }
+
+            if (!string.IsNullOrEmpty(clasificacion) && clasificacion.ToUpper() != "TODAS")
+            {
+                query = query.Where(w => w.Clasificacion == clasificacion);
+            }
+
+            List<FormulaRRes> response = await query
+                .OrderByDescending(obd => obd.Id)
+                .Select(s => new FormulaRRes
+                {
+                    Id = s.Id,
+                    Descripcion = s.Descripcion,
+                    IdEmpaque = s.IdEmpaque,
+                    IdInsumo = s.IdInsumo,
+                    Procedimiento = s.Procedimiento,
+                    Clasificacion = s.Clasificacion,
                                                             Cantidad = s.Cantidad,
-                                                            Aspecto = s.Aspecto,
-                                                            Color = s.Color,
-                                                            Olor = s.Olor,
-                                                            Ph = s.Ph,
-                                                            Insumos = s.InsumoR
-                                                            .OrderBy(obd => obd.FechaCreacion)
-                                                            .Select(i => new InsumoFormR
-                                                            {
-                                                                Id = i.InsumoId,
-                                                                Codigo = "MP-QbD-" + i.InsumoId,
-                                                                Porcentaje = i.Porcentaje,
-                                                                Descripcion = i.Insumo.Descripcion,
-                                                                UnidadMedida = i.Insumo.UnidadMedida,
-                                                                FactorCorreccion = i.Insumo.FactorCorreccion,
-                                                                Dilucion = i.Insumo.Dilucion,
-                                                                Cantidad = i.Cantidad * 1000
-                                                            }).ToList()
-                                                        })
-                                                        .ToListAsync();
+                    Aspecto = s.Aspecto,
+                    Color = s.Color,
+                    Olor = s.Olor,
+                    Ph = s.Ph,
+                    Insumos = s.InsumoR
+                    .OrderBy(obd => obd.FechaCreacion)
+                    .Select(i => new InsumoFormR
+                    {
+                        Id = i.InsumoId,
+                        Codigo = "MP-QbD-" + i.InsumoId,
+                        Porcentaje = i.Porcentaje,
+                        Descripcion = i.Insumo.Descripcion,
+                        UnidadMedida = i.Insumo.UnidadMedida,
+                        FactorCorreccion = i.Insumo.FactorCorreccion,
+                        Dilucion = i.Insumo.Dilucion,
+                        Cantidad = i.Cantidad * 1000
+                    }).ToList()
+                })
+                .ToListAsync();
+
             return response;
         }
 

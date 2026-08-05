@@ -123,7 +123,9 @@ namespace Proy_back_QBD.Services
                                                 Refrigerado = s.Refrigerado,
                                                 Pdf = s.Pdf,
                                                 Densidad = s.Densidad,
-                                                CodigoUbicacion = s.CodigoUbicacion
+                                                CodigoUbicacion = s.CodigoUbicacion,
+                                                Clasificacion = s.Clasificacion,
+                                                Tipo = s.Tipo
                                             })
                                             .ToListAsync();
             if (response == null)

@@ -30,6 +30,8 @@ namespace Proy_back_QBD.Dto.Insumo
         public int CreadorId { get; set; }
         public decimal? Densidad { get; set; }
         public string? CodigoUbicacion { get; set; }
+        public string? Clasificacion { get; set; }
+        public string? Tipo { get; set; }
     }
     public class InsumoUpdateReq
     {
@@ -55,5 +57,7 @@ namespace Proy_back_QBD.Dto.Insumo
         public int ModificadorId { get; set; }
         public decimal? Densidad { get; set; }
         public string? CodigoUbicacion { get; set; }
+        public string? Clasificacion { get; set; }
+        public string? Tipo { get; set; }
     }
 }

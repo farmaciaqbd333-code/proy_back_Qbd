@@ -10,6 +10,7 @@ namespace Proy_back_QBD.Dto.Request
         public int? TipoId { get; set; }
         public string? Contrasena { get; set; }
         public int SedeId { get; set; }
+        public int? IdGeneral { get; set; }
         public TimeOnly? HorarioEntrada { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
         public PersonaCreateReq? Persona { get; set; }
@@ -23,6 +24,7 @@ namespace Proy_back_QBD.Dto.Request
         public string? Contrasena { get; set; }
         public int? TipoId { get; set; }
         public int SedeId { get; set; }
+        public int? IdGeneral { get; set; }
         public TimeOnly? HorarioEntrada { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
         public PersonaUpdateReq? Persona { get; set; }
