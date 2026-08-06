@@ -25,6 +25,8 @@ namespace proy_back_Qbd.Models
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
         [Column("pdf")] public string? Pdf { get; set; }
+        [Column("observacion")] public string? Observacion { get; set; }
+        [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
         public Compra? Compra { get; set; }
         public Economato? Economato { get; set; }
         public List<AjusteEconomato>? AjusteEconomatos { get; set; }

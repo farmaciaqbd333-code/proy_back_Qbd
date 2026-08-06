@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 namespace proy_back_Qbd.Models.Kardex
 {
-
     public class StockRes
     {
         public required string Codigo { get; set; }
