@@ -85,6 +85,9 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.IdModificador)
                 .HasColumnName("id_modificador");
 
+            builder.Property(x => x.IdSede)
+                .HasColumnName("id_sede");
+
             // Relaciones
 
             builder.HasOne(x => x.Insumo)
@@ -95,7 +98,7 @@ namespace proy_back_Qbd.Data.Configurations
             builder.HasOne(x => x.Creador)
                 .WithMany(wm => wm.ProductosIntermediosCreados)
                 .HasForeignKey(x => x.IdCreador);
-                
+
             builder.HasOne(x => x.Elaborador)
                 .WithMany(wm => wm.ProductosIntermediosElaborados)
                 .HasForeignKey(x => x.IdElaborado);
@@ -107,6 +110,10 @@ namespace proy_back_Qbd.Data.Configurations
             builder.HasOne(x => x.Modificador)
                 .WithMany(wm => wm.ProductosIntermediosModificados)
                 .HasForeignKey(x => x.IdModificador);
+
+            builder.HasOne(x => x.Sede)
+                .WithMany(wm => wm.ProductosIntermedios)
+                .HasForeignKey(x => x.IdSede);
         }
     }
 }

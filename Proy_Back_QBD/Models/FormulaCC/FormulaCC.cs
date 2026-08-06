@@ -18,7 +18,7 @@ namespace Proy_back_QBD.Models
         [Column("sede_id")]
         public int SedeId { get; set; }
         [JsonIgnore]
-        public Insumo Insumo { get; set; }
+        public Insumo? Insumo { get; set; }
         [Column("porcentaje")]
         public decimal Porcentaje { get; set; }
         [Column("variable")]

@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.ProductoIntermedio;
 
 namespace Proy_back_QBD.Models
 {
@@ -69,6 +70,8 @@ namespace Proy_back_QBD.Models
         public List<NotaSalida>? NotaSalidasDestino { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public List<NotaSalida>? NotaSalidasOrigen { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<ProductoIntermedio>? ProductosIntermedios { get; set; }  // Puede ser nulo
     }
 
 }

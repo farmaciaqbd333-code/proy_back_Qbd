@@ -27,6 +27,7 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public DateTime? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
+        public int? IdSede { get; set; }
 
         // Navigation Properties
         public Usuario? Creador { get; set; }
@@ -34,6 +35,7 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public Usuario? Elaborador { get; set; }
         public Usuario? Autorizador { get; set; }
         public Insumo? Insumo { get; set; }
+        public Sede? Sede { get; set; }
         public List<InsumoProductoIntermedio> InsumoProductoIntermedio { get; set; } = new();
         public List<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; } = new();
     }
