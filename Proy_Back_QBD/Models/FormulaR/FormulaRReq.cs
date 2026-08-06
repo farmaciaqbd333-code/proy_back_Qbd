@@ -41,6 +41,7 @@ namespace Proy_back_QBD.Dto.Auxiliares
         public string? Color { get; set; }  // Puede ser nulo
         public string? Olor { get; set; }  // Puede ser nulo
         public string? Clasificacion { get; set; }  // Puede ser nulo
+        public decimal? Cantidad { get; set; }  // Puede ser nulo
         public string? Tipo { get; set; }  // TÓPICO / ORAL
         public string? Ph { get; set; }  // Puede ser nulo
         public int ModificadorId { get; set; }
@@ -50,15 +51,6 @@ namespace Proy_back_QBD.Dto.Auxiliares
     {
         public required FormularRUpdTReq FormulaR { get; set; }
         public required List<InsumoRUpdateReq> InsumosR { get; set; }
-        // public required string Descripcion { get; set; }  // Puede ser nulo
-        // public string? Empaque { get; set; }  // Puede ser nulo
-        // public string? Procedimiento { get; set; }  // Puede ser nulo
-        // public string? Aspecto { get; set; }  // Puede ser nulo
-        // public string? Color { get; set; }  // Puede ser nulo
-        // public string? Olor { get; set; }  // Puede ser nulo
-        // public string? Ph { get; set; }  // Puede ser nulo
-        // public int ModificadorId { get; set; }
-        // public int? SedeId { get; set; }  // Puede ser nulo
 
     }
     public class FormularRReq2

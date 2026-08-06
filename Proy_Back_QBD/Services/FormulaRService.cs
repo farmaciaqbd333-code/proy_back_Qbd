@@ -29,6 +29,10 @@ namespace Proy_back_QBD.Services
             {
                 // Fórmula
                 FormulaRapida formulaR = _mapper.Map<FormulaRapida>(request.FormulaR);
+                if (formulaR.Cantidad != null)
+                {
+                    formulaR.Cantidad = formulaR.Cantidad / 1000;
+                }
                 formulaR.IdEmpaque = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
                 if (request.FormulaR.IdInsumo.HasValue && request.FormulaR.IdInsumo.Value > 0)
                     formulaR.IdInsumo = request.FormulaR.IdInsumo.Value;
@@ -47,6 +51,7 @@ namespace Proy_back_QBD.Services
                         InsumoR insumoR = _mapper.Map<InsumoR>(item);
                         insumoR.FormulaRId = formulaR.Id;
                         insumoR.FechaCreacion = DateTime.Now;
+                        insumoR.Cantidad = item.Cantidad / 1000;
                         insumoR.FechaModificacion = DateTime.Now;
 
                         await _context.InsumosR.AddAsync(insumoR);
@@ -94,6 +99,7 @@ namespace Proy_back_QBD.Services
                 // Actualizamos las propiedades de FormulaR
                 _mapper.Map(request.FormulaR, formulaR);
                 formulaR.FechaModificacion = DateTime.Now;
+                formulaR.Cantidad = request.FormulaR.Cantidad / 1000;
 
                 var empaqueVal = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
                 if (empaqueVal.HasValue && empaqueVal.Value > 0)
@@ -131,7 +137,7 @@ namespace Proy_back_QBD.Services
                                 FormulaRId = formulaR.Id,
                                 InsumoId = insumoReq.InsumoId,
                                 Porcentaje = insumoReq.Porcentaje,
-                                Cantidad = insumoReq.Cantidad,
+                                Cantidad = insumoReq.Cantidad / 1000,
                                 CreadorId = insumoReq.CreadorId ?? insumoReq.ModificadorId ?? formulaR.CreadorId,
                                 ModificadorId = insumoReq.ModificadorId ?? formulaR.CreadorId,
                                 FechaCreacion = DateTime.Now,
