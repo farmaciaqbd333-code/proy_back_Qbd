@@ -142,4 +142,22 @@ namespace proy_back_Qbd.Models
         public bool? Conformidad { get; set; }
         public string? Familia { get; set; }
     }
+     public class CompraInsumoRes2
+    {
+        public int Id { get; set; } // ID primario de la fila
+        public required string Reg { get; set; }
+        public required int IdInsumo { get; set; }
+        public required string Codigo { get; set; }
+        public required string DescripcionQBD { get; set; }
+        public required string DescripcionFactura { get; set; }
+        public required decimal CantidadSolicitada { get; set; }
+        public required string UM { get; set; }
+        public required decimal CUnitario { get; set; }
+        public required decimal CTotal { get; set; }
+        public bool Coa { get; set; }
+        public string? Lote { get; set; }
+        public string? RegistroSanitario { get; set; }
+        public bool Conforme { get; set; }
+        public string? Familia { get; set; }
+    }
 }

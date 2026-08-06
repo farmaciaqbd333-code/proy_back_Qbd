@@ -140,6 +140,7 @@ namespace proy_back_Qbd.Services
             }
 
         }
+        // Fusionar 2 listas para entradas compras y notas de salida
         private async Task<List<StockRes>> ObtenerMateriaPrima(int idSede)
         {
             return await _context.Insumos
@@ -150,6 +151,7 @@ namespace proy_back_Qbd.Services
                 Codigo = s.Key.Id + "",
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
+                //cambiar a cantidad recibida
                 Entradas = s.Sum(x => x.CompraInsumos!.Sum(ci => 
                     ci.StockInsumos.Any(w => w.IdSede == idSede)
                         ? ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible)
@@ -157,6 +159,7 @@ namespace proy_back_Qbd.Services
                             ? ci.StockInsumos.Sum(sm => sm.StockDisponible)
                             : ci.PaqueteInsumos.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario : 0))
                 )),
+                //adjuntar salidas de nota de salida y magistrales
                 Salidas = s.Sum(x => x.ProductoIntermedio!.Sum(s => s.LoteEstTotal)),
                 Ajustes = s.Sum(s => s.CompraInsumos!.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
                 Baja = s.Sum(x => x.CompraInsumos!
@@ -202,6 +205,7 @@ namespace proy_back_Qbd.Services
                                         ? ce.StockEmpaques.Sum(sm => sm.StockDisponible)
                                         : ce.PaqueteEmpaques.Sum(p => p.Paquete != null ? p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario : 0))
                             )),
+                            // adjuntar en pi, fm y nota de salida
                             Salidas = 0,
                             Ajustes = s.Sum(s => s.CompraEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
                             Baja = s.Sum(x => x.CompraEmpaques
@@ -220,6 +224,7 @@ namespace proy_back_Qbd.Services
                             Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                             Um = s.Select(s => s.UnidadMedida).FirstOrDefault() ?? "Und",
                             Entradas = s.Sum(s => s.CompraEconomatos.Sum(ce => ce.CantidadSolicitada)),
+                            //nota de salida
                             Salidas = 0,
                             Ajustes = s.Sum(s => s.CompraEconomatos.Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste))),
                             Baja = 0
@@ -235,6 +240,7 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = "UND",
                 Entradas = s.Sum(s => s.CompraProductos.Sum(s => s.CantidadSolicitada)),
+                //nota de salida
                 Salidas = 0,
                 Ajustes = s.Sum(s => s.CompraProductos.Sum(s => s.AjusteProductoTerminados.Sum(s => s.Ajuste))),
                 Baja = 0

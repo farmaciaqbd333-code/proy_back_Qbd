@@ -19,6 +19,7 @@ namespace proy_back_Qbd.Models
         public int IdDetalleInsumo { get; set; }
         public required string DescripcionFactura { get; set; }
         public required decimal CantidadRecibida { get; set; }
+        public string? Observacion { get; set; }
         public required DateTime FechaFabricacion { get; set; }
         public required DateTime FechaVencimiento { get; set; }
         public required bool Coa { get; set; }
@@ -33,6 +34,7 @@ namespace proy_back_Qbd.Models
         public required string DescripcionFactura { get; set; }
         public int? IdFabricante { get; set; }
         public required decimal CantidadRecibida { get; set; }
+        public string? Observacion { get; set; }
         public required string Lote { get; set; }
         public required string RegistroSanitario { get; set; }
         public required DateTime FechaFabricacion { get; set; }
@@ -43,6 +45,7 @@ namespace proy_back_Qbd.Models
     {
         public int IdDetalleEconomato { get; set; }
         public required string DescripcionFactura { get; set; }
+        public string? Observacion { get; set; }
         public int? IdFabricante { get; set; }
         public required decimal CantidadRecibida { get; set; }
         public required bool Conformidad { get; set; }
@@ -53,6 +56,7 @@ namespace proy_back_Qbd.Models
         public required string DescripcionFactura { get; set; }
         public int? IdFabricante { get; set; }
         public required decimal CantidadRecibida { get; set; }
+        public string? Observacion { get; set; }
         public required bool Coa { get; set; }
         public required string Lote { get; set; }
         public required DateTime FechaFabricacion { get; set; }
@@ -64,6 +68,7 @@ namespace proy_back_Qbd.Models
         public int IdDetalleOtro { get; set; }
         public required string DescripcionFactura { get; set; }
         public required decimal CantidadRecibida { get; set; }
+        public string? Observacion { get; set; }
         public required bool Conformidad { get; set; }
     }
 }

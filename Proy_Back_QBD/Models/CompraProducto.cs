@@ -28,6 +28,8 @@ namespace proy_back_Qbd.Models
         [Column("registro_sanitario")] public string? RegistroSanitario { get; set; }
         [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
+        [Column("observacion")] public string? Observacion { get; set; }
+        [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
         public Compra? Compra { get; set; }
         public Producto? Producto { get; set; }
         public List<AjusteProductoTerminado>? AjusteProductoTerminados { get; set; }

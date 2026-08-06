@@ -31,6 +31,7 @@ namespace proy_back_Qbd.Models
         [Column("condicion_almacenamiento")] public string? CondicionAlmacenamiento { get; set; } = "";
         [Column("pdf")] public string? Pdf { get; set; }
         [Column("observacion")] public string? Observacion { get; set; }
+        [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
         public Compra? Compra { get; set; }
         public Empaque? Empaque { get; set; }
         public Usuario? Creador { get; set; }
