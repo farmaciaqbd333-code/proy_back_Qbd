@@ -83,8 +83,8 @@ namespace Proy_back_QBD.Services
             {
                 // Buscar la formulaR existente
                 var formulaR = await _context.FormulasR
-                    .Include(i => i.InsumoR) // Suponiendo que el Id está en la solicitud
-                    .FirstOrDefaultAsync(f => f.Id == id); // Suponiendo que el Id está en la solicitud
+                    .Include(i => i.InsumoR)
+                    .FirstOrDefaultAsync(f => f.Id == id);
 
                 if (formulaR == null)
                 {
@@ -92,40 +92,63 @@ namespace Proy_back_QBD.Services
                 }
 
                 // Actualizamos las propiedades de FormulaR
-                _mapper.Map(request.FormulaR, formulaR);  // Esto actualiza las propiedades de formulaR con los datos de request            
+                _mapper.Map(request.FormulaR, formulaR);
+                formulaR.FechaModificacion = DateTime.Now;
+
                 var empaqueVal = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
                 if (empaqueVal.HasValue && empaqueVal.Value > 0)
                 {
                     formulaR.IdEmpaque = empaqueVal.Value;
                 }
-                if (request.FormulaR.IdInsumo.HasValue && request.FormulaR.IdInsumo.Value > 0)
-                    formulaR.IdInsumo = request.FormulaR.IdInsumo.Value;
-
-                // Guardamos los cambios
-
-                foreach (var insumoRequest in request.InsumosR)
+                else
                 {
-                    var insumoExistente = formulaR.InsumoR.FirstOrDefault(i => i.InsumoId == insumoRequest.InsumoId);
-                    if (insumoExistente != null)
-                    {
-                        _mapper.Map(insumoRequest, insumoExistente);
-                    }
+                    formulaR.IdEmpaque = null;
                 }
-                var result = await _context.SaveChangesAsync();
-                if (result > 0)
+
+                if (request.FormulaR.IdInsumo.HasValue && request.FormulaR.IdInsumo.Value > 0)
                 {
-                    return "Actualización exitosa";
+                    formulaR.IdInsumo = request.FormulaR.IdInsumo.Value;
                 }
                 else
                 {
-                    return "No se pudo actualizar la fórmula. Intente nuevamente.";
+                    formulaR.IdInsumo = null;
                 }
+
+                // Reemplazar la lista de insumos: eliminar anteriores e insertar la lista recibida
+                if (formulaR.InsumoR != null && formulaR.InsumoR.Any())
+                {
+                    _context.InsumosR.RemoveRange(formulaR.InsumoR);
+                }
+
+                if (request.InsumosR != null && request.InsumosR.Any())
+                {
+                    foreach (var insumoReq in request.InsumosR)
+                    {
+                        if (insumoReq.InsumoId > 0)
+                        {
+                            InsumoR nuevoInsumo = new()
+                            {
+                                FormulaRId = formulaR.Id,
+                                InsumoId = insumoReq.InsumoId,
+                                Porcentaje = insumoReq.Porcentaje,
+                                Cantidad = insumoReq.Cantidad,
+                                CreadorId = insumoReq.CreadorId ?? insumoReq.ModificadorId ?? formulaR.CreadorId,
+                                ModificadorId = insumoReq.ModificadorId ?? formulaR.CreadorId,
+                                FechaCreacion = DateTime.Now,
+                                FechaModificacion = DateTime.Now
+                            };
+                            await _context.InsumosR.AddAsync(nuevoInsumo);
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                return "Actualización exitosa";
             }
             catch (Exception ex)
             {
-                // Log de error
-                // Aquí podrías usar un logger para registrar el error
-                return $"Error: {ex.Message}";
+                var innerMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return $"Error: {ex.Message} -> {innerMsg}";
             }
         }
 
