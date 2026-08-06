@@ -129,7 +129,6 @@ namespace proy_back_Qbd.Services
                         FechaVencimiento = s.FechaVencimiento,
                         Saldo = s.StockEmpaques.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible),
                         Cantidad = s.PaqueteEmpaques.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario)
-
                     }).ToListAsync();
                 }
                 return response;
@@ -184,11 +183,11 @@ namespace proy_back_Qbd.Services
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas =
                 //Suma de cantidad en producto intermedios
-                s.Sum(s => s!.ProductoIntermedio!.Sum(s2 => s2.Tipo == "CAPSULA" ? s2.LoteEstandar : s2.LoteEstTotal)),
+                s.Sum(s => s!.ProductoIntermedio!.Where(w => w.IdSede == idSede).Sum(s2 => s2.Tipo == "CAPSULA" ? s2.LoteEstandar : s2.LoteEstTotal)),
                 Salidas = 0,
                 Ajustes = 0,
                 Baja = s.Sum(x => x.ProductoIntermedio!
-            .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
+            .Where(ci => ci.FechaVencimiento < DateTime.UtcNow && ci.IdSede == idSede)
             .Sum(s2 => s2.Tipo == "CAPSULA" ? s2.LoteEstandar : s2.LoteEstTotal)),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault()
             }).ToListAsync()
