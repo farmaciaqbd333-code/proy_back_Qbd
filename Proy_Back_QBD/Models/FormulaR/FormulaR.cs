@@ -36,6 +36,8 @@ namespace Proy_back_QBD.Models
         public decimal? Cantidad { get; set; }  // Puede ser nulo
         [Column("clasificacion")]
         public string? Clasificacion { get; set; }  // Puede ser nulo
+        [Column("tipo")]
+        public string? Tipo { get; set; }  // TÓPICO / ORAL
         [Column("ph")]
         public string? Ph { get; set; }  // Puede ser nulo
         [Column("fecha_creacion")]
