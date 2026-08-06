@@ -43,6 +43,7 @@ namespace Proy_back_QBD.Models
         public Usuario? Modificador { get; set; } = null!;
         public Familia Familia { get; set; } = null!;
         public List<FormulaCC> FormulasCC { get; set; } = new();
+        public List<FormulaRapida> FormulasRapidas { get; set; } = new();
         public List<CompraInsumos> CompraInsumos { get; set; } = new();
         public List<ProductoIntermedio> ProductoIntermedio { get; set; } = new();
         public List<InsumoProductoIntermedio> InsumoProductoIntermedio { get; set; } = new();

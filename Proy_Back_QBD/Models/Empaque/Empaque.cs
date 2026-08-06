@@ -42,5 +42,6 @@ namespace Proy_back_QBD.Models
         public List<Empaque>? ListaEtiquetas1 { get; set; }
         public List<Empaque>? ListaEtiquetas2 { get; set; }
         public List<EmpaqueProductoIntermedio>? EmpaqueProductoIntermedios { get; set; }
+        public List<FormulaRapida>? FormulasRapidas { get; set; }
     }
 }
