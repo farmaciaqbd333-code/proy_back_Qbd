@@ -30,6 +30,8 @@ namespace Proy_back_QBD.Services
                 // Fórmula
                 FormulaRapida formulaR = _mapper.Map<FormulaRapida>(request.FormulaR);
                 formulaR.IdEmpaque = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
+                if (request.FormulaR.IdInsumo.HasValue && request.FormulaR.IdInsumo.Value > 0)
+                    formulaR.IdInsumo = request.FormulaR.IdInsumo.Value;
                 formulaR.ModificadorId = formulaR.CreadorId;
                 formulaR.FechaCreacion = DateTime.Now;
                 formulaR.FechaModificacion = DateTime.Now;
@@ -96,6 +98,8 @@ namespace Proy_back_QBD.Services
                 {
                     formulaR.IdEmpaque = empaqueVal.Value;
                 }
+                if (request.FormulaR.IdInsumo.HasValue && request.FormulaR.IdInsumo.Value > 0)
+                    formulaR.IdInsumo = request.FormulaR.IdInsumo.Value;
 
                 // Guardamos los cambios
 
