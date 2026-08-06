@@ -229,7 +229,7 @@ namespace Proy_back_QBD.Services
                     Clasificacion = s.Clasificacion,
                     Tipo = s.Insumo.Tipo,
                     FormaF = s.Insumo.FormaFarmaceutica,
-                    Cantidad = s.Cantidad,
+                    Cantidad = s.Cantidad*1000,
                     Aspecto = s.Aspecto,
                     Color = s.Color,
                     Olor = s.Olor,
