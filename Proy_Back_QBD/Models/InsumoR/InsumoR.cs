@@ -10,18 +10,21 @@ namespace Proy_back_QBD.Models
     [Table("insumosR")]
     public class InsumoR
     {
+        [Column("id")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public int Id { get; set; }  // Puede ser nulo    
         [Column("formulaR_id")]
         public int FormulaRId { get; set; }  // Puede ser nulo    
         [JsonIgnore]
-        public required FormulaRapida FormulaR { get; set; }  // Puede ser nulo    
+        public FormulaRapida? FormulaR { get; set; }  // Puede ser nulo    
         [Column("insumo_id")]
         public int InsumoId { get; set; }  // Puede ser nulo  
         [JsonIgnore]
-        public required Insumo Insumo { get; set; }  // Puede ser nulo    
+        public Insumo? Insumo { get; set; }  // Puede ser nulo    
         [Column("porcentaje")]
-        public decimal Porcentaje { get; set; }  // Puede ser nulo    
+        public decimal? Porcentaje { get; set; }  // Puede ser nulo    
         [Column("cantidad")]
-        public decimal Cantidad { get; set; }  // Puede ser nulo    
+        public decimal? Cantidad { get; set; }  // Puede ser nulo    
         [Column("fecha_creacion")]
         public DateTime? FechaCreacion { get; set; } = DateTime.Now;  // Puede ser nulo
         [Column("fecha_modificacion")]

@@ -176,7 +176,6 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<InsumoR>((e) =>
             {
-                e.HasKey(fi => new { fi.FormulaRId, fi.InsumoId }); // Clave compuesta
                 e.HasOne(e => e.Creador).WithMany(e2 => e2.InsumoRsCreadas).HasForeignKey(e => e.CreadorId);
                 e.HasOne(e => e.Modificador).WithMany(e2 => e2.InsumoRsModificadas).HasForeignKey(e => e.ModificadorId);
                 e.Property(p => p.FechaCreacion).ValueGeneratedOnAdd();
