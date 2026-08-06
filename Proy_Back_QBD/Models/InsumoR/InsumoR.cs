@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -10,8 +11,9 @@ namespace Proy_back_QBD.Models
     [Table("insumosR")]
     public class InsumoR
     {
+        [Key]
         [Column("id")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }  // Puede ser nulo    
         [Column("formulaR_id")]
         public int FormulaRId { get; set; }  // Puede ser nulo    
