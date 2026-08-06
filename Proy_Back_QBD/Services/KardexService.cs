@@ -87,7 +87,7 @@ namespace proy_back_Qbd.Services
                 "PI" => await ObtenerProductosIntermedios(idSede),
                 "ME" => await ObtenerMateriaEmpaque(idSede),
                 "ECO" => await ObtenerEconomato(idSede),
-                "PT" => await ObtenerProductoTerminado(idSede),
+                "PT" => await ObtenerProductosIntermedios(idSede),
                 _ => throw new BadRequestException("FAMILIA NO VALIDA")
 
             };
@@ -201,7 +201,7 @@ namespace proy_back_Qbd.Services
                         {
                             Codigo = s.Key.Id + "",
                             Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
-                            Um = "Und",
+                            Um = "UND",
                             Entradas =
                             //Suma de cantidad recibida de compraEmpaque
                             s.Sum(x => x.CompraEmpaques!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) +
@@ -240,23 +240,6 @@ namespace proy_back_Qbd.Services
                             Ajustes = s.Sum(s => s.CompraEconomatos.Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste))),
                             Baja = 0
                         }).ToListAsync();
-        }
-        private async Task<List<StockRes>> ObtenerProductoTerminado(int idSede)
-        {
-            return await _context.Productos
-            .GroupBy(g => new { g.Id })
-            .Select(s => new StockRes()
-            {
-                Codigo = s.Key.Id + "",
-                Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
-                Um = "UND",
-                Entradas = s.Sum(s => s.CompraProductos.Sum(s => s.CantidadSolicitada)),
-                //nota de salida
-                Salidas = 0,
-                Ajustes = s.Sum(s => s.CompraProductos.Sum(s => s.AjusteProductoTerminados.Sum(s => s.Ajuste))),
-                Baja = 0
-            }).ToListAsync()
-            ;
         }
     }
 
