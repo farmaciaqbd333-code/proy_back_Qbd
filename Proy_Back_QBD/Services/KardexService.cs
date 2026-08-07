@@ -174,7 +174,7 @@ namespace proy_back_Qbd.Services
         private async Task<List<StockRes>> ObtenerProductosIntermedios(int idSede)
         {
             return await _context.Insumos
-            .Where(i => i.Clasificacion == "PI" && i.CompraInsumos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
+            .Where(i => i.Clasificacion == "PI" && i.ProductoIntermedio.FirstOrDefault(s => s.IdSede == idSede) != null)
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
             {
