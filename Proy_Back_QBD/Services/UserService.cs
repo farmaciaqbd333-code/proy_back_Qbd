@@ -165,16 +165,36 @@ namespace Proy_back_QBD.Services
 
         public async Task<List<AutorizadoEla>?> Lista2(int sedeId)
         {
-            List<AutorizadoEla>? lista = await _context.Usuarios
-            .Include(i => i.Persona)
-            .Where(w => w.SedeId == sedeId)
-            .Select(s => new AutorizadoEla
+            var sede = await _context.Sedes.FirstOrDefaultAsync(s => s.Id == sedeId);
+            bool esCentral = sedeId == 15 || (sede != null && sede.Nombre != null && sede.Nombre.ToUpper().Contains("CENTRAL"));
+
+            var query = _context.Usuarios
+                .Include(i => i.Persona)
+                .AsQueryable();
+
+            if (esCentral)
             {
-                Id = s.Id,
-                Rol = s.TipoId,
-                NombreCompleto = s.Persona.NombreCompleto,
-            })
-            .ToListAsync();
+                // Incluir usuarios que:
+                // 1. Pertenezcan a la sede Central directamente (SedeId == sedeId)
+                // 2. O que les hayan dado acceso a Central (IdGeneral == 1 => tiene acceso a módulo central)
+                // 3. O que sean administradores (TipoId == 1)
+                query = query.Where(w => w.SedeId == sedeId || w.IdGeneral == 1 || w.TipoId == 1);
+            }
+            else
+            {
+                query = query.Where(w => w.SedeId == sedeId);
+            }
+
+            List<AutorizadoEla>? lista = await query
+                .Where(w => w.Estado == true && w.Persona != null)
+                .Select(s => new AutorizadoEla
+                {
+                    Id = s.Id,
+                    Rol = s.TipoId,
+                    NombreCompleto = s.Persona.NombreCompleto,
+                })
+                .ToListAsync();
+
             if (lista == null)
             {
                 return null;
