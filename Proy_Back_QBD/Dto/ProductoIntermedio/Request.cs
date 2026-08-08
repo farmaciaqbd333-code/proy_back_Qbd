@@ -40,6 +40,7 @@ namespace Proy_back_QBD.Request
         public DateTime? FechaEmision { get; set; }
         public DateTime? FechaVencimiento { get; set; }
         public required int IdElaborado { get; set; }
+        public required int IdSede { get; set; }
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; } = string.Empty;
         public List<int> IdEmpaques { get; set; } = new();
