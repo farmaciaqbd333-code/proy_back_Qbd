@@ -111,7 +111,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         {
             var stockOrigen = await _context.StockEmpaques
                 .FirstOrDefaultAsync(x =>
-                    x.IdCompraEmpaque == item.Registro &&
+                    x.IdStockEmpaque == item.Registro &&
                     x.IdSede == request.IdSedeOrigen);
 
             if (stockOrigen == null)

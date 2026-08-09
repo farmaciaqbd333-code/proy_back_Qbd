@@ -57,7 +57,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Fabricante> Fabricantes { get; set; }
         public DbSet<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; }
-        public DbSet<StockEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
+        public DbSet<StockEmpaqueProductoIntermedio> StockEmpaqueProductoIntermedios { get; set; }
         public DbSet<FormulaRapidaSede> FormulaRSedes { get; set; }
         public DbSet<StockEconomato> StockEconomatos { get; set; }
         public DbSet<StockEmpaque> StockEmpaques { get; set; }

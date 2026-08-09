@@ -130,30 +130,30 @@ namespace proy_back_Qbd.Services
                             _logger.LogInformation(
                                 "Evaluando lote de stock. IdStockEmpaque: {IdStockEmpaque}, IdCompraEmpaque: {IdCompraEmpaque}, StockDisponible: {StockDisponible}, CantidadPendiente: {CantidadPendiente}",
                                 stockEmpaque.Id,
-                                stockEmpaque.IdCompraEmpaque,
+                                stockEmpaque.IdStockEmpaque,
                                 stockEmpaque.StockDisponible,
                                 cantidadPendiente);
 
-                            StockEmpaqueProductoIntermedio compraEmpaqueProductoIntermedio;
+                            StockEmpaqueProductoIntermedio stockEmpaqueProductoIntermedio;
 
                             if (stockEmpaque.StockDisponible >= cantidadPendiente)
                             {
-                                compraEmpaqueProductoIntermedio = new()
+                                stockEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadPendiente,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.IdStockEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
 
                                 stockEmpaque.StockDisponible -= cantidadPendiente;
 
-                                _context.CompraEmpaqueProductoIntermedios
-                                    .Add(compraEmpaqueProductoIntermedio);
+                                _context.StockEmpaqueProductoIntermedios
+                                    .Add(stockEmpaqueProductoIntermedio);
 
                                 _logger.LogInformation(
                                     "Consumo completado desde un solo lote. IdCompraEmpaque: {IdCompraEmpaque}, CantidadConsumida: {CantidadConsumida}, StockRestante: {StockRestante}",
-                                    stockEmpaque.IdCompraEmpaque,
+                                    stockEmpaque.IdStockEmpaque,
                                     cantidadPendiente,
                                     stockEmpaque.StockDisponible);
 
@@ -164,10 +164,10 @@ namespace proy_back_Qbd.Services
                             {
                                 decimal cantidadConsumida = stockEmpaque.StockDisponible;
 
-                                compraEmpaqueProductoIntermedio = new()
+                                stockEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadConsumida,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.IdStockEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
@@ -175,12 +175,12 @@ namespace proy_back_Qbd.Services
                                 cantidadPendiente -= cantidadConsumida;
                                 stockEmpaque.StockDisponible = 0;
 
-                                _context.CompraEmpaqueProductoIntermedios
-                                    .Add(compraEmpaqueProductoIntermedio);
+                                _context.StockEmpaqueProductoIntermedios
+                                    .Add(stockEmpaqueProductoIntermedio);
 
                                 _logger.LogInformation(
                                     "Consumo parcial del lote. IdCompraEmpaque: {IdCompraEmpaque}, CantidadConsumida: {CantidadConsumida}, CantidadPendiente: {CantidadPendiente}, StockRestante: 0",
-                                    stockEmpaque.IdCompraEmpaque,
+                                    stockEmpaque.IdStockEmpaque,
                                     cantidadConsumida,
                                     cantidadPendiente);
                             }
@@ -398,7 +398,7 @@ namespace proy_back_Qbd.Services
                     foreach (var compraEmpaqueProdInt in empaqueProdInt.StockEmpaqueProductoIntermedios.ToList())
                     {
                         compraEmpaqueProdInt.StockEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
-                        _context.CompraEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
+                        _context.StockEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
                     }
                     _context.EmpaqueProductoIntermedios.Remove(empaqueProdInt);
                 }
@@ -481,13 +481,13 @@ namespace proy_back_Qbd.Services
                                 compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadPendiente,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.IdStockEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
                                 stockEmpaque.StockDisponible -= cantidadPendiente;
                                 cantidadPendiente = 0;
-                                _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
+                                _context.StockEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                                 break;
                             }
                             else
@@ -495,13 +495,13 @@ namespace proy_back_Qbd.Services
                                 compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = stockEmpaque.StockDisponible,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.IdStockEmpaque,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
                                 cantidadPendiente -= stockEmpaque.StockDisponible;
                                 stockEmpaque.StockDisponible = 0;
-                                _context.CompraEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
+                                _context.StockEmpaqueProductoIntermedios.Add(compraEmpaqueProductoIntermedio);
                             }
                         }
                         if (cantidadPendiente > 0)
@@ -758,7 +758,7 @@ namespace proy_back_Qbd.Services
                     foreach (var compraEmpaqueProdInt in empaqueProdInt.StockEmpaqueProductoIntermedios.ToList())
                     {
                         compraEmpaqueProdInt.StockEmpaque.StockDisponible += compraEmpaqueProdInt.Cantidad;
-                        _context.CompraEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
+                        _context.StockEmpaqueProductoIntermedios.Remove(compraEmpaqueProdInt);
                     }
                     _context.EmpaqueProductoIntermedios.Remove(empaqueProdInt);
                 }

@@ -133,12 +133,12 @@ namespace proy_back_Qbd.Services
             };
             _context.PaqueteEmpaques.Add(paqueteEmpaque);
 
-            StockEmpaque? stockInsumos = await _context.StockEmpaques.Where(w => w.IdCompraEmpaque == compraEmpaque.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
+            StockEmpaque? stockInsumos = await _context.StockEmpaques.Where(w => w.IdStockEmpaque == compraEmpaque.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
             if (stockInsumos == null)
             {
                 StockEmpaque stockEmpaque = new()
                 {
-                    IdCompraEmpaque = compraEmpaque.Id,
+                    IdStockEmpaque = compraEmpaque.Id,
                     IdSede = req.IdSede,
                     UnidadMedida = compraEmpaque.Um,
                     StockDisponible = paqueteEntrante
@@ -175,7 +175,7 @@ namespace proy_back_Qbd.Services
            .Where(w => w.IdPaquete == idPaquete)
            .Select(s => s.CompraEmpaques)
            .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra empaque"); ;
-                StockEmpaque? stockEmpaque = await _context.StockEmpaques.Where(w => w.IdCompraEmpaque == compraEmpaque.Id && w.IdSede == idSede).FirstOrDefaultAsync();
+                StockEmpaque? stockEmpaque = await _context.StockEmpaques.Where(w => w.IdStockEmpaque == compraEmpaque.Id && w.IdSede == idSede).FirstOrDefaultAsync();
                 stockEmpaque.StockDisponible -= stockEliminar;
             }
 
