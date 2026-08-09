@@ -141,7 +141,7 @@ namespace proy_back_Qbd.Services
                                 stockEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadPendiente,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.Id,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
@@ -167,7 +167,7 @@ namespace proy_back_Qbd.Services
                                 stockEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadConsumida,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.Id,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
@@ -481,7 +481,7 @@ namespace proy_back_Qbd.Services
                                 compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = cantidadPendiente,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.Id,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };
@@ -495,7 +495,7 @@ namespace proy_back_Qbd.Services
                                 compraEmpaqueProductoIntermedio = new()
                                 {
                                     Cantidad = stockEmpaque.StockDisponible,
-                                    IdStockEmpaque = stockEmpaque.IdCompraEmpaque,
+                                    IdStockEmpaque = stockEmpaque.Id,
                                     UnidadMedida = "UND",
                                     EmpaqueProductoIntermedio = empaqueProductoIntermedio
                                 };

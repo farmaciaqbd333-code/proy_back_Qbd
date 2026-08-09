@@ -34,13 +34,11 @@ public class StockEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<Sto
         builder.HasOne(x => x.StockEmpaque)
             .WithMany(x => x.StockEmpaqueProductoIntermedio)
             .HasForeignKey(x => x.IdStockEmpaque)
-            .HasPrincipalKey(x => x.Id)
-            .HasForeignKey(x => x.IdStockEmpaque);
+            .HasPrincipalKey(x => x.Id);
 
         builder.HasOne(x => x.EmpaqueProductoIntermedio)
             .WithMany(x => x.StockEmpaqueProductoIntermedios)
             .HasForeignKey(x => x.IdEmpaqueProductoIntermedio)
-            .HasPrincipalKey(x => x.Id)
-            .HasForeignKey(x => x.IdEmpaqueProductoIntermedio);
+            .HasPrincipalKey(x => x.Id);
     }
 }
