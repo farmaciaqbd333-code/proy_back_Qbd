@@ -6,7 +6,7 @@ public class StockInsumoProductoIntermedioConfiguration
 {
     public void Configure(EntityTypeBuilder<StockInsumoProductoIntermedio> builder)
     {
-        builder.ToTable("compra_insumo_producto_intermedio");
+        builder.ToTable("stock_insumo_producto_intermedio");
 
         builder.HasKey(x => x.Id);
 
@@ -30,8 +30,8 @@ public class StockInsumoProductoIntermedioConfiguration
         builder.Property(x => x.IdCreador)
             .HasColumnName("id_creador");
 
-        builder.Property(x => x.IdCompraInsumo)
-            .HasColumnName("id_compra_insumo");
+        builder.Property(x => x.IdStockInsumo)
+            .HasColumnName("id_stock_insumo");
 
         builder.Property(x => x.IdModificador)
             .HasColumnName("id_modificador");
@@ -45,14 +45,14 @@ public class StockInsumoProductoIntermedioConfiguration
 
         builder.HasOne(x => x.StockInsumo)
             .WithMany(x => x.StockInsumoProductoIntermedio)
-            .HasForeignKey(x => x.IdCompraInsumo);
+            .HasForeignKey(x => x.IdStockInsumo);
 
         builder.HasOne(x => x.Creador)
-            .WithMany(w => w.CompraInsumoProductoIntermedioCreados)
+            .WithMany(w => w.StockInsumoProductoIntermedioCreados)
             .HasForeignKey(x => x.IdCreador);
 
         builder.HasOne(x => x.Modificador)
-            .WithMany(w => w.CompraInsumoProductoIntermedioModificados)
+            .WithMany(w => w.StockInsumoProductoIntermedioModificados)
             .HasForeignKey(x => x.IdModificador);
     }
 }

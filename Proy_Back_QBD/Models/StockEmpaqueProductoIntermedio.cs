@@ -4,7 +4,7 @@ public class StockEmpaqueProductoIntermedio
 {
     public int Id { get; set; }
 
-    public int IdCompraEmpaque { get; set; }
+    public int IdStockEmpaque { get; set; }
 
     public int IdEmpaqueProductoIntermedio { get; set; }
 

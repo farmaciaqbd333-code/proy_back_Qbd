@@ -376,13 +376,13 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<StockInsumoProductoIntermedio>()
                    .HasOne(x => x.Creador)
-                   .WithMany(x => x.CompraInsumoProductoIntermedioCreados)
+                   .WithMany(x => x.StockInsumoProductoIntermedioCreados)
                    .HasForeignKey(x => x.IdCreador)
                    .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<StockInsumoProductoIntermedio>()
                 .HasOne(x => x.Modificador)
-                .WithMany(x => x.CompraInsumoProductoIntermedioModificados)
+                .WithMany(x => x.StockInsumoProductoIntermedioModificados)
                 .HasForeignKey(x => x.IdModificador)
                 .OnDelete(DeleteBehavior.Restrict);
         }

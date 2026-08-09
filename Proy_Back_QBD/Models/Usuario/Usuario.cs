@@ -189,8 +189,8 @@ namespace Proy_back_QBD.Models
         [JsonIgnore] public List<InsumoProductoIntermedio>? InsumoProductoIntermedioModificados { get; set; }
         [JsonIgnore] public List<ProductoIntermedio>? ProductosIntermediosElaborados { get; set; }
         [JsonIgnore] public List<ProductoIntermedio>? ProductosIntermediosAutorizados { get; set; }
-        [JsonIgnore] public List<StockInsumoProductoIntermedio> CompraInsumoProductoIntermedioCreados { get; set; } = new();
-        [JsonIgnore] public List<StockInsumoProductoIntermedio> CompraInsumoProductoIntermedioModificados { get; set; } = new();
+        [JsonIgnore] public List<StockInsumoProductoIntermedio> StockInsumoProductoIntermedioCreados { get; set; } = new();
+        [JsonIgnore] public List<StockInsumoProductoIntermedio> StockInsumoProductoIntermedioModificados { get; set; } = new();
         [JsonIgnore] public List<NotaSalidaEmpaque> NotaSalidaEmpaqueModificados { get; set; } = new();
         [JsonIgnore] public List<NotaSalidaEconomato> NotaSalidaEconomatoModificados { get; set; } = new();
         [JsonIgnore] public List<NotaSalidaProducto> NotaSalidaProductoModificados { get; set; } = new();

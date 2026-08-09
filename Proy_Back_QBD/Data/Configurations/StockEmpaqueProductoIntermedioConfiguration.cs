@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class CompraEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<StockEmpaqueProductoIntermedio>
+public class StockEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<StockEmpaqueProductoIntermedio>
 {
     public void Configure(EntityTypeBuilder<StockEmpaqueProductoIntermedio> builder)
     {
-        builder.ToTable("compra_empaque_producto_intermedio");
+        builder.ToTable("stock_empaque_producto_intermedio");
 
         builder.HasKey(x => x.Id);
 
@@ -14,8 +14,8 @@ public class CompraEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<St
             .ValueGeneratedOnAdd();
             ;
 
-        builder.Property(x => x.IdCompraEmpaque)
-            .HasColumnName("id_compra_empaque")
+        builder.Property(x => x.IdStockEmpaque)
+            .HasColumnName("id_stock_empaque")
             .IsRequired();
 
         builder.Property(x => x.IdEmpaqueProductoIntermedio)
@@ -33,10 +33,10 @@ public class CompraEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<St
 
         builder.HasOne(x => x.StockEmpaque)
             .WithMany(x => x.StockEmpaqueProductoIntermedio)
-            .HasForeignKey(x => x.IdCompraEmpaque);
+            .HasForeignKey(x => x.IdStockEmpaque);
 
         builder.HasOne(x => x.EmpaqueProductoIntermedio)
-            .WithMany(x => x.CompraEmpaqueProductoIntermedios)
+            .WithMany(x => x.StockEmpaqueProductoIntermedios)
             .HasForeignKey(x => x.IdEmpaqueProductoIntermedio);
     }
 }

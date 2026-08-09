@@ -18,7 +18,7 @@ public class StockInsumoProductoIntermedio
 
     public int IdCreador { get; set; }
 
-    public int IdCompraInsumo { get; set; }
+    public int IdStockInsumo { get; set; }
 
     public int? IdModificador { get; set; }
 
