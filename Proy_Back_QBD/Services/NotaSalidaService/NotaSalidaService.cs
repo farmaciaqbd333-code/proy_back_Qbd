@@ -217,10 +217,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         }
 
 
-        public async Task<List<RegistrosListaRes>> ObtenerDatosXRegistro(int idRegistro, string familia, int idSede)
+        public async Task<List<RegistrosListaRes>> ObtenerDatosXRegistro(string registro, int idSede)
         {
-
-            familia = familia.Trim().ToUpper();
+            string familia = registro.Substring(0, registro.IndexOf("-")).Trim();
+            int idRegistro = int.Parse(registro.Substring(registro.IndexOf("-") + 1).Trim());
 
             return familia switch
             {

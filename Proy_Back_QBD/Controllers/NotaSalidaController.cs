@@ -80,9 +80,9 @@ namespace proy_back_Qbd.Controllers
         /// Listar articulos por familia, sede y idRegistro
         /// </summary>
         [HttpGet("articulo/{idRegistro}")]
-        public async Task<ActionResult<List<RegistrosListaRes>>> Get(int idRegistro, string familia, int idSede)
+        public async Task<ActionResult<List<RegistrosListaRes>>> Get(string registro, int idSede)
         {
-            var lista = await _serviceNotaSalida.ObtenerDatosXRegistro(idRegistro, familia, idSede);
+            var lista = await _serviceNotaSalida.ObtenerDatosXRegistro(registro, idSede);
             return Ok(lista);
         }
 

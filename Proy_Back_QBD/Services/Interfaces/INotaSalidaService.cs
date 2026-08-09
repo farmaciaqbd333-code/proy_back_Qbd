@@ -8,7 +8,7 @@ namespace proy_back_Qbd.Services.Interfaces.INotaSalidaService
     public interface INotaSalidaService
     {
         Task<int> Crear(CreateReq request);
-        Task<List<RegistrosListaRes>> ObtenerDatosXRegistro(int idRegistro, string Familia, int idSede);
+        Task<List<RegistrosListaRes>> ObtenerDatosXRegistro(string registro, int idSede);
         Task<List<NotaSalidaListaRes>> ObtenerLista(int idSede);
         Task<List<NotaSalidaDetalleRes>> ObtenerDetalles(int idNotaSalida);
         Task Actualizar(int id, CreateReq request);
