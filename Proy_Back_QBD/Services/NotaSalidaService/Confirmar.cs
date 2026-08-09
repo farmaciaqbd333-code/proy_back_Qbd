@@ -174,7 +174,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 var stockOrigen = await _context.StockEmpaques
                     .FirstOrDefaultAsync(x =>
-                        x.IdStockEmpaque == item.IdCompraArticulo &&
+                        x.IdCompraEmpaque == item.IdCompraArticulo &&
                         x.IdSede == idSedeOrigen &&
                         x.IdNotaSalidaEmpaque == null);
 
@@ -197,7 +197,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 // Crear stock destino
                 var stockDestino = new StockEmpaque
                 {
-                    IdStockEmpaque = item.IdCompraArticulo,
+                    IdCompraEmpaque = item.IdCompraArticulo,
                     StockDisponible = item.CantidadRecibida,
                     UnidadMedida = item.UnidadMedida ?? stockOrigen.UnidadMedida,
                     IdSede = idSedeDestino,

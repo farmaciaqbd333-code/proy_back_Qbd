@@ -49,7 +49,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 // Buscar stock origen
                 var stockOrigen = await _context.StockEmpaques
                     .FirstOrDefaultAsync(x =>
-                        x.IdStockEmpaque == stockDestino.IdStockEmpaque &&
+                        x.IdCompraEmpaque == stockDestino.IdCompraEmpaque &&
                         x.IdSede != stockDestino.IdSede &&
                         x.IdNotaSalidaEmpaque == null);
 

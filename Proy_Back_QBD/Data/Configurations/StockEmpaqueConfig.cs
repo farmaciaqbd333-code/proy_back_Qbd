@@ -10,22 +10,27 @@ public class StockEmpaqueConfiguration : IEntityTypeConfiguration<StockEmpaque>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id).HasColumnName("id");
-        builder.Property(x => x.IdStockEmpaque).HasColumnName("id_compra_empaque").IsRequired();
+        builder.Property(x => x.IdCompraEmpaque).HasColumnName("id_compra_empaque").IsRequired();
         builder.Property(x => x.StockDisponible).HasColumnName("stock_disponible").HasPrecision(18, 4);
         builder.Property(x => x.UnidadMedida).HasColumnName("unidad_medida").HasMaxLength(20);
         builder.Property(x => x.IdSede).HasColumnName("id_sede");
         builder.Property(x => x.IdNotaSalidaEmpaque).HasColumnName("id_nota_salida_empaque");
 
         builder.HasOne(x => x.NotaSalidaEmpaque)
-            .WithOne(wm => wm.StockEmpaque)
-            .HasForeignKey<StockEmpaque>(x => x.IdNotaSalidaEmpaque);
+            .WithOne(x => x.StockEmpaque)
+            .HasForeignKey<StockEmpaque>(x => x.IdNotaSalidaEmpaque)
+            ;
 
         builder.HasOne(x => x.CompraEmpaque)
-            .WithMany(w => w.StockEmpaques)
-            .HasForeignKey(x => x.IdStockEmpaque);
+            .WithMany(x => x.StockEmpaques)
+            .HasForeignKey(x => x.IdCompraEmpaque)
+            .HasPrincipalKey(x => x.Id)
+            ;
 
         builder.HasOne(x => x.Sede)
-            .WithMany(w => w.StockEmpaques)
-            .HasForeignKey(x => x.IdSede);
+            .WithMany(x => x.StockEmpaques)
+            .HasForeignKey(x => x.IdSede)
+            .HasPrincipalKey(x => x.Id)
+            ;
     }
 }

@@ -12,7 +12,7 @@ public class StockEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<Sto
         builder.Property(x => x.Id)
             .HasColumnName("id")
             .ValueGeneratedOnAdd();
-            ;
+        ;
 
         builder.Property(x => x.IdStockEmpaque)
             .HasColumnName("id_stock_empaque")
@@ -33,10 +33,14 @@ public class StockEmpaqueProductoIntermedioConfig : IEntityTypeConfiguration<Sto
 
         builder.HasOne(x => x.StockEmpaque)
             .WithMany(x => x.StockEmpaqueProductoIntermedio)
+            .HasForeignKey(x => x.IdStockEmpaque)
+            .HasPrincipalKey(x => x.Id)
             .HasForeignKey(x => x.IdStockEmpaque);
 
         builder.HasOne(x => x.EmpaqueProductoIntermedio)
             .WithMany(x => x.StockEmpaqueProductoIntermedios)
+            .HasForeignKey(x => x.IdEmpaqueProductoIntermedio)
+            .HasPrincipalKey(x => x.Id)
             .HasForeignKey(x => x.IdEmpaqueProductoIntermedio);
     }
 }

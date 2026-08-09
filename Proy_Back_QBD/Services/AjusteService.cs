@@ -261,7 +261,7 @@ namespace Proy_back_QBD.Service.AjusteService
             {
                 AjusteEmpaque ajusteEmpaque = item;
                 StockEmpaque compraEmpaque = await _context.StockEmpaques
-                .Where(w => w.IdStockEmpaque == ajusteEmpaque.IdCompraEmpaque && w.IdSede == 15)
+                .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdCompraEmpaque && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
                 compraEmpaque.StockDisponible += ajusteEmpaque.Ajuste;
                 _context.AjusteEmpaques.Add(ajusteEmpaque);

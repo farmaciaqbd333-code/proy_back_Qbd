@@ -4,7 +4,7 @@ using Proy_back_QBD.Models;
 public class StockEmpaque
 {
     public int Id { get; set; }
-    public int IdStockEmpaque { get; set; }
+    public int IdCompraEmpaque { get; set; }
     public decimal StockDisponible { get; set; }
     public string? UnidadMedida { get; set; }
     public int IdSede { get; set; }
