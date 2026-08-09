@@ -211,7 +211,7 @@ namespace proy_back_Qbd.Services
                         fInsumo.IdInsumo,
                         fInsumo.CantidadLote);
 
-                    List<StockInsumo> stockInsumos = await _context.StockInsumos                        
+                    List<StockInsumo> stockInsumos = await _context.StockInsumos
                         .Where(w =>
                             w.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
                             w.StockDisponible > 0 &&
@@ -692,11 +692,12 @@ namespace proy_back_Qbd.Services
             .Select(s => new TablaPIRes()
             {
                 Id = s.Id,
-                Registro = Alfanumerico.ConvertToBase36(s.Id),
+                Registro = "PI-" + Alfanumerico.ConvertToBase36(s.Id),
                 Lote = s.Lote,
                 Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
                 Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
-                LoteEstandar = s.LoteEstandar ?? 0,
+                LoteEstandar = s.LoteEstandar.Value,
+                Cantidad = s.TipoUso == "PI-F%" ? s.LoteEstTotal.Value : s.LoteEstandar.Value,
                 Tipo = s.Tipo,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
                 Um = s.Insumo.UnidadMedida,
