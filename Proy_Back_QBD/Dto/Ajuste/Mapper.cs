@@ -11,7 +11,7 @@ namespace proy_back_Qbd.Models.Ajuste
             return new AjusteInsumo
             {
                 Ajuste = source.Ajuste,
-                IdCompraInsumo = source.IdCompraFamilia,
+                IdStockInsumo = source.IdCompraFamilia,
                 StockAnterior = source.StockAnterior,
                 StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
@@ -27,7 +27,7 @@ namespace proy_back_Qbd.Models.Ajuste
             return new AjusteEmpaque
             {
                 Ajuste = source.Ajuste,
-                IdCompraEmpaque = source.IdCompraFamilia,
+                IdStockEmpaque = source.IdCompraFamilia,
                 StockAnterior = source.StockAnterior,
                 StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
@@ -43,7 +43,7 @@ namespace proy_back_Qbd.Models.Ajuste
             return new AjusteEconomato
             {
                 Ajuste = source.Ajuste,
-                IdCompraEconomato = source.IdCompraFamilia,
+                IdStockEconomato = source.IdCompraFamilia,
                 StockAnterior = source.StockAnterior,
                 StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
@@ -54,19 +54,19 @@ namespace proy_back_Qbd.Models.Ajuste
         {
             return crearAjusteReqs.Select(s => CrearAjusteEconomato(s, idCreador)).ToList();
         }
-        public AjusteProductoTerminado CrearAjusteProductoTerminado(CrearAjustes source, int idCreador)
+        public AjusteProducto CrearAjusteProductoTerminado(CrearAjustes source, int idCreador)
         {
-            return new AjusteProductoTerminado
+            return new AjusteProducto
             {
                 Ajuste = source.Ajuste,
-                IdCompraProducto = source.IdCompraFamilia,
+                IdStockProducto = source.IdCompraFamilia,
                 StockAnterior = source.StockAnterior,
                 StockNuevo = source.StockNuevo,
                 IdCreador = idCreador,
                 Observacion = source.Observacion
             };
         }
-        public List<AjusteProductoTerminado> CrearAjusteProductoTerminadoList(List<CrearAjustes> crearAjusteReqs, int idCreador)
+        public List<AjusteProducto> CrearAjusteProductoTerminadoList(List<CrearAjustes> crearAjusteReqs, int idCreador)
         {
             return crearAjusteReqs.Select(s => CrearAjusteProductoTerminado(s, idCreador)).ToList();
         }

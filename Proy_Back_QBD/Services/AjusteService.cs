@@ -20,15 +20,15 @@ namespace Proy_back_QBD.Service.AjusteService
             _context = context;
         }
 
-        public async Task<List<TablaAjustesRes>> ListaAjustes(string familia)
+        public async Task<List<TablaAjustesRes>> ListaAjustes(string familia, int idSede)
         {
 
             List<TablaAjustesRes> Response = familia switch
             {
-                "MP" => await ObtenerMateriaPrima(),
-                "ME" => await ObtenerMateriaEmpaques(),
-                "PT" => await ObtenerProductosTerminados(),
-                "ECO" => await ObtenerEconomatos(),
+                "MP" => await ObtenerMateriaPrima(idSede),
+                "ME" => await ObtenerMateriaEmpaques(idSede),
+                "PT" => await ObtenerProductosTerminados(idSede),
+                "ECO" => await ObtenerEconomatos(idSede),
                 _ => throw new BadRequestException("Familia no Apta")
             };
 
@@ -59,7 +59,8 @@ namespace Proy_back_QBD.Service.AjusteService
                         case "PT":
                             await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador); break;
                         default: throw new BadRequestException("Familia no apta");
-                    };
+                    }
+                    ;
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
@@ -86,7 +87,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     response = await _context.AjusteInsumos
                     .AsNoTracking()
-                    .Where(w => w.IdCompraInsumo == registroId)
+                    .Where(w => w.IdStockInsumo == registroId)
                     .OrderByDescending(odb => odb.FechaCreacion)
                     .Select(s => new DetalleAjusteRes()
                     {
@@ -102,7 +103,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     response = await _context.AjusteEmpaques
                     .AsNoTracking()
-                    .Where(w => w.IdCompraEmpaque == registroId)
+                    .Where(w => w.IdStockEmpaque == registroId)
                     .OrderByDescending(odb => odb.FechaCreacion)
                     .Select(s => new DetalleAjusteRes()
                     {
@@ -119,7 +120,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     response = await _context.AjusteProductoTerminados
                     .AsNoTracking()
-                    .Where(w => w.IdCompraProducto == registroId)
+                    .Where(w => w.IdStockProducto == registroId)
                     .OrderByDescending(odb => odb.FechaCreacion)
                     .Select(s => new DetalleAjusteRes()
                     {
@@ -136,7 +137,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     response = await _context.AjusteEconomatos
                     .AsNoTracking()
-                    .Where(w => w.IdCompraEconomato == registroId)
+                    .Where(w => w.IdStockEconomato == registroId)
                     .OrderByDescending(odb => odb.FechaCreacion)
                     .Select(s => new DetalleAjusteRes()
                     {
@@ -158,81 +159,85 @@ namespace Proy_back_QBD.Service.AjusteService
         }
 
         //LISTA AJUSTE PRINCIPAL
-        private async Task<List<TablaAjustesRes>> ObtenerMateriaPrima()
+        private async Task<List<TablaAjustesRes>> ObtenerMateriaPrima(int idSede)
         {
-            return await _context.CompraInsumos
+            return await _context.StockInsumos
+                .Where(w => w.IdSede == idSede)
                 .Select(s => new TablaAjustesRes
                 {
-                    Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
-                    Descripcion = s.Insumo!.Descripcion,
-                    Lote = s.Lote ?? "",
-                    Saldo = s.StockInsumos.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Clasificacion = s.Insumo!.Clasificacion ?? "MP",
+                    Codigo = UtilFamilia.CodigoInsumo(s.CompraInsumo.IdInsumo),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraInsumo.Id),
+                    Descripcion = s.CompraInsumo.Insumo!.Descripcion,
+                    Lote = s.CompraInsumo.Lote ?? "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = s.CompraInsumo.FechaFabricacion,
+                    FechaVencimiento = s.CompraInsumo.FechaVencimiento,
+                    Clasificacion = s.CompraInsumo.Insumo!.Clasificacion ?? "MP",
                     Observacion = s.AjusteInsumos!
-                        .Where(a => a.IdCompraInsumo == s.Id)
+                        .Where(a => a.IdStockInsumo == s.Id)
                         .OrderByDescending(a => a.FechaCreacion)
                         .Select(a => a.Observacion)
                         .FirstOrDefault()
                 })
                 .ToListAsync();
         }
-        private async Task<List<TablaAjustesRes>> ObtenerMateriaEmpaques()
+        private async Task<List<TablaAjustesRes>> ObtenerMateriaEmpaques(int idSede)
         {
-            return await _context.CompraEmpaques
+            return await _context.StockEmpaques
+            .Where(w => w.IdSede == idSede)
                 .Select(s => new TablaAjustesRes
                 {
-                    Codigo = UtilFamilia.CodigoEmpaque(s.IdEmpaque),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
-                    Descripcion = s.Empaque!.Descripcion ?? "",
-                    Lote = s.Lote ?? "",
-                    Saldo = s.StockEmpaques.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
+                    Codigo = UtilFamilia.CodigoEmpaque(s.CompraEmpaque.IdEmpaque),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraEmpaque.Id),
+                    Descripcion = s.CompraEmpaque.Empaque!.Descripcion ?? "",
+                    Lote = s.CompraEmpaque.Lote ?? "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = s.CompraEmpaque.FechaFabricacion,
+                    FechaVencimiento = s.CompraEmpaque.FechaVencimiento,
                     Observacion = s.AjusteEmpaques!
-                        .Where(a => a.IdCompraEmpaque == s.Id)
+                        .Where(a => a.IdStockEmpaque == s.Id)
                         .OrderByDescending(a => a.FechaCreacion)
                         .Select(a => a.Observacion)
                         .FirstOrDefault()
                 })
                 .ToListAsync();
         }
-        private async Task<List<TablaAjustesRes>> ObtenerEconomatos()
+        private async Task<List<TablaAjustesRes>> ObtenerEconomatos(int idSede)
         {
-            return await _context.CompraEconomatos
+            return await _context.StockEconomatos
+            .Where(w => w.IdSede == idSede)
                 .Select(s => new TablaAjustesRes
                 {
-                    Codigo = UtilFamilia.CodigoInsumo(s.IdEconomato),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
-                    Descripcion = s.Economato!.Descripcion,
+                    Codigo = UtilFamilia.CodigoInsumo(s.CompraEconomato.IdEconomato),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraEconomato.Id),
+                    Descripcion = s.CompraEconomato.Economato!.Descripcion,
                     Lote = "",
-                    Saldo = s.StockEconomatos.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
+                    Saldo = s.StockDisponible,
                     FechaFabricacion = null,
                     FechaVencimiento = null,
                     Observacion = s.AjusteEconomatos!
-                        .Where(a => a.IdCompraEconomato == s.Id)
+                        .Where(a => a.IdStockEconomato == s.Id)
                         .OrderByDescending(a => a.FechaCreacion)
                         .Select(a => a.Observacion)
                         .FirstOrDefault()
                 })
                 .ToListAsync();
         }
-        private async Task<List<TablaAjustesRes>> ObtenerProductosTerminados()
+        private async Task<List<TablaAjustesRes>> ObtenerProductosTerminados(int idSede)
         {
-            return await _context.CompraProductos
+            return await _context.StockProductos
+                .Where(w => w.IdSede == idSede)
                 .Select(s => new TablaAjustesRes
                 {
-                    Codigo = UtilFamilia.CodigoInsumo(s.IdProducto),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
-                    Descripcion = s.Producto!.Descripcion ?? "",
-                    Lote = s.Lote ?? "",
-                    Saldo = s.StockProductoTerminados.Where(w => w.IdSede == 15).Sum(s2 => s2.StockDisponible),
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.AjusteProductoTerminados!
-                        .Where(a => a.IdCompraProducto == s.Id)
+                    Codigo = UtilFamilia.CodigoInsumo(s.CompraProducto.IdProducto),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraProducto.Id),
+                    Descripcion = s.CompraProducto.Producto!.Descripcion ?? "",
+                    Lote = s.CompraProducto.Lote ?? "",
+                    Saldo = s.StockDisponible,
+                    FechaFabricacion = s.CompraProducto.FechaFabricacion,
+                    FechaVencimiento = s.CompraProducto.FechaVencimiento,
+                    Observacion = s.AjusteProductos!
+                        .Where(a => a.IdStockProducto == s.Id)
                         .OrderByDescending(a => a.FechaCreacion)
                         .Select(a => a.Observacion)
                         .FirstOrDefault()
@@ -248,7 +253,7 @@ namespace Proy_back_QBD.Service.AjusteService
             {
                 AjusteInsumo ajusteInsumo = item;
                 StockInsumo stockInsumo = await _context.StockInsumos
-                .Where(w => w.IdCompraInsumo == ajusteInsumo.IdCompraInsumo && w.IdSede == 15)
+                .Where(w => w.IdCompraInsumo == ajusteInsumo.IdStockInsumo && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraInsumo no encontrada");
                 stockInsumo.StockDisponible += ajusteInsumo.Ajuste;
                 _context.AjusteInsumos.Add(ajusteInsumo);
@@ -261,7 +266,7 @@ namespace Proy_back_QBD.Service.AjusteService
             {
                 AjusteEmpaque ajusteEmpaque = item;
                 StockEmpaque compraEmpaque = await _context.StockEmpaques
-                .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdCompraEmpaque && w.IdSede == 15)
+                .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdStockEmpaque && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new BadRequestException("compraEmpaques no encontrada");
                 compraEmpaque.StockDisponible += ajusteEmpaque.Ajuste;
                 _context.AjusteEmpaques.Add(ajusteEmpaque);
@@ -274,7 +279,7 @@ namespace Proy_back_QBD.Service.AjusteService
             {
                 AjusteEconomato ajusteEconomato = item;
                 StockEconomato stockEconomato = await _context.StockEconomatos
-                .Where(w => w.IdCompraEconomato == ajusteEconomato.IdCompraEconomato && w.IdSede == 15)
+                .Where(w => w.IdCompraEconomato == ajusteEconomato.IdStockEconomato && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraEconomato no encontrada");
                 stockEconomato.StockDisponible += ajusteEconomato.Ajuste;
                 _context.AjusteEconomatos.Add(ajusteEconomato);
@@ -282,12 +287,12 @@ namespace Proy_back_QBD.Service.AjusteService
         }
         private async Task StrategyCrearAjusteProductoTerminado(List<CrearAjustes> listaAjustes, int idCreador)
         {
-            List<AjusteProductoTerminado> ajusteProductoTerminados = new AjusteMapper().CrearAjusteProductoTerminadoList(listaAjustes, idCreador);
+            List<AjusteProducto> ajusteProductoTerminados = new AjusteMapper().CrearAjusteProductoTerminadoList(listaAjustes, idCreador);
             foreach (var item in ajusteProductoTerminados)
             {
-                AjusteProductoTerminado ajusteProductoTerminado = item;
+                AjusteProducto ajusteProductoTerminado = item;
                 StockProducto compraProductoTerminado = await _context.StockProductos
-                .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdCompraProducto && w.IdSede == 15)
+                .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdStockProducto && w.IdSede == 15)
                 .FirstOrDefaultAsync() ?? throw new NotFoundException("compraProductoTerminado no encontrada");
                 compraProductoTerminado.StockDisponible += ajusteProductoTerminado.Ajuste;
                 _context.AjusteProductoTerminados.Add(ajusteProductoTerminado);

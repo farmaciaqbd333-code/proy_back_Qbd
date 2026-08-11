@@ -37,8 +37,6 @@ namespace proy_back_Qbd.Models
         public Usuario? Creador { get; set; }
         public Usuario? Modificador { get; set; }
         public List<PaqueteEmpaque>? PaqueteEmpaques { get; set; }
-        public List<AjusteEmpaque>? AjusteEmpaques { get; set; }
-        public List<StockEmpaqueProductoIntermedio>? CompraEmpaqueProductoIntermedios { get; set; }
         public List<StockEmpaque>? StockEmpaques { get; set; }
         public List<NotaSalidaEmpaque>? NotaSalidaEmpaques { get; set; }
         [ForeignKey("IdFabricante")] public Fabricante? Fabricante { get; set; }

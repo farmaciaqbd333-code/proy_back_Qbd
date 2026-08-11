@@ -42,7 +42,6 @@ namespace proy_back_Qbd.Models
         public Insumo? Insumo { get; set; }
         public Compra? Compra { get; set; }
         public Fabricante? Fabricante { get; set; }
-        public List<AjusteInsumo> AjusteInsumos { get; set; } = new();
         public List<StockInsumo> StockInsumos { get; set; } = new();
         public List<PaqueteInsumo> PaqueteInsumos { get; set; } = new();
         public List<NotaSalidaInsumo> NotaSalidaInsumos { get; set; } = new();

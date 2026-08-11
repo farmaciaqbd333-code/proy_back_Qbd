@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class StockProductoTerminadoConfiguration : IEntityTypeConfiguration<StockProducto>
+public class StockProductoConfiguration : IEntityTypeConfiguration<StockProducto>
 {
     public void Configure(EntityTypeBuilder<StockProducto> builder)
     {
-        builder.ToTable("stock_producto_terminado");
+        builder.ToTable("stock_producto");
 
         builder.HasKey(x => x.Id);
 

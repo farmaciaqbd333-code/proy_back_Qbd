@@ -12,6 +12,7 @@ public class StockInsumo
 
     public CompraInsumos? CompraInsumo { get; set; } 
     public NotaSalidaInsumo? NotaSalidaInsumo { get; set; } 
+    public List<AjusteInsumo>? AjusteInsumos { get; set; }
     public List<StockInsumoProductoIntermedio>? StockInsumoProductoIntermedio { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }

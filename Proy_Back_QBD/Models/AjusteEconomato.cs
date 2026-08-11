@@ -7,7 +7,7 @@ public class AjusteEconomato
 
     public decimal Ajuste { get; set; }
 
-    public int IdCompraEconomato { get; set; }
+    public int IdStockEconomato { get; set; }
 
     public DateTimeOffset FechaCreacion { get; set; }
 
@@ -23,7 +23,7 @@ public class AjusteEconomato
 
     public string? Observacion { get; set; }
 
-    public virtual CompraEconomato CompraEconomato { get; set; } = null!;
+    public virtual StockEconomato StockEconomato { get; set; } = null!;
 
     public virtual Usuario Creador { get; set; } = null!;
 }

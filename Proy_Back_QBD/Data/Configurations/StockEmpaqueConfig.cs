@@ -17,15 +17,20 @@ public class StockEmpaqueConfiguration : IEntityTypeConfiguration<StockEmpaque>
         builder.Property(x => x.IdNotaSalidaEmpaque).HasColumnName("id_nota_salida_empaque");
 
         builder.HasOne(x => x.NotaSalidaEmpaque)
-            .WithOne(wm => wm.StockEmpaque)
-            .HasForeignKey<StockEmpaque>(x => x.IdNotaSalidaEmpaque);
+            .WithOne(x => x.StockEmpaque)
+            .HasForeignKey<StockEmpaque>(x => x.IdNotaSalidaEmpaque)
+            ;
 
         builder.HasOne(x => x.CompraEmpaque)
-            .WithMany(w => w.StockEmpaques)
-            .HasForeignKey(x => x.IdCompraEmpaque);
+            .WithMany(x => x.StockEmpaques)
+            .HasForeignKey(x => x.IdCompraEmpaque)
+            .HasPrincipalKey(x => x.Id)
+            ;
 
         builder.HasOne(x => x.Sede)
-            .WithMany(w => w.StockEmpaques)
-            .HasForeignKey(x => x.IdSede);
+            .WithMany(x => x.StockEmpaques)
+            .HasForeignKey(x => x.IdSede)
+            .HasPrincipalKey(x => x.Id)
+            ;
     }
 }

@@ -31,8 +31,7 @@ namespace proy_back_Qbd.Models
         [Column("observacion")] public string? Observacion { get; set; }
         [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
         public Compra? Compra { get; set; }
-        public Producto? Producto { get; set; }
-        public List<AjusteProductoTerminado>? AjusteProductoTerminados { get; set; }
+        public Producto? Producto { get; set; }        
         public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }
         public List<StockProducto> StockProductoTerminados { get; set; } = new();
         public Usuario? Creador { get; set; }

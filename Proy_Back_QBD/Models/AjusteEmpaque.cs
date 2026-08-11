@@ -8,25 +8,26 @@ using System.ComponentModel.DataAnnotations;
 
 namespace proy_back_Qbd.Models
 {
-
-    [Table("ajuste_empaque")]
     public class AjusteEmpaque
     {
-        [Key][Column("id")] public int Id { get; set; }
+        public int Id { get; set; }
 
-        [Column("ajuste")] public decimal Ajuste { get; set; }
-        [Column("stock_anterior")] public decimal StockAnterior { get; set; }
-        [Column("stock_nuevo")] public decimal StockNuevo { get; set; }
+        public decimal Ajuste { get; set; }
 
-        [Column("id_compra_empaque")] public int IdCompraEmpaque { get; set; }
+        public decimal StockAnterior { get; set; }
 
-        [Column("fecha_creacion")] public DateTimeOffset FechaCreacion { get; set; } = DateTimeOffset.Now;
+        public decimal StockNuevo { get; set; }
 
-        [Column("id_creador")] public int IdCreador { get; set; }
+        public int IdStockEmpaque { get; set; }
 
-        [Column("observacion")] public string? Observacion { get; set; }
+        public DateTimeOffset FechaCreacion { get; set; } = DateTimeOffset.Now;
 
-        [ForeignKey(nameof(IdCompraEmpaque))] public CompraEmpaque? CompraEmpaques { get; set; }
-        [ForeignKey(nameof(IdCreador))] public Usuario? Creador { get; set; }
+        public int IdCreador { get; set; }
+
+        public string? Observacion { get; set; }
+
+        public StockEmpaque? StockEmpaque { get; set; }
+
+        public Usuario? Creador { get; set; }
     }
 }

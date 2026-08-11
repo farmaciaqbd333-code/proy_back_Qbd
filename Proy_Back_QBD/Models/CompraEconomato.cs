@@ -29,7 +29,6 @@ namespace proy_back_Qbd.Models
         [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
         public Compra? Compra { get; set; }
         public Economato? Economato { get; set; }
-        public List<AjusteEconomato>? AjusteEconomatos { get; set; }
         public List<StockEconomato>? StockEconomatos { get; set; }
         public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }
         public Usuario? Creador { get; set; }

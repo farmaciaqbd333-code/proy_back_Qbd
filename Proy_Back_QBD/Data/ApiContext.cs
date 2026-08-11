@@ -18,7 +18,7 @@ namespace Proy_back_QBD.Data
         public DbSet<AjusteEmpaque> AjusteEmpaques { get; set; }
         public DbSet<AjusteInsumo> AjusteInsumos { get; set; }
         public DbSet<AjusteEconomato> AjusteEconomatos { get; set; }
-        public DbSet<AjusteProductoTerminado> AjusteProductoTerminados { get; set; }
+        public DbSet<AjusteProducto> AjusteProductoTerminados { get; set; }
         public DbSet<PaqueteSa> PaqueteSas { get; set; }
         public DbSet<Paquete> Paquetes { get; set; }
         public DbSet<PaqueteInsumo> PaqueteInsumos { get; set; }
@@ -57,7 +57,7 @@ namespace Proy_back_QBD.Data
         public DbSet<Familia> Familias { get; set; }
         public DbSet<Fabricante> Fabricantes { get; set; }
         public DbSet<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; }
-        public DbSet<StockEmpaqueProductoIntermedio> CompraEmpaqueProductoIntermedios { get; set; }
+        public DbSet<StockEmpaqueProductoIntermedio> StockEmpaqueProductoIntermedios { get; set; }
         public DbSet<FormulaRapidaSede> FormulaRSedes { get; set; }
         public DbSet<StockEconomato> StockEconomatos { get; set; }
         public DbSet<StockEmpaque> StockEmpaques { get; set; }
@@ -376,13 +376,13 @@ namespace Proy_back_QBD.Data
             });
             modelBuilder.Entity<StockInsumoProductoIntermedio>()
                    .HasOne(x => x.Creador)
-                   .WithMany(x => x.CompraInsumoProductoIntermedioCreados)
+                   .WithMany(x => x.StockInsumoProductoIntermedioCreados)
                    .HasForeignKey(x => x.IdCreador)
                    .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<StockInsumoProductoIntermedio>()
                 .HasOne(x => x.Modificador)
-                .WithMany(x => x.CompraInsumoProductoIntermedioModificados)
+                .WithMany(x => x.StockInsumoProductoIntermedioModificados)
                 .HasForeignKey(x => x.IdModificador)
                 .OnDelete(DeleteBehavior.Restrict);
         }
