@@ -30,7 +30,7 @@ public class AjusteInsumoConfiguration : IEntityTypeConfiguration<AjusteInsumo>
             .IsRequired();
 
         builder.Property(x => x.IdStockInsumo)
-            .HasColumnName("id_compra_insumo")
+            .HasColumnName("id_stock_insumo")
             .IsRequired();
 
         builder.Property(x => x.FechaCreacion)

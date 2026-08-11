@@ -164,7 +164,7 @@ namespace proy_back_Qbd.Services
                 //Suma de Notas de Salida
                 s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida)))
                 ,
-                Ajustes = s.Sum(s => s.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockInsumos.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste)))),
+                Ajustes = s.Sum(s2 => s2.CompraInsumos.Sum(s3 => s3.StockInsumos.Sum(s4 => s4.AjusteInsumos.Sum(s5 => s5.Ajuste)))),
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
             .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
@@ -183,6 +183,7 @@ namespace proy_back_Qbd.Services
                 Codigo = UtilFamilia.CodigoInsumo(s.Key.Id),
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
+<<<<<<< HEAD
                 Entradas = s.Sum(s => s!.ProductoIntermedio!
                     .Where(w => w.IdSede == idSede)
                     .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0) 
@@ -190,6 +191,12 @@ namespace proy_back_Qbd.Services
                         : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0) 
                             ? s2.LoteEstTotal.Value 
                             : (s2.LoteEstandar ?? 0)))),
+=======
+                Entradas =
+                //Suma de cantidad en producto intermedios
+                s.Sum(s => s!.ProductoIntermedio!
+                .Where(w => w.IdSede == idSede).Sum(s2 => s2.Tipo == "CAP" ? s2.LoteEstandar : s2.LoteEstTotal)),
+>>>>>>> 7a0d0c28ecb100e58d7790a834a4e6dca34b6606
                 Salidas = 0,
                 Ajustes = 0,
                 Baja = s.Sum(x => x.ProductoIntermedio!
