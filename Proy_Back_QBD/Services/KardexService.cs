@@ -163,7 +163,7 @@ namespace proy_back_Qbd.Services
                 //Suma de Notas de Salida
                 s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida)))
                 ,
-                Ajustes = s.Sum(s => s.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste))),
+                Ajustes = s.Sum(s => s.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockInsumos.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste)))),
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
             .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
@@ -196,7 +196,7 @@ namespace proy_back_Qbd.Services
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
         {
             return await _context.Empaques
-                        .Where(i =>  i.CompraEmpaques.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
+                        .Where(i => i.CompraEmpaques.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
                         .GroupBy(g => new { g.Id })
                         .Select(s => new StockRes()
                         {
@@ -218,7 +218,7 @@ namespace proy_back_Qbd.Services
                             s.Sum(s => s.CompraEmpaques.Sum(s2 => s2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida))),
                             Ajustes =
                             //Suma de Ajustes hechas a compra empaques
-                             s.Sum(s => s.CompraEmpaques.Where(w => w.Compra.IdSede == idSede).Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste))),
+                             s.Sum(s => s.CompraEmpaques.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste)))),
                             //Suma de Empaques vencidos
                             Baja = s.Sum(x => x.CompraEmpaques
                                     .Where(ce => ce.FechaVencimiento < DateTimeOffset.UtcNow)
@@ -229,7 +229,7 @@ namespace proy_back_Qbd.Services
         private async Task<List<StockRes>> ObtenerEconomato(int idSede)
         {
             return await _context.Economatos
-                        .Where(i =>  i.CompraEconomatos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
+                        .Where(i => i.CompraEconomatos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
                         .GroupBy(g => new { g.Id })
                         .Select(s => new StockRes()
                         {
@@ -239,7 +239,7 @@ namespace proy_back_Qbd.Services
                             Entradas = s.Sum(s => s.CompraEconomatos.Sum(ce => ce.CantidadSolicitada)),
                             //nota de salida
                             Salidas = 0,
-                            Ajustes = s.Sum(s => s.CompraEconomatos.Where(w => w.Compra.IdSede == idSede).Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste))),
+                            Ajustes = s.Sum(s => s.CompraEconomatos.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockEconomatos.Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste)))),
                             Baja = 0
                         }).ToListAsync();
         }

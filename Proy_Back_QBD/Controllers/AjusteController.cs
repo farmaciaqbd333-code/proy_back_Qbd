@@ -24,9 +24,9 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpGet("lista")]
-        public async Task<IActionResult> ListarAjustes(string familia)
+        public async Task<IActionResult> ListarAjustes(string familia, int idSede)
         {
-            List<TablaAjustesRes> response = await _ajusteService.ListaAjustes(familia);
+            List<TablaAjustesRes> response = await _ajusteService.ListaAjustes(familia, idSede);
             return Ok(response);
         }
         [HttpGet("detalle")]

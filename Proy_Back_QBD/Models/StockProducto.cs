@@ -11,5 +11,6 @@ public class StockProducto
     public int? IdNotaSalidaProducto { get; set; }
     public CompraProducto CompraProducto { get; set; } = null!;
     public NotaSalidaProducto NotaSalidaProducto { get; set; } = null!;
+    public List<AjusteProducto>? AjusteProductos { get; set; }
     public Sede Sede { get; set; } = null!;
 }

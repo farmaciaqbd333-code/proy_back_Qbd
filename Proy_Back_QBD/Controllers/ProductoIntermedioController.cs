@@ -14,10 +14,10 @@ namespace Proy_back_QBD.Controllers
             this._productoIntermedioService = _productoIntermedioService;
         }
 
-        [HttpGet("tabla")]
-        public async Task<IActionResult> ListaPrincipal()
+        [HttpGet("tabla/{idSede}")]
+        public async Task<IActionResult> ListaPrincipal(int idSede)
         {
-            return Ok(await _productoIntermedioService.ListaProductoIntermedio());
+            return Ok(await _productoIntermedioService.ListaProductoIntermedio(idSede));
         }
         [HttpGet("consumo/{idProductoIntermedio}")]
         public async Task<IActionResult> DetalleConsumo(int idProductoIntermedio)

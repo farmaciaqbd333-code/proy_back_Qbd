@@ -197,6 +197,10 @@ namespace Proy_back_QBD.Models
         [JsonIgnore] public List<NotaSalidaEmpaque> NotaSalidaEmpaqueCreados { get; set; } = new();
         [JsonIgnore] public List<NotaSalidaEconomato> NotaSalidaEconomatoCreados { get; set; } = new();
         [JsonIgnore] public List<NotaSalidaProducto> NotaSalidaProductoCreados { get; set; } = new();
+        [JsonIgnore] public List<AjusteInsumo> AjusteInsumos { get; set; } = new();
+        [JsonIgnore] public List<AjusteEconomato> AjusteEconomatos { get; set; } = new();
+        [JsonIgnore] public List<AjusteEmpaque> AjusteEmpaques { get; set; } = new();
+        [JsonIgnore] public List<AjusteProducto> AjusteProductos { get; set; } = new();
     }
     [Table("tipos_usuario")]
     public class TipoUsuario

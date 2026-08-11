@@ -18,8 +18,8 @@ public class AjusteEconomatoConfiguration : IEntityTypeConfiguration<AjusteEcono
             .HasColumnName("ajuste")
             .HasColumnType("numeric");
 
-        builder.Property(x => x.IdCompraEconomato)
-            .HasColumnName("id_compra_economato");
+        builder.Property(x => x.IdStockEconomato)
+            .HasColumnName("id_stock_economato");
 
         builder.Property(x => x.FechaCreacion)
             .HasColumnName("fecha_creacion")
@@ -48,12 +48,12 @@ public class AjusteEconomatoConfiguration : IEntityTypeConfiguration<AjusteEcono
         builder.Property(x => x.Observacion)
             .HasColumnName("observacion");
 
-        builder.HasOne(x => x.CompraEconomato)
+        builder.HasOne(x => x.StockEconomato)
             .WithMany(wm => wm.AjusteEconomatos)
-            .HasForeignKey(x => x.IdCompraEconomato);
+            .HasForeignKey(x => x.IdStockEconomato);
 
         builder.HasOne(x => x.Creador)
-            .WithMany()
+            .WithMany(wm => wm.AjusteEconomatos)
             .HasForeignKey(x => x.IdCreador);
     }
 }

@@ -23,7 +23,7 @@ namespace proy_back_Qbd.Util
                 current /= 36;
             }
 
-            return result.PadLeft(4,'0');
+            return result;
         }
     }
 }

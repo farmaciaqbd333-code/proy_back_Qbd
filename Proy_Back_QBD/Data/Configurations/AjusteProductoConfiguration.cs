@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class AjusteProductoTerminadoConfiguration : IEntityTypeConfiguration<AjusteProductoTerminado>
+public class AjusteProductoTerminadoConfiguration : IEntityTypeConfiguration<AjusteProducto>
 {
-    public void Configure(EntityTypeBuilder<AjusteProductoTerminado> builder)
+    public void Configure(EntityTypeBuilder<AjusteProducto> builder)
     {
-        builder.ToTable("ajuste_producto_terminado");
+        builder.ToTable("ajuste_producto");
 
         builder.HasKey(x => x.Id);
 
@@ -18,7 +18,7 @@ public class AjusteProductoTerminadoConfiguration : IEntityTypeConfiguration<Aju
             .HasColumnName("ajuste")
             .HasColumnType("decimal");
 
-        builder.Property(x => x.IdCompraProducto)
+        builder.Property(x => x.IdStockProducto)
             .HasColumnName("id_compra_producto");
 
         builder.Property(x => x.FechaCreacion)
@@ -45,14 +45,12 @@ public class AjusteProductoTerminadoConfiguration : IEntityTypeConfiguration<Aju
         builder.Property(x => x.Observacion)
             .HasColumnName("observacion");
 
-        builder.HasOne(x => x.CompraProducto)
-            .WithMany(wm => wm.AjusteProductoTerminados)
-            .HasForeignKey(x => x.IdCompraProducto)
-            ;
+        builder.HasOne(x => x.StockProducto)
+            .WithMany(wm => wm.AjusteProductos)
+            .HasForeignKey(x => x.IdStockProducto);
 
         builder.HasOne(x => x.Creador)
-            .WithMany()
-            .HasForeignKey(x => x.IdCreador)
-            .OnDelete(DeleteBehavior.Restrict);
+            .WithMany(wm => wm.AjusteProductos)
+            .HasForeignKey(x => x.IdCreador);
     }
 }

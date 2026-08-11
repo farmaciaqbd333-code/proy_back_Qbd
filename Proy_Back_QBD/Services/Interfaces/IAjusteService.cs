@@ -6,7 +6,7 @@ namespace Proy_back_QBD.Services
     public interface IAjusteService
     {
         public Task RegistrarAjuste(CrearAjusteReq request);
-        public Task<List<TablaAjustesRes>> ListaAjustes(string familia);
+        public Task<List<TablaAjustesRes>> ListaAjustes(string familia, int idSede);
         public Task<List<DetalleAjusteRes>> DetalleAjuste(int ajuste, string familia);
     }
 }

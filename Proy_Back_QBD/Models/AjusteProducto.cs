@@ -3,13 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Models;
 
-public class AjusteProductoTerminado
+public class AjusteProducto
 {
     public int Id { get; set; }
 
     public decimal Ajuste { get; set; }
 
-    public int IdCompraProducto { get; set; }
+    public int IdStockProducto { get; set; }
 
     public DateTimeOffset? FechaCreacion { get; set; }
 
@@ -25,7 +25,7 @@ public class AjusteProductoTerminado
 
     public string? Observacion { get; set; }
 
-    public virtual CompraProducto CompraProducto { get; set; } = null!;
+    public virtual StockProducto StockProducto { get; set; } = null!;
 
     public virtual Usuario Creador { get; set; } = null!;
 }

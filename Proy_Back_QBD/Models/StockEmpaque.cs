@@ -11,6 +11,7 @@ public class StockEmpaque
     public int? IdNotaSalidaEmpaque { get; set; }
     public CompraEmpaque CompraEmpaque { get; set; } = null!;
     public NotaSalidaEmpaque NotaSalidaEmpaque { get; set; } = null!;
+    public List<AjusteEmpaque>? AjusteEmpaques { get; set; }
     public List<StockEmpaqueProductoIntermedio> StockEmpaqueProductoIntermedio { get; set; } = null!;
     public Sede Sede { get; set; } = null!;
 }

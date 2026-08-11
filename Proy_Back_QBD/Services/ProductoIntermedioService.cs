@@ -685,14 +685,15 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
-        public async Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio()
+        public async Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio(int idSede)
         {
             IEnumerable<TablaPIRes> response = await _context.ProductosIntermedios
+            .Where(w => w.IdSede == idSede)
             .OrderByDescending(ob => ob.Id)
             .Select(s => new TablaPIRes()
             {
                 Id = s.Id,
-                Registro = "PI-" + Alfanumerico.ConvertToBase36(s.Id),
+                Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
                 Lote = s.Lote,
                 Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
                 Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",

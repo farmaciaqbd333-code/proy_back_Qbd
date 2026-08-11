@@ -46,13 +46,5 @@ public class StockInsumoProductoIntermedioConfiguration
         builder.HasOne(x => x.StockInsumo)
             .WithMany(x => x.StockInsumoProductoIntermedio)
             .HasForeignKey(x => x.IdStockInsumo);
-
-        builder.HasOne(x => x.Creador)
-            .WithMany(w => w.StockInsumoProductoIntermedioCreados)
-            .HasForeignKey(x => x.IdCreador);
-
-        builder.HasOne(x => x.Modificador)
-            .WithMany(w => w.StockInsumoProductoIntermedioModificados)
-            .HasForeignKey(x => x.IdModificador);
     }
 }
