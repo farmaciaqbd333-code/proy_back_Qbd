@@ -9,6 +9,7 @@ using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
+using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 
 namespace proy_back_Qbd.Services
@@ -178,20 +179,27 @@ namespace proy_back_Qbd.Services
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
             {
-                Codigo = s.Key.Id + "",
+                Codigo = UtilFamilia.CodigoInsumo(s.Key.Id),
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
-                Entradas =
-                //Suma de cantidad en producto intermedios
-                s.Sum(s => s!.ProductoIntermedio!.Where(w => w.IdSede == idSede).Sum(s2 => s2.Tipo == "CAP" ? s2.LoteEstandar : s2.LoteEstTotal)),
+                Entradas = s.Sum(s => s!.ProductoIntermedio!
+                    .Where(w => w.IdSede == idSede)
+                    .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0) 
+                        ? s2.PesoUnidad.Value 
+                        : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0) 
+                            ? s2.LoteEstTotal.Value 
+                            : (s2.LoteEstandar ?? 0)))),
                 Salidas = 0,
                 Ajustes = 0,
                 Baja = s.Sum(x => x.ProductoIntermedio!
-            .Where(ci => ci.FechaVencimiento < DateTime.UtcNow && ci.IdSede == idSede)
-            .Sum(s2 => s2.Tipo == "CAP" ? s2.LoteEstandar : s2.LoteEstTotal)),
+                    .Where(ci => ci.FechaVencimiento < DateTime.UtcNow && ci.IdSede == idSede)
+                    .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0) 
+                        ? s2.PesoUnidad.Value 
+                        : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0) 
+                            ? s2.LoteEstTotal.Value 
+                            : (s2.LoteEstandar ?? 0)))),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault()
-            }).ToListAsync()
-            ;
+            }).ToListAsync();
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
         {
