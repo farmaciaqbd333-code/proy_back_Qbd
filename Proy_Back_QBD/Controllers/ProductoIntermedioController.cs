@@ -15,9 +15,10 @@ namespace Proy_back_QBD.Controllers
         }
 
         [HttpGet("tabla")]
-        public async Task<IActionResult> ListaPrincipal()
+        [HttpGet("tabla/{idSede}")]
+        public async Task<IActionResult> ListaPrincipal(int? idSede = null)
         {
-            return Ok(await _productoIntermedioService.ListaProductoIntermedio());
+            return Ok(await _productoIntermedioService.ListaProductoIntermedio(idSede));
         }
         [HttpGet("consumo/{idProductoIntermedio}")]
         public async Task<IActionResult> DetalleConsumo(int idProductoIntermedio)

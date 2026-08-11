@@ -5,7 +5,7 @@ namespace Proy_back_QBD.Interface
 {
     public interface IProductoIntermedioService
     {
-        public Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio();
+        public Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio(int? idSede = null);
         public Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id);
         public Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request);
         public Task<int> ActualizarProductoIntermedio(int id, ActualizarProductoIntermedioReq request);

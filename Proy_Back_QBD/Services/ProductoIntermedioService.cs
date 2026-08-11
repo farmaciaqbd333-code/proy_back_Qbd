@@ -685,9 +685,15 @@ namespace proy_back_Qbd.Services
             return true;
         }
 
-        public async Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio()
+        public async Task<IEnumerable<TablaPIRes>> ListaProductoIntermedio(int? idSede = null)
         {
-            IEnumerable<TablaPIRes> response = await _context.ProductosIntermedios
+            var query = _context.ProductosIntermedios.AsQueryable();
+            if (idSede.HasValue && idSede.Value > 0)
+            {
+                query = query.Where(w => w.IdSede == idSede.Value);
+            }
+
+            IEnumerable<TablaPIRes> response = await query
             .OrderByDescending(ob => ob.Id)
             .Select(s => new TablaPIRes()
             {
@@ -697,12 +703,19 @@ namespace proy_back_Qbd.Services
                 Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
                 Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
                 LoteEstandar = s.LoteEstandar ?? 0,
+                PesoUnidad = s.PesoUnidad,
+                LoteEstTotal = s.LoteEstTotal,
+                Cantidad = (s.PesoUnidad.HasValue && s.PesoUnidad.Value > 0) 
+                    ? s.PesoUnidad.Value 
+                    : ((s.LoteEstTotal.HasValue && s.LoteEstTotal.Value > 0) 
+                        ? s.LoteEstTotal.Value 
+                        : (s.LoteEstandar ?? 0)),
                 Tipo = s.Tipo,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
-                Um = s.Insumo.UnidadMedida,
+                Um = (s.Insumo != null && !string.IsNullOrEmpty(s.Insumo.UnidadMedida)) ? s.Insumo.UnidadMedida : (s.Um ?? "G"),
                 FechaEmision = s.FechaEmision,
                 FechaVencimiento = s.FechaVencimiento,
-                Elaborado = s.Elaborador.Codigo,
+                Elaborado = s.Elaborador != null ? s.Elaborador.Codigo : "",
                 CondicionAlmacenamiento = s.CondicionAlmacenamiento
             })
             .AsNoTracking()
