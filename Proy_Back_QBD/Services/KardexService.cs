@@ -168,7 +168,8 @@ namespace proy_back_Qbd.Services
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
             .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
-                Tipo = s.Select(x => x.Tipo).FirstOrDefault()
+                Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
+                CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
             }).ToListAsync()
             ;
         }
@@ -198,7 +199,8 @@ namespace proy_back_Qbd.Services
                         : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0) 
                             ? s2.LoteEstTotal.Value 
                             : (s2.LoteEstandar ?? 0)))),
-                Tipo = s.Select(x => x.Tipo).FirstOrDefault()
+                Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
+                CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
             }).ToListAsync();
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
@@ -230,9 +232,10 @@ namespace proy_back_Qbd.Services
                             //Suma de Empaques vencidos
                             Baja = s.Sum(x => x.CompraEmpaques
                                     .Where(ce => ce.FechaVencimiento < DateTimeOffset.UtcNow)
-                                    .Sum(ce => ce.StockEmpaques.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible)))
-                        }).ToListAsync()
-                        ;
+                                    .Sum(ce => ce.StockEmpaques.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
+                            Tipo = null,
+                            CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
+                        }).ToListAsync();
         }
         private async Task<List<StockRes>> ObtenerEconomato(int idSede)
         {
