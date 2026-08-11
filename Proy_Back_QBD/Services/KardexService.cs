@@ -163,7 +163,7 @@ namespace proy_back_Qbd.Services
                 //Suma de Notas de Salida
                 s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida)))
                 ,
-                Ajustes = s.Sum(s => s.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockInsumos.Sum(s => s.AjusteInsumos!.Sum(s => s.Ajuste)))),
+                Ajustes = s.Sum(s2 => s2.CompraInsumos.Sum(s3 => s3.StockInsumos.Sum(s4 => s4.AjusteInsumos.Sum(s5 => s5.Ajuste)))),
                 Baja = s.Sum(x => x.CompraInsumos!
             .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
             .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),

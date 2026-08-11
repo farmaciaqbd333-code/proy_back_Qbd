@@ -30,7 +30,7 @@ public class AjusteEmpaqueConfiguration : IEntityTypeConfiguration<AjusteEmpaque
             .IsRequired();
 
         builder.Property(x => x.IdStockEmpaque)
-            .HasColumnName("id_compra_empaque")
+            .HasColumnName("id_stock_empaque")
             .IsRequired();
 
         builder.Property(x => x.FechaCreacion)

@@ -19,7 +19,7 @@ public class AjusteProductoTerminadoConfiguration : IEntityTypeConfiguration<Aju
             .HasColumnType("decimal");
 
         builder.Property(x => x.IdStockProducto)
-            .HasColumnName("id_compra_producto");
+            .HasColumnName("id_stock_producto");
 
         builder.Property(x => x.FechaCreacion)
             .HasColumnName("fecha_creacion")
