@@ -14,7 +14,6 @@ namespace Proy_back_QBD.Controllers
             this._productoIntermedioService = _productoIntermedioService;
         }
 
-        [HttpGet("tabla")]
         [HttpGet("tabla/{idSede}")]
         public async Task<IActionResult> ListaPrincipal(int? idSede = null)
         {
