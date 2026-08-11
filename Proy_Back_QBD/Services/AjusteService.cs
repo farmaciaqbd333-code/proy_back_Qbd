@@ -166,7 +166,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 .Select(s => new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoInsumo(s.CompraInsumo.IdInsumo),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraInsumo.Id),
                     Descripcion = s.CompraInsumo.Insumo!.Descripcion,
                     Lote = s.CompraInsumo.Lote ?? "",
                     Saldo = s.StockDisponible,
@@ -188,7 +188,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 .Select(s => new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoEmpaque(s.CompraEmpaque.IdEmpaque),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraEmpaque.Id),
                     Descripcion = s.CompraEmpaque.Empaque!.Descripcion ?? "",
                     Lote = s.CompraEmpaque.Lote ?? "",
                     Saldo = s.StockDisponible,
@@ -209,7 +209,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 .Select(s => new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoInsumo(s.CompraEconomato.IdEconomato),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraEconomato.Id),
                     Descripcion = s.CompraEconomato.Economato!.Descripcion,
                     Lote = "",
                     Saldo = s.StockDisponible,
@@ -230,7 +230,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 .Select(s => new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoInsumo(s.CompraProducto.IdProducto),
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = Alfanumerico.ConvertToBase36(s.CompraProducto.Id),
                     Descripcion = s.CompraProducto.Producto!.Descripcion ?? "",
                     Lote = s.CompraProducto.Lote ?? "",
                     Saldo = s.StockDisponible,
