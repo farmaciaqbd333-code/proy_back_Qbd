@@ -31,9 +31,6 @@ namespace proy_back_Qbd.Data.Configurations
             builder.Property(x => x.LoteEstTotal)
                 .HasColumnName("lote_est_total");
 
-            builder.Property(x => x.Tipo)
-                .HasColumnName("tipo");
-
             builder.Property(x => x.TipoUso)
                 .HasColumnName("tipo_uso");
 
@@ -54,8 +51,6 @@ namespace proy_back_Qbd.Data.Configurations
 
             builder.Property(x => x.Procedimiento)
                 .HasColumnName("procedimiento");
-
-
 
             builder.Property(x => x.Aspecto)
                 .HasColumnName("aspecto");
@@ -89,7 +84,6 @@ namespace proy_back_Qbd.Data.Configurations
                 .HasColumnName("id_sede");
 
             // Relaciones
-
             builder.HasOne(x => x.Insumo)
             .WithMany(x => x.ProductoIntermedio)
             .HasForeignKey(x => x.IdInsumo)

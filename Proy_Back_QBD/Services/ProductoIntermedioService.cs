@@ -59,8 +59,8 @@ namespace proy_back_Qbd.Services
 
                     }
                     Dictionary<int, decimal> conteoEmpaques = listaEmpaques
-    .GroupBy(x => x)
-    .ToDictionary(g => g.Key, g => (decimal)g.Count());
+                .GroupBy(x => x)
+                .ToDictionary(g => g.Key, g => (decimal)g.Count());
 
                     _logger.LogInformation(
                         "Iniciando consumo de empaques. Total de tipos de empaque: {CantidadTiposEmpaque}",
@@ -79,7 +79,8 @@ namespace proy_back_Qbd.Services
                             .Where(w =>
                                 w.CompraEmpaque.IdEmpaque == conteoEmpaque.Key &&
                                 w.IdSede == request.IdSede &&
-                                w.CompraEmpaque.FechaVencimiento >= DateTime.UtcNow)
+                                w.CompraEmpaque.FechaVencimiento >= DateTime.UtcNow
+                            )
                             .OrderBy(w => w.CompraEmpaque.FechaVencimiento)
                             .ToListAsync();
 
@@ -213,11 +214,18 @@ namespace proy_back_Qbd.Services
 
                     List<StockInsumo> stockInsumos = await _context.StockInsumos
                         .Where(w =>
-                            w.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
                             w.StockDisponible > 0 &&
-                            w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
+                            (
+                                w.Tipo == "MP"
+                                    ? w.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
+                                      w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow
+                                    : w.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo &&
+                                      w.ProductoIntermedio.FechaVencimiento >= DateTime.UtcNow
+                            )
+                        )
                         .OrderBy(w => w.CompraInsumo.FechaVencimiento)
                         .ToListAsync();
+
 
                     _logger.LogInformation(
                         "Stock encontrado para insumo {IdInsumo}: {CantidadRegistros} lotes",
@@ -354,6 +362,16 @@ namespace proy_back_Qbd.Services
                     productoIntermedio.FechaVencimiento = DateTime.SpecifyKind(productoIntermedio.FechaVencimiento, DateTimeKind.Utc);
                 }
 
+                StockInsumo stockInsumoAdd = new()
+                {
+                    Tipo = "MP",
+                    ProductoIntermedio = productoIntermedio,
+                    UnidadMedida = request.Um,
+                    IdSede = request.IdSede,
+                    StockDisponible = request.TipoUso == "PI-FMG" ? request.LoteEstandar : request.LoteEstTotal
+                };
+                _context.StockInsumos.Add(stockInsumoAdd);
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return productoIntermedio.Id;
@@ -389,6 +407,7 @@ namespace proy_back_Qbd.Services
                     .Include(p => p.InsumoProductoIntermedio)
                         .ThenInclude(i => i.CompraInsumoProductoIntermedio)
                             .ThenInclude(c => c.StockInsumo)
+                    .Include(i => i.StockInsumo)
                     .FirstOrDefaultAsync(p => p.Id == id)
                     ?? throw new NotFoundException("No existe este ProductoIntermedio con id " + id);
 
@@ -413,6 +432,7 @@ namespace proy_back_Qbd.Services
                     }
                     _context.InsumoProductoIntermedios.Remove(insumoProdInt);
                 }
+                _context.StockInsumos.Remove(productoIntermedio.StockInsumo);
 
                 // Persistimos la reversión antes de recalcular, para evitar inconsistencias
                 // al recontar stock disponible en las siguientes consultas
@@ -559,7 +579,15 @@ namespace proy_back_Qbd.Services
                         }
                     }
                 }
-
+                StockInsumo stockInsumoAdd = new()
+                {
+                    Tipo = "MP",
+                    ProductoIntermedio = productoIntermedio,
+                    UnidadMedida = request.Um,
+                    IdSede = productoIntermedio.IdSede,
+                    StockDisponible = request.TipoUso == "PI-FMG" ? request.LoteEstandar : request.LoteEstTotal
+                };
+                _context.StockInsumos.Add(stockInsumoAdd);
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
                 return productoIntermedio.Id;
@@ -705,12 +733,11 @@ namespace proy_back_Qbd.Services
                 LoteEstandar = s.LoteEstandar ?? 0,
                 PesoUnidad = s.PesoUnidad,
                 LoteEstTotal = s.LoteEstTotal,
-                Cantidad = (s.PesoUnidad.HasValue && s.PesoUnidad.Value > 0) 
-                    ? s.PesoUnidad.Value 
-                    : ((s.LoteEstTotal.HasValue && s.LoteEstTotal.Value > 0) 
-                        ? s.LoteEstTotal.Value 
+                Cantidad = (s.PesoUnidad.HasValue && s.PesoUnidad.Value > 0)
+                    ? s.PesoUnidad.Value
+                    : ((s.LoteEstTotal.HasValue && s.LoteEstTotal.Value > 0)
+                        ? s.LoteEstTotal.Value
                         : (s.LoteEstandar ?? 0)),
-                Tipo = s.Tipo,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
                 Um = (s.Insumo != null && !string.IsNullOrEmpty(s.Insumo.UnidadMedida)) ? s.Insumo.UnidadMedida : (s.Um ?? "G"),
                 FechaEmision = s.FechaEmision,
@@ -848,7 +875,6 @@ namespace proy_back_Qbd.Services
                     LoteEstandar = x.LoteEstandar.Value,
                     PesoUnidad = x.PesoUnidad,
                     LoteEstTotal = x.LoteEstTotal,
-                    Tipo = x.Tipo,
                     TipoUso = x.TipoUso,
                     Um = x.Um,
                     FechaEmision = x.FechaEmision,
@@ -866,7 +892,7 @@ namespace proy_back_Qbd.Services
                         .ToList(),
 
                     Insumos = x.InsumoProductoIntermedio
-                        .Select(i => new InsumoProductoIntermedioReq
+                        .Select(i => new InsumoProductoIntermedioRes
                         {
                             IdInsumo = i.IdInsumo,
                             CodigoInsumo = UtilFamilia.CodigoInsumo(i.IdInsumo),

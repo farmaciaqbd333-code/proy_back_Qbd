@@ -84,6 +84,7 @@ namespace proy_back_Qbd.Services
                 StockInsumo stockInsumo = new()
                 {
                     IdCompraInsumo = compraInsumo.Id,
+                    Tipo = "MP",
                     IdSede = req.IdSede,
                     UnidadMedida = compraInsumo.Um,
                     StockDisponible = paqueteEntrante

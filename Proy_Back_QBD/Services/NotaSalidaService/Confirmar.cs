@@ -62,6 +62,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 var stockDestino = new StockInsumo
                 {
                     IdCompraInsumo = item.IdCompraArticulo,
+                    Tipo = "MP",
                     StockDisponible = item.CantidadRecibida,
                     UnidadMedida = item.UnidadMedida ?? stockOrigen.UnidadMedida,
                     IdSede = idSedeDestino,

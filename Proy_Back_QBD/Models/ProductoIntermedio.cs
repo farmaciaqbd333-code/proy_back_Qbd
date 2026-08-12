@@ -10,7 +10,6 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public int? LoteEstandar { get; set; }
         public decimal? PesoUnidad { get; set; }
         public decimal? LoteEstTotal { get; set; }
-        public string? Tipo { get; set; }
         public string? TipoUso { get; set; }
         public required string Um { get; set; }
         public DateTime FechaEmision { get; set; }
@@ -27,7 +26,7 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public DateTime? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
-        public int? IdSede { get; set; }
+        public int IdSede { get; set; }
 
         // Navigation Properties
         public Usuario? Creador { get; set; }
@@ -37,6 +36,7 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public Insumo? Insumo { get; set; }
         public Sede? Sede { get; set; }
         public List<InsumoProductoIntermedio> InsumoProductoIntermedio { get; set; } = new();
+        public StockInsumo? StockInsumo { get; set; }
         public List<EmpaqueProductoIntermedio> EmpaqueProductoIntermedios { get; set; } = new();
     }
 }
