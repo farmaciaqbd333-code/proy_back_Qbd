@@ -25,356 +25,279 @@ namespace proy_back_Qbd.Services
 
         public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
         {
-            using var transaction = await _context.Database.BeginTransactionAsync();
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            var ahora = DateTime.UtcNow;
+
             try
             {
-                ProductoIntermedio productoIntermedio = new ProductoIntermedioMapper().CrearProductoIntermedio(request);
-                _context.ProductosIntermedios.Add(productoIntermedio);
-                List<int> listaEmpaques = request.IdEmpaques.ToList();
-                if (listaEmpaques.Any())
+                if (request.TipoUso is not ("PI-FMG" or "PI-F%"))
                 {
+                    throw new BadRequestException(
+                        $"Tipo de uso no válido: {request.TipoUso}. Los valores permitidos son PI-FMG y PI-F%.");
+                }
 
-                    foreach (var item in request.IdEmpaques)
+                ProductoIntermedio productoIntermedio =
+                    new ProductoIntermedioMapper().CrearProductoIntermedio(request);
+
+                if (productoIntermedio.FechaEmision.Kind == DateTimeKind.Unspecified)
+                {
+                    productoIntermedio.FechaEmision =
+                        DateTime.SpecifyKind(productoIntermedio.FechaEmision, DateTimeKind.Utc);
+                }
+
+                if (productoIntermedio.FechaVencimiento.Kind == DateTimeKind.Unspecified)
+                {
+                    productoIntermedio.FechaVencimiento =
+                        DateTime.SpecifyKind(productoIntermedio.FechaVencimiento, DateTimeKind.Utc);
+                }
+
+                _context.ProductosIntermedios.Add(productoIntermedio);
+
+                // ============================================================
+                // EMPAQUES
+                // ============================================================
+
+                var listaEmpaques = request.IdEmpaques?.ToList() ?? new List<int>();
+
+                if (listaEmpaques.Count > 0)
+                {
+                    var empaquesRelacionados = new List<int>();
+
+                    foreach (var idEmpaque in listaEmpaques)
                     {
                         var empaque = await _context.Empaques
-                        .Where(w => w.Id == item)
-                        .Select(s => new
-                        {
-                            idCaja = s.IdCaja,
-                            idFunda = s.IdFunda,
-                            idEtiqueta1 = s.IdEtiqueta1,
-                            idEtiqueta2 = s.IdEtiqueta2
-                        })
-                        .FirstOrDefaultAsync() ?? throw new NotFoundException("No existe este Empaque con id " + item);
-                        listaEmpaques.AddRange(
-                            new int?[]
+                            .Where(x => x.Id == idEmpaque)
+                            .Select(x => new
                             {
-                                empaque.idCaja,
-                                empaque.idFunda,
-                                empaque.idEtiqueta1,
-                                empaque.idEtiqueta2
-                            }
-                            .OfType<int>()
-                        );
+                                x.IdCaja,
+                                x.IdFunda,
+                                x.IdEtiqueta1,
+                                x.IdEtiqueta2
+                            })
+                            .FirstOrDefaultAsync();
 
+                        if (empaque == null)
+                        {
+                            throw new NotFoundException(
+                                $"No existe este Empaque con id {idEmpaque}");
+                        }
+
+                        empaquesRelacionados.Add(idEmpaque);
+
+                        if (empaque.IdCaja.HasValue)
+                            empaquesRelacionados.Add(empaque.IdCaja.Value);
+
+                        if (empaque.IdFunda.HasValue)
+                            empaquesRelacionados.Add(empaque.IdFunda.Value);
+
+                        if (empaque.IdEtiqueta1.HasValue)
+                            empaquesRelacionados.Add(empaque.IdEtiqueta1.Value);
+
+                        if (empaque.IdEtiqueta2.HasValue)
+                            empaquesRelacionados.Add(empaque.IdEtiqueta2.Value);
                     }
-                    Dictionary<int, decimal> conteoEmpaques = listaEmpaques
-                .GroupBy(x => x)
-                .ToDictionary(g => g.Key, g => (decimal)g.Count());
 
-                    _logger.LogInformation(
-                        "Iniciando consumo de empaques. Total de tipos de empaque: {CantidadTiposEmpaque}",
-                        conteoEmpaques.Count);
+                    var conteoEmpaques = empaquesRelacionados
+                        .GroupBy(x => x)
+                        .ToDictionary(
+                            g => g.Key,
+                            g => (decimal)g.Count());
 
                     foreach (var conteoEmpaque in conteoEmpaques)
                     {
                         decimal cantidadPendiente = conteoEmpaque.Value;
 
-                        _logger.LogInformation(
-                            "Procesando empaque {IdEmpaque}. Cantidad requerida: {CantidadRequerida}",
-                            conteoEmpaque.Key,
-                            cantidadPendiente);
-
-                        List<StockEmpaque> stockEmpaques = await _context.StockEmpaques
-                            .Where(w =>
-                                w.CompraEmpaque.IdEmpaque == conteoEmpaque.Key &&
-                                w.IdSede == request.IdSede &&
-                                w.CompraEmpaque.FechaVencimiento >= DateTime.UtcNow
-                            )
-                            .OrderBy(w => w.CompraEmpaque.FechaVencimiento)
+                        var stockEmpaques = await _context.StockEmpaques
+                            .Where(x =>
+                                x.CompraEmpaque.IdEmpaque == conteoEmpaque.Key &&
+                                x.IdSede == request.IdSede &&
+                                x.StockDisponible > 0 &&
+                                x.CompraEmpaque.FechaVencimiento >= ahora)
+                            .OrderBy(x => x.CompraEmpaque.FechaVencimiento)
                             .ToListAsync();
-
-                        _logger.LogInformation(
-                            "Stock encontrado para empaque {IdEmpaque}: {CantidadRegistros} registros",
-                            conteoEmpaque.Key,
-                            stockEmpaques.Count);
 
                         if (stockEmpaques.Count == 0)
                         {
-                            _logger.LogWarning(
-                                "No hay stock disponible para el empaque {IdEmpaque}",
-                                conteoEmpaque.Key);
-
                             throw new NotFoundException(
-                                "No hay stock disponible para este Empaque");
+                                $"No hay stock disponible para el empaque {conteoEmpaque.Key}");
                         }
 
-                        decimal stockDisponibleTotal = stockEmpaques.Sum(s => s.StockDisponible);
-
-                        _logger.LogInformation(
-                            "Empaque {IdEmpaque}. Stock disponible total: {StockDisponible}. Cantidad requerida: {CantidadRequerida}",
-                            conteoEmpaque.Key,
-                            stockDisponibleTotal,
-                            cantidadPendiente);
+                        decimal stockDisponibleTotal =
+                            stockEmpaques.Sum(x => x.StockDisponible);
 
                         if (stockDisponibleTotal < cantidadPendiente)
                         {
-                            _logger.LogWarning(
-                                "Stock insuficiente para empaque {IdEmpaque}. Stock disponible: {StockDisponible}, requerido: {CantidadRequerida}",
-                                conteoEmpaque.Key,
-                                stockDisponibleTotal,
-                                cantidadPendiente);
-
-                            throw new BadRequestException("Stock empaque insuficiente");
+                            throw new BadRequestException(
+                                $"Stock insuficiente para el empaque {conteoEmpaque.Key}. " +
+                                $"Disponible: {stockDisponibleTotal}, requerido: {cantidadPendiente}");
                         }
 
-                        EmpaqueProductoIntermedio empaqueProductoIntermedio = new()
+                        var empaqueProductoIntermedio = new EmpaqueProductoIntermedio
                         {
                             IdEmpaque = conteoEmpaque.Key,
                             ProductoIntermedio = productoIntermedio
                         };
 
-                        _context.EmpaqueProductoIntermedios.Add(empaqueProductoIntermedio);
+                        _context.EmpaqueProductoIntermedios.Add(
+                            empaqueProductoIntermedio);
 
-                        foreach (StockEmpaque stockEmpaque in stockEmpaques)
+                        foreach (var stockEmpaque in stockEmpaques)
                         {
-                            _logger.LogInformation(
-                                "Evaluando lote de stock. IdStockEmpaque: {IdStockEmpaque}, IdCompraEmpaque: {IdCompraEmpaque}, StockDisponible: {StockDisponible}, CantidadPendiente: {CantidadPendiente}",
-                                stockEmpaque.Id,
-                                stockEmpaque.IdCompraEmpaque,
-                                stockEmpaque.StockDisponible,
-                                cantidadPendiente);
-
-                            StockEmpaqueProductoIntermedio stockEmpaqueProductoIntermedio;
-
-                            if (stockEmpaque.StockDisponible >= cantidadPendiente)
-                            {
-                                stockEmpaqueProductoIntermedio = new()
-                                {
-                                    Cantidad = cantidadPendiente,
-                                    IdStockEmpaque = stockEmpaque.Id,
-                                    UnidadMedida = "UND",
-                                    EmpaqueProductoIntermedio = empaqueProductoIntermedio
-                                };
-
-                                stockEmpaque.StockDisponible -= cantidadPendiente;
-
-                                _context.StockEmpaqueProductoIntermedios
-                                    .Add(stockEmpaqueProductoIntermedio);
-
-                                _logger.LogInformation(
-                                    "Consumo completado desde un solo lote. IdCompraEmpaque: {IdCompraEmpaque}, CantidadConsumida: {CantidadConsumida}, StockRestante: {StockRestante}",
-                                    stockEmpaque.IdCompraEmpaque,
-                                    cantidadPendiente,
-                                    stockEmpaque.StockDisponible);
-
-                                cantidadPendiente = 0;
+                            if (cantidadPendiente <= 0)
                                 break;
-                            }
-                            else
-                            {
-                                decimal cantidadConsumida = stockEmpaque.StockDisponible;
 
-                                stockEmpaqueProductoIntermedio = new()
+                            decimal cantidadConsumida =
+                                Math.Min(stockEmpaque.StockDisponible, cantidadPendiente);
+
+                            _context.StockEmpaqueProductoIntermedios.Add(
+                                new StockEmpaqueProductoIntermedio
                                 {
                                     Cantidad = cantidadConsumida,
                                     IdStockEmpaque = stockEmpaque.Id,
                                     UnidadMedida = "UND",
-                                    EmpaqueProductoIntermedio = empaqueProductoIntermedio
-                                };
+                                    EmpaqueProductoIntermedio =
+                                        empaqueProductoIntermedio
+                                });
 
-                                cantidadPendiente -= cantidadConsumida;
-                                stockEmpaque.StockDisponible = 0;
-
-                                _context.StockEmpaqueProductoIntermedios
-                                    .Add(stockEmpaqueProductoIntermedio);
-
-                                _logger.LogInformation(
-                                    "Consumo parcial del lote. IdCompraEmpaque: {IdCompraEmpaque}, CantidadConsumida: {CantidadConsumida}, CantidadPendiente: {CantidadPendiente}, StockRestante: 0",
-                                    stockEmpaque.IdCompraEmpaque,
-                                    cantidadConsumida,
-                                    cantidadPendiente);
-                            }
+                            stockEmpaque.StockDisponible -= cantidadConsumida;
+                            cantidadPendiente -= cantidadConsumida;
                         }
 
                         if (cantidadPendiente > 0)
                         {
-                            _logger.LogError(
-                                "No se pudo completar el consumo del empaque {IdEmpaque}. Cantidad pendiente: {CantidadPendiente}",
-                                conteoEmpaque.Key,
-                                cantidadPendiente);
-
                             throw new BadRequestException(
-                                "No se pudo completar el consumo del empaque");
+                                $"No se pudo completar el consumo del empaque {conteoEmpaque.Key}");
                         }
-
-                        _logger.LogInformation(
-                            "Consumo del empaque {IdEmpaque} completado correctamente",
-                            conteoEmpaque.Key);
                     }
-
-                    _logger.LogInformation("Procesamiento de empaques finalizado correctamente.");
                 }
+
+                // ============================================================
+                // INSUMOS
+                // ============================================================
+
                 foreach (var fInsumo in request.Insumos)
                 {
-                    _logger.LogInformation(
-                        "Iniciando consumo de insumo. IdInsumo: {IdInsumo}, CantidadRequerida: {CantidadRequerida}",
-                        fInsumo.IdInsumo,
-                        fInsumo.CantidadLote);
+                    if (fInsumo.Tipo is not ("MP" or "PI"))
+                    {
+                        throw new BadRequestException(
+                            $"Tipo de insumo no válido: {fInsumo.Tipo}");
+                    }
 
-                    List<StockInsumo> stockInsumos = await _context.StockInsumos
-                        .Where(w =>
-                            w.StockDisponible > 0 &&
-                            (
-                                w.Tipo == "MP"
-                                    ? w.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
-                                      w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow
-                                    : w.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo &&
-                                      w.ProductoIntermedio.FechaVencimiento >= DateTime.UtcNow
-                            )
-                        )
-                        .OrderBy(w => w.CompraInsumo.FechaVencimiento)
-                        .ToListAsync();
-
-
-                    _logger.LogInformation(
-                        "Stock encontrado para insumo {IdInsumo}: {CantidadRegistros} lotes",
-                        fInsumo.IdInsumo,
-                        stockInsumos.Count);
-
-                    decimal stockDisponibleTotal = stockInsumos.Sum(s => s.StockDisponible);
                     decimal cantidadUsar = fInsumo.CantidadLote;
 
-                    _logger.LogInformation(
-                        "Stock del insumo {IdInsumo}. StockDisponibleTotal: {StockDisponibleTotal}, CantidadRequerida: {CantidadRequerida}",
-                        fInsumo.IdInsumo,
-                        stockDisponibleTotal,
-                        cantidadUsar);
+                    List<StockInsumo> stockInsumos;
 
-                    if (!stockInsumos.Any())
+                    if (fInsumo.Tipo == "MP")
                     {
-                        _logger.LogWarning(
-                            "No se encontró stock disponible para el insumo {IdInsumo}",
-                            fInsumo.IdInsumo);
-
-                        throw new NotFoundException(
-                            "No hay stock disponible para este insumo, " + stockDisponibleTotal);
+                        stockInsumos = await _context.StockInsumos
+                            .Where(x =>
+                                x.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
+                                x.StockDisponible > 0 &&
+                                x.CompraInsumo.FechaVencimiento >= ahora)
+                            .OrderBy(x => x.CompraInsumo.FechaVencimiento)
+                            .ToListAsync();
                     }
+                    else
+                    {
+                        stockInsumos = await _context.StockInsumos
+                            .Where(x =>
+                                x.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo &&
+                                x.StockDisponible > 0 &&
+                                x.ProductoIntermedio.FechaVencimiento >= ahora)
+                            .OrderBy(x => x.ProductoIntermedio.FechaVencimiento)
+                            .ToListAsync();
+                    }
+
+                    if (stockInsumos.Count == 0)
+                    {
+                        throw new NotFoundException(
+                            $"No hay stock disponible para el insumo {fInsumo.IdInsumo}");
+                    }
+
+                    decimal stockDisponibleTotal =
+                        stockInsumos.Sum(x => x.StockDisponible);
 
                     if (stockDisponibleTotal < cantidadUsar)
                     {
-                        _logger.LogWarning(
-                            "Stock insuficiente para el insumo {IdInsumo}. StockDisponible: {StockDisponible}, CantidadRequerida: {CantidadRequerida}",
-                            fInsumo.IdInsumo,
-                            stockDisponibleTotal,
-                            cantidadUsar);
-
-                        throw new NotFoundException(
-                            "No hay stock disponible para este insumo, " + stockDisponibleTotal);
+                        throw new BadRequestException(
+                            $"Stock insuficiente para el insumo {fInsumo.IdInsumo}. " +
+                            $"Disponible: {stockDisponibleTotal}, requerido: {cantidadUsar}");
                     }
 
-                    InsumoProductoIntermedio insumoProductoIntermedio =
+                    var insumoProductoIntermedio =
                         new ProductoIntermedioMapper()
                             .CrearInsumosProductoIntermedio(fInsumo);
 
                     insumoProductoIntermedio.IdCreador = request.IdCreador;
                     insumoProductoIntermedio.ProductoIntermedio = productoIntermedio;
 
-                    _context.InsumoProductoIntermedios.Add(insumoProductoIntermedio);
-
-                    _logger.LogInformation(
-                        "InsumoProductoIntermedio creado para el insumo {IdInsumo}. IdCreador: {IdCreador}",
-                        fInsumo.IdInsumo,
-                        request.IdCreador);
+                    _context.InsumoProductoIntermedios.Add(
+                        insumoProductoIntermedio);
 
                     foreach (var stockInsumo in stockInsumos)
                     {
-                        _logger.LogInformation(
-                            "Procesando lote de insumo. IdInsumo: {IdInsumo}, IdCompraInsumo: {IdCompraInsumo}, StockDisponible: {StockDisponible}, CantidadPendiente: {CantidadPendiente}",
-                            fInsumo.IdInsumo,
-                            stockInsumo.IdCompraInsumo,
-                            stockInsumo.StockDisponible,
-                            cantidadUsar);
-
-                        if (stockInsumo.StockDisponible < cantidadUsar)
-                        {
-                            decimal cantidadConsumida = stockInsumo.StockDisponible;
-
-                            _context.StockInsumoProductoIntermedios.Add(
-                                new StockInsumoProductoIntermedio()
-                                {
-                                    Cantidad = cantidadConsumida,
-                                    IdCreador = request.IdCreador,
-                                    InsumoProductoIntermedio = insumoProductoIntermedio,
-                                    IdStockInsumo = stockInsumo.IdCompraInsumo
-                                });
-
-                            cantidadUsar -= cantidadConsumida;
-                            stockInsumo.StockDisponible = 0;
-
-                            _logger.LogInformation(
-                                "Consumo parcial de lote. IdInsumo: {IdInsumo}, IdCompraInsumo: {IdCompraInsumo}, CantidadConsumida: {CantidadConsumida}, CantidadPendiente: {CantidadPendiente}, StockRestante: 0",
-                                fInsumo.IdInsumo,
-                                stockInsumo.IdCompraInsumo,
-                                cantidadConsumida,
-                                cantidadUsar);
-                        }
-                        else
-                        {
-                            decimal cantidadConsumida = cantidadUsar;
-
-                            _context.StockInsumoProductoIntermedios.Add(
-                                new StockInsumoProductoIntermedio()
-                                {
-                                    Cantidad = cantidadConsumida,
-                                    IdCreador = request.IdCreador,
-                                    InsumoProductoIntermedio = insumoProductoIntermedio,
-                                    IdStockInsumo = stockInsumo.IdCompraInsumo
-                                });
-
-                            stockInsumo.StockDisponible -= cantidadConsumida;
-                            cantidadUsar = 0;
-
-                            _logger.LogInformation(
-                                "Consumo completado desde lote. IdInsumo: {IdInsumo}, IdCompraInsumo: {IdCompraInsumo}, CantidadConsumida: {CantidadConsumida}, StockRestante: {StockRestante}",
-                                fInsumo.IdInsumo,
-                                stockInsumo.IdCompraInsumo,
-                                cantidadConsumida,
-                                stockInsumo.StockDisponible);
-
+                        if (cantidadUsar <= 0)
                             break;
-                        }
+
+                        decimal cantidadConsumida =
+                            Math.Min(stockInsumo.StockDisponible, cantidadUsar);
+
+                        _context.StockInsumoProductoIntermedios.Add(
+                            new StockInsumoProductoIntermedio
+                            {
+                                Cantidad = cantidadConsumida,
+                                IdCreador = request.IdCreador,
+                                InsumoProductoIntermedio =
+                                    insumoProductoIntermedio,
+                                IdStockInsumo = stockInsumo.Id
+                            });
+
+                        stockInsumo.StockDisponible -= cantidadConsumida;
+                        cantidadUsar -= cantidadConsumida;
                     }
 
                     if (cantidadUsar > 0)
                     {
-                        _logger.LogError(
-                            "No se pudo completar el consumo del insumo {IdInsumo}. CantidadPendiente: {CantidadPendiente}",
-                            fInsumo.IdInsumo,
-                            cantidadUsar);
-
                         throw new BadRequestException(
-                            "No se pudo completar el consumo del insumo");
+                            $"No se pudo completar el consumo del insumo {fInsumo.IdInsumo}");
                     }
-
-                    _logger.LogInformation(
-                        "Consumo del insumo {IdInsumo} completado correctamente. CantidadConsumida: {CantidadConsumida}",
-                        fInsumo.IdInsumo,
-                        fInsumo.CantidadLote);
                 }
 
-                if (productoIntermedio.FechaEmision.Kind == DateTimeKind.Unspecified)
-                {
-                    productoIntermedio.FechaEmision = DateTime.SpecifyKind(productoIntermedio.FechaEmision, DateTimeKind.Utc);
-                }
-                if (productoIntermedio.FechaVencimiento.Kind == DateTimeKind.Unspecified)
-                {
-                    productoIntermedio.FechaVencimiento = DateTime.SpecifyKind(productoIntermedio.FechaVencimiento, DateTimeKind.Utc);
-                }
+                // ============================================================
+                // STOCK DEL PRODUCTO INTERMEDIO
+                // ============================================================
 
-                StockInsumo stockInsumoAdd = new()
+                var stockDisponibleProductoIntermedio =
+                    request.TipoUso == "PI-FMG"
+                        ? request.LoteEstandar
+                        : request.LoteEstTotal;
+
+                var stockInsumoAdd = new StockInsumo
                 {
-                    Tipo = "MP",
+                    Tipo = "PI",
                     ProductoIntermedio = productoIntermedio,
                     UnidadMedida = request.Um,
                     IdSede = request.IdSede,
-                    StockDisponible = request.TipoUso == "PI-FMG" ? request.LoteEstandar : request.LoteEstTotal
+                    StockDisponible = stockDisponibleProductoIntermedio
                 };
+
                 _context.StockInsumos.Add(stockInsumoAdd);
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
                 return productoIntermedio.Id;
+            }
+            catch (NotFoundException)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            catch (BadRequestException)
+            {
+                await transaction.RollbackAsync();
+                throw;
             }
             catch (Exception ex)
             {
@@ -384,14 +307,21 @@ namespace proy_back_Qbd.Services
                 }
                 catch (Exception rollbackEx)
                 {
-                    Console.WriteLine($"Rollback falló: {rollbackEx}");
+                    _logger.LogError(
+                        rollbackEx,
+                        "Falló el rollback de la transacción al crear ProductoIntermedio");
                 }
 
-                _logger.LogError(ex, "Error al crear ProductoIntermedio: {Detail}", ex.InnerException?.Message ?? ex.Message);
-                var innerMsg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
-                throw new BadRequestException(innerMsg);
-            }
+                _logger.LogError(
+                    ex,
+                    "Error al crear ProductoIntermedio: {Detail}",
+                    ex.InnerException?.Message ?? ex.Message);
 
+                throw new BadRequestException(
+                    ex.InnerException != null
+                        ? $"{ex.Message} -> {ex.InnerException.Message}"
+                        : ex.Message);
+            }
         }
 
         public async Task<int> ActualizarProductoIntermedio(int id, ActualizarProductoIntermedioReq request)
@@ -532,11 +462,24 @@ namespace proy_back_Qbd.Services
                 // 6. Volver a recorrer Insumos con los NUEVOS datos del request (misma lógica que Crear)
                 foreach (var fInsumo in request.Insumos)
                 {
-                    List<StockInsumo> stockInsumos = await _context.StockInsumos
-                        .Include(w => w.StockInsumoProductoIntermedio)
-                        .Where(w => w.CompraInsumo.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
-                        .OrderBy(w => w.CompraInsumo.FechaVencimiento)
-                        .ToListAsync();
+                    List<StockInsumo> stockInsumos = new();
+                    if (fInsumo.Tipo == "MP")
+                    {
+                        stockInsumos = await _context.StockInsumos
+                            .Include(w => w.StockInsumoProductoIntermedio)
+                            .Where(w => w.CompraInsumo.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.CompraInsumo.FechaVencimiento >= DateTime.UtcNow)
+                            .OrderBy(w => w.CompraInsumo.FechaVencimiento)
+                            .ToListAsync();
+                    }
+                    if (fInsumo.Tipo == "PI")
+                    {
+                        stockInsumos = await _context.StockInsumos
+                            .Include(w => w.StockInsumoProductoIntermedio)
+                            .Where(w => w.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo && w.StockDisponible > 0 && w.ProductoIntermedio.FechaVencimiento >= DateTime.UtcNow)
+                            .OrderBy(w => w.ProductoIntermedio.FechaVencimiento)
+                            .ToListAsync();
+                    }
+
                     decimal stockDisponibleTotal = stockInsumos.Sum(s => s.StockDisponible);
                     decimal cantidadUsar = fInsumo.CantidadLote;
 
@@ -560,7 +503,7 @@ namespace proy_back_Qbd.Services
                                 Cantidad = stockInsumo.StockDisponible,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdStockInsumo = stockInsumo.IdCompraInsumo
+                                IdStockInsumo = stockInsumo.IdCompraInsumo.Value
                             });
                             cantidadUsar -= stockInsumo.StockDisponible;
                             stockInsumo.StockDisponible = 0;
@@ -572,7 +515,7 @@ namespace proy_back_Qbd.Services
                                 Cantidad = cantidadUsar,
                                 IdCreador = request.IdModificador,
                                 InsumoProductoIntermedio = insumoProductoIntermedio,
-                                IdStockInsumo = stockInsumo.IdCompraInsumo
+                                IdStockInsumo = stockInsumo.IdCompraInsumo.Value
                             });
                             stockInsumo.StockDisponible -= cantidadUsar;
                             break;
@@ -581,7 +524,7 @@ namespace proy_back_Qbd.Services
                 }
                 StockInsumo stockInsumoAdd = new()
                 {
-                    Tipo = "MP",
+                    Tipo = "PI",
                     ProductoIntermedio = productoIntermedio,
                     UnidadMedida = request.Um,
                     IdSede = productoIntermedio.IdSede,

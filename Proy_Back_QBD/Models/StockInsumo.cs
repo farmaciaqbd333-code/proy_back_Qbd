@@ -5,8 +5,8 @@ using Proy_back_QBD.Models;
 public class StockInsumo
 {
     public int Id { get; set; }
-    public int IdCompraInsumo { get; set; }
-    public int IdProductoIntermedio { get; set; }
+    public int? IdCompraInsumo { get; set; }
+    public int? IdProductoIntermedio { get; set; }
     public decimal StockDisponible { get; set; }
     public string? UnidadMedida { get; set; }
     public required string Tipo { get; set; }

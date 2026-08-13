@@ -35,7 +35,6 @@ namespace Proy_back_QBD.Request
         public required int LoteEstandar { get; set; }
         public decimal? PesoUnidad { get; set; }
         public decimal LoteEstTotal { get; set; }
-        public required string Tipo { get; set; } = string.Empty;
         public string? TipoUso { get; set; }
         public required string Um { get; set; } = string.Empty;
         public DateTime? FechaEmision { get; set; }

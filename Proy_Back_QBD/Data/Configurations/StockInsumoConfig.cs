@@ -11,10 +11,9 @@ public class StockInsumoConfiguration : IEntityTypeConfiguration<StockInsumo>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id).HasColumnName("id");
-        builder.Property(x => x.IdCompraInsumo).HasColumnName("id_compra_insumo").IsRequired();
-        builder.Property(x => x.IdProductoIntermedio).HasColumnName("id_producto_intermedio").IsRequired();
+        builder.Property(x => x.IdCompraInsumo).HasColumnName("id_compra_insumo");
+        builder.Property(x => x.IdProductoIntermedio).HasColumnName("id_producto_intermedio");
         builder.Property(x => x.Tipo).HasColumnName("tipo").IsRequired();
-        builder.Property(x => x.IdCompraInsumo).HasColumnName("id_compra_insumo").IsRequired();
         builder.Property(x => x.StockDisponible).HasColumnName("stock_disponible").HasPrecision(18, 4);
         builder.Property(x => x.UnidadMedida).HasColumnName("unidad_medida").HasMaxLength(20);
         builder.Property(x => x.IdSede).HasColumnName("id_sede");
