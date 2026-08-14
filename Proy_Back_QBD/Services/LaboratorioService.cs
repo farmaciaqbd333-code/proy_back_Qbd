@@ -126,22 +126,6 @@ namespace Proy_back_QBD.Services
                 return "Ya existe un registro creado con esta formula";
             }
 
-            // Validar que haya stock suficiente para cada insumo en la sede
-            foreach (var item in request.Ins)
-            {
-                if (decimal.TryParse(item.CantidadL, out decimal cantRequerida) && cantRequerida > 0)
-                {
-                    decimal stockDisponible = await _context.StockInsumos
-                        .Where(w => w.CompraInsumo.IdInsumo == item.InsumoId && w.IdSede == request.Lab.SedeId && w.StockDisponible > 0)
-                        .SumAsync(w => (decimal?)w.StockDisponible) ?? 0;
-
-                    if (stockDisponible < cantRequerida)
-                    {
-                        return $"Stock insuficiente para el insumo {item.InsumoId}. Disponible: {stockDisponible:0.000}, Requerido: {cantRequerida:0.000}";
-                    }
-                }
-            }
-
             Laboratorio laboratorio = _Mappers.Map<Laboratorio>(request.Lab);
             laboratorio.ModificadorId = laboratorio.CreadorId;
             foreach (var item in request.Ins)
