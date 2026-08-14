@@ -33,15 +33,8 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
             .HasColumnName("fecha_creacion")
             .ValueGeneratedOnAddOrUpdate();
 
-        builder.Property(e => e.PesoBruto)
-            .HasColumnName("peso_bruto");
-
-        builder.Property(e => e.Tara)
-            .HasColumnName("tara");
         builder.Property(e => e.Observacion)
                     .HasColumnName("observacion");
-        builder.Property(e => e.PesoNeto)
-            .HasColumnName("peso_neto");
 
         builder.Property(e => e.FechaModificacion)
             .HasColumnName("fecha_modificacion")
@@ -52,12 +45,6 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
 
         builder.Property(e => e.IdModificador)
             .HasColumnName("id_modificador");
-
-        builder.Property(e => e.Paquete)
-            .HasColumnName("paquete");
-
-        builder.Property(e => e.CantidadPaquete)
-            .HasColumnName("cantidad_paquete");
 
         builder.Property(e => e.CantidadRecibida)
             .HasColumnName("cantidad_recibida");

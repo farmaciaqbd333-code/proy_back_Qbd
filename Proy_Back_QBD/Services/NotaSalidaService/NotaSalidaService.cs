@@ -357,9 +357,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     Registro = item.IdCompraInsumo.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraInsumo.Value) : "",
                     Cantidad = item.Cantidad,
                     Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (item.CompraInsumos?.Um?.ToUpper() ?? "G"),
-                    Tara = item.Tara,
-                    PesoNeto = item.PesoNeto,
-                    PesoBruto = item.PesoBruto,
+                    // Tara = item.Tara,
+                    // PesoNeto = item.PesoNeto,
+                    // PesoBruto = item.PesoBruto,
                     Lote = item.CompraInsumos?.Lote ?? item.Lote ?? "",
                     FFabric = item.CompraInsumos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
                     FVcto = item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""

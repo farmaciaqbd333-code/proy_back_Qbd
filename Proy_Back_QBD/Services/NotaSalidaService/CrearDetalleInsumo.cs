@@ -56,12 +56,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 IdCompraInsumo = item.Registro,
                 Cantidad = item.Cantidad,
                 Um = item.Um,
-                Paquete = item.Paquete,
-                PesoBruto = item.PesoBruto,
-                Tara = item.Tara,
-                PesoNeto = item.PesoNeto,
                 IdCreador = request.IdCreador,
-                CantidadPaquete = item.CantidadPaquete
+                PaqueteNotaSalidaInsumos = item.Paquetes?.Select(p => new PaqueteNotaSalidaInsumo
+                {
+                    IdCreador = request.IdCreador,
+                    CantidadPaquete = p.CantidadPaquete,
+                    Peso = p.Peso,
+                    Tara = p.Tara,
+                    Um = p.Um,
+                    PesoNeto = p.PesoNeto,
+                    PesoBruto = p.PesoBruto
+                }).ToList()
             };
 
             _context.NotaSalidaInsumos.Add(detalle);
@@ -97,9 +102,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 IdCompraEconomato = item.Registro,
                 Cantidad = item.Cantidad,
                 Um = item.Um,
-                Paquete = item.Paquete,
                 IdCreador = request.IdCreador,
-                CantidadPaquete = item.CantidadPaquete
+                PaqueteNotaSalidaEconomatos = item.Paquetes?.Select(p => new PaqueteNotaSalidaEconomato
+                {
+                    IdCreador = request.IdCreador,
+                    CantidadPaquete = p.CantidadPaquete,
+                    Peso = p.Peso,
+                    Tara = p.Tara,
+                    Um = p.Um,
+                    PesoNeto = p.PesoNeto,
+                    PesoBruto = p.PesoBruto
+                }).ToList()
             };
 
             _context.NotaSalidaEconomatos.Add(detalle);
@@ -126,9 +139,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 IdCompraEmpaque = item.Registro,
                 Cantidad = item.Cantidad,
                 Um = item.Um,
-                Paquete = item.Paquete,
                 IdCreador = request.IdCreador,
-                CantidadPaquete = item.CantidadPaquete
+                PaqueteNotaSalidaEmpaques = item.Paquetes?.Select(p => new PaqueteNotaSalidaEmpaque
+                {
+                    IdCreador = request.IdCreador,
+                    CantidadPaquete = p.CantidadPaquete,
+                    Peso = p.Peso,
+                    Tara = p.Tara,
+                    Um = p.Um,
+                    PesoNeto = p.PesoNeto,
+                    PesoBruto = p.PesoBruto
+                }).ToList()
             };
 
             _context.NotaSalidaEmpaques.Add(detalle);
@@ -157,9 +178,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 IdCompraProducto = item.Registro,
                 Cantidad = item.Cantidad,
                 Um = item.Um,
-                Paquete = item.Paquete,
                 IdCreador = request.IdCreador,
-                CantidadPaquete = item.CantidadPaquete
+                PaqueteNotaSalidaProductos = item.Paquetes?.Select(p => new PaqueteNotaSalidaProducto
+                {
+                    IdCreador = request.IdCreador,
+                    CantidadPaquete = p.CantidadPaquete,
+                    Peso = p.Peso,
+                    Tara = p.Tara,
+                    Um = p.Um,
+                    PesoNeto = p.PesoNeto,
+                    PesoBruto = p.PesoBruto
+                }).ToList()
             };
 
             _context.NotaSalidaProductos.Add(detalle);

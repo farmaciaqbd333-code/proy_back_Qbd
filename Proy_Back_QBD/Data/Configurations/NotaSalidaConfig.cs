@@ -41,6 +41,12 @@ public class NotaSalidaConfiguration : IEntityTypeConfiguration<NotaSalida>
         builder.Property(e => e.IdModificador)
             .HasColumnName("id_modificador");
             
+        builder.Property(e => e.FechaRecepcion)
+            .HasColumnName("fecha_recepcion");
+
+        builder.Property(e => e.IdUsuarioRecepcion)
+            .HasColumnName("id_usuario_recepcion");
+
         builder.Property(e => e.Estado)
             .HasColumnName("estado");
 
@@ -62,6 +68,12 @@ public class NotaSalidaConfiguration : IEntityTypeConfiguration<NotaSalida>
         builder.HasOne(e => e.Modificador)
             .WithMany(w => w.NotaSalidaModificadas)
             .HasForeignKey(e => e.IdModificador)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasOne(e => e.UsuarioRecepcion)
+            .WithMany()
+            .HasForeignKey(e => e.IdUsuarioRecepcion)
+            .IsRequired(false)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

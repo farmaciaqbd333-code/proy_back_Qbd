@@ -21,11 +21,14 @@ namespace proy_back_Qbd.Models
         public DateTime? FechaModificacion { get; set; }
         public int IdCreador { get; set; }
         public int? IdModificador { get; set; }
+        public DateTime? FechaRecepcion { get; set; }
+        public int? IdUsuarioRecepcion { get; set; }
 
         public Usuario? Creador { get; set; }
         public Sede? SedeOrigen { get; set; }
         public Sede? SedeDestino { get; set; }
         public Usuario? Modificador { get; set; }
+        public Usuario? UsuarioRecepcion { get; set; }
         public List<NotaSalidaInsumo>? NotaSalidaInsumos { get; set; }
         public List<NotaSalidaEconomato>? NotaSalidaEconomatos { get; set; }
         public List<NotaSalidaEmpaque>? NotaSalidaEmpaques { get; set; }

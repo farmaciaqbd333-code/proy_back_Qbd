@@ -15,11 +15,17 @@ namespace proy_back_Qbd.Dto.NotaSalida
         public required string Familia { get; set; }
         public decimal Cantidad { get; set; }
         public required string Um { get; set; }
-        public int Paquete { get; set; }
-        public decimal CantidadPaquete { get; set; }
-        public decimal PesoNeto { get; set; }
-        public decimal Tara { get; set; }
-        public decimal PesoBruto { get; set; }
+        public List<NotaSalidaPaqueteCreateReq>? Paquetes { get; set; }
+    }
+
+    public class NotaSalidaPaqueteCreateReq
+    {
+        public int CantidadPaquete { get; set; }
+        public decimal? Peso { get; set; }
+        public decimal? Tara { get; set; }
+        public string? Um { get; set; }
+        public decimal? PesoNeto { get; set; }
+        public decimal? PesoBruto { get; set; }
     }
     public class ObtenerRegistroReq
     {

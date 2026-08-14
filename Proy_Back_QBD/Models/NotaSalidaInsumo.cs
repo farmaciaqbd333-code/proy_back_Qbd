@@ -22,11 +22,6 @@ namespace proy_back_Qbd.Models
         public int Id { get; set; }
         public int? IdModificador { get; set; }
         public DateTimeOffset? FechaModificacion { get; set; }
-        public int Paquete { get; set; }
-        public decimal CantidadPaquete { get; set; }
-        public decimal PesoNeto { get; set; }
-        public decimal Tara { get; set; }
-        public decimal PesoBruto { get; set; }
         public int? IdCompraInsumo { get; set; }
 
         public Usuario? Creador { get; set; }
@@ -34,5 +29,6 @@ namespace proy_back_Qbd.Models
         public StockInsumo? StockInsumo { get; set; }
         public NotaSalida? NotaSalida { get; set; }
         public Usuario? Modificador { get; set; }
+        public List<PaqueteNotaSalidaInsumo>? PaqueteNotaSalidaInsumos { get; set; }
     }
 }

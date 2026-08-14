@@ -74,6 +74,8 @@ builder.Services.AddScoped<IMesonService, MesonService>();
 builder.Services.AddScoped<IAjusteService, AjusteService>();
 builder.Services.AddScoped<IProductoIntermedioService, ProductoIntermedioService>();
 builder.Services.AddScoped<INotaSalidaService, NotaSalidaService>();
+builder.Services.AddScoped<proy_back_Qbd.Repositories.Interfaces.IRecepcionRepository, proy_back_Qbd.Repositories.RecepcionRepository>();
+builder.Services.AddScoped<proy_back_Qbd.Services.Interfaces.IRecepcionService, proy_back_Qbd.Services.RecepcionService>();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

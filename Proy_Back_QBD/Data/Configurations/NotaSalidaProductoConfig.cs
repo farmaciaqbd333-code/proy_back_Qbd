@@ -44,11 +44,6 @@ public class NotaSalidaProductoConfiguration : IEntityTypeConfiguration<NotaSali
         builder.Property(e => e.IdModificador)
             .HasColumnName("id_modificador");
 
-        builder.Property(e => e.Paquete)
-            .HasColumnName("paquete");
-
-        builder.Property(e => e.CantidadPaquete)
-            .HasColumnName("cantidad_paquete");
 
         builder.Property(e => e.CantidadRecibida)
 .HasColumnName("cantidad_recibida");

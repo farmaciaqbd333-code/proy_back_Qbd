@@ -28,7 +28,7 @@ public class NotaSalidaEconomatoConfiguration : IEntityTypeConfiguration<NotaSal
 
         builder.Property(e => e.Lote)
             .HasColumnName("lote");
-            
+
         builder.Property(e => e.Observacion)
             .HasColumnName("observacion");
 
@@ -45,12 +45,6 @@ public class NotaSalidaEconomatoConfiguration : IEntityTypeConfiguration<NotaSal
 
         builder.Property(e => e.IdModificador)
             .HasColumnName("id_modificador");
-
-        builder.Property(e => e.Paquete)
-            .HasColumnName("paquete");
-
-        builder.Property(e => e.CantidadPaquete)
-            .HasColumnName("cantidad_paquete");
 
         builder.Property(e => e.CantidadRecibida)
 .HasColumnName("cantidad_recibida");
