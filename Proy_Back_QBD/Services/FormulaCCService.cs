@@ -19,34 +19,31 @@ namespace Proy_back_QBD.Services
             _mapper = mapper;
         }
 
-        public async Task<string>? Actualizar(int formulaId, int sedeId, FormulaCCUpdReqP request)
+        public async Task<string?> Actualizar(int formulaId, int sedeId, FormulaCCUpdReqP request)
         {
-
             bool duplicates = request.FormulaCCs
-    .GroupBy(x => x.Variable)
-    .Where(g => g.Count() > 1)
-    .Select(g => new
-    {
-        Variable = g.Key
-    })
-    .Any();
+                .GroupBy(x => x.Variable)
+                .Where(g => g.Count() > 1)
+                .Select(g => new
+                {
+                    Variable = g.Key
+                })
+                .Any();
 
             if (duplicates)
             {
                 return "Variable Duplicada";
             }
 
+            List<FormulaCC> formulasCC = await _context.FormulasCC
+                .Where(w => w.FormulaId == formulaId && w.SedeId == sedeId)
+                .ToListAsync();
 
-            List<FormulaCC?>? formulasCC = await _context.FormulasCC
-            .Where(w => w.FormulaId == formulaId && w.SedeId == sedeId)
-            .ToListAsync();
-
-            if (formulasCC != null || formulasCC.Count() > 0)
+            if (formulasCC != null && formulasCC.Count > 0)
             {
                 _context.FormulasCC.RemoveRange(formulasCC);
                 await _context.SaveChangesAsync();
             }
-
 
             foreach (var formula in request.FormulaCCs)
             {
@@ -57,11 +54,11 @@ namespace Proy_back_QBD.Services
             }
 
             Laboratorio? laboratorio = await _context.Laboratorios.FirstOrDefaultAsync(foda => foda.Id == formulaId && foda.SedeId == sedeId);
-            if (laboratorio == null)
-                return null;
-
-            laboratorio.Procedimiento = request.Procedimiento;
-            laboratorio.EmpaqueId = request.EmpaqueId;
+            if (laboratorio != null)
+            {
+                laboratorio.Procedimiento = request.Procedimiento;
+                laboratorio.EmpaqueId = request.EmpaqueId;
+            }
 
             await _context.SaveChangesAsync();
             return "Cambio Exitoso";
@@ -84,63 +81,69 @@ namespace Proy_back_QBD.Services
             return response;
         }
 
-        public async Task<FormulaCCLabRes>? ListarInsumosLab(int formulaId, int sedeId)
+        public async Task<FormulaCCLabRes?> ListarInsumosLab(int formulaId, int sedeId)
         {
-            FormulaCCLabRes? response = await _context.FormulasCC
-            .Include(i => i.Formula.Pedido.Paciente.Persona)
-            .Include(i => i.Formula.Pedido.Medico.Persona)
-            .Include(i => i.Formula.Laboratorio)
-            .Include(i => i.Insumo)
-            .Where(w => w.FormulaId == formulaId && w.SedeId == sedeId)
-            .Select(s => new FormulaCCLabRes
-            {
-                CodigoPedido = "P-" + s.Formula.PedidoId,
-                DniPaciente = s.Formula.Pedido.Paciente.Persona.Dni ?? s.Formula.Pedido.Paciente.DniApoderado,
-                NombreCompleto = s.Formula.Pedido.Paciente.Persona.NombreCompleto,
-                EdadPaciente = PacienteService.CalcularEdad(s.Formula.Pedido.Paciente.Persona.FechaNacimiento),
-                CMP = s.Formula.Pedido.Medico.Cmp,
-                NombreCompletoMed = s.Formula.Pedido.Medico.Persona.NombreCompleto,
-                FormulaId = s.Formula.Id,
-                FormulaMagistral = s.Formula.FormulaMagistral,
-                FormaFarmaceutica = s.Formula.FormaFarmaceutica,
-                Lote = s.Formula.Lote,
-                FechaEmision = s.Formula.Laboratorio.FechaEmision,
-                FechaVcto = s.Formula.Laboratorio.FechaVcto,
-                NroReg = "REG-" + s.Formula.Id,
-                Cantidad = s.Formula.Cantidad,
-                GPorMl = s.Formula.GPorMl,
-                Elaborado = s.Formula.Laboratorio.Elaborado,
-                Autorizado = s.Formula.Laboratorio.Autorizado,
-                UnidadMedida = s.Formula.UnidadMedida,
-                CostoTotal = s.Formula.Costo,
-                EmpaqueId = s.Formula.Laboratorio.EmpaqueId,
-                Procedimiento = s.Formula.Laboratorio.Procedimiento,
-                Diagnostico = s.Formula.Diagnostico,
-                ZonaAplicacion = s.Formula.ZonaAplicacion
-            })
-            .FirstOrDefaultAsync();
+            FormulaCCLabRes? response = await _context.Formulas
+                .Include(i => i.Pedido.Paciente.Persona)
+                .Include(i => i.Pedido.Medico.Persona)
+                .Include(i => i.Laboratorio)
+                .Where(w => w.Id == formulaId && (w.SedeId == sedeId || w.SedeId == null))
+                .Select(s => new FormulaCCLabRes
+                {
+                    CodigoPedido = s.PedidoId != null ? "P-" + s.PedidoId : "",
+                    DniPaciente = s.Pedido != null && s.Pedido.Paciente != null
+                        ? (s.Pedido.Paciente.Persona != null ? s.Pedido.Paciente.Persona.Dni : null) ?? s.Pedido.Paciente.DniApoderado ?? ""
+                        : "",
+                    NombreCompleto = s.Pedido != null && s.Pedido.Paciente != null && s.Pedido.Paciente.Persona != null
+                        ? s.Pedido.Paciente.Persona.NombreCompleto ?? ""
+                        : "",
+                    EdadPaciente = s.Pedido != null && s.Pedido.Paciente != null && s.Pedido.Paciente.Persona != null
+                        ? PacienteService.CalcularEdad(s.Pedido.Paciente.Persona.FechaNacimiento)
+                        : "",
+                    CMP = s.Pedido != null && s.Pedido.Medico != null ? s.Pedido.Medico.Cmp ?? "" : "",
+                    NombreCompletoMed = s.Pedido != null && s.Pedido.Medico != null && s.Pedido.Medico.Persona != null
+                        ? s.Pedido.Medico.Persona.NombreCompleto ?? ""
+                        : "",
+                    FormulaId = s.Id,
+                    FormulaMagistral = s.FormulaMagistral ?? "",
+                    FormaFarmaceutica = s.FormaFarmaceutica ?? "",
+                    Lote = s.Lote ?? "",
+                    FechaEmision = s.Laboratorio != null ? s.Laboratorio.FechaEmision : DateOnly.FromDateTime(DateTime.Today),
+                    FechaVcto = s.Laboratorio != null ? s.Laboratorio.FechaVcto : DateOnly.FromDateTime(DateTime.Today.AddMonths(3)),
+                    NroReg = "REG-" + s.Id,
+                    Cantidad = s.Cantidad,
+                    GPorMl = s.GPorMl ?? "",
+                    Elaborado = s.Laboratorio != null ? s.Laboratorio.Elaborado : null,
+                    Autorizado = s.Laboratorio != null ? s.Laboratorio.Autorizado : null,
+                    UnidadMedida = s.UnidadMedida ?? "",
+                    CostoTotal = s.Costo,
+                    EmpaqueId = s.Laboratorio != null ? s.Laboratorio.EmpaqueId : null,
+                    Procedimiento = s.Laboratorio != null ? s.Laboratorio.Procedimiento : null,
+                    Diagnostico = s.Diagnostico ?? "",
+                    ZonaAplicacion = s.ZonaAplicacion ?? "",
+                    insumos = new List<FormulaCCLabSubRes>()
+                })
+                .FirstOrDefaultAsync();
+
             if (response == null)
             {
                 return null;
             }
-            List<FormulaCCLabSubRes>? response2 = await _context.FormulasCC
-            .Include(i => i.Insumo)
-            .Where(w => w.FormulaId == formulaId && w.SedeId == sedeId)
-            .OrderBy(ob => ob.Variable)
-            .Select(s => new FormulaCCLabSubRes
-            {
-                InsumoId = s.InsumoId,
-                Porcentaje = s.Porcentaje.ToString(),
-                Variable = s.Variable,
-                Practica = s.Practica.ToString(),
-                CSP = s.CSP
-            }).ToListAsync();
 
-            if (response2 == null)
-            {
-                return null;
-            }
-            response.insumos = response2;
+            List<FormulaCCLabSubRes> response2 = await _context.FormulasCC
+                .Include(i => i.Insumo)
+                .Where(w => w.FormulaId == formulaId && w.SedeId == sedeId)
+                .OrderBy(ob => ob.Variable)
+                .Select(s => new FormulaCCLabSubRes
+                {
+                    InsumoId = s.InsumoId,
+                    Porcentaje = s.Porcentaje.ToString(),
+                    Variable = s.Variable,
+                    Practica = s.Practica.ToString(),
+                    CSP = s.CSP
+                }).ToListAsync();
+
+            response.insumos = response2 ?? new List<FormulaCCLabSubRes>();
             return response;
         }
     }

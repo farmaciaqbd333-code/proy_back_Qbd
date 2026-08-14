@@ -193,6 +193,7 @@ namespace proy_back_Qbd.Services
                         stockInsumos = await _context.StockInsumos
                             .Where(x =>
                                 x.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
+                                x.IdSede == request.IdSede &&
                                 x.StockDisponible > 0 &&
                                 x.CompraInsumo.FechaVencimiento >= ahora)
                             .OrderBy(x => x.CompraInsumo.FechaVencimiento)
@@ -203,6 +204,7 @@ namespace proy_back_Qbd.Services
                         stockInsumos = await _context.StockInsumos
                             .Where(x =>
                                 x.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo &&
+                                x.IdSede == request.IdSede &&
                                 x.StockDisponible > 0 &&
                                 x.ProductoIntermedio.FechaVencimiento >= ahora)
                             .OrderBy(x => x.ProductoIntermedio.FechaVencimiento)
@@ -211,8 +213,8 @@ namespace proy_back_Qbd.Services
 
                     if (stockInsumos.Count == 0)
                     {
-                        throw new NotFoundException(
-                            $"No hay stock disponible para el insumo {fInsumo.IdInsumo}");
+                        throw new BadRequestException(
+                            $"No hay stock disponible para el insumo {fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString()} en esta sede.");
                     }
 
                     decimal stockDisponibleTotal =
@@ -221,8 +223,8 @@ namespace proy_back_Qbd.Services
                     if (stockDisponibleTotal < cantidadUsar)
                     {
                         throw new BadRequestException(
-                            $"Stock insuficiente para el insumo {fInsumo.IdInsumo}. " +
-                            $"Disponible: {stockDisponibleTotal}, requerido: {cantidadUsar}");
+                            $"Stock insuficiente para el insumo {fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString()}. " +
+                            $"Disponible: {stockDisponibleTotal:0.000}, requerido: {cantidadUsar:0.000}");
                     }
 
                     var insumoProductoIntermedio =
