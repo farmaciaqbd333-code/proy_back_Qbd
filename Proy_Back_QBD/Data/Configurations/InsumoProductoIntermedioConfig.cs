@@ -12,7 +12,6 @@ public class InsumoProductoIntermedioConfiguration : IEntityTypeConfiguration<In
         builder.Property(x => x.Id)
             .HasColumnName("id")
             .ValueGeneratedOnAdd();
-            ;
 
         builder.Property(x => x.IdInsumo)
             .HasColumnName("id_insumo");
@@ -77,6 +76,6 @@ public class InsumoProductoIntermedioConfiguration : IEntityTypeConfiguration<In
             .WithMany(wm => wm.InsumoProductoIntermedioModificados)
             .HasForeignKey(hfk => hfk.IdModificador);
 
-        builder.Navigation(x => x.CompraInsumoProductoIntermedio);
+        builder.Navigation(x => x.StockInsumoProductoIntermedios);
     }
 }

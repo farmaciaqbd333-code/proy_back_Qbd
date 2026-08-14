@@ -12,8 +12,8 @@ namespace proy_back_Qbd.Models.ProductoIntermedio
         public decimal? LoteEstTotal { get; set; }
         public string? TipoUso { get; set; }
         public required string Um { get; set; }
-        public DateTime FechaEmision { get; set; }
-        public DateTime FechaVencimiento { get; set; }
+        public DateTime? FechaEmision { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
         public int? IdElaborado { get; set; }
         public int? IdAutorizado { get; set; }
         public string? Procedimiento { get; set; }

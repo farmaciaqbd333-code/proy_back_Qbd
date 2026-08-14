@@ -40,7 +40,7 @@ public class StockInsumoProductoIntermedioConfiguration
             .HasColumnName("fecha_modificacion");
 
         builder.HasOne(x => x.InsumoProductoIntermedio)
-            .WithMany(x => x.CompraInsumoProductoIntermedio)
+            .WithMany(x => x.StockInsumoProductoIntermedios)
             .HasForeignKey(x => x.IdInsumoProductoIntermedio);
 
         builder.HasOne(x => x.StockInsumo)
