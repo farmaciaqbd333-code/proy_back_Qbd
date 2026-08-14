@@ -343,6 +343,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .AsNoTracking()
                 .Include(x => x.CompraInsumos)
                     .ThenInclude(ci => ci!.Insumo)
+                .Include(x => x.PaqueteNotaSalidaInsumos)
                 .Where(x => x.IdNotaSalida == idNotaSalida)
                 .ToListAsync();
 
@@ -362,7 +363,23 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     // PesoBruto = item.PesoBruto,
                     Lote = item.CompraInsumos?.Lote ?? item.Lote ?? "",
                     FFabric = item.CompraInsumos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                    FVcto = item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+                    FVcto = item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                    Paquetes = item.PaqueteNotaSalidaInsumos?.Select(p => new NotaSalidaDetallePaqueteRes
+                    {
+                        IdPaquete = (int)p.Id,
+                        CantidadPaquete = p.CantidadPaquete,
+                        Peso = p.Peso,
+                        Tara = p.Tara,
+                        Um = p.Um,
+                        PesoNeto = p.PesoNeto,
+                        PesoBruto = p.PesoBruto,
+                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                        PesoRecibida = p.PesoRecibida,
+                        TaraRecibida = p.TaraRecibida,
+                        PesoNetoRecibida = p.PesoNetoRecibida,
+                        PesoBrutoRecibida = p.PesoBrutoRecibida,
+                        IdVerificador = p.IdVerificador
+                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
                 });
             }
 
@@ -371,6 +388,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .AsNoTracking()
                 .Include(x => x.CompraEmpaques)
                     .ThenInclude(ce => ce!.Empaque)
+                .Include(x => x.PaqueteNotaSalidaEmpaques)
                 .Where(x => x.IdNotaSalida == idNotaSalida)
                 .ToListAsync();
 
@@ -390,7 +408,23 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     PesoBruto = 0,
                     Lote = item.CompraEmpaques?.Lote ?? item.Lote ?? "",
                     FFabric = item.CompraEmpaques?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                    FVcto = item.CompraEmpaques?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+                    FVcto = item.CompraEmpaques?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                    Paquetes = item.PaqueteNotaSalidaEmpaques?.Select(p => new NotaSalidaDetallePaqueteRes
+                    {
+                        IdPaquete = (int)p.Id,
+                        CantidadPaquete = p.CantidadPaquete,
+                        Peso = p.Peso,
+                        Tara = p.Tara,
+                        Um = p.Um,
+                        PesoNeto = p.PesoNeto,
+                        PesoBruto = p.PesoBruto,
+                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                        PesoRecibida = p.PesoRecibida,
+                        TaraRecibida = p.TaraRecibida,
+                        PesoNetoRecibida = p.PesoNetoRecibida,
+                        PesoBrutoRecibida = p.PesoBrutoRecibida,
+                        IdVerificador = p.IdVerificador
+                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
                 });
             }
 
@@ -399,6 +433,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .AsNoTracking()
                 .Include(x => x.CompraEconomato)
                     .ThenInclude(ce => ce!.Economato)
+                .Include(x => x.PaqueteNotaSalidaEconomatos)
                 .Where(x => x.IdNotaSalida == idNotaSalida)
                 .ToListAsync();
 
@@ -418,7 +453,23 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     PesoBruto = 0,
                     Lote = item.Lote ?? "",
                     FFabric = "",
-                    FVcto = ""
+                    FVcto = "",
+                    Paquetes = item.PaqueteNotaSalidaEconomatos?.Select(p => new NotaSalidaDetallePaqueteRes
+                    {
+                        IdPaquete = (int)p.Id,
+                        CantidadPaquete = p.CantidadPaquete,
+                        Peso = p.Peso,
+                        Tara = p.Tara,
+                        Um = p.Um,
+                        PesoNeto = p.PesoNeto,
+                        PesoBruto = p.PesoBruto,
+                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                        PesoRecibida = p.PesoRecibida,
+                        TaraRecibida = p.TaraRecibida,
+                        PesoNetoRecibida = p.PesoNetoRecibida,
+                        PesoBrutoRecibida = p.PesoBrutoRecibida,
+                        IdVerificador = p.IdVerificador
+                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
                 });
             }
 
@@ -427,6 +478,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .AsNoTracking()
                 .Include(x => x.CompraProducto)
                     .ThenInclude(cp => cp!.Producto)
+                .Include(x => x.PaqueteNotaSalidaProductos)
                 .Where(x => x.IdNotaSalida == idNotaSalida)
                 .ToListAsync();
 
@@ -446,7 +498,23 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     PesoBruto = 0,
                     Lote = item.CompraProducto?.Lote ?? item.Lote ?? "",
                     FFabric = item.CompraProducto?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                    FVcto = item.CompraProducto?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? ""
+                    FVcto = item.CompraProducto?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                    Paquetes = item.PaqueteNotaSalidaProductos?.Select(p => new NotaSalidaDetallePaqueteRes
+                    {
+                        IdPaquete = (int)p.Id,
+                        CantidadPaquete = p.CantidadPaquete,
+                        Peso = p.Peso,
+                        Tara = p.Tara,
+                        Um = p.Um,
+                        PesoNeto = p.PesoNeto,
+                        PesoBruto = p.PesoBruto,
+                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                        PesoRecibida = p.PesoRecibida,
+                        TaraRecibida = p.TaraRecibida,
+                        PesoNetoRecibida = p.PesoNetoRecibida,
+                        PesoBrutoRecibida = p.PesoBrutoRecibida,
+                        IdVerificador = p.IdVerificador
+                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
                 });
             }
 
