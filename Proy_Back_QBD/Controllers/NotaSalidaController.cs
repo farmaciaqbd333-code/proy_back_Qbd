@@ -60,6 +60,16 @@ namespace proy_back_Qbd.Controllers
         }
 
         /// <summary>
+        /// Listar Nota Salida por sede origen
+        /// </summary>
+        [HttpGet("origen/{idSedeOrigen}")]
+        public async Task<ActionResult<List<NotaSalidaListaRes>>> ListarPorSedeOrigen(int idSedeOrigen)
+        {
+            var lista = await _serviceNotaSalida.ObtenerListaPorSedeOrigen(idSedeOrigen);
+            return Ok(lista);
+        }
+
+        /// <summary>
         /// Listar Detalle de Nota Salida
         /// </summary>
         [HttpGet("detalle/{id}")]

@@ -91,6 +91,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .ToListAsync();
         }
 
+        public async Task<List<NotaSalidaListaRes>> ObtenerListaPorSedeOrigen(int idSedeOrigen)
+        {
+            return await _context.NotaSalidas
+                .AsNoTracking()
+                .OrderByDescending(n => n.FechaCreacion)
+                .Where(w => w.IdSedeOrigen == idSedeOrigen)
+                .Select(n => new NotaSalidaListaRes
+                {
+                    IdNotaSalida = n.Id,
+                    Codigo = UtilFamilia.CodigoNotaSalida(n.Id),
+                    FechaCreacion = n.FechaCreacion,
+                    Destino = n.SedeDestino != null ? n.SedeDestino.Nombre ?? string.Empty : string.Empty,
+                    Responsable = n.Creador != null ? n.Creador!.Persona!.NombreCompleto! : "",
+                    Observacion = n.Observacion
+                })
+                .ToListAsync();
+        }
+
 
         public async Task Actualizar(int id, CreateReq request)
         {
