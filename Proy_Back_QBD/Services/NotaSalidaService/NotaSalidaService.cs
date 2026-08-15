@@ -77,11 +77,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         {
             return await _context.NotaSalidas
                 .AsNoTracking()
-                .Include(n => n.SedeDestino)
-                .Include(n => n.SedeOrigen)
-                .Include(n => n.Creador)
                 .OrderByDescending(n => n.FechaCreacion)
-                .Where(w => idSede == 0 || w.IdSedeOrigen == idSede)
+                .Where(w => w.IdSedeDestino == idSede)
                 .Select(n => new NotaSalidaListaRes
                 {
                     IdNotaSalida = n.Id,
