@@ -7,7 +7,7 @@ public class ApiKeyMiddleware
     public ApiKeyMiddleware(RequestDelegate next, IConfiguration configuration)
     {
         _next = next;
-        VALID_API_KEY = configuration["API-KEY"];
+        VALID_API_KEY = configuration["API-KEY"] ?? "4554654654754";
     }
 
     public async Task InvokeAsync(HttpContext httpContext)
@@ -34,3 +34,4 @@ public class ApiKeyMiddleware
         await _next(httpContext);
     }
 }
+
