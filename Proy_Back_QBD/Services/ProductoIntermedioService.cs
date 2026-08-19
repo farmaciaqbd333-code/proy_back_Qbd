@@ -117,21 +117,6 @@ namespace proy_back_Qbd.Services
                             .OrderBy(x => x.CompraEmpaque.FechaVencimiento)
                             .ToListAsync();
 
-                        if (stockEmpaques.Count == 0)
-                        {
-                            throw new NotFoundException(
-                                $"No hay stock disponible para el empaque {conteoEmpaque.Key}");
-                        }
-
-                        decimal stockDisponibleTotal =
-                            stockEmpaques.Sum(x => x.StockDisponible);
-
-                        if (stockDisponibleTotal < cantidadPendiente)
-                        {
-                            throw new BadRequestException(
-                                $"Stock insuficiente para el empaque {conteoEmpaque.Key}. " +
-                                $"Disponible: {stockDisponibleTotal}, requerido: {cantidadPendiente}");
-                        }
 
                         var empaqueProductoIntermedio = new EmpaqueProductoIntermedio
                         {
@@ -162,12 +147,6 @@ namespace proy_back_Qbd.Services
 
                             stockEmpaque.StockDisponible -= cantidadConsumida;
                             cantidadPendiente -= cantidadConsumida;
-                        }
-
-                        if (cantidadPendiente > 0)
-                        {
-                            throw new BadRequestException(
-                                $"No se pudo completar el consumo del empaque {conteoEmpaque.Key}");
                         }
                     }
                 }
@@ -211,21 +190,6 @@ namespace proy_back_Qbd.Services
                             .ToListAsync();
                     }
 
-                    if (stockInsumos.Count == 0)
-                    {
-                        throw new BadRequestException(
-                            $"No hay stock disponible para el insumo {fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString()} en esta sede.");
-                    }
-
-                    decimal stockDisponibleTotal =
-                        stockInsumos.Sum(x => x.StockDisponible);
-
-                    if (stockDisponibleTotal < cantidadUsar)
-                    {
-                        throw new BadRequestException(
-                            $"Stock insuficiente para el insumo {fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString()}. " +
-                            $"Disponible: {stockDisponibleTotal:0.000}, requerido: {cantidadUsar:0.000}");
-                    }
 
                     var insumoProductoIntermedio =
                         new ProductoIntermedioMapper()
@@ -257,12 +221,6 @@ namespace proy_back_Qbd.Services
 
                         stockInsumo.StockDisponible -= cantidadConsumida;
                         cantidadUsar -= cantidadConsumida;
-                    }
-
-                    if (cantidadUsar > 0)
-                    {
-                        throw new BadRequestException(
-                            $"No se pudo completar el consumo del insumo {fInsumo.IdInsumo}");
                     }
                 }
 

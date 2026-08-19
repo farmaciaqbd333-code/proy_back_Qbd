@@ -32,28 +32,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         x.IdNotaSalidaInsumo == null);
 
                 if (stockOrigen == null)
-                {
-                    _logger.LogWarning(
-                        "No existe stock origen. IdCompraInsumo: {IdCompraInsumo}, SedeOrigen: {SedeOrigen}",
-                        item.IdCompraArticulo,
-                        idSedeOrigen);
-
-                    throw new Exception(
-                        $"No existe stock origen para IdCompraInsumo: {item.IdCompraArticulo}");
-                }
-
-                if (stockOrigen.StockDisponible < item.CantidadRecibida)
-                {
-                    _logger.LogWarning(
-                        "Stock insuficiente. IdCompraInsumo: {IdCompraInsumo}, Disponible: {Disponible}, Solicitado: {Solicitado}",
-                        item.IdCompraArticulo,
-                        stockOrigen.StockDisponible,
-                        item.CantidadRecibida);
-
-                    throw new Exception(
-                        $"Stock insuficiente para IdCompraInsumo: {item.IdCompraArticulo}. " +
-                        $"Disponible: {stockOrigen.StockDisponible}, solicitado: {item.CantidadRecibida}");
-                }
+                    continue;
 
                 // Descontar stock origen
                 stockOrigen.StockDisponible -= item.CantidadRecibida;
@@ -96,17 +75,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         x.IdNotaSalidaProducto == null);
 
                 if (stockOrigen == null)
-                {
-                    throw new Exception(
-                        $"No existe stock origen para IdCompraProducto: {item.IdCompraArticulo}");
-                }
-
-                if (stockOrigen.StockDisponible < item.CantidadRecibida)
-                {
-                    throw new Exception(
-                        $"Stock insuficiente para IdCompraProducto: {item.IdCompraArticulo}. " +
-                        $"Disponible: {stockOrigen.StockDisponible}, solicitado: {item.CantidadRecibida}");
-                }
+                    continue;
 
                 // Descontar stock origen
                 stockOrigen.StockDisponible -= item.CantidadRecibida;
@@ -138,17 +107,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         x.IdNotaSalidaEconomato == null);
 
                 if (stockOrigen == null)
-                {
-                    throw new Exception(
-                        $"No existe stock origen para IdCompraEconomato: {item.IdCompraArticulo}");
-                }
-
-                if (stockOrigen.StockDisponible < item.CantidadRecibida)
-                {
-                    throw new Exception(
-                        $"Stock insuficiente para IdCompraEconomato: {item.IdCompraArticulo}. " +
-                        $"Disponible: {stockOrigen.StockDisponible}, solicitado: {item.CantidadRecibida}");
-                }
+                    continue;
 
                 // Descontar stock origen
                 stockOrigen.StockDisponible -= item.CantidadRecibida;
@@ -180,17 +139,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         x.IdNotaSalidaEmpaque == null);
 
                 if (stockOrigen == null)
-                {
-                    throw new Exception(
-                        $"No existe stock origen para IdCompraEmpaque: {item.IdCompraArticulo}");
-                }
-
-                if (stockOrigen.StockDisponible < item.CantidadRecibida)
-                {
-                    throw new Exception(
-                        $"Stock insuficiente para IdCompraEmpaque: {item.IdCompraArticulo}. " +
-                        $"Disponible: {stockOrigen.StockDisponible}, solicitado: {item.CantidadRecibida}");
-                }
+                    continue;
 
                 // Descontar stock origen
                 stockOrigen.StockDisponible -= item.CantidadRecibida;
