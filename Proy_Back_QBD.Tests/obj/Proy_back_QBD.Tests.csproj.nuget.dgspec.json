@@ -1,38 +1,31 @@
 {
   "format": 1,
   "restore": {
-    "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD.Tests\\Proy_back_QBD.Tests.csproj": {}
+    "D:\\back_qbd_proyecto\\proy_back_Qbd\\Proy_Back_QBD.Tests\\Proy_Back_QBD.Tests.csproj": {}
   },
   "projects": {
-    "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD.Tests\\Proy_back_QBD.Tests.csproj": {
+    "D:\\back_qbd_proyecto\\proy_back_Qbd\\Proy_Back_QBD.Tests\\Proy_Back_QBD.Tests.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD.Tests\\Proy_back_QBD.Tests.csproj",
-        "projectName": "Proy_back_QBD.Tests",
-        "projectPath": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD.Tests\\Proy_back_QBD.Tests.csproj",
-        "packagesPath": "C:\\Users\\ASama\\.nuget\\packages\\",
-        "outputPath": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD.Tests\\obj\\",
+        "projectUniqueName": "D:\\back_qbd_proyecto\\proy_back_Qbd\\Proy_Back_QBD.Tests\\Proy_Back_QBD.Tests.csproj",
+        "projectName": "Proy_Back_QBD.Tests",
+        "projectPath": "D:\\back_qbd_proyecto\\proy_back_Qbd\\Proy_Back_QBD.Tests\\Proy_Back_QBD.Tests.csproj",
+        "packagesPath": "C:\\Users\\aitor\\.nuget\\packages\\",
+        "outputPath": "D:\\back_qbd_proyecto\\proy_back_Qbd\\Proy_Back_QBD.Tests\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\ASama\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\aitor\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
-          "net9.0"
+          "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net9.0": {
-            "targetAlias": "net9.0",
-            "projectReferences": {
-              "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD\\Proy_back_QBD.csproj": {
-                "projectPath": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD\\Proy_back_QBD.csproj"
-              }
-            }
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
           }
         },
         "warningProperties": {
@@ -44,16 +37,19 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
+        }
       },
       "frameworks": {
-        "net9.0": {
-          "targetAlias": "net9.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.NET.Test.Sdk": {
               "target": "Package",
               "version": "[17.12.0, )"
+            },
+            "Npgsql": {
+              "target": "Package",
+              "version": "[8.0.3, )"
             },
             "coverlet.collector": {
               "target": "Package",
@@ -84,146 +80,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
-        }
-      }
-    },
-    "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD\\Proy_back_QBD.csproj": {
-      "version": "1.0.0",
-      "restore": {
-        "projectUniqueName": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD\\Proy_back_QBD.csproj",
-        "projectName": "Proy_back_QBD",
-        "projectPath": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD\\Proy_back_QBD.csproj",
-        "packagesPath": "C:\\Users\\ASama\\.nuget\\packages\\",
-        "outputPath": "D:\\DNB\\Documentos\\Trabajo\\CASA INFORMATICA\\QbD Farmacia Magistral\\QBD_Backend\\Proyecto\\Proy_Back_QBD\\obj\\",
-        "projectStyle": "PackageReference",
-        "configFilePaths": [
-          "C:\\Users\\ASama\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
-        ],
-        "originalTargetFrameworks": [
-          "net8.0"
-        ],
-        "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
-        },
-        "frameworks": {
-          "net8.0": {
-            "targetAlias": "net8.0",
-            "projectReferences": {}
-          }
-        },
-        "warningProperties": {
-          "warnAsError": [
-            "NU1605"
-          ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
-        },
-        "SdkAnalysisLevel": "9.0.300"
-      },
-      "frameworks": {
-        "net8.0": {
-          "targetAlias": "net8.0",
-          "dependencies": {
-            "AWSSDK.S3": {
-              "target": "Package",
-              "version": "[4.0.7.9, )"
-            },
-            "AutoMapper": {
-              "target": "Package",
-              "version": "[12.0.1, )"
-            },
-            "AutoMapper.Extensions.Microsoft.DependencyInjection": {
-              "target": "Package",
-              "version": "[12.0.1, )"
-            },
-            "BCrypt.Net-Next": {
-              "target": "Package",
-              "version": "[4.0.3, )"
-            },
-            "DotNetEnv": {
-              "target": "Package",
-              "version": "[3.1.1, )"
-            },
-            "Microsoft.EntityFrameworkCore": {
-              "target": "Package",
-              "version": "[9.0.8, )"
-            },
-            "Microsoft.EntityFrameworkCore.Design": {
-              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
-              "suppressParent": "All",
-              "target": "Package",
-              "version": "[9.0.8, )"
-            },
-            "Microsoft.Extensions.Logging": {
-              "target": "Package",
-              "version": "[10.0.1, )"
-            },
-            "Npgsql": {
-              "target": "Package",
-              "version": "[9.0.3, )"
-            },
-            "Npgsql.EntityFrameworkCore.PostgreSQL": {
-              "target": "Package",
-              "version": "[9.0.4, )"
-            },
-            "Riok.Mapperly": {
-              "target": "Package",
-              "version": "[4.3.1, )"
-            },
-            "Swashbuckle.AspNetCore": {
-              "target": "Package",
-              "version": "[6.4.0, )"
-            },
-            "Swashbuckle.AspNetCore.Annotations": {
-              "target": "Package",
-              "version": "[9.0.3, )"
-            }
-          },
-          "imports": [
-            "net461",
-            "net462",
-            "net47",
-            "net471",
-            "net472",
-            "net48",
-            "net481"
-          ],
-          "assetTargetFallback": true,
-          "warn": true,
-          "downloadDependencies": [
-            {
-              "name": "Microsoft.AspNetCore.App.Ref",
-              "version": "[8.0.19, 8.0.19]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Host.win-x64",
-              "version": "[8.0.19, 8.0.19]"
-            },
-            {
-              "name": "Microsoft.NETCore.App.Ref",
-              "version": "[8.0.19, 8.0.19]"
-            },
-            {
-              "name": "Microsoft.WindowsDesktop.App.Ref",
-              "version": "[8.0.19, 8.0.19]"
-            }
-          ],
-          "frameworkReferences": {
-            "Microsoft.AspNetCore.App": {
-              "privateAssets": "none"
-            },
-            "Microsoft.NETCore.App": {
-              "privateAssets": "all"
-            }
-          },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

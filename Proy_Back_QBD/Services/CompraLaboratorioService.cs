@@ -42,6 +42,7 @@ namespace proy_back_Qbd.Services
                     if (req != null)
                     {
                         new DetalleCompraLabMapper().ActualizarInsumo(req, item);
+                        item.Conformidad = UtilConformidad.CalcularConformidad(req.FechaVencimiento);
                         x = 1;
                     }
                 }
@@ -60,6 +61,7 @@ namespace proy_back_Qbd.Services
                     if (req != null)
                     {
                         new DetalleCompraLabMapper().ActualizarEmpaque(req, item);
+                        item.Conformidad = UtilConformidad.CalcularConformidad(req.FechaVencimiento);
                         x = 1;
                     }
                 }
@@ -280,10 +282,16 @@ namespace proy_back_Qbd.Services
 
             // Lógica que EF Core no puede traducir
             foreach (var item in response.ListaInsumos)
+            {
                 item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(4, '0');
+                item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
+            }
 
             foreach (var item in response.ListaEmpaques)
+            {
                 item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(4, '0');
+                item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
+            }
 
             return response;
         }
@@ -350,3 +358,4 @@ namespace proy_back_Qbd.Services
 
     }
 }
+

@@ -73,11 +73,12 @@ namespace proy_back_Qbd.Services
                     {
                         var mapper = new MesonMapper();
                         mapper.ActualizarInsumos(item2, item);
+                        item.Conformidad = UtilConformidad.CalcularConformidad(item2.FechaVencimiento);
                         item.IdModificador = request.IdModificador;
                     }
                 }
             }
-            if (request.DetallesProductos.Any())
+            if (request.DetallesProductos != null && request.DetallesProductos.Any())
             {
                 //Actualizar detalles de la compra
                 var idsDetalleProductos = request.DetallesProductos
@@ -94,11 +95,10 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
-                        item.Conformidad = CalcularConformidad(item2.FechaVencimiento);
+                        item.Conformidad = UtilConformidad.CalcularConformidad(item2.FechaVencimiento);
                         item.Lote = item2.Lote;
                         item.FechaFabricacion = item2.FechaFabricacion;
                         item.FechaVencimiento = item2.FechaVencimiento;
-                        item.Conformidad = CalcularConformidad(item2.FechaVencimiento);
                         item.RegistroSanitario = item2.RegistroSanitario;
                         item.IdFabricante = item2.IdFabricante;
 
@@ -108,7 +108,7 @@ namespace proy_back_Qbd.Services
                     }
                 }
             }
-            if (request.DetallesEconomatos.Any())
+            if (request.DetallesEconomatos != null && request.DetallesEconomatos.Any())
             {
                 //Actualizar detalles de la compra
                 var idsDetalleEconomatos = request.DetallesEconomatos
@@ -134,7 +134,7 @@ namespace proy_back_Qbd.Services
                     }
                 }
             }
-            if (request.DetallesEmpaques.Any())
+            if (request.DetallesEmpaques != null && request.DetallesEmpaques.Any())
             {
                 //Actualizar detalles de la compra
                 var idsDetalleEmpaques = request.DetallesEmpaques
@@ -151,7 +151,7 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
-                        item.Conformidad = CalcularConformidad(item2.FechaVencimiento);
+                        item.Conformidad = UtilConformidad.CalcularConformidad(item2.FechaVencimiento);
                         item.Lote = item2.Lote;
                         item.FechaFabricacion = item2.FechaFabricacion;
                         item.FechaVencimiento = item2.FechaVencimiento;
@@ -272,6 +272,21 @@ namespace proy_back_Qbd.Services
 
             if (response == null) throw new NotFoundException("No se encontro orden de compra");
 
+            foreach (var item in response.ListaInsumos)
+                item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
+
+            foreach (var item in response.ListaProductos)
+                item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
+
+            foreach (var item in response.ListaEmpaques)
+                item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
+
+            foreach (var item in response.ListaEconomatos)
+                item.Conformidad = "Conforme";
+
+            foreach (var item in response.ListaOtros)
+                item.Conformidad = "Conforme";
+
             return response;
         }
         public async Task<List<MesonListaRes>> ListarMeson(string[] cadena)
@@ -333,7 +348,7 @@ namespace proy_back_Qbd.Services
                     Coa = s2.Coa,
                     Lote = s2.Lote,
                     RegistroSanitario = s2.RegistroSanitario,
-                    Conforme = s2.Conformidad,
+                    Conforme = UtilConformidad.CalcularConformidad(s2.FechaVencimiento),
                     Familia = s2.Insumo?.Familia?.Abreviatura ?? ""
                 }));
             }
@@ -354,7 +369,7 @@ namespace proy_back_Qbd.Services
                     Coa = s2.Coa ?? false,
                     Lote = s2.Lote,
                     RegistroSanitario = "",
-                    Conforme = s2.Conformidad,
+                    Conforme = UtilConformidad.CalcularConformidad(s2.FechaVencimiento),
                     Familia = "ME"
                 }));
             }
@@ -375,7 +390,7 @@ namespace proy_back_Qbd.Services
                     Coa = false,
                     Lote = s2.Lote,
                     RegistroSanitario = s2.RegistroSanitario,
-                    Conforme = s2.Conformidad,
+                    Conforme = UtilConformidad.CalcularConformidad(s2.FechaVencimiento),
                     Familia = "PT"
                 }));
             }
@@ -396,7 +411,7 @@ namespace proy_back_Qbd.Services
                     Coa = false,
                     Lote = "",
                     RegistroSanitario = "",
-                    Conforme = s2.Conformidad,
+                    Conforme = s2.Conformidad ?? "Conforme",
                     Familia = "ECO"
                 }));
             }
@@ -417,7 +432,7 @@ namespace proy_back_Qbd.Services
                     Coa = false,
                     Lote = "",
                     RegistroSanitario = "",
-                    Conforme = s2.Conformidad,
+                    Conforme = s2.Conformidad ?? "Conforme",
                     Familia = s2.Familia?.Abreviatura ?? ""
                 }));
             }
@@ -460,15 +475,6 @@ namespace proy_back_Qbd.Services
 
             return response;
         }
-        private static string CalcularConformidad(DateTime? fechaVencimiento)
-        {
-            if (fechaVencimiento == null) return "Conforme";
-            var hoy = DateTime.Now;
-            if (fechaVencimiento < hoy)
-                return "Vencido";
-            if (fechaVencimiento <= hoy.AddMonths(3))
-                return "Por Vencer";
-            return "Conforme";
-        }
     }
 }
+

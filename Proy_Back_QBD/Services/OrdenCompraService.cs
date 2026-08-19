@@ -89,7 +89,7 @@ namespace proy_back_Qbd.Services
                     Coa = s2.Coa,
                     Lote = s2.Lote,
                     RegistroSanitario = s2.RegistroSanitario,
-                    Conforme = s2.Conformidad,
+                    Conforme = UtilConformidad.CalcularConformidad(s2.FechaVencimiento),
                     Familia = s2.Insumo?.Familia?.Abreviatura ?? "",
                     IdFabricante = s2.IdFabricante,
                     NombreFabricante = s2.Fabricante?.Nombre ?? "",
@@ -114,7 +114,7 @@ namespace proy_back_Qbd.Services
                     Lote = s2.Lote,
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
-                    Conforme = s2.Conformidad,
+                    Conforme = UtilConformidad.CalcularConformidad(s2.FechaVencimiento),
                     IdFabricante = s2.IdFabricante
                 }).ToList(),
                 DetalleProductos = compraProductos.Select(s2 => new DetalleProductosRes
@@ -132,10 +132,10 @@ namespace proy_back_Qbd.Services
                     RegistroSanitario = s2.RegistroSanitario,
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
-                    Conforme = s2.Conformidad,
+                    Conforme = UtilConformidad.CalcularConformidad(s2.FechaVencimiento),
                     IdFabricante = s2.IdFabricante
                 }).ToList(),
-                DetalleEconomatos = compraEconomatos.Select(s2 => new DetalleEconomatosRes
+                                DetalleEconomatos = compraEconomatos.Select(s2 => new DetalleEconomatosRes
                 {
                     Id = s2.Id,
                     IdEconomato = s2.IdEconomato,
@@ -147,7 +147,7 @@ namespace proy_back_Qbd.Services
                     CTotal = s2.CostoTotal,
                     UM = s2.Um,
                     Pdf = s2.Pdf,
-                    Conforme = s2.Conformidad,
+                    Conforme = "Conforme",
                     IdFabricante = s2.IdFabricante
                 }).ToList(),
                 DetalleOtros = compraOtros.Select(s2 => new DetalleComprasOtrosRes
@@ -161,7 +161,7 @@ namespace proy_back_Qbd.Services
                     CTotal = s2.CostoTotal,
                     UM = s2.UnidadMedida,
                     Pdf = s2.Pdf,
-                    Conforme = s2.Conformidad
+                    Conforme = "Conforme"
                 }).ToList(),
                 IdProveedor = s.IdProveedor,
                 IncluyeImpuesto = s.Igv,
@@ -832,3 +832,5 @@ namespace proy_back_Qbd.Services
 
     }
 }
+
+
