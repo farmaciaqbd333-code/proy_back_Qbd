@@ -73,7 +73,7 @@ namespace proy_back_Qbd.Models
         public string? RegistroSanitario { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
-        public bool? Conformidad { get; set; }
+        public string? Conformidad { get; set; }
         public int? IdFabricante { get; set; }
         public string? Familia { get; set; }
         public string? Pdf { get; set; }
@@ -87,7 +87,7 @@ namespace proy_back_Qbd.Models
         public decimal? CantidadRecibida { get; set; }
         public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
-        public bool? Conformidad { get; set; }
+        public string? Conformidad { get; set; }
         public string? Pdf { get; set; }
     }
     public class DetalleMesonEmpaquesRes
@@ -105,7 +105,7 @@ namespace proy_back_Qbd.Models
         public string? Lote { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
-        public bool? Conformidad { get; set; }
+        public string? Conformidad { get; set; }
         public string? Familia { get; set; }
         public string? Pdf { get; set; }
     }
@@ -120,7 +120,7 @@ namespace proy_back_Qbd.Models
         public decimal? CantidadRecibida { get; set; }
         public decimal CantidadSolicitada { get; set; }
         public string? Um { get; set; }
-        public bool? Conformidad { get; set; }
+        public string? Conformidad { get; set; }
         public string? Familia { get; set; }
         public string? Pdf { get; set; }
     }
@@ -139,7 +139,7 @@ namespace proy_back_Qbd.Models
         public string? RegistroSanitario { get; set; }
         public DateTime? FechaFabricacion { get; set; }
         public DateTime? FechaVencimiento { get; set; }
-        public bool? Conformidad { get; set; }
+        public string? Conformidad { get; set; }
         public string? Familia { get; set; }
     }
      public class CompraInsumoRes2
@@ -157,7 +157,7 @@ namespace proy_back_Qbd.Models
         public bool Coa { get; set; }
         public string? Lote { get; set; }
         public string? RegistroSanitario { get; set; }
-        public bool Conforme { get; set; }
+        public string? Conforme { get; set; }
         public string? Familia { get; set; }
     }
 }

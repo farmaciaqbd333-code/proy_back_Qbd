@@ -21,7 +21,7 @@ namespace proy_back_Qbd.Models
         [Column("id_modificador")] public int? IdModificador { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("fecha_modificacion")] public DateTime? FechaModificacion { get; set; }
-        [Column("conformidad")] public bool? Conformidad { get; set; }
+        [Column("conformidad")] public string? Conformidad { get; set; }
         [Column("descripcion_factura")] public string? DescripcionFactura { get; set; } = "";
         [Column("id_fabricante")] public int? IdFabricante { get; set; }
         [Column("lote")] public string? Lote { get; set; }
@@ -38,3 +38,4 @@ namespace proy_back_Qbd.Models
         public Usuario? Modificador { get; set; }
     }
 }
+

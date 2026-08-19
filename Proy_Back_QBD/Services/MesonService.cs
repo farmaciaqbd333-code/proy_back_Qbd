@@ -48,8 +48,7 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
-                        item.Conformidad = item2.Conformidad;
-                        
+                        item.Conformidad = "Conforme";
                         var mapper = new MesonMapper();
                         mapper.ActualizarOtros(item2, item);
                         item.IdModificador = request.IdModificador;
@@ -95,10 +94,11 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
-                        item.Conformidad = item2.Conformidad;
+                        item.Conformidad = CalcularConformidad(item2.FechaVencimiento);
                         item.Lote = item2.Lote;
                         item.FechaFabricacion = item2.FechaFabricacion;
                         item.FechaVencimiento = item2.FechaVencimiento;
+                        item.Conformidad = CalcularConformidad(item2.FechaVencimiento);
                         item.RegistroSanitario = item2.RegistroSanitario;
                         item.IdFabricante = item2.IdFabricante;
 
@@ -125,7 +125,7 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
-                        item.Conformidad = item2.Conformidad;
+                        item.Conformidad = "Conforme";
                         item.IdFabricante = item2.IdFabricante;
 
                         var mapper = new MesonMapper();
@@ -151,7 +151,7 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
-                        item.Conformidad = item2.Conformidad;
+                        item.Conformidad = CalcularConformidad(item2.FechaVencimiento);
                         item.Lote = item2.Lote;
                         item.FechaFabricacion = item2.FechaFabricacion;
                         item.FechaVencimiento = item2.FechaVencimiento;
@@ -333,7 +333,7 @@ namespace proy_back_Qbd.Services
                     Coa = s2.Coa,
                     Lote = s2.Lote,
                     RegistroSanitario = s2.RegistroSanitario,
-                    Conforme = s2.Conformidad ?? false,
+                    Conforme = s2.Conformidad,
                     Familia = s2.Insumo?.Familia?.Abreviatura ?? ""
                 }));
             }
@@ -354,7 +354,7 @@ namespace proy_back_Qbd.Services
                     Coa = s2.Coa ?? false,
                     Lote = s2.Lote,
                     RegistroSanitario = "",
-                    Conforme = s2.Conformidad ?? false,
+                    Conforme = s2.Conformidad,
                     Familia = "ME"
                 }));
             }
@@ -375,7 +375,7 @@ namespace proy_back_Qbd.Services
                     Coa = false,
                     Lote = s2.Lote,
                     RegistroSanitario = s2.RegistroSanitario,
-                    Conforme = s2.Conformidad ?? false,
+                    Conforme = s2.Conformidad,
                     Familia = "PT"
                 }));
             }
@@ -396,7 +396,7 @@ namespace proy_back_Qbd.Services
                     Coa = false,
                     Lote = "",
                     RegistroSanitario = "",
-                    Conforme = s2.Conformidad ?? false,
+                    Conforme = s2.Conformidad,
                     Familia = "ECO"
                 }));
             }
@@ -417,7 +417,7 @@ namespace proy_back_Qbd.Services
                     Coa = false,
                     Lote = "",
                     RegistroSanitario = "",
-                    Conforme = s2.Conformidad ?? false,
+                    Conforme = s2.Conformidad,
                     Familia = s2.Familia?.Abreviatura ?? ""
                 }));
             }
@@ -459,6 +459,16 @@ namespace proy_back_Qbd.Services
             }
 
             return response;
+        }
+        private static string CalcularConformidad(DateTime? fechaVencimiento)
+        {
+            if (fechaVencimiento == null) return "Conforme";
+            var hoy = DateTime.Now;
+            if (fechaVencimiento < hoy)
+                return "Vencido";
+            if (fechaVencimiento <= hoy.AddMonths(3))
+                return "Por Vencer";
+            return "Conforme";
         }
     }
 }

@@ -227,7 +227,7 @@ namespace proy_back_Qbd.Services
                     {
                         Id = i.Id,
                         Familia = i.Insumo != null ? i.Insumo.Familia!.Abreviatura : "",
-                        Conformidad = (bool)i.Conformidad ? "SI" : "NO",
+                        Conformidad = i.Conformidad ?? "Conforme",
                         CodigoInsumo = i.IdInsumo.ToString(),
                         DescripcionQBD = i.Insumo != null ? i.Insumo.Descripcion : "",
                         Coa = i.Coa,
@@ -253,7 +253,7 @@ namespace proy_back_Qbd.Services
                     {
                         Id = e.Id,
                         Familia = e.Empaque != null ? e.Empaque.Familia!.Abreviatura : "",
-                        Conformidad = (bool)e.Conformidad ? "SI" : "NO",
+                        Conformidad = e.Conformidad ?? "Conforme",
                         Codigo = e.IdEmpaque.ToString(),
                         Coa = e.Coa ?? false,
                         DescripcionQBD = e.Empaque != null

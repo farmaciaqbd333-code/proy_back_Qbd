@@ -25,7 +25,6 @@ namespace proy_back_Qbd.Models
         public required bool Coa { get; set; }
         public required string Lote { get; set; }
         public required string RegistroSanitario { get; set; }
-        public required bool Conformidad { get; set; }
         public int? IdFabricante { get; set; }
     }
     public class MesonDetProductoConvReq
@@ -39,7 +38,6 @@ namespace proy_back_Qbd.Models
         public required string RegistroSanitario { get; set; }
         public required DateTime FechaFabricacion { get; set; }
         public required DateTime FechaVencimiento { get; set; }
-        public required bool Conformidad { get; set; }
     }
     public class MesonDetEconomatoConvReq
     {
@@ -48,7 +46,6 @@ namespace proy_back_Qbd.Models
         public string? Observacion { get; set; }
         public int? IdFabricante { get; set; }
         public required decimal CantidadRecibida { get; set; }
-        public required bool Conformidad { get; set; }
     }
     public class MesonDetEmpaqueConvReq
     {
@@ -61,7 +58,6 @@ namespace proy_back_Qbd.Models
         public required string Lote { get; set; }
         public required DateTime FechaFabricacion { get; set; }
         public required DateTime FechaVencimiento { get; set; }
-        public required bool Conformidad { get; set; }
     }
     public class MesonDetOtrosConvReq
     {
@@ -69,6 +65,5 @@ namespace proy_back_Qbd.Models
         public required string DescripcionFactura { get; set; }
         public required decimal CantidadRecibida { get; set; }
         public string? Observacion { get; set; }
-        public required bool Conformidad { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace proy_back_Qbd.Models
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         [Column("coa")] public bool Coa { get; set; }
         [Column("registro_sanitario")] public string? RegistroSanitario { get; set; }
-        [Column("conformidad")] public bool? Conformidad { get; set; }
+        [Column("conformidad")] public string? Conformidad { get; set; }
         [Column("fecha_creacion")] public DateTime FechaCreacion { get; set; }
         [Column("id_creador")] public required int IdCreador { get; set; }
         [Key][Column("id")] public int Id { get; set; }
