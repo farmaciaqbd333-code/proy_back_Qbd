@@ -16,6 +16,7 @@ using Proy_back_QBD.Service.AjusteService;
 using Proy_back_QBD.Interface;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
 using Proy_back_QBD.Services.NotaSalidaService;
+using Proy_back_QBD.DependencyInjection;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 var builder = WebApplication.CreateBuilder(args);
@@ -47,35 +48,7 @@ builder.Configuration
     .AddEnvironmentVariables();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IKardexService, KardexService>();
-builder.Services.AddScoped<ISedeService, SedeService>();
-builder.Services.AddScoped<IAsistenciaService, AsistenciaService>();
-builder.Services.AddScoped<IPacienteService, PacienteService>();
-builder.Services.AddScoped<IMedicoService, MedicoService>();
-builder.Services.AddScoped<IPedidoService, PedidoService>();
-builder.Services.AddScoped<IFormulaService, FormulaService>();
-builder.Services.AddScoped<IFormulaRService, FormulaRService>();
-builder.Services.AddScoped<IFormulaCCService, FormulaCCService>();
-builder.Services.AddScoped<IInsumoRService, InsumoRService>();
-builder.Services.AddScoped<IInsumoService, InsumoService>();
-builder.Services.AddScoped<IProdTermService, ProdTermService>();
-builder.Services.AddScoped<IProductoService, ProductoService>();
-builder.Services.AddScoped<ILaboratorioService, LaboratorioService>();
-builder.Services.AddScoped<IEspecialidadService, EspecialidadService>();
-builder.Services.AddScoped<ICobroService, CobroService>();
-builder.Services.AddScoped<ICajaService, CajaService>();
-builder.Services.AddScoped<IEmpaqueService, EmpaqueService>();
-builder.Services.AddScoped<IOrdenCompraService, OrdenCompraService>();
-builder.Services.AddScoped<IEconomatoService, EconomatoService>();
-builder.Services.AddScoped<ICompraLaboratorioService, CompraLaboratorioService>();
-builder.Services.AddScoped<IPaqueteService, PaqueteService>();
-builder.Services.AddScoped<IMesonService, MesonService>();
-builder.Services.AddScoped<IAjusteService, AjusteService>();
-builder.Services.AddScoped<IProductoIntermedioService, ProductoIntermedioService>();
-builder.Services.AddScoped<INotaSalidaService, NotaSalidaService>();
-builder.Services.AddScoped<proy_back_Qbd.Repositories.Interfaces.IRecepcionRepository, proy_back_Qbd.Repositories.RecepcionRepository>();
-builder.Services.AddScoped<proy_back_Qbd.Services.Interfaces.IRecepcionService, proy_back_Qbd.Services.RecepcionService>();
+builder.Services.AddApplicationServices();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

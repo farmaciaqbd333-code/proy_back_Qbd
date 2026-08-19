@@ -1,0 +1,431 @@
+[33mf92c0d2[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m origen
+[33m2d29aa8[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m6fc0e3a[m nota salida destino
+[33m646535a[m a
+[33mb8aabfe[m detalle nota salida en lista
+[33m04bab93[m nota salida, crear y recepcion
+[33m99d14f4[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m6152837[m 1
+[33m22d2209[m A
+[33m833f1ac[m A
+[33m697a7d2[m i
+[33m10971bd[m l
+[33mc095dc3[m A
+[33m1bd9f04[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m03d3e9b[m A
+[33m7a0d0c2[m x
+[33m4b036ad[m KRDX
+[33m32df287[m volver
+[33m0add879[m A
+[33m3e43a31[m A
+[33m2cbd871[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m4d44fb8[m A
+[33m15b23f5[m lst registros
+[33md57d177[m nombre stock producto
+[33m23ffa85[m rellacion stock ajustess
+[33m97237c4[m lista PI
+[33mf4928bd[m sombra ELIMINADO
+[33mc23e260[m x
+[33mfe8ee88[m arr
+[33mcce0381[m nombre stock prod int emp
+[33m61a656c[m act pi
+[33m516516c[m cambiar a
+[33mea44104[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33mce77f58[m w
+[33m5cb03b8[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33mdc50d46[m A
+[33m6455fe1[m f
+[33mc3651b3[m t
+[33m180ed8e[m S
+[33m83cbaeb[m ADJUNTAR CAP
+[33m95d2cd5[m adjuntar sede para PI
+[33m250312f[m listar g
+[33maf78f7b[m crear y actualizar manejo mg
+[33m1fddb0a[m s
+[33me6c9d18[m insumo R
+[33m9feac6f[m id sede en PI
+[33m5809648[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m46c3de0[m A
+[33ma0d31c3[m kardex
+[33m4c8f500[m habilitar cantidad recibida y observacion
+[33maa129ef[m A
+[33m4b5d04e[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m6ed13b9[m A
+[33m1b612f4[m e
+[33meb991c5[m tipo
+[33m6ea0260[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m0d7cf9a[m FUNKO
+[33m5f0db35[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m0284cc4[m A
+[33m811a53f[m ff
+[33mb56551a[m tipo y cantidad
+[33m6ab4b6b[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m72de528[m cantidad fr
+[33m3d8734f[m A
+[33mcde53bd[m A
+[33m266acbe[m A
+[33md12c146[m A
+[33m6d9f9ba[m M
+[33m4573984[m J
+[33m4b0b54f[m Z
+[33m9318454[m a
+[33m404cd7b[m A
+[33mfd27d73[m A
+[33md164e5c[m a
+[33m3161029[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33ma9d4109[m A
+[33m23487bc[m metodo confirmar
+[33ma78ffa8[m CAMBIO NOTA SALIDA
+[33mef2ad44[m adjuntar observacion y correccion de cantidad_recibida data
+[33mefd529f[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m2f61703[m articulos devuelven stock origen
+[33m8c098dd[m q
+[33mdc3974d[m A
+[33mebaaa6b[m Ñ.
+[33m272f739[m A
+[33me79bc51[m A
+[33m5a7568f[m A
+[33m211fa86[m A
+[33m1dcf854[m A
+[33m46c2254[m A
+[33m3691c2f[m A
+[33ma5e78d2[m Allow idSede == 0 to list all NotaSalidas in ObtenerListaAsync
+[33m28802a5[m Fix Economato fields in NotaSalidaService
+[33me38da93[m Fix property names for CompraEconomato and CompraProducto in NotaSalidaService
+[33m374e073[m A
+[33m7e39cce[m Update Entradas and Stock in KardexService to calculate total stock based on actual stock/packages per sede
+[33m0f13219[m Fix Saldo calculation in KardexService for insumo and empaque details
+[33m3d90407[m Fix KardexController route template for detalle-insumo/{insumoId} and detalle-empaque/{empaqueId}
+[33m72f9e1d[m Fix EF Core mapping error: make Stock UnidadMedida nullable
+[33m5ffe4fd[m Fix PaqueteService U.M. handling and null checks
+[33m926a9e8[m J
+[33m20dea08[m A
+[33m6a6ba47[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33mbd4214f[m A
+[33mb822020[m sub
+[33m4d1e057[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m52abfad[m familia
+[33m8c3b851[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33mfb81465[m A
+[33ma66220d[m cl
+[33m2758fec[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33mcdaa553[m 1
+[33m2ec0840[m a
+[33m74d9df2[m A
+[33m587381b[m A
+[33mbc0e45c[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33mf82979f[m A
+[33mf901c53[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m26366f2[m REGISTRO
+[33m28e819b[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33meb1f17c[m A
+[33mf3f3785[m x
+[33m609a788[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33med0f628[m registros articulos
+[33mccdb0e0[m a
+[33m57d9287[m A
+[33m4aba8f6[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m9d1ace1[m A
+[33m4565516[m Eliminar nota salida
+[33mfba371e[m Actualizar nota salida
+[33m39712c2[m arreg
+[33m7d3ec19[m crear y listar
+[33m37a83f4[m base nota salida config con lista
+[33m61eda5a[m config stock nota salida
+[33m68cadb4[m notas salidas familias agregadas
+[33m4db64e4[m estructura base notas salidas
+[33m8c4087d[m Kardex funcionando
+[33mdd0aeea[m i
+[33m0cd8c80[m snts
+[33mb9f86cd[m c
+[33m45b7c94[m fR
+[33m5c50412[m int cod
+[33m43118a7[m reg
+[33m9124016[m fr
+[33m2ebf480[m Kardex correccion
+[33m898bc51[m get id
+[33maab033b[m reg arreglado
+[33mbfc176e[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m4c03750[m reg
+[33mcf37882[m A
+[33m9d79fc1[m A
+[33m91d6aed[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m667302f[m a
+[33m029228b[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33mf462021[m KARDEX
+[33mfa3d940[m A
+[33ma191112[m A
+[33mf4d1381[m A
+[33m014933a[m A
+[33m97afe62[m A
+[33m71c89ac[m A
+[33meebeabb[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m33088b3[m A
+[33mfa0dc05[m c lts
+[33meea70d5[m x
+[33m47c071f[m base formula R CON SEDE
+[33m5b6f85f[m PI
+[33m5ba7520[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m170e612[m actualizar PI
+[33mbe69cfb[m a
+[33mf7a20c5[m A
+[33mb4c2940[m A
+[33m6f70fae[m A
+[33mfe5ad7b[m a
+[33m3c3ceb0[m A
+[33mc345a57[m a
+[33m36bee88[m corregir crear empaques - productoIntermedio
+[33mb313d59[m compra empaque pi
+[33m88d0724[m crear producto intermedio
+[33m5dbf267[m merge arreglado
+[33m6e2ca3b[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33md1441b9[m z
+[33m186ecce[m a
+[33m7ce2e73[m a
+[33m3c5dc48[m a
+[33m097b4f1[m a
+[33m825f0e0[m a
+[33mc049856[m Autorizador ID
+[33mf188b59[m ajustes mapeprs
+[33m0e0f907[m config AJUSTE PI
+[33m1ba7fa7[m config sln
+[33m8359e32[m divison test
+[33m3e56bd3[m 1er configuration
+[33mf8b5213[m PI, TABLA Y CONSUMO
+[33m1ba0701[m introduccion CompraInsumoProductoIntermedio
+[33md6e1bbf[m get pi tablaw
+[33m8bc0f58[m 1 sola linea insumo
+[33m6cf469d[m familais
+[33m056737f[m lista ajuste
+[33mded21f8[m modelo insumoPI
+[33m77aaa4b[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m75d21b1[m PI
+[33md7e0dc4[m A
+[33m9abb53e[m A
+[33m63c14dc[m A
+[33m1f15622[m A
+[33mb7e9d14[m a
+[33m2b90bc2[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m9e79c1c[m A
+[33m9e6b1e5[m vencidos
+[33me10d5bc[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m8288dee[m z
+[33m2e41cb6[m A
+[33mf5aa788[m A
+[33mda43450[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m86c12d4[m A
+[33m5a96c71[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m9972019[m Fecha fab y vencimeintoi
+[33md436626[m A
+[33mbf51864[m A
+[33m2f7b649[m A
+[33me16da91[m A
+[33me379496[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m33b97ca[m A
+[33m9d72dd0[m Lista Ajustes
+[33m0eec78d[m Ajuste
+[33me14d3bb[m CREAR AJUSTE
+[33mdcd2354[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m7db3f3c[m x
+[33md0e56b4[m a
+[33m1dd7457[m observacion
+[33mc5e5b7e[m actualizar en laboratorio
+[33m386feaa[m f
+[33m2e00a59[m k
+[33m8a241c2[m manejo de paquete y stock disponible
+[33m90fd960[m d
+[33m706bcf8[m cu
+[33md81f08d[m x
+[33mfa5ae36[m paquete empaque
+[33m948f018[m det compra
+[33mb2d92a0[m observacion
+[33mba66a38[m primera prueba stock principal
+[33m3298a47[m b
+[33m75eb22e[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m38d9cb1[m z
+[33ma564f62[m A
+[33maba011c[m a
+[33mf35d48a[m a
+[33maf515db[m A
+[33m4149f71[m a
+[33m8981e8c[m A
+[33m97150a1[m A
+[33mac74a44[m A
+[33md02ca9e[m A
+[33m9180e6a[m A
+[33mfd358bb[m a
+[33ma13a8d1[m A
+[33ma628b14[m A
+[33md794171[m a
+[33md34c115[m A
+[33me9b1fee[m A
+[33m4cd33c0[m A
+[33mfa8b81f[m A
+[33m9dd6d2a[m A
+[33maeae441[m A
+[33mcfa9a85[m a
+[33mdebf2d6[m A
+[33mbced765[m A
+[33mc08d920[m A
+[33m9ced5ec[m a
+[33mc82c59c[m a
+[33m3c9f6e1[m a
+[33mbc8497e[m a
+[33m54b2a1e[m A
+[33mfb61f99[m A
+[33mf8d5adf[m A
+[33me932544[m a
+[33m8f70ef1[m a
+[33m31a2ce1[m A
+[33mabb41cf[m A
+[33m63f3c4a[m A
+[33m9dee157[m A
+[33m4fc848a[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m79a72c5[m A
+[33m81c5218[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33mf4ce5d6[m x
+[33m70e4e4c[m A
+[33mbd1c9f4[m A
+[33md7413e4[m A
+[33m2bc3e1e[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m42541b8[m A
+[33mb3e793a[m z
+[33me0c5844[m a
+[33madf7565[m g
+[33mfc76dd2[m x
+[33mdfb949b[m api context tablas maestras
+[33mea09b6b[m A
+[33m52f041b[m d
+[33m4d220fd[m 0
+[33m43bb85c[m a
+[33md64b4f9[m A
+[33m3242269[m A
+[33m59f52b0[m A
+[33m93e781f[m A
+[33ma80788b[m a
+[33mdd4b815[m A
+[33m7fb1fb4[m A
+[33m04187c3[m A
+[33m85b37ed[m A
+[33m90ed113[m a
+[33ma6a5f79[m a
+[33m7516381[m A
+[33m2ccbfad[m A
+[33m5062615[m moda
+[33m7b4794b[m lkaboratorio
+[33mc2983b0[m emp
+[33m02cd4be[m a
+[33m08120b1[m Empaque
+[33md303c23[m act
+[33m1b00ede[m base meson conve
+[33mb54dd91[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m884a3bc[m A
+[33m2d0ef81[m meson modal
+[33mdb56ef5[m c
+[33m911e7f2[m A
+[33m107698f[m a
+[33m384060a[m separacion arquitectura
+[33maaf3fc6[m tablas detalles compra
+[33m04f325d[m w
+[33m38c2468[m A
+[33m83942b3[m a
+[33m7c5a5b4[m a
+[33m53c3524[m A
+[33m5b82b3d[m A
+[33m00aca5e[m A
+[33m297bfb8[m J
+[33mfa14f6f[m a
+[33m2896cac[m A
+[33m56171e2[m a
+[33mc0c998f[m u
+[33m3658a31[m Renew create orden compra
+[33mf96dd34[m crear oc
+[33m76bad7f[m b
+[33m1a37331[m Familia
+[33m57fba87[m a
+[33mc1dda02[m A
+[33m1416eed[m creacion y modificacion
+[33m111cf91[m listar orden de compras
+[33m64923b5[m new dtail
+[33mbd04da3[m base detalle compras
+[33mb59ec8f[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m594a85c[m s
+[33me1b57de[m A
+[33m8de0015[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m7cb9bfd[m a
+[33m1ec0965[m paquete crud
+[33me95e359[m paquete
+[33m11041bf[m datos gramos lab
+[33mfdd88df[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33mb7a1f5d[m A
+[33m43625b7[m arreglar data meson
+[33m22d090c[m c
+[33me2f4bb8[m reg
+[33mb5d49fe[m A
+[33mc06c2fa[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m0ef3ab2[m c
+[33md40e60d[m A
+[33m1bcc48d[m A
+[33mb6afc7f[m A
+[33m188cc85[m A
+[33mae74bee[m A
+[33m9c0947c[m A
+[33mcf347a8[m A
+[33medd09fc[m A
+[33m5f02133[m A
+[33mbe24169[m datos lab
+[33mdc3b9ca[m jalar detalle compra lab
+[33m541c0be[m Exception
+[33md9bd19e[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m26f8cb5[m CRUD PAQUETES
+[33m2bf6776[m A
+[33m53e0324[m A
+[33mba6e51a[m A
+[33m5f6bebe[m A
+[33mca627f8[m A
+[33mbc14898[m A
+[33m88b5a95[m a
+[33me1a051e[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33m15ed2c2[m a
+[33me98b20d[m actualizar laboratorio
+[33mf6abe06[m reg formato
+[33mb0ac0fe[m reg
+[33m7b38171[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/proy_back_Qbd
+[33me52e288[m a
+[33m68aa946[m detalle_tabla_laboratorio
+[33m7175ee6[m Merge branch 'main' of https://github.com/farmaciaqbd333-code/QBD_backend
+[33m6801177[m LAB Y ENV, ICP Y ISCB
+[33mb5aebb9[m A
+[33m630fcca[m A
+[33maa6c112[m A
+[33m7b8eb0f[m a
+[33m93b0699[m A
+[33m050b202[m A
+[33m7cc3216[m LAB
+[33m97bddf7[m env
+[33md22cc9d[m actualizar alb
+[33m1d2465d[m datos meson
+[33m7d1aceb[m Actualizar Estado de COmpra
+[33m3dc2fea[m crear compra
+[33ma744c8c[m descripcion factura
+[33m26b877a[m total y valor
+[33me029eeb[m A
+[33m522aec4[m pactch orden compra
+[33m489e203[m Delete Orden Compra
+[33m9fdec1b[m crear ordencompra
+[33m38c48ae[m Listar compras y ordenes de compra
+[33m3bafcab[m interfaces
+[33m9b72b8f[m interfaces
+[33md8f93b4[m arquitectura
+[33m5bcae1b[m A
+[33m006d295[m A
+[33m9b9036a[m A
+[33mcdb3004[m A
+[33mcd0a2df[m A
+[33m23553e4[m A
+[33m22581b5[m A
+[33m701de6d[m a
+[33m2ddf772[m a
+[33m348c566[m a
+[33m60ecca3[m a
+[33m1c8a0fe[m detalle_compra
