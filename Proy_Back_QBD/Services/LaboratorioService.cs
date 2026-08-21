@@ -121,10 +121,6 @@ namespace Proy_back_QBD.Services
             .AnyAsync()
             ;
 
-            if (valor)
-            {
-                return "Ya existe un registro creado con esta formula";
-            }
 
             Laboratorio laboratorio = _Mappers.Map<Laboratorio>(request.Lab);
             laboratorio.ModificadorId = laboratorio.CreadorId;
