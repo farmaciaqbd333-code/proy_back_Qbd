@@ -19,6 +19,8 @@ using Proy_back_QBD.Services.NotaSalidaService;
 using Proy_back_QBD.DependencyInjection;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
+Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false");
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddAutoMapper(cfg =>
