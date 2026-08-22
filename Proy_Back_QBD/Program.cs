@@ -90,12 +90,18 @@ builder.Services.AddSwaggerGen(c =>
 // Configurar conexión a PostgreSQL
 var configuration = builder.Configuration;
 
-var connectionString = configuration.GetConnectionString("DefaultConnection") ??
+var baseConnectionString = configuration.GetConnectionString("DefaultConnection") ??
     $"Host={configuration["POSTGRES_HOST"]};" +
     $"Port={configuration["POSTGRES_PORT"]};" +
     $"Username={configuration["POSTGRES_USERNAME"]};" +
     $"Password={configuration["POSTGRES_PASSWORD"]};" +
     $"Database={configuration["POSTGRES_DB"]}";
+
+var connectionString = baseConnectionString;
+if (!connectionString.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase))
+{
+    connectionString = connectionString.TrimEnd(';') + ";Pooling=true;MaxPoolSize=20;";
+}
 
 Console.WriteLine($"Connection String: {connectionString}");
 
