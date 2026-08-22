@@ -234,10 +234,7 @@ namespace proy_back_Qbd.Services
                         DescripcionQBD = i.Insumo != null ? i.Insumo.Descripcion : "",
                         Coa = i.Coa,
                         Lote = i.Lote ?? "",
-                        Um = i.Um != null &&
-                             (i.Um.ToUpper() == "L" || i.Um.ToUpper() == "LITRO")
-                                ? "ML"
-                                : (i.Um ?? "").ToUpper(),
+                        Um = "G",
                         Potencia = i.Potencia,
                         FechaFabricacion = i.FechaFabricacion,
                         FechaVencimiento = i.FechaVencimiento,
