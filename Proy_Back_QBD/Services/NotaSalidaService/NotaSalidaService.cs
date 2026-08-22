@@ -295,6 +295,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     })
                     .ToListAsync(),
 
+                "PI" => await _context.ProductosIntermedios
+                    .Where(x => x.Id == idRegistro &&
+                    (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
+                    x.StockInsumo != null && x.StockInsumo.IdSede == idSede && x.StockInsumo.StockDisponible > 0)
+                    .Select(x => new RegistrosListaRes
+                    {
+                        IdArticulo = x.IdInsumo,
+                        DescripcionArticulo = x.Insumo!.Descripcion,
+                        CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo)
+                    })
+                    .ToListAsync(),
+
                 _ => new List<RegistrosListaRes>()
 
             };
@@ -338,6 +350,16 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 "ME" => await _context.CompraEmpaques
                 .Include(i => i.StockEmpaques)
                 .Where(w => w.Compra.IdSede == request.IdSede)
+                    .Select(x => new RegistrosRes
+                    {
+                        IdRegistro = x.Id,
+                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
+                    })
+                    .ToListAsync(),
+
+                "PI" => await _context.ProductosIntermedios
+                .Include(i => i.StockInsumo)
+                .Where(w => w.IdSede == request.IdSede)
                     .Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,

@@ -22,5 +22,9 @@ namespace proy_back_Qbd.Util.Familias
         {
             return "PT-QbD-" + id.ToString().PadLeft(4, '0');
         }
+        public static string CodigoProductoIntermedio(int id)
+        {
+            return "PI-QbD-" + id.ToString().PadLeft(4, '0');
+        }
     }
 }
