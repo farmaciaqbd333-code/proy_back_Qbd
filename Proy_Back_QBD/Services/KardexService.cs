@@ -30,8 +30,6 @@ namespace proy_back_Qbd.Services
             resultado = await _context.CompraInsumos
                 .Include(w => w.Compra)
                 .Include(w => w.StockInsumos)
-                .Include(w => w.PaqueteInsumos!)
-                .ThenInclude(p => p.Paquete)
                 .Where(w => w.IdInsumo == idInsumo)
                 .Select(s => new DetalleInsumoRes
                 {
@@ -46,6 +44,26 @@ namespace proy_back_Qbd.Services
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.Observacion
+                })
+                .ToListAsync();
+
+            return resultado;
+        }
+        public async Task<List<DetalleInsumoRes>> ObtenerDetallePI(int idInsumo, int idSede)
+        {
+            var resultado = new List<DetalleInsumoRes>();
+
+            resultado = await _context.ProductosIntermedios
+                .Where(w => w.IdInsumo == idInsumo)
+                .Select(s => new DetalleInsumoRes
+                {
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockInsumo.StockDisponible,
+                    FechaCompra = s.FechaCreacion,
+                    FechaFabricacion = s.FechaCreacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = ""
                 })
                 .ToListAsync();
 

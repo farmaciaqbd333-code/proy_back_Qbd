@@ -32,17 +32,22 @@ namespace proy_back_Qbd.Controllers
             return Ok(response);
         }
         [HttpGet("detalle-insumo/{insumoId}")]
-        [HttpGet("detalle-insumo")]
-        public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId, [FromQuery] int idSede = 1)
+        public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId, [FromQuery] int idSede)
         {
             var resultado = await _kardexService.ObtenerDetalleInsumo(insumoId, idSede);
 
             return Ok(resultado);
         }
+        [HttpGet("detalle-producto-intermedio/{insumoId}")]
+        public async Task<IActionResult> ObtenerDetallePI(int insumoId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerDetallePI(insumoId, idSede);
+
+            return Ok(resultado);
+        }
 
         [HttpGet("detalle-empaque/{empaqueId}")]
-        [HttpGet("detalle-empaque")]
-        public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId, [FromQuery] int idSede = 1)
+        public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId, [FromQuery] int idSede)
         {
             var resultado = await _kardexService.ObtenerDetalleEmpaque(empaqueId, idSede);
 
