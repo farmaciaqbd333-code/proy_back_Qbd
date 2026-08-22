@@ -203,11 +203,7 @@ namespace proy_back_Qbd.Services
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas = s.Sum(s => s!.ProductoIntermedio!
                     .Where(w => w.IdSede == idSede)
-                    .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0) 
-                        ? s2.PesoUnidad.Value 
-                        : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0) 
-                            ? s2.LoteEstTotal.Value 
-                            : (s2.LoteEstandar ?? 0)))),
+                    .Sum(s2 => s2.StockInsumo.StockDisponible)),
                 Salidas = 0,
                 Ajustes = 0,
                 Baja = s.Sum(x => x.ProductoIntermedio!
