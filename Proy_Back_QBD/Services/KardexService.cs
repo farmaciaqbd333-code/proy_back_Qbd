@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Kardex;
@@ -18,13 +17,10 @@ namespace proy_back_Qbd.Services
     public class KardexService : IKardexService
     {
         private readonly ApiContext _context;
-        private readonly ILogger<KardexService> _logger;
         private static readonly List<string> FamiliasAptas = ["MP", "ME"];
-        
-        public KardexService(ApiContext context, ILogger<KardexService> logger)
+        public KardexService(ApiContext context)
         {
             _context = context;
-            _logger = logger;
         }
 
         public async Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int idInsumo, int idSede)
@@ -147,95 +143,35 @@ namespace proy_back_Qbd.Services
         // Fusionar 2 listas para entradas compras y notas de salida
         private async Task<List<StockRes>> ObtenerMateriaPrima(int idSede)
         {
-            _logger.LogDebug("--- Iniciando ObtenerMateriaPrima para Sede {Sede} ---", idSede);
-
-            // 1. Obtener los insumos con sus relaciones en memoria para poder debuggear cada paso
-            var insumosDb = await _context.Insumos
-                .Include(i => i.CompraInsumos)
-                    .ThenInclude(ci => ci.Compra)
-                .Include(i => i.CompraInsumos)
-                    .ThenInclude(ci => ci.NotaSalidaInsumos)
-                        .ThenInclude(nsi => nsi.NotaSalida)
-                .Include(i => i.CompraInsumos)
-                    .ThenInclude(ci => ci.StockInsumos)
-                        .ThenInclude(si => si.AjusteInsumos)
-                .Include(i => i.InsumoProductoIntermedio)
-                    .ThenInclude(ipi => ipi.ProductoIntermedio)
-                .Include(i => i.FormulasCC)
-                    .ThenInclude(fcc => fcc.Formula)
-                .Where(i => (i.Clasificacion == "MP" || i.Clasificacion == null) 
-                    && i.CompraInsumos.Any(s => s.Compra != null && s.Compra.IdSede == idSede))
-                .ToListAsync();
-
-            var resultados = new List<StockRes>();
-
-            foreach (var insumo in insumosDb)
+            return await _context.Insumos
+            .Where(i => (i.Clasificacion == "MP" || i.Clasificacion == null) && i.CompraInsumos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
+            .GroupBy(g => new { g.Id })
+            .Select(s => new StockRes()
             {
-                _logger.LogDebug("--- Procesando Insumo ID: {Id}, Descripcion: {Desc} ---", insumo.Id, insumo.Descripcion);
-
-                // ENTRADAS
-                decimal? entradasCompras = insumo.CompraInsumos
-                    .Where(w => w.Compra != null && w.Compra.IdSede == idSede)
-                    .Sum(ci => (decimal?)ci.CantidadRecibida);
-                
-                decimal? entradasNotasSalida = insumo.CompraInsumos
-                    .Sum(ci => ci.NotaSalidaInsumos
-                        .Where(w => w.NotaSalida != null && w.NotaSalida.IdSedeDestino == idSede)
-                        .Sum(nsi => (decimal?)nsi.CantidadRecibida));
-                
-                decimal totalEntradas = (entradasCompras ?? 0m) + (entradasNotasSalida ?? 0m);
-                _logger.LogDebug("Entradas: Compras = {E1}, NotasSalida = {E2}, TotalEntradas = {Total}", entradasCompras, entradasNotasSalida, totalEntradas);
-
-                // SALIDAS
-                decimal salidasProdIntermedio = insumo.InsumoProductoIntermedio
-                    .Where(w => w.ProductoIntermedio != null && w.ProductoIntermedio.IdSede == idSede)
-                    .Sum(ipi => ipi.CantidadLote);
-                
-                decimal salidasFormulas = insumo.FormulasCC
-                    .Where(w => w.Formula != null && w.Formula.SedeId == idSede)
-                    .Sum(fcc => fcc.CantidadL);
-                
-                decimal? salidasNotasSalida = insumo.CompraInsumos
-                    .Sum(ci => ci.NotaSalidaInsumos
-                        .Where(w => w.NotaSalida != null && w.NotaSalida.IdSedeOrigen == idSede)
-                        .Sum(nsi => nsi.CantidadRecibida));
-                
-                decimal totalSalidas = salidasProdIntermedio + salidasFormulas + (salidasNotasSalida ?? 0m);
-                _logger.LogDebug("Salidas: ProdInter = {S1}, Formulas = {S2}, NotasSalida = {S3}, TotalSalidas = {Total}", salidasProdIntermedio, salidasFormulas, salidasNotasSalida, totalSalidas);
-
-                // AJUSTES
-                decimal? ajustes = insumo.CompraInsumos
-                    .Sum(ci => ci.StockInsumos
-                        .Sum(si => si.AjusteInsumos
-                            .Sum(ai => ai.Ajuste)));
-                decimal totalAjustes = ajustes ?? 0m;
-                _logger.LogDebug("Ajustes: Total = {Ajustes}", totalAjustes);
-
-                // BAJAS
-                decimal? bajas = insumo.CompraInsumos
-                    .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
-                    .Sum(ci => ci.StockInsumos
-                        .Where(si => si.IdSede == idSede)
-                        .Sum(si => si.StockDisponible));
-                decimal totalBajas = bajas ?? 0m;
-                _logger.LogDebug("Bajas (Vencidos): Total = {Bajas}", totalBajas);
-
-                resultados.Add(new StockRes
-                {
-                    Codigo = insumo.Id.ToString(),
-                    Descripcion = insumo.Descripcion ?? "",
-                    Um = insumo.UnidadMedida ?? string.Empty,
-                    Entradas = totalEntradas,
-                    Salidas = totalSalidas,
-                    Ajustes = totalAjustes,
-                    Baja = totalBajas,
-                    Tipo = insumo.Tipo,
-                    CodigoUbicacion = insumo.CodigoUbicacion
-                });
-            }
-
-            _logger.LogDebug("--- Fin de ObtenerMateriaPrima, retornando {Count} registros ---", resultados.Count);
-            return resultados;
+                Codigo = s.Key.Id + "",
+                Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
+                Entradas =
+                //Suma de cantidad recibida de compraInsumo
+                s.Sum(x => x.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) +
+                //Suma de cantidad recibida de nota de salidas
+                s.Sum(x => x.CompraInsumos.Sum(x2 => x2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida))),
+                Salidas =
+                //Suma de Producto Intermedio
+                s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) +
+                //Suma de Formulas Magistrales
+                s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)) +
+                //Suma de Notas de Salida
+                s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida)))
+                ,
+                Ajustes = s.Sum(s2 => s2.CompraInsumos.Sum(s3 => s3.StockInsumos.Sum(s4 => s4.AjusteInsumos.Sum(s5 => s5.Ajuste)))),
+                Baja = s.Sum(x => x.CompraInsumos!
+            .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
+            .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
+                Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
+                CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
+            }).ToListAsync()
+            ;
         }
         private async Task<List<StockRes>> ObtenerProductosIntermedios(int idSede)
         {
