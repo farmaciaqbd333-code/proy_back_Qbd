@@ -71,12 +71,25 @@ namespace Proy_back_QBD.Controllers
 
             return Ok(response);
         }
+
+        [HttpPut]
+        [SwaggerResponse(200, "Registro actualizado exitosamente", typeof(string))]
+        public async Task<IActionResult> EditarLaboratorio(FormLabIns request)
+        {
+
+
+            string? response = await _labService.EditarLabIns(request);
+
+            return Ok(response);
+        }
+
+
         [HttpPut("elaborado/{IdLab}/{sedeId}")]
         [SwaggerResponse(200, "Registro exitosa", typeof(string))]
         public async Task<IActionResult> ActualizarEntregado(int IdLab, int sedeId, [FromBody] int IdElaborado)
         {
             string response = await _labService.EditarElaborado(IdLab, sedeId, IdElaborado);
-            
+
             return Ok(response);
         }
 

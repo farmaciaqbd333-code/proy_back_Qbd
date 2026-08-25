@@ -1,0 +1,1 @@
+dotnet run --project Proy_Back_QBD

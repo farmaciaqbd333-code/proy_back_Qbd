@@ -18,7 +18,6 @@ namespace proy_back_Qbd.Models
             .ForMember(dest => dest.Icbp, opt => opt.MapFrom(src => src.Icbp))
             .ForMember(dest => dest.FechaCotizacion, opt => opt.MapFrom(src => src.FechaCotizacion))
             .ForMember(dest => dest.Observaciones, opt => opt.MapFrom(src => src.Observaciones))
-            .ForMember(dest => dest.IdSede, opt => opt.MapFrom(src => src.IdSede))
             .ForMember(dest => dest.IdModificador, opt => opt.MapFrom(src => src.IdModificadorCreador))
             .ForMember(dest => dest.Familia, opt => opt.MapFrom(src => src.Familia))
             ;

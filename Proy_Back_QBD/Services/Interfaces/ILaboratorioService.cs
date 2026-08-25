@@ -12,5 +12,6 @@ namespace Proy_back_QBD.Services.Interfaces
         Task<LabFindPedIdRes?> ObtenerByCod(string cod, int sedeId);
         Task<string> EditarElaborado(int labId, int sedeId, int idElaborado);
         Task<string?> RegistrarLabIns(FormLabIns request);
+        Task<string?> EditarLabIns(FormLabIns request);
     }
 }

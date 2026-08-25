@@ -142,5 +142,49 @@ namespace Proy_back_QBD.Services
 
         }
 
+        public async Task<string?> EditarLabIns(FormLabIns request)
+        {
+            // Buscar el laboratorio existente
+            Laboratorio? laboratorio = await _context.Laboratorios
+                .FirstOrDefaultAsync(w =>
+                    w.Id == request.Lab.FormulaId &&
+                    w.SedeId == request.Lab.SedeId);
+
+            if (laboratorio == null)
+            {
+                return null;
+            }
+
+            // Actualizar datos del laboratorio
+            _Mappers.Map(request.Lab, laboratorio);
+
+            laboratorio.ModificadorId = request.Lab.CreadorId;
+
+            // Buscar las fórmulas asociadas
+            List<FormulaCC> formulasExistentes = await _context.FormulasCC
+                .Where(w =>
+                    w.FormulaId == request.Lab.FormulaId &&
+                    w.SedeId == request.Lab.SedeId)
+                .ToListAsync();
+
+            // Eliminar las fórmulas anteriores
+            _context.FormulasCC.RemoveRange(formulasExistentes);
+
+            // Agregar las nuevas fórmulas
+            foreach (var item in request.Ins)
+            {
+                FormulaCC formulaCC = _Mappers.Map<FormulaCC>(item);
+
+                formulaCC.FormulaId = request.Lab.FormulaId;
+                formulaCC.SedeId = request.Lab.SedeId;
+                formulaCC.ModificadorId = item.CreadorId;
+
+                _context.FormulasCC.Add(formulaCC);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return "Registro actualizado exitosamente";
+        }
     }
 }
