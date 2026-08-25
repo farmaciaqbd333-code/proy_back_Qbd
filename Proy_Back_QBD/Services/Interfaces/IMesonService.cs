@@ -8,7 +8,7 @@ namespace proy_back_Qbd.Services.Interfaces
 {
     public interface IMesonService
     {
-        Task<List<MesonListaRes>> ListarMeson(string[] cadena);
+        Task<List<MesonListaRes>> ListarMeson(string[] cadena, int idSede);
         Task<MesonDetalleRes> ObtenerDetalleOrdenOCompra(int id);
         Task<MesonModalRes?> ObtenerDatosModal(int ordenCompraId);
         Task<string> CompletarDatos(int ordenCompraId, MesonConvertirReq request);

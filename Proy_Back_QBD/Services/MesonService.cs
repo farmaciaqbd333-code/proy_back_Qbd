@@ -289,10 +289,10 @@ namespace proy_back_Qbd.Services
 
             return response;
         }
-        public async Task<List<MesonListaRes>> ListarMeson(string[] cadena)
+        public async Task<List<MesonListaRes>> ListarMeson(string[] cadena, int idSede)
         {
             List<MesonListaRes> ordenesEnviadasRes = await _context.Compras
-            .Where(w => cadena.Contains(w.EstadoCompra))
+            .Where(w => cadena.Contains(w.EstadoCompra) && w.IdSede == idSede)
             .Select(s => new MesonListaRes
             {
                 Id = s.Id,

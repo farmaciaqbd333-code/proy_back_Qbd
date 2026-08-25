@@ -23,9 +23,9 @@ namespace proy_back_Qbd.Controllers
         /// Listar para tabla meson
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<List<MesonListaRes>>> ListarTablaMeson()
+        public async Task<ActionResult<List<MesonListaRes>>> ListarTablaMeson(int idSede)
         {
-            List<MesonListaRes> response = await _serviceMeson.ListarMeson(["ENVIADO", "MESON", "MESÓN", "LABORATORIO"]);
+            List<MesonListaRes> response = await _serviceMeson.ListarMeson(["ENVIADO", "MESON", "MESÓN", "LABORATORIO"],idSede);
             if (response.Count == 0)
                 return NotFound(new { message = "No se encontro ordenes" });
 
