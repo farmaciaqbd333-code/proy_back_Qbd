@@ -25,11 +25,11 @@ namespace proy_back_Qbd.Controllers
         /// Listar para tabla laboratorio
         /// </summary>
         [HttpGet]
-        public async Task<ActionResult<List<MesonListaRes>>> ListarOrdenesLaboratorio()
+        public async Task<ActionResult<List<LabListaRes>>> ListarOrdenesLaboratorio(int idSede)
         {
             try
             {
-                List<LabListaRes> response = await _serviceCompraLab.Listar(["LABORATORIO"]);
+                List<LabListaRes> response = await _serviceCompraLab.Listar(["LABORATORIO"], idSede);
                 return Ok(response);
             }
             catch (Exception ex)

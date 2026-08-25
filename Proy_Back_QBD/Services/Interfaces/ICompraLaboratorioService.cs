@@ -10,7 +10,7 @@ namespace proy_back_Qbd.Services.Interfaces
     public interface ICompraLaboratorioService
     {
         Task<ObtenerCompraLabRes> ModalPaquetes(int IdCompra);
-        Task<List<LabListaRes>> Listar(string[] cadena);
+        Task<List<LabListaRes>> Listar(string[] cadena, int idSede);
         Task<CompraLabDetIdRes> GetDetalleCompraLab(int IdCompra);
         Task UpdateDetalleLab(int idCompra, ActualizarDetCompraLabReq request);
         Task<EtiquetaCompra> GetEtiquetaCompraInsumo(int IdCompra);
