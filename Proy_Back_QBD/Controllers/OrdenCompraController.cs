@@ -20,10 +20,10 @@ namespace proy_back_Qbd.Controllers
                 /// </summary>
                 [HttpGet]
                 [SwaggerResponse(200, "Obtención exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
-                public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarComprasYOrdenes()
+                public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarComprasYOrdenes(int idSede)
                 {
 
-                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaOrdenesDeCompras();
+                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaOrdenesDeCompras(idSede);
                         return Ok(response);
                 }
 
@@ -56,13 +56,9 @@ namespace proy_back_Qbd.Controllers
                 [SwaggerResponse(200, "Creación exitosa", typeof(OrdenesYComprasRes))]
                 public async Task<ActionResult<OrdenesYComprasRes>> CrearOrdenesCompra(OrdenCreateReq request)
                 {
-                        int? id = await _serviceOC.CrearOrdenDeCompra(request);
-                        if (id == null)
-                                return StatusCode(500, "Hubo un error al crear la orden de compra");
+                        int id = await _serviceOC.CrearOrdenDeCompra(request);
 
-                        OrdenesYComprasRes? response = await _serviceOC.ObtenerOrdenOCompra(id.Value);
-                        if (response == null)
-                                return NotFound("No se ha encontrado la orden de compra");
+                        OrdenesYComprasRes? response = await _serviceOC.ObtenerOrdenOCompra(id);
 
                         return Created("Se ha creado la orden de compra", response);
                 }
@@ -146,18 +142,18 @@ namespace proy_back_Qbd.Controllers
 
                         return Ok(response);
                 }
-                
+
                 /// <summary>
                 /// Listar facturas por familia (ej: MP, PT, etc.)
                 /// </summary>
                 [HttpGet("facturas-por-familia/{familia}")]
                 [SwaggerResponse(200, "Obtención exitosa", typeof(IEnumerable<OrdenesYComprasRes>))]
-                public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarFacturasPorFamilia(string familia)
+                public async Task<ActionResult<IEnumerable<OrdenesYComprasRes>>> ListarFacturasPorFamilia(string familia, int idSede)
                 {
                         if (string.IsNullOrWhiteSpace(familia))
                                 return BadRequest(new { message = "Debe indicar una familia" });
 
-                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaFacturasPorFamilia(familia);
+                        IEnumerable<OrdenesYComprasRes> response = await _serviceOC.ListaFacturasPorFamilia(familia, idSede);
 
                         if (!response.Any())
                                 return NotFound(new { message = $"No se encontraron facturas para la familia '{familia}'" });

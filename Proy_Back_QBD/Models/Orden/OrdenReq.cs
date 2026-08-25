@@ -38,7 +38,6 @@ namespace proy_back_Qbd.Models
         public required DateTime FechaCotizacion { get; set; }
         public required string Observaciones { get; set; }
         public required string Familia { get; set; }
-        public required int IdSede { get; set; }
         public required int IdModificadorCreador { get; set; }
         public required IEnumerable<int> DetallesEliminados { get; set; }
         public required IEnumerable<int> DetallesCompraInsumosEliminados { get; set; }
