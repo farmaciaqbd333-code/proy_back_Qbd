@@ -32,8 +32,8 @@ public class LaboratorioRepository : ILaboratorioRepository
 
         if (!existe)
         {
-            throw new NotFoundException(
-                $"No se encontró el laboratorio con FormulaId: {formulaId} y SedeId: {sedeId}.");
+            _logger.LogInformation($"No se encontró el laboratorio con FormulaId: {formulaId} y SedeId: {sedeId}.");
+                
         }
     }
 
