@@ -106,10 +106,14 @@ if (!connectionString.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase
 Console.WriteLine($"Connection String: {connectionString}");
 
 builder.Services.AddDbContext<ApiContext>(options =>
-    options.UseNpgsql(connectionString)
-           .EnableSensitiveDataLogging()
-           .EnableDetailedErrors()
-    );
+{
+    options.UseNpgsql(connectionString);
+
+    options.EnableDetailedErrors();
+    options.EnableSensitiveDataLogging();
+
+});
+
 // Configurar CORS
 builder.Services.AddCors(options =>
 {

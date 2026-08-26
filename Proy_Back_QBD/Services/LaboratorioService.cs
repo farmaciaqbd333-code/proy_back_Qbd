@@ -12,15 +12,16 @@ using Proy_back_QBD.Services.Interfaces;
 
 namespace Proy_back_QBD.Services
 {
-    public class LaboratorioService : ILaboratorioService
+    public class LaboratorioService(
+        ApiContext db,
+        IMapper Mappers,
+        ILaboratorioRepository repositoryLaboritorio,
+        IUnitOfWork repositoryUnitWork) : ILaboratorioService
     {
-        private readonly ApiContext _context;
-        private readonly IMapper _Mappers;
-        public LaboratorioService(ApiContext db, IMapper Mappers)
-        {
-            _context = db;
-            _Mappers = Mappers;
-        }
+        private readonly ApiContext _context = db;
+        private readonly ILaboratorioRepository _repositoryLaboritorio = repositoryLaboritorio;
+        private readonly IUnitOfWork _repositoryUnitWork = repositoryUnitWork;
+        private readonly IMapper _Mappers = Mappers;
 
         public async Task<string> EditarElaborado(int labId, int sedeId, int idElaborado)
         {
@@ -113,32 +114,30 @@ namespace Proy_back_QBD.Services
         public async Task<string?> RegistrarLabIns(FormLabIns request)
         {
 
-            string response;
-            bool valor;
+            await _repositoryLaboritorio.ExisteLaboratorio(
+                request.Lab.FormulaId,
+                request.Lab.SedeId);
 
-            valor = await _context.Laboratorios
-            .Where(w => w.Id == request.Lab.FormulaId && w.SedeId == request.Lab.SedeId)
-            .AnyAsync()
-            ;
+            var laboratorio = _Mappers.Map<Laboratorio>(request.Lab);
 
-
-            Laboratorio laboratorio = _Mappers.Map<Laboratorio>(request.Lab);
             laboratorio.ModificadorId = laboratorio.CreadorId;
+
             foreach (var item in request.Ins)
             {
-                FormulaCC formulaCC = _Mappers.Map<FormulaCC>(item);
+                var formulaCC = _Mappers.Map<FormulaCC>(item);
+
                 formulaCC.FormulaId = request.Lab.FormulaId;
                 formulaCC.SedeId = request.Lab.SedeId;
                 formulaCC.ModificadorId = formulaCC.CreadorId;
-                _context.FormulasCC.Add(formulaCC);
+
+                await _repositoryLaboritorio.RegistrarFormulaCC(formulaCC);
             }
 
-            _context.Laboratorios.Add(laboratorio);
+            await _repositoryLaboritorio.RegistrarLaboratorio(laboratorio);
+            await _repositoryUnitWork.GuardarCambios();
 
-            await _context.SaveChangesAsync();
+            return "Registro exitoso";
 
-            response = "Registro exitoso";
-            return response;
 
         }
 
