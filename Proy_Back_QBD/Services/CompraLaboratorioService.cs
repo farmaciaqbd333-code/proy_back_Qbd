@@ -31,19 +31,37 @@ namespace proy_back_Qbd.Services
             if (request.Insumos != null && request.Insumos.Any())
             {
                 List<ActualizarInsumoReq> insumos = request.Insumos;
+
                 IEnumerable<int> idInsumos = insumos.Select(s => s.IdCompraInsumo).ToList();
 
-                List<CompraInsumos> detalleCompras = await _context.CompraInsumos
+                List<CompraInsumos> compraInsumos = await _context.CompraInsumos
                     .Where(w => w.IdCompra == idCompra && idInsumos.Contains(w.Id)).ToListAsync();
 
-                foreach (var item in detalleCompras)
+                foreach (var item in compraInsumos)
                 {
                     ActualizarInsumoReq? req = insumos.FirstOrDefault(f => f.IdCompraInsumo == item.Id);
                     if (req != null)
                     {
                         new DetalleCompraLabMapper().ActualizarInsumo(req, item);
                         item.Conformidad = UtilConformidad.CalcularConformidad(req.FechaVencimiento);
+                        item.CantidadRecibida = req.CantidadFinal;
                         x = 1;
+                        StockInsumo? stockInsumo = await _context.StockInsumos.FirstOrDefaultAsync(f => f.IdCompraInsumo == item.Id);
+                        if (stockInsumo != null)
+                        {
+                            stockInsumo.StockDisponible = req.CantidadFinal;
+                        }
+                        else
+                        {
+                            StockInsumo stockInsumo2 = new()
+                            {
+                                IdCompraInsumo = item.Id,
+                                Tipo = "MP",
+                                StockDisponible = req.CantidadFinal,
+                                UnidadMedida = "G"
+                            };
+                            await _context.StockInsumos.AddAsync(stockInsumo2);
+                        }
                     }
                 }
             }
@@ -63,6 +81,22 @@ namespace proy_back_Qbd.Services
                         new DetalleCompraLabMapper().ActualizarEmpaque(req, item);
                         item.Conformidad = UtilConformidad.CalcularConformidad(req.FechaVencimiento);
                         x = 1;
+                        // StockEmpaque? stockEmpaque = await _context.StockEmpaques.FirstOrDefaultAsync(f => f.IdCompraEmpaque == item.Id);
+                        // if (stockEmpaque != null)
+                        // {
+                        //     stockEmpaque.StockDisponible = item.;
+                        // }
+                        // else
+                        // {
+                        //     StockInsumo stockInsumo2 = new()
+                        //     {
+                        //         IdCompraInsumo = item.Id,
+                        //         Tipo = "MP",
+                        //         StockDisponible = req.CantidadFinal,
+                        //         UnidadMedida = "G"
+                        //     };
+                        //     await _context.StockInsumos.AddAsync(stockInsumo2);
+                        // }
                     }
                 }
             }

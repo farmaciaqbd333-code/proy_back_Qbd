@@ -80,23 +80,6 @@ namespace proy_back_Qbd.Services
                 IdCompraInsumo = req.IdCompraInsumo
             };
             _context.PaqueteInsumos.Add(paqueteInsumo);
-            StockInsumo? stockInsumos = await _context.StockInsumos.Where(w => w.IdCompraInsumo == compraInsumo.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
-            if (stockInsumos == null)
-            {
-                StockInsumo stockInsumo = new()
-                {
-                    IdCompraInsumo = compraInsumo.Id,
-                    Tipo = "MP",
-                    IdSede = req.IdSede,
-                    UnidadMedida = compraInsumo.Um,
-                    StockDisponible = paqueteEntrante
-                };
-                _context.StockInsumos.Add(stockInsumo);
-            }
-            else
-            {
-                stockInsumos.StockDisponible += paqueteEntrante;
-            }
 
             await _context.SaveChangesAsync();
             return paquete.Id;
@@ -136,8 +119,8 @@ namespace proy_back_Qbd.Services
             };
             _context.PaqueteEmpaques.Add(paqueteEmpaque);
 
-            StockEmpaque? stockInsumos = await _context.StockEmpaques.Where(w => w.IdCompraEmpaque == compraEmpaque.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
-            if (stockInsumos == null)
+            StockEmpaque? stockEmpaques = await _context.StockEmpaques.Where(w => w.IdCompraEmpaque == compraEmpaque.Id && w.IdSede == req.IdSede).FirstOrDefaultAsync();
+            if (stockEmpaques == null)
             {
                 StockEmpaque stockEmpaque = new()
                 {
@@ -150,7 +133,7 @@ namespace proy_back_Qbd.Services
             }
             else
             {
-                stockInsumos.StockDisponible += paqueteEntrante;
+                stockEmpaques.StockDisponible += paqueteEntrante;
             }
             await _context.SaveChangesAsync();
 
@@ -169,8 +152,6 @@ namespace proy_back_Qbd.Services
                            .Where(w => w.IdPaquete == idPaquete)
                            .Select(s => s.CompraInsumo)
                            .FirstOrDefaultAsync() ?? throw new NotFoundException("No se encontró el compra insumo"); ;
-                StockInsumo? stockInsumo = await _context.StockInsumos.Where(w => w.IdCompraInsumo == compraInsumo.Id && w.IdSede == idSede).FirstOrDefaultAsync();
-                stockInsumo.StockDisponible -= stockEliminar;
             }
             else
             {
@@ -192,7 +173,6 @@ namespace proy_back_Qbd.Services
             Paquete paquete = await _context.Paquetes
             .Include(i => i.PaqueteInsumos)
             .ThenInclude(th => th!.CompraInsumo)
-            .ThenInclude(th => th!.StockInsumos)
             .Include(i => i.PaqueteInsumos)
             .ThenInclude(th => th!.CompraInsumo)
             .ThenInclude(th => th!.Insumo)
@@ -200,8 +180,6 @@ namespace proy_back_Qbd.Services
             PaqueteInsumo paqueteInsumo = paquete.PaqueteInsumos ?? throw new NotFoundException("No se encontró paquetes insumos");
             CompraInsumos compraInsumo = paqueteInsumo.CompraInsumo ?? throw new NotFoundException("No hay Compra Insumos");
             // Busca stock para el idSede dado; si no existe, busca cualquier stock de esa compra
-            StockInsumo? stockInsumo = paqueteInsumo.CompraInsumo.StockInsumos.FirstOrDefault(w => w.IdSede == idSede)
-                ?? paqueteInsumo.CompraInsumo.StockInsumos.FirstOrDefault();
             Insumo insumo = compraInsumo.Insumo ?? throw new NotFoundException("No hay Insumo");
 
             //CONVERSION A GRAMOS
@@ -210,12 +188,6 @@ namespace proy_back_Qbd.Services
 
             //ACTUALIZAR PAQUETE
             PaqueteMapper.ModificarPaqueteInsumo(req, paquete);
-
-            // Actualizar stock solo si existe el registro
-            if (stockInsumo != null)
-            {
-                stockInsumo.StockDisponible = stockInsumo.StockDisponible - paquetePesoActual + paquetePesoEntrante;
-            }
 
             await _context.SaveChangesAsync();
 

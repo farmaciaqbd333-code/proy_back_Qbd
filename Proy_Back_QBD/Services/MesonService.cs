@@ -170,7 +170,6 @@ namespace proy_back_Qbd.Services
 
             return "Actualizacion Exitosa";
         }
-
         public async Task<MesonModalRes?> ObtenerDatosModal(int ordenCompraId)
         {
             MesonModalRes? response = await _context.Compras
@@ -315,7 +314,6 @@ namespace proy_back_Qbd.Services
 
             return ordenesEnviadasRes;
         }
-
         public async Task<MesonDetalleRes> ObtenerDetalleOrdenOCompra(int id)
         {
             var s = await _context.Compras

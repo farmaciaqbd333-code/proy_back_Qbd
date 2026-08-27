@@ -14,6 +14,7 @@ namespace proy_back_Qbd.Models.DetalleCompraLab
     {
         public int IdCompraInsumo { get; set; }
         public required decimal Potencia { get; set; }
+        public required decimal CantidadFinal { get; set; }
         public DateTime FechaFabricacion { get; set; }
         public DateTime FechaVencimiento { get; set; }
         public required string CondicionAlmacenamiento { get; set; }
