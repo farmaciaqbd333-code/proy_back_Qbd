@@ -106,7 +106,7 @@ namespace proy_back_Qbd.Services
                 "PI" => await ObtenerProductosIntermedios(idSede),
                 "ME" => await ObtenerMateriaEmpaque(idSede),
                 "ECO" => await ObtenerEconomato(idSede),
-                "PT" => await ObtenerProductosIntermedios(idSede),
+                "PT" => await ObtenerProductosTerminados(idSede),
                 _ => throw new BadRequestException("FAMILIA NO VALIDA")
 
             };
@@ -161,7 +161,7 @@ namespace proy_back_Qbd.Services
         // Fusionar 2 listas para entradas compras y notas de salida
         private async Task<List<StockRes>> ObtenerMateriaPrima(int idSede)
         {
-            return await _context.Insumos
+            return await _context.Insumos.AsNoTracking()
             .Where(i => (i.Clasificacion == "MP" || i.Clasificacion == null) && i.CompraInsumos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
@@ -193,7 +193,7 @@ namespace proy_back_Qbd.Services
         }
         private async Task<List<StockRes>> ObtenerProductosIntermedios(int idSede)
         {
-            return await _context.Insumos
+            return await _context.Insumos.AsNoTracking()
             .Where(i => i.Clasificacion == "PI" && i.ProductoIntermedio.FirstOrDefault(s => s.IdSede == idSede) != null)
             .GroupBy(g => new { g.Id })
             .Select(s => new StockRes()
@@ -219,7 +219,7 @@ namespace proy_back_Qbd.Services
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
         {
-            return await _context.Empaques
+            return await _context.Empaques.AsNoTracking()
                         .Where(i => i.CompraEmpaques.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
                         .GroupBy(g => new { g.Id })
                         .Select(s => new StockRes()
@@ -253,7 +253,7 @@ namespace proy_back_Qbd.Services
         }
         private async Task<List<StockRes>> ObtenerEconomato(int idSede)
         {
-            return await _context.Economatos
+            return await _context.Economatos.AsNoTracking()
                         .Where(i => i.CompraEconomatos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
                         .GroupBy(g => new { g.Id })
                         .Select(s => new StockRes()
@@ -268,7 +268,50 @@ namespace proy_back_Qbd.Services
                             Baja = 0
                         }).ToListAsync();
         }
+    
+        public async Task<List<DetalleInsumoRes>> ObtenerDetallePT(int idProducto, int idSede)
+        {
+            return await _context.CompraProductos.AsNoTracking()
+                .Include(w => w.Compra)
+                .Include(w => w.StockProductoTerminados)
+                .Where(w => w.IdProducto == idProducto)
+                .Select(s => new DetalleInsumoRes
+                {
+                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote ?? "",
+                    Saldo = s.StockProductoTerminados.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible),
+                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.Observacion
+                })
+                .ToListAsync();
+        }
+
+        private async Task<List<StockRes>> ObtenerProductosTerminados(int idSede)
+        {
+            return await _context.Productos.AsNoTracking()
+                .Where(i => i.CompraProductos.FirstOrDefault(s => s.Compra.IdSede == idSede) != null)
+                .GroupBy(g => new { g.Id })
+                .Select(s => new StockRes()
+                {
+                    Codigo = s.Key.Id + "",
+                    Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                    Um = "UND",
+                    Entradas =
+                        s.Sum(x => x.CompraProductos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida ?? ci.CantidadSolicitada)) +
+                        s.Sum(x => x.CompraProductos.Sum(x2 => x2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida))),
+                    Salidas =
+                        s.Sum(x => x.CompraProductos.Sum(s2 => s2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida))),
+                    Ajustes =
+                        s.Sum(x => x.CompraProductos.Where(w => w.Compra.IdSede == idSede).Sum(cp => cp.StockProductoTerminados.Sum(sp => sp.AjusteProductos.Sum(a => a.Ajuste)))),
+                    Baja = s.Sum(x => x.CompraProductos
+                        .Where(cp => cp.FechaVencimiento < DateTime.UtcNow)
+                        .Sum(cp => cp.StockProductoTerminados.Where(w => w.IdSede == idSede).Sum(sp => sp.StockDisponible))),
+                    Tipo = null,
+                    CodigoUbicacion = null
+                }).ToListAsync();
+        }
+
     }
-
-
 }

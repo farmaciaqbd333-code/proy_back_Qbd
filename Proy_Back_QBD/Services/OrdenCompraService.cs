@@ -38,6 +38,7 @@ namespace proy_back_Qbd.Services
                 .Include(i => i.Insumo!).ThenInclude(f => f.Familia)
                 .Include(i => i.Fabricante)
                 .Where(i => i.IdCompra == id)
+                .OrderBy(i => i.Id)
                 .ToListAsync();
 
             var compraEmpaques = await _context.CompraEmpaques
@@ -45,24 +46,28 @@ namespace proy_back_Qbd.Services
                 .Include(i => i.Empaque)
                 .Include(i => i.Fabricante)
                 .Where(i => i.IdCompra == id)
+                .OrderBy(i => i.Id)
                 .ToListAsync();
 
             var compraProductos = await _context.CompraProductos
                 .AsNoTracking()
                 .Include(i => i.Producto)
                 .Where(i => i.IdCompra == id)
+                .OrderBy(i => i.Id)
                 .ToListAsync();
 
             var compraEconomatos = await _context.CompraEconomatos
                 .AsNoTracking()
                 .Include(i => i.Economato)
                 .Where(i => i.IdCompra == id)
+                .OrderBy(i => i.Id)
                 .ToListAsync();
 
             var compraOtros = await _context.CompraOtros
                 .AsNoTracking()
                 .Include(i => i.Familia)
                 .Where(i => i.IdCompra == id)
+                .OrderBy(i => i.Id)
                 .ToListAsync();
 
             var response = new OrdenCompraGetRes
@@ -247,6 +252,7 @@ namespace proy_back_Qbd.Services
                                 CodFacQbd = s.CodFacQBD,
                                 Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
+                                Guia = s.Guia,
                                 RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
                                 Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
@@ -275,6 +281,7 @@ namespace proy_back_Qbd.Services
                                 CodFacQbd = s.CodFacQBD,
                                 Familia = s.Familia,
                                 Factura = s.SerieComprobante + s.NumeroComprobante,
+                                Guia = s.Guia,
                                 RutaFactura = s.ImgFactura,
                                 EstadoPago = s.Modalidad,
                                 Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
@@ -784,6 +791,7 @@ namespace proy_back_Qbd.Services
                     CodFacQbd = s.CodFacQBD,
                     Familia = s.Familia,
                     Factura = s.SerieComprobante + s.NumeroComprobante,
+                                Guia = s.Guia,
                     RutaFactura = s.ImgFactura,
                     EstadoPago = s.Modalidad,
                     Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",

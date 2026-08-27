@@ -28,6 +28,8 @@ namespace proy_back_Qbd.Services
         {
             if (request == null) return;
             int x = 0;
+            Compra? compra = await _context.Compras.FindAsync(idCompra);
+
             if (request.Insumos != null && request.Insumos.Any())
             {
                 List<ActualizarInsumoReq> insumos = request.Insumos;
@@ -35,6 +37,8 @@ namespace proy_back_Qbd.Services
                 IEnumerable<int> idInsumos = insumos.Select(s => s.IdCompraInsumo).ToList();
 
                 List<CompraInsumos> compraInsumos = await _context.CompraInsumos
+                    .Include(w => w.PaqueteInsumos!)
+                    .ThenInclude(p => p.Paquete)
                     .Where(w => w.IdCompra == idCompra && idInsumos.Contains(w.Id)).ToListAsync();
 
                 foreach (var item in compraInsumos)
@@ -44,20 +48,39 @@ namespace proy_back_Qbd.Services
                     {
                         new DetalleCompraLabMapper().ActualizarInsumo(req, item);
                         item.Conformidad = UtilConformidad.CalcularConformidad(req.FechaVencimiento);
-                        item.CantidadRecibida = req.CantidadFinal;
+
+                        // Si tiene paquetes registrados, la cantidad real recibida es la suma de los paquetes
+                        decimal cantidadRecibida = req.CantidadFinal;
+                        if (item.PaqueteInsumos != null && item.PaqueteInsumos.Any(p => p.Paquete != null))
+                        {
+                            decimal totalPaquetes = item.PaqueteInsumos
+                                .Where(p => p.Paquete != null)
+                                .Sum(p => (decimal)p.Paquete!.CantidadPaquete * p.Paquete.PesoUnitario);
+                            if (totalPaquetes > 0)
+                            {
+                                cantidadRecibida = totalPaquetes;
+                            }
+                        }
+
+                        item.CantidadRecibida = cantidadRecibida;
                         x = 1;
                         StockInsumo? stockInsumo = await _context.StockInsumos.FirstOrDefaultAsync(f => f.IdCompraInsumo == item.Id);
                         if (stockInsumo != null)
                         {
-                            stockInsumo.StockDisponible = req.CantidadFinal;
+                            stockInsumo.StockDisponible = cantidadRecibida;
+                            if (compra != null && (stockInsumo.IdSede == null || stockInsumo.IdSede == 0))
+                            {
+                                stockInsumo.IdSede = compra.IdSede;
+                            }
                         }
                         else
                         {
                             StockInsumo stockInsumo2 = new()
                             {
                                 IdCompraInsumo = item.Id,
+                                IdSede = compra != null ? compra.IdSede : 15,
                                 Tipo = "MP",
-                                StockDisponible = req.CantidadFinal,
+                                StockDisponible = cantidadRecibida,
                                 UnidadMedida = "G"
                             };
                             await _context.StockInsumos.AddAsync(stockInsumo2);
@@ -71,6 +94,8 @@ namespace proy_back_Qbd.Services
                 IEnumerable<int> idEmpaques = empaques.Select(s => s.IdCompraEmpaque).ToList();
 
                 List<CompraEmpaque> compraEmpaque = await _context.CompraEmpaques
+                    .Include(w => w.PaqueteEmpaques!)
+                    .ThenInclude(p => p.Paquete)
                     .Where(w => w.IdCompra == idCompra && idEmpaques.Contains(w.Id)).ToListAsync();
 
                 foreach (var item in compraEmpaque)
@@ -81,28 +106,43 @@ namespace proy_back_Qbd.Services
                         new DetalleCompraLabMapper().ActualizarEmpaque(req, item);
                         item.Conformidad = UtilConformidad.CalcularConformidad(req.FechaVencimiento);
                         x = 1;
-                        // StockEmpaque? stockEmpaque = await _context.StockEmpaques.FirstOrDefaultAsync(f => f.IdCompraEmpaque == item.Id);
-                        // if (stockEmpaque != null)
-                        // {
-                        //     stockEmpaque.StockDisponible = item.;
-                        // }
-                        // else
-                        // {
-                        //     StockInsumo stockInsumo2 = new()
-                        //     {
-                        //         IdCompraInsumo = item.Id,
-                        //         Tipo = "MP",
-                        //         StockDisponible = req.CantidadFinal,
-                        //         UnidadMedida = "G"
-                        //     };
-                        //     await _context.StockInsumos.AddAsync(stockInsumo2);
-                        // }
+
+                        decimal totalPaquetes = 0;
+                        if (item.PaqueteEmpaques != null && item.PaqueteEmpaques.Any(p => p.Paquete != null))
+                        {
+                            totalPaquetes = item.PaqueteEmpaques
+                                .Where(p => p.Paquete != null)
+                                .Sum(p => (decimal)p.Paquete!.CantidadPaquete * p.Paquete.PesoUnitario);
+                        }
+
+                        StockEmpaque? stockEmpaque = await _context.StockEmpaques.FirstOrDefaultAsync(f => f.IdCompraEmpaque == item.Id);
+                        if (stockEmpaque != null)
+                        {
+                            if (totalPaquetes > 0)
+                            {
+                                stockEmpaque.StockDisponible = totalPaquetes;
+                            }
+                            if (compra != null && (stockEmpaque.IdSede == null || stockEmpaque.IdSede == 0))
+                            {
+                                stockEmpaque.IdSede = compra.IdSede;
+                            }
+                        }
+                        else if (totalPaquetes > 0)
+                        {
+                            StockEmpaque stockEmpaque2 = new()
+                            {
+                                IdCompraEmpaque = item.Id,
+                                IdSede = compra != null ? compra.IdSede : 15,
+                                StockDisponible = totalPaquetes,
+                                UnidadMedida = item.Um ?? "UND"
+                            };
+                            await _context.StockEmpaques.AddAsync(stockEmpaque2);
+                        }
                     }
                 }
             }
             if (x == 1)
             {
-                Compra? compra = await _context.Compras.FindAsync(idCompra);
                 if (compra != null)
                 {
                     compra.FechaLab = DateTime.Now;
@@ -138,7 +178,7 @@ namespace proy_back_Qbd.Services
                     Ruc = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                     NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                     CodFacQbd = s.CodFacQBD,
-                    Insumos = s.CompraInsumos != null ? s.CompraInsumos.Select(s2 => new
+                    Insumos = s.CompraInsumos != null ? s.CompraInsumos.OrderBy(s2 => s2.Id).Select(s2 => new
                     {
                         s2.Id,
                         Familia = s2.Insumo != null && s2.Insumo.Familia != null ? s2.Insumo.Familia.Abreviatura : "",
@@ -161,7 +201,7 @@ namespace proy_back_Qbd.Services
                         DescripcionFactura = s2.DescripcionFactura ?? "",
                         Observacion = s2.Observacion ?? ""
                     }).ToList() : null,
-                    Empaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s3 => new
+                    Empaques = s.CompraEmpaques != null ? s.CompraEmpaques.OrderBy(s3 => s3.Id).Select(s3 => new
                     {
                         s3.Id,
                         Familia = s3.Empaque != null && s3.Empaque.Familia != null ? s3.Empaque.Familia.Abreviatura : "",
@@ -259,7 +299,7 @@ namespace proy_back_Qbd.Services
                     NumProvedor = c.Proveedor != null ? c.Proveedor.NumeroProv : "",
                     CodFacQbd = c.CodFacQBD,
 
-                    ListaInsumos = c.CompraInsumos.Select(i => new CompraLabDetInsumosRes
+                    ListaInsumos = c.CompraInsumos.OrderBy(i => i.Id).Select(i => new CompraLabDetInsumosRes
                     {
                         Id = i.Id,
                         Familia = i.Insumo != null ? i.Insumo.Familia!.Abreviatura : "",
@@ -282,7 +322,7 @@ namespace proy_back_Qbd.Services
                         CondicionAlmacenamiento = i.CondicionAlmacenamiento ?? ""
                     }).ToList(),
 
-                    ListaEmpaques = c.CompraEmpaques.Select(e => new CompraLabDetEmpRes
+                    ListaEmpaques = c.CompraEmpaques.OrderBy(e => e.Id).Select(e => new CompraLabDetEmpRes
                     {
                         Id = e.Id,
                         Familia = e.Empaque != null ? e.Empaque.Familia!.Abreviatura : "",

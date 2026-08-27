@@ -53,6 +53,13 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(resultado);
         }
+        [HttpGet("detalle-producto/{productoId}")]
+        public async Task<IActionResult> ObtenerDetallePT(int productoId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerDetallePT(productoId, idSede);
+
+            return Ok(resultado);
+        }
         [HttpGet("vencidos")]
         public async Task<IActionResult> ObtenerVencidos(string familia, int idSede)
         {
