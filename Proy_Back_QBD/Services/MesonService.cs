@@ -173,6 +173,8 @@ namespace proy_back_Qbd.Services
         public async Task<MesonModalRes?> ObtenerDatosModal(int ordenCompraId)
         {
             MesonModalRes? response = await _context.Compras
+            .AsNoTracking()
+            .AsSplitQuery()
             .Where(w => w.Id == ordenCompraId)
             .Select(s => new MesonModalRes
             {
