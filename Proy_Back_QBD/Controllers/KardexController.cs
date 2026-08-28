@@ -68,5 +68,11 @@ namespace proy_back_Qbd.Controllers
             return Ok(resultado);
         }
 
-    }
+            [HttpGet("salidas-insumo/{insumoId}")]
+        public async Task<IActionResult> ObtenerSalidasInsumo(int insumoId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerSalidasInsumo(insumoId, idSede);
+            return Ok(resultado);
+        }
+}
 }

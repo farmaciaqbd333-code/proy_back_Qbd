@@ -14,6 +14,7 @@ namespace proy_back_Qbd.Services.Interfaces
         public Task<List<DetalleEmpaqueRes>> ObtenerDetalleEmpaque(int empaqueId,int idSede);
         public Task<List<DetalleInsumoRes>> ObtenerDetallePT(int productoId, int idSede);
         public Task<List<ComprasVencidasRes>> ObtenerComprasVencidas(string familia,int idSede);
+        public Task<List<SalidaInsumoRes>> ObtenerSalidasInsumo(int insumoId, int idSede);
         
     }
 }

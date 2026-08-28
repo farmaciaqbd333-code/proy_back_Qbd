@@ -50,4 +50,18 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Saldo { get; set; }
         public required string Estado { get; set; }
     }
+
+    public class SalidaInsumoRes
+    {
+        public string TipoSalida { get; set; } = "";
+        public string RegistroDestino { get; set; } = "";
+        public string DescripcionDestino { get; set; } = "";
+        public string LoteInsumo { get; set; } = "";
+        public string RegistroLoteInsumo { get; set; } = "";
+        public decimal Cantidad { get; set; }
+        public string Um { get; set; } = "";
+        public DateTime? Fecha { get; set; }
+        public string Usuario { get; set; } = "";
+    }
+
 }
