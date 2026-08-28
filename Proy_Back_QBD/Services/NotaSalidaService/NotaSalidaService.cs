@@ -86,7 +86,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     FechaCreacion = n.FechaCreacion,
                     Destino = n.SedeDestino != null ? n.SedeDestino.Nombre ?? string.Empty : string.Empty,
                     Responsable = n.Creador != null ? n.Creador!.Persona!.NombreCompleto! : "",
-                    Observacion = n.Observacion
+                    Observacion = n.Observacion,
+                    Estado = (n.Estado == "RECIBIDO" || n.Estado == "RECEPCIONADO" ||
+                              n.NotaSalidaInsumos.Any(x => x.CantidadRecibida != null && x.CantidadRecibida > 0) ||
+                              n.NotaSalidaEmpaques.Any(x => x.CantidadRecibida > 0) ||
+                              n.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
+                              n.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0))
+                              ? "RECIBIDO"
+                              : "PROCESANDO"
                 })
                 .ToListAsync();
         }
@@ -104,7 +111,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     FechaCreacion = n.FechaCreacion,
                     Destino = n.SedeDestino != null ? n.SedeDestino.Nombre ?? string.Empty : string.Empty,
                     Responsable = n.Creador != null ? n.Creador!.Persona!.NombreCompleto! : "",
-                    Observacion = n.Observacion
+                    Observacion = n.Observacion,
+                    Estado = (n.Estado == "RECIBIDO" || n.Estado == "RECEPCIONADO" ||
+                              n.NotaSalidaInsumos.Any(x => x.CantidadRecibida != null && x.CantidadRecibida > 0) ||
+                              n.NotaSalidaEmpaques.Any(x => x.CantidadRecibida > 0) ||
+                              n.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
+                              n.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0))
+                              ? "RECIBIDO"
+                              : "PROCESANDO"
                 })
                 .ToListAsync();
         }
@@ -389,11 +403,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 var idInsumo = item.CompraInsumos?.IdInsumo ?? 0;
                 resultado.Add(new NotaSalidaDetalleRes
                 {
+                    IdNotaSalidaArticulo = item.Id,
+                    IdCompraArticulo = item.IdCompraInsumo ?? 0,
                     Familia = "MP",
                     Codigo = idInsumo > 0 ? UtilFamilia.CodigoInsumo(idInsumo) : "",
                     DescripcionQBD = item.CompraInsumos?.Insumo?.Descripcion ?? "",
                     Registro = item.IdCompraInsumo.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraInsumo.Value) : "",
                     Cantidad = item.Cantidad,
+                    CantidadRecibida = item.CantidadRecibida,
+                    Observacion = item.Observacion,
                     Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (item.CompraInsumos?.Um?.ToUpper() ?? "G"),
                     // Tara = item.Tara,
                     // PesoNeto = item.PesoNeto,
@@ -434,11 +452,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 var idEmpaque = item.CompraEmpaques?.IdEmpaque ?? 0;
                 resultado.Add(new NotaSalidaDetalleRes
                 {
+                    IdNotaSalidaArticulo = item.Id,
+                    IdCompraArticulo = item.IdCompraEmpaque ?? 0,
                     Familia = "ME",
                     Codigo = idEmpaque > 0 ? UtilFamilia.CodigoEmpaque(idEmpaque) : "",
                     DescripcionQBD = item.CompraEmpaques?.Empaque?.Descripcion ?? "",
                     Registro = item.IdCompraEmpaque.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEmpaque.Value) : "",
                     Cantidad = item.Cantidad,
+                    CantidadRecibida = item.CantidadRecibida,
+                    Observacion = item.Observacion,
                     Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
                     Tara = 0,
                     PesoNeto = 0,
@@ -707,7 +729,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var nsHeader = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == idNotaSalida.Value);
                     if (nsHeader != null)
                     {
-                        nsHeader.Estado = "RECEPCIONADO";
+                        nsHeader.Estado = "RECIBIDO";
                         if (!string.IsNullOrWhiteSpace(request.Observacion))
                         {
                             nsHeader.Observacion = string.IsNullOrWhiteSpace(nsHeader.Observacion)

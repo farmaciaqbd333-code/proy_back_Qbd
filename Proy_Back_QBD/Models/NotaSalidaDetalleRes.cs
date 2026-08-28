@@ -2,11 +2,14 @@ namespace proy_back_Qbd.Models
 {
     public class NotaSalidaDetalleRes
     {
+        public int IdNotaSalidaArticulo { get; set; }
+        public int IdCompraArticulo { get; set; }
         public string Familia { get; set; } = "MP";
         public string Codigo { get; set; } = "";
         public string DescripcionQBD { get; set; } = "";
         public string Registro { get; set; } = "";
         public decimal Cantidad { get; set; }
+        public decimal? CantidadRecibida { get; set; }
         public string Um { get; set; } = "G";
         public decimal Tara { get; set; }
         public decimal PesoNeto { get; set; }
@@ -15,6 +18,7 @@ namespace proy_back_Qbd.Models
         public string FRecib { get; set; } = "";
         public string FFabric { get; set; } = "";
         public string FVcto { get; set; } = "";
+        public string? Observacion { get; set; }
         public List<NotaSalidaDetallePaqueteRes> Paquetes { get; set; } = new();
     }
 

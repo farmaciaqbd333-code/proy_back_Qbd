@@ -6,6 +6,7 @@ public class NotaSalidaListaRes
     public required string Destino { get; set; }
     public required string Responsable { get; set; }
     public string? Observacion { get; set; }
+    public string? Estado { get; set; }
 }
 public class RegistrosListaRes
 {

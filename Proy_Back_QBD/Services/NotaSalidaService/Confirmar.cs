@@ -27,12 +27,22 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 // Actualizar detalle de la nota de salida con cantidad recibida y observación
                 var nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsInsumo == null && item.IdCompraArticulo > 0)
+                {
+                    nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == item.IdCompraArticulo);
+                }
                 if (nsInsumo != null)
                 {
                     nsInsumo.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
                         nsInsumo.Observacion = item.Observacion;
+                    }
+
+                    var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsInsumo.IdNotaSalida);
+                    if (parentNS != null)
+                    {
+                        parentNS.Estado = "RECIBIDO";
                     }
                 }
 
@@ -81,12 +91,22 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in articulos)
             {
                 var nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsProd == null && item.IdCompraArticulo > 0)
+                {
+                    nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.IdCompraProducto == item.IdCompraArticulo);
+                }
                 if (nsProd != null)
                 {
                     nsProd.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
                         nsProd.Observacion = item.Observacion;
+                    }
+
+                    var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsProd.IdNotaSalida);
+                    if (parentNS != null)
+                    {
+                        parentNS.Estado = "RECIBIDO";
                     }
                 }
 
@@ -124,12 +144,22 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in articulos)
             {
                 var nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsEco == null && item.IdCompraArticulo > 0)
+                {
+                    nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.IdCompraEconomato == item.IdCompraArticulo);
+                }
                 if (nsEco != null)
                 {
                     nsEco.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
                         nsEco.Observacion = item.Observacion;
+                    }
+
+                    var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEco.IdNotaSalida);
+                    if (parentNS != null)
+                    {
+                        parentNS.Estado = "RECIBIDO";
                     }
                 }
 
@@ -167,12 +197,22 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in articulos)
             {
                 var nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsEmp == null && item.IdCompraArticulo > 0)
+                {
+                    nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.IdCompraArticulo);
+                }
                 if (nsEmp != null)
                 {
                     nsEmp.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
                         nsEmp.Observacion = item.Observacion;
+                    }
+
+                    var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEmp.IdNotaSalida);
+                    if (parentNS != null)
+                    {
+                        parentNS.Estado = "RECIBIDO";
                     }
                 }
 
