@@ -36,6 +36,7 @@ namespace proy_back_Qbd.Dto.NotaSalida
     {
         public int IdSedeOrigen { get; set; }
         public int IdSedeDestino { get; set; }
+        public string? Observacion { get; set; }
         public List<ConfirmarArticulosReq> Insumos { get; set; } = new();
         public List<ConfirmarArticulosReq> Economatos { get; set; } = new();
         public List<ConfirmarArticulosReq> Empaques { get; set; } = new();
@@ -47,6 +48,7 @@ namespace proy_back_Qbd.Dto.NotaSalida
         public decimal CantidadRecibida { get; set; }
         public int IdCompraArticulo { get; set; }
         public string? UnidadMedida { get; set; }
+        public string? Observacion { get; set; }
     }
 
 }

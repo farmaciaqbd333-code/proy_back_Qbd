@@ -8,9 +8,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
     public partial class NotaSalidaService
     {
         private async Task ProcesarInsumos(
-    List<ConfirmarArticulosReq> articulos,
-    int idSedeOrigen,
-    int idSedeDestino)
+            List<ConfirmarArticulosReq> articulos,
+            int idSedeOrigen,
+            int idSedeDestino)
         {
             _logger.LogInformation(
                 "Inicio procesamiento de insumos. Cantidad: {Cantidad}, SedeOrigen: {SedeOrigen}, SedeDestino: {SedeDestino}",
@@ -24,6 +24,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     "Procesando insumo. IdCompraInsumo: {IdCompraInsumo}, Cantidad: {Cantidad}",
                     item.IdCompraArticulo,
                     item.CantidadRecibida);
+
+                // Actualizar detalle de la nota de salida con cantidad recibida y observación
+                var nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsInsumo != null)
+                {
+                    nsInsumo.CantidadRecibida = item.CantidadRecibida;
+                    if (!string.IsNullOrWhiteSpace(item.Observacion))
+                    {
+                        nsInsumo.Observacion = item.Observacion;
+                    }
+                }
 
                 var stockOrigen = await _context.StockInsumos
                     .FirstOrDefaultAsync(x =>
@@ -61,13 +72,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             _logger.LogInformation("Final procesamiento de insumos.");
         }
+
         private async Task ProcesarProductos(
-    List<ConfirmarArticulosReq> articulos,
-    int idSedeOrigen,
-    int idSedeDestino)
+            List<ConfirmarArticulosReq> articulos,
+            int idSedeOrigen,
+            int idSedeDestino)
         {
             foreach (var item in articulos)
             {
+                var nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsProd != null)
+                {
+                    nsProd.CantidadRecibida = item.CantidadRecibida;
+                    if (!string.IsNullOrWhiteSpace(item.Observacion))
+                    {
+                        nsProd.Observacion = item.Observacion;
+                    }
+                }
+
                 var stockOrigen = await _context.StockProductos
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraProducto == item.IdCompraArticulo &&
@@ -93,13 +115,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 _context.StockProductos.Add(stockDestino);
             }
         }
+
         private async Task ProcesarEconomatos(
-    List<ConfirmarArticulosReq> articulos,
-    int idSedeOrigen,
-    int idSedeDestino)
+            List<ConfirmarArticulosReq> articulos,
+            int idSedeOrigen,
+            int idSedeDestino)
         {
             foreach (var item in articulos)
             {
+                var nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsEco != null)
+                {
+                    nsEco.CantidadRecibida = item.CantidadRecibida;
+                    if (!string.IsNullOrWhiteSpace(item.Observacion))
+                    {
+                        nsEco.Observacion = item.Observacion;
+                    }
+                }
+
                 var stockOrigen = await _context.StockEconomatos
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraEconomato == item.IdCompraArticulo &&
@@ -125,13 +158,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 _context.StockEconomatos.Add(stockDestino);
             }
         }
+
         private async Task ProcesarEmpaques(
-    List<ConfirmarArticulosReq> articulos,
-    int idSedeOrigen,
-    int idSedeDestino)
+            List<ConfirmarArticulosReq> articulos,
+            int idSedeOrigen,
+            int idSedeDestino)
         {
             foreach (var item in articulos)
             {
+                var nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
+                if (nsEmp != null)
+                {
+                    nsEmp.CantidadRecibida = item.CantidadRecibida;
+                    if (!string.IsNullOrWhiteSpace(item.Observacion))
+                    {
+                        nsEmp.Observacion = item.Observacion;
+                    }
+                }
+
                 var stockOrigen = await _context.StockEmpaques
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraEmpaque == item.IdCompraArticulo &&
