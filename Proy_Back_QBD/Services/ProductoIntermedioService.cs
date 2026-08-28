@@ -760,7 +760,7 @@ namespace proy_back_Qbd.Services
                         ? s.StockInsumo.CompraInsumo.Lote
                         : (s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null ? s.StockInsumo.ProductoIntermedio.Lote : ""),
                     Registro = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null
-                        ? Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id)
+                        ? "MP" + Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id)
                         : (s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null
                             ? Alfanumerico.ConvertToBase36(s.StockInsumo.ProductoIntermedio.Id)
                             : (s.IdStockInsumo > 0 ? Alfanumerico.ConvertToBase36(s.IdStockInsumo) : "")),

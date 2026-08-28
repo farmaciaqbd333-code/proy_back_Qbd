@@ -33,7 +33,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdInsumo == idInsumo)
                 .Select(s => new DetalleInsumoRes
                 {
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockInsumos.Any(w => w.IdSede == idSede)
                         ? s.StockInsumos.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible)
@@ -57,7 +57,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdInsumo == idInsumo)
                 .Select(s => new DetalleInsumoRes
                 {
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockInsumo.StockDisponible,
                     FechaCompra = s.FechaCreacion,
@@ -81,7 +81,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdEmpaque == empaqueId)
                 .Select(s => new DetalleEmpaqueRes
                 {
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockEmpaques.Any(w => w.IdSede == idSede)
                         ? s.StockEmpaques.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible)
@@ -123,7 +123,7 @@ namespace proy_back_Qbd.Services
                 {
                     response = await _context.CompraInsumos.Select(s => new ComprasVencidasRes()
                     {
-                        Registro = Alfanumerico.ConvertToBase36(s.Id),
+                        Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
                         Codigo = s.Insumo.Id.ToString("d4"),
                         Descripcion = s.Insumo.Descripcion,
                         Estado = (DateTime.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTime.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
@@ -139,7 +139,7 @@ namespace proy_back_Qbd.Services
                 {
                     response = await _context.CompraEmpaques.Select(s => new ComprasVencidasRes()
                     {
-                        Registro = Alfanumerico.ConvertToBase36(s.Id),
+                        Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
                         Codigo = s.Empaque.Id.ToString("d4"),
                         Descripcion = s.Empaque.Descripcion,
                         Estado = (DateTime.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTime.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
@@ -277,7 +277,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdProducto == idProducto)
                 .Select(s => new DetalleInsumoRes
                 {
-                    Registro = Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockProductoTerminados.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible),
                     FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
@@ -340,7 +340,7 @@ namespace proy_back_Qbd.Services
                             ? s.InsumoProductoIntermedio.ProductoIntermedio.Insumo.Descripcion 
                             : (s.InsumoProductoIntermedio.ProductoIntermedio.Lote ?? "Producto Intermedio"),
                         LoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? (s.StockInsumo.CompraInsumo.Lote ?? "") : "",
-                        RegistroLoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id) : "",
+                        RegistroLoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? "MP" + Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id) : "",
                         Cantidad = s.Cantidad,
                         Um = s.UnidadMedida ?? s.InsumoProductoIntermedio.UnidadMedida ?? "G",
                         Fecha = s.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion,
@@ -404,7 +404,7 @@ namespace proy_back_Qbd.Services
                             ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}" 
                             : "Nota de Salida",
                         LoteInsumo = s.CompraInsumos != null ? (s.CompraInsumos.Lote ?? "") : (s.Lote ?? ""),
-                        RegistroLoteInsumo = s.CompraInsumos != null ? Alfanumerico.ConvertToBase36(s.CompraInsumos.Id) : "",
+                        RegistroLoteInsumo = s.CompraInsumos != null ? "MP" + Alfanumerico.ConvertToBase36(s.CompraInsumos.Id) : "",
                         Cantidad = s.CantidadRecibida ?? s.Cantidad,
                         Um = s.Um ?? (s.CompraInsumos != null ? s.CompraInsumos.Um : "G"),
                         Fecha = s.NotaSalida != null ? s.NotaSalida.FechaCreacion : null,
