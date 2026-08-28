@@ -34,6 +34,7 @@ namespace proy_back_Qbd.Dto.NotaSalida
     }
     public class ConfirmarReq
     {
+        public int? IdNotaSalida { get; set; }
         public int IdSedeOrigen { get; set; }
         public int IdSedeDestino { get; set; }
         public string? Observacion { get; set; }

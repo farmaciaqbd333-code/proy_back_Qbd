@@ -702,26 +702,46 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (request.Productos?.Any() == true)
                     await ProcesarProductos(request.Productos, request.IdSedeOrigen, request.IdSedeDestino);
 
-                int? idNotaSalida = null;
-                if (request.Insumos?.Any() == true && request.Insumos[0].IdNotaSalidaArticulo > 0)
+                int? idNotaSalida = request.IdNotaSalida;
+                if (!idNotaSalida.HasValue && request.Insumos?.Any() == true && request.Insumos[0].IdNotaSalidaArticulo > 0)
                 {
                     var art = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.Id == request.Insumos[0].IdNotaSalidaArticulo);
                     if (art != null) idNotaSalida = art.IdNotaSalida;
+                    else
+                    {
+                        var nsDirect = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == request.Insumos[0].IdNotaSalidaArticulo);
+                        if (nsDirect != null) idNotaSalida = nsDirect.Id;
+                    }
                 }
-                else if (request.Empaques?.Any() == true && request.Empaques[0].IdNotaSalidaArticulo > 0)
+                else if (!idNotaSalida.HasValue && request.Empaques?.Any() == true && request.Empaques[0].IdNotaSalidaArticulo > 0)
                 {
                     var art = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.Id == request.Empaques[0].IdNotaSalidaArticulo);
                     if (art != null) idNotaSalida = art.IdNotaSalida;
+                    else
+                    {
+                        var nsDirect = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == request.Empaques[0].IdNotaSalidaArticulo);
+                        if (nsDirect != null) idNotaSalida = nsDirect.Id;
+                    }
                 }
-                else if (request.Economatos?.Any() == true && request.Economatos[0].IdNotaSalidaArticulo > 0)
+                else if (!idNotaSalida.HasValue && request.Economatos?.Any() == true && request.Economatos[0].IdNotaSalidaArticulo > 0)
                 {
                     var art = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.Id == request.Economatos[0].IdNotaSalidaArticulo);
                     if (art != null) idNotaSalida = art.IdNotaSalida;
+                    else
+                    {
+                        var nsDirect = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == request.Economatos[0].IdNotaSalidaArticulo);
+                        if (nsDirect != null) idNotaSalida = nsDirect.Id;
+                    }
                 }
-                else if (request.Productos?.Any() == true && request.Productos[0].IdNotaSalidaArticulo > 0)
+                else if (!idNotaSalida.HasValue && request.Productos?.Any() == true && request.Productos[0].IdNotaSalidaArticulo > 0)
                 {
                     var art = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.Id == request.Productos[0].IdNotaSalidaArticulo);
                     if (art != null) idNotaSalida = art.IdNotaSalida;
+                    else
+                    {
+                        var nsDirect = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == request.Productos[0].IdNotaSalidaArticulo);
+                        if (nsDirect != null) idNotaSalida = nsDirect.Id;
+                    }
                 }
 
                 if (idNotaSalida.HasValue)
@@ -730,11 +750,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     if (nsHeader != null)
                     {
                         nsHeader.Estado = "RECIBIDO";
-                        if (!string.IsNullOrWhiteSpace(request.Observacion))
+                        if (request.Observacion != null)
                         {
-                            nsHeader.Observacion = string.IsNullOrWhiteSpace(nsHeader.Observacion)
-                                ? request.Observacion
-                                : $"{nsHeader.Observacion} | {request.Observacion}";
+                            nsHeader.Observacion = request.Observacion;
                         }
                     }
                 }

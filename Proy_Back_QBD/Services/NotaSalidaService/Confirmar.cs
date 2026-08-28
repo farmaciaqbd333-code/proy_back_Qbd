@@ -37,10 +37,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     cantidadDespachada = nsInsumo.Cantidad;
                     nsInsumo.CantidadRecibida = item.CantidadRecibida;
-                    if (!string.IsNullOrWhiteSpace(item.Observacion))
-                    {
-                        nsInsumo.Observacion = item.Observacion;
-                    }
+                    nsInsumo.Observacion = item.Observacion;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsInsumo.IdNotaSalida);
                     if (parentNS != null)
@@ -49,37 +46,48 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                var stockOrigen = await _context.StockInsumos
+                // Verificar si ya existe stock destino para esta nota/artículo (modificación)
+                var stockDestino = await _context.StockInsumos
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraInsumo == item.IdCompraArticulo &&
-                        x.IdSede == idSedeOrigen &&
-                        x.IdNotaSalidaInsumo == null);
+                        x.IdSede == idSedeDestino &&
+                        x.IdNotaSalidaInsumo == item.IdNotaSalidaArticulo);
 
-                if (stockOrigen == null)
-                    continue;
-
-                // Descontar stock origen según la cantidad ENVIADA originalmente
-                stockOrigen.StockDisponible -= cantidadDespachada;
-
-                // Crear stock destino según la cantidad RECIBIDA
-                var stockDestino = new StockInsumo
+                if (stockDestino != null)
                 {
-                    IdCompraInsumo = item.IdCompraArticulo,
-                    Tipo = "MP",
-                    StockDisponible = item.CantidadRecibida,
-                    UnidadMedida = item.UnidadMedida ?? stockOrigen.UnidadMedida,
-                    IdSede = idSedeDestino,
-                    IdNotaSalidaInsumo = item.IdNotaSalidaArticulo
-                };
+                    stockDestino.StockDisponible = item.CantidadRecibida;
+                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                }
+                else
+                {
+                    var stockOrigen = await _context.StockInsumos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdCompraInsumo == item.IdCompraArticulo &&
+                            x.IdSede == idSedeOrigen &&
+                            x.IdNotaSalidaInsumo == null);
 
-                _context.StockInsumos.Add(stockDestino);
+                    if (stockOrigen != null)
+                    {
+                        stockOrigen.StockDisponible -= cantidadDespachada;
+                    }
+
+                    stockDestino = new StockInsumo
+                    {
+                        IdCompraInsumo = item.IdCompraArticulo,
+                        Tipo = "MP",
+                        StockDisponible = item.CantidadRecibida,
+                        UnidadMedida = item.UnidadMedida ?? (stockOrigen != null ? stockOrigen.UnidadMedida : "G"),
+                        IdSede = idSedeDestino,
+                        IdNotaSalidaInsumo = item.IdNotaSalidaArticulo
+                    };
+
+                    _context.StockInsumos.Add(stockDestino);
+                }
 
                 _logger.LogInformation(
                     "Insumo procesado correctamente. IdCompraInsumo: {IdCompraInsumo}, " +
-                    "StockDescontadoOrigen: {CantidadDespachada}, StockRestanteOrigen: {StockRestante}, StockDestino: {CantidadRecibida}, SedeDestino: {SedeDestino}",
+                    "StockDestino: {CantidadRecibida}, SedeDestino: {SedeDestino}",
                     item.IdCompraArticulo,
-                    cantidadDespachada,
-                    stockOrigen.StockDisponible,
                     item.CantidadRecibida,
                     idSedeDestino);
             }
@@ -105,10 +113,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     cantidadDespachada = nsProd.Cantidad;
                     nsProd.CantidadRecibida = item.CantidadRecibida;
-                    if (!string.IsNullOrWhiteSpace(item.Observacion))
-                    {
-                        nsProd.Observacion = item.Observacion;
-                    }
+                    nsProd.Observacion = item.Observacion;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsProd.IdNotaSalida);
                     if (parentNS != null)
@@ -117,29 +122,41 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                var stockOrigen = await _context.StockProductos
+                var stockDestino = await _context.StockProductos
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraProducto == item.IdCompraArticulo &&
-                        x.IdSede == idSedeOrigen &&
-                        x.IdNotaSalidaProducto == null);
+                        x.IdSede == idSedeDestino &&
+                        x.IdNotaSalidaProducto == item.IdNotaSalidaArticulo);
 
-                if (stockOrigen == null)
-                    continue;
-
-                // Descontar stock origen según lo ENVIADO
-                stockOrigen.StockDisponible -= cantidadDespachada;
-
-                // Crear stock destino según lo RECIBIDO
-                var stockDestino = new StockProducto
+                if (stockDestino != null)
                 {
-                    IdCompraProducto = item.IdCompraArticulo,
-                    StockDisponible = item.CantidadRecibida,
-                    UnidadMedida = item.UnidadMedida ?? stockOrigen.UnidadMedida,
-                    IdSede = idSedeDestino,
-                    IdNotaSalidaProducto = item.IdNotaSalidaArticulo
-                };
+                    stockDestino.StockDisponible = item.CantidadRecibida;
+                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                }
+                else
+                {
+                    var stockOrigen = await _context.StockProductos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdCompraProducto == item.IdCompraArticulo &&
+                            x.IdSede == idSedeOrigen &&
+                            x.IdNotaSalidaProducto == null);
 
-                _context.StockProductos.Add(stockDestino);
+                    if (stockOrigen != null)
+                    {
+                        stockOrigen.StockDisponible -= cantidadDespachada;
+                    }
+
+                    stockDestino = new StockProducto
+                    {
+                        IdCompraProducto = item.IdCompraArticulo,
+                        StockDisponible = item.CantidadRecibida,
+                        UnidadMedida = item.UnidadMedida ?? (stockOrigen != null ? stockOrigen.UnidadMedida : "UND"),
+                        IdSede = idSedeDestino,
+                        IdNotaSalidaProducto = item.IdNotaSalidaArticulo
+                    };
+
+                    _context.StockProductos.Add(stockDestino);
+                }
             }
         }
 
@@ -161,10 +178,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     cantidadDespachada = nsEco.Cantidad;
                     nsEco.CantidadRecibida = item.CantidadRecibida;
-                    if (!string.IsNullOrWhiteSpace(item.Observacion))
-                    {
-                        nsEco.Observacion = item.Observacion;
-                    }
+                    nsEco.Observacion = item.Observacion;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEco.IdNotaSalida);
                     if (parentNS != null)
@@ -173,29 +187,41 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                var stockOrigen = await _context.StockEconomatos
+                var stockDestino = await _context.StockEconomatos
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraEconomato == item.IdCompraArticulo &&
-                        x.IdSede == idSedeOrigen &&
-                        x.IdNotaSalidaEconomato == null);
+                        x.IdSede == idSedeDestino &&
+                        x.IdNotaSalidaEconomato == item.IdNotaSalidaArticulo);
 
-                if (stockOrigen == null)
-                    continue;
-
-                // Descontar stock origen según lo ENVIADO
-                stockOrigen.StockDisponible -= cantidadDespachada;
-
-                // Crear stock destino según lo RECIBIDO
-                var stockDestino = new StockEconomato
+                if (stockDestino != null)
                 {
-                    IdCompraEconomato = item.IdCompraArticulo,
-                    StockDisponible = item.CantidadRecibida,
-                    UnidadMedida = item.UnidadMedida ?? stockOrigen.UnidadMedida,
-                    IdSede = idSedeDestino,
-                    IdNotaSalidaEconomato = item.IdNotaSalidaArticulo
-                };
+                    stockDestino.StockDisponible = item.CantidadRecibida;
+                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                }
+                else
+                {
+                    var stockOrigen = await _context.StockEconomatos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdCompraEconomato == item.IdCompraArticulo &&
+                            x.IdSede == idSedeOrigen &&
+                            x.IdNotaSalidaEconomato == null);
 
-                _context.StockEconomatos.Add(stockDestino);
+                    if (stockOrigen != null)
+                    {
+                        stockOrigen.StockDisponible -= cantidadDespachada;
+                    }
+
+                    stockDestino = new StockEconomato
+                    {
+                        IdCompraEconomato = item.IdCompraArticulo,
+                        StockDisponible = item.CantidadRecibida,
+                        UnidadMedida = item.UnidadMedida ?? (stockOrigen != null ? stockOrigen.UnidadMedida : "UND"),
+                        IdSede = idSedeDestino,
+                        IdNotaSalidaEconomato = item.IdNotaSalidaArticulo
+                    };
+
+                    _context.StockEconomatos.Add(stockDestino);
+                }
             }
         }
 
@@ -217,10 +243,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     cantidadDespachada = nsEmp.Cantidad;
                     nsEmp.CantidadRecibida = item.CantidadRecibida;
-                    if (!string.IsNullOrWhiteSpace(item.Observacion))
-                    {
-                        nsEmp.Observacion = item.Observacion;
-                    }
+                    nsEmp.Observacion = item.Observacion;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEmp.IdNotaSalida);
                     if (parentNS != null)
@@ -229,29 +252,41 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                var stockOrigen = await _context.StockEmpaques
+                var stockDestino = await _context.StockEmpaques
                     .FirstOrDefaultAsync(x =>
                         x.IdCompraEmpaque == item.IdCompraArticulo &&
-                        x.IdSede == idSedeOrigen &&
-                        x.IdNotaSalidaEmpaque == null);
+                        x.IdSede == idSedeDestino &&
+                        x.IdNotaSalidaEmpaque == item.IdNotaSalidaArticulo);
 
-                if (stockOrigen == null)
-                    continue;
-
-                // Descontar stock origen según lo ENVIADO
-                stockOrigen.StockDisponible -= cantidadDespachada;
-
-                // Crear stock destino según lo RECIBIDO
-                var stockDestino = new StockEmpaque
+                if (stockDestino != null)
                 {
-                    IdCompraEmpaque = item.IdCompraArticulo,
-                    StockDisponible = item.CantidadRecibida,
-                    UnidadMedida = item.UnidadMedida ?? stockOrigen.UnidadMedida,
-                    IdSede = idSedeDestino,
-                    IdNotaSalidaEmpaque = item.IdNotaSalidaArticulo
-                };
+                    stockDestino.StockDisponible = item.CantidadRecibida;
+                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                }
+                else
+                {
+                    var stockOrigen = await _context.StockEmpaques
+                        .FirstOrDefaultAsync(x =>
+                            x.IdCompraEmpaque == item.IdCompraArticulo &&
+                            x.IdSede == idSedeOrigen &&
+                            x.IdNotaSalidaEmpaque == null);
 
-                _context.StockEmpaques.Add(stockDestino);
+                    if (stockOrigen != null)
+                    {
+                        stockOrigen.StockDisponible -= cantidadDespachada;
+                    }
+
+                    stockDestino = new StockEmpaque
+                    {
+                        IdCompraEmpaque = item.IdCompraArticulo,
+                        StockDisponible = item.CantidadRecibida,
+                        UnidadMedida = item.UnidadMedida ?? (stockOrigen != null ? stockOrigen.UnidadMedida : "UND"),
+                        IdSede = idSedeDestino,
+                        IdNotaSalidaEmpaque = item.IdNotaSalidaArticulo
+                    };
+
+                    _context.StockEmpaques.Add(stockDestino);
+                }
             }
         }
     }
