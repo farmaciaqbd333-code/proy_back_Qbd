@@ -113,8 +113,10 @@ namespace proy_back_Qbd.Services
                                 x.CompraEmpaque.IdEmpaque == conteoEmpaque.Key &&
                                 x.IdSede == request.IdSede &&
                                 x.StockDisponible > 0 &&
-                                x.CompraEmpaque.FechaVencimiento >= ahora)
-                            .OrderBy(x => x.CompraEmpaque.FechaVencimiento)
+                                (x.CompraEmpaque.FechaVencimiento == null || x.CompraEmpaque.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.CompraEmpaque.Lote) ? 1 : 0)
+                            .ThenBy(x => x.CompraEmpaque.FechaCreacion)
+                            .ThenBy(x => x.CompraEmpaque.Id)
                             .ToListAsync();
 
 
@@ -174,8 +176,10 @@ namespace proy_back_Qbd.Services
                                 x.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
                                 x.IdSede == request.IdSede &&
                                 x.StockDisponible > 0 &&
-                                x.CompraInsumo.FechaVencimiento >= ahora)
-                            .OrderBy(x => x.CompraInsumo.FechaVencimiento)
+                                (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
+                            .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
+                            .ThenBy(x => x.CompraInsumo.Id)
                             .ToListAsync();
                     }
                     else
@@ -185,8 +189,10 @@ namespace proy_back_Qbd.Services
                                 x.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo &&
                                 x.IdSede == request.IdSede &&
                                 x.StockDisponible > 0 &&
-                                x.ProductoIntermedio.FechaVencimiento >= ahora)
-                            .OrderBy(x => x.ProductoIntermedio.FechaVencimiento)
+                                (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
+                            .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
+                            .ThenBy(x => x.ProductoIntermedio.Id)
                             .ToListAsync();
                     }
 
@@ -487,9 +493,10 @@ namespace proy_back_Qbd.Services
                                     conteoEmpaque.Key &&
                                 x.IdSede == productoIntermedio.IdSede &&
                                 x.StockDisponible > 0 &&
-                                x.CompraEmpaque.FechaVencimiento >= ahora)
-                            .OrderBy(x =>
-                                x.CompraEmpaque.FechaVencimiento)
+                                (x.CompraEmpaque.FechaVencimiento == null || x.CompraEmpaque.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.CompraEmpaque.Lote) ? 1 : 0)
+                            .ThenBy(x => x.CompraEmpaque.FechaCreacion)
+                            .ThenBy(x => x.CompraEmpaque.Id)
                             .ToListAsync();
 
                         if (stockEmpaques.Count == 0)
@@ -575,10 +582,12 @@ namespace proy_back_Qbd.Services
                             .Where(x =>
                                 x.CompraInsumo.IdInsumo ==
                                     fInsumo.IdInsumo &&
+                                x.IdSede == productoIntermedio.IdSede &&
                                 x.StockDisponible > 0 &&
-                                x.CompraInsumo.FechaVencimiento >= ahora)
-                            .OrderBy(x =>
-                                x.CompraInsumo.FechaVencimiento)
+                                (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
+                            .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
+                            .ThenBy(x => x.CompraInsumo.Id)
                             .ToListAsync();
                     }
                     else
@@ -587,10 +596,12 @@ namespace proy_back_Qbd.Services
                             .Where(x =>
                                 x.ProductoIntermedio.IdInsumo ==
                                     fInsumo.IdInsumo &&
+                                x.IdSede == productoIntermedio.IdSede &&
                                 x.StockDisponible > 0 &&
-                                x.ProductoIntermedio.FechaVencimiento >= ahora)
-                            .OrderBy(x =>
-                                x.ProductoIntermedio.FechaVencimiento)
+                                (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
+                            .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
+                            .ThenBy(x => x.ProductoIntermedio.Id)
                             .ToListAsync();
                     }
 
@@ -745,8 +756,14 @@ namespace proy_back_Qbd.Services
                     Porcentaje = s.InsumoProductoIntermedio.Porcentaje,
                     Descripcion = s.InsumoProductoIntermedio.Insumo != null ? s.InsumoProductoIntermedio.Insumo.Descripcion : "",
                     V = s.InsumoProductoIntermedio.Variable,
-                    Lote = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? s.StockInsumo.CompraInsumo.Lote : "",
-                    Registro = s.IdStockInsumo > 0 ? Alfanumerico.ConvertToBase36(s.IdStockInsumo) : "",
+                    Lote = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null
+                        ? s.StockInsumo.CompraInsumo.Lote
+                        : (s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null ? s.StockInsumo.ProductoIntermedio.Lote : ""),
+                    Registro = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null
+                        ? Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id)
+                        : (s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null
+                            ? Alfanumerico.ConvertToBase36(s.StockInsumo.ProductoIntermedio.Id)
+                            : (s.IdStockInsumo > 0 ? Alfanumerico.ConvertToBase36(s.IdStockInsumo) : "")),
                     CantidadUnidad = s.Cantidad,
                     FactorCorreccion = s.InsumoProductoIntermedio.FactorCorrecion,
                     Dilucion = s.InsumoProductoIntermedio.Dilucion,
@@ -866,6 +883,7 @@ namespace proy_back_Qbd.Services
                     : ((s.LoteEstTotal.HasValue && s.LoteEstTotal.Value > 0)
                         ? s.LoteEstTotal.Value
                         : (s.LoteEstandar ?? 0)),
+                Tipo = s.Insumo != null ? (!string.IsNullOrEmpty(s.Insumo.FormaFarmaceutica) ? s.Insumo.FormaFarmaceutica : s.Insumo.Tipo) : null,
                 TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
                 Um = (s.Insumo != null && !string.IsNullOrEmpty(s.Insumo.UnidadMedida)) ? s.Insumo.UnidadMedida : (s.Um ?? "G"),
                 FechaEmision = s.FechaEmision.Value,
