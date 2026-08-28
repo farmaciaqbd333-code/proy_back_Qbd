@@ -899,8 +899,18 @@ namespace proy_back_Qbd.Services
 
         public async Task<IEnumerable<MasterPIRes>> ListaMaestraPI(string tipoUso)
         {
-            var query = _context.Insumos
-                .Where(i => i.Clasificacion == "PI" && i.Tipo != null && i.Tipo.ToLower() == tipoUso.ToLower());
+            var isOral = tipoUso.ToLower().Contains("oral") || tipoUso.ToLower().Contains("fmg");
+            var query = _context.Insumos.AsNoTracking()
+                .Where(i => i.Clasificacion == "PI" || (i.Tipo != null && i.Tipo.StartsWith("PI")));
+
+            if (isOral)
+            {
+                query = query.Where(i => i.Tipo == "PI-FMG" || i.Tipo == "ORAL" || (i.FormaFarmaceutica != null && i.FormaFarmaceutica.Contains("CAP")));
+            }
+            else
+            {
+                query = query.Where(i => i.Tipo == "PI-F%" || i.Tipo == "TOPICO" || i.Tipo == "EXTERNO" || (i.Tipo != "PI-FMG" && i.Tipo != "ORAL"));
+            }
 
             var insumos = await query
                 .Select(i => new MasterPIRes
@@ -910,14 +920,13 @@ namespace proy_back_Qbd.Services
                     Descripcion = i.Descripcion,
                     TipoUso = i.Tipo,
                     Um = i.UnidadMedida,
-                    FormaFarmaceutica = i.FormaFarmaceutica,
+                    FormaFarmaceutica = !string.IsNullOrEmpty(i.FormaFarmaceutica) ? i.FormaFarmaceutica : i.Tipo,
                     UltimoProductoIntermedioId = _context.ProductosIntermedios
                         .Where(pi => pi.IdInsumo == i.Id)
                         .OrderByDescending(pi => pi.Id)
                         .Select(pi => (int?)pi.Id)
                         .FirstOrDefault()
                 })
-                .AsNoTracking()
                 .ToListAsync();
 
             return insumos;
