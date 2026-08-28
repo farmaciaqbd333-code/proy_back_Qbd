@@ -13,56 +13,166 @@ namespace Proy_back_QBD.Services
     {
         private readonly ApiContext _context;
         private readonly IMapper _mapper;
-        public FormulaCCService(ApiContext context, IMapper mapper)
+        private readonly ILogger<FormulaCCService> _logger;
+        public FormulaCCService(
+        ApiContext context, 
+        IMapper mapper,
+        ILogger<FormulaCCService> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
 
-        public async Task<string?> Actualizar(int formulaId, int sedeId, FormulaCCUpdReqP request)
+        public async Task<string?> Actualizar(
+    int formulaId,
+    int sedeId,
+    FormulaCCUpdReqP request)
         {
-            bool duplicates = request.FormulaCCs
-                .GroupBy(x => x.Variable)
-                .Where(g => g.Count() > 1)
-                .Select(g => new
+            try
+            {
+                _logger.LogInformation(
+                    "Iniciando Actualizar. FormulaId: {FormulaId}, SedeId: {SedeId}",
+                    formulaId,
+                    sedeId);
+
+                // Validar request
+                if (request == null)
                 {
-                    Variable = g.Key
-                })
-                .Any();
+                    _logger.LogWarning("El request es null.");
+                    return "Request inválido";
+                }
 
-            if (duplicates)
-            {
-                return "Variable Duplicada";
-            }
+                if (request.FormulaCCs == null)
+                {
+                    _logger.LogWarning("FormulaCCs es null.");
+                    return "FormulaCCs inválido";
+                }
 
-            List<FormulaCC> formulasCC = await _context.FormulasCC
-                .Where(w => w.FormulaId == formulaId && w.SedeId == sedeId)
-                .ToListAsync();
+                _logger.LogInformation(
+                    "Cantidad de FormulaCC recibidas: {Cantidad}",
+                    request.FormulaCCs.Count());
 
-            if (formulasCC != null && formulasCC.Count > 0)
-            {
-                _context.FormulasCC.RemoveRange(formulasCC);
+                // Validar variables duplicadas
+                bool duplicates = request.FormulaCCs
+                    .GroupBy(x => x.Variable)
+                    .Any(g => g.Count() > 1);
+
+                _logger.LogInformation(
+                    "¿Existen variables duplicadas?: {Duplicates}",
+                    duplicates);
+
+                if (duplicates)
+                {
+                    _logger.LogWarning(
+                        "Se encontraron variables duplicadas para FormulaId: {FormulaId}",
+                        formulaId);
+
+                    return "Variable Duplicada";
+                }
+
+                // Buscar registros existentes
+                _logger.LogInformation(
+                    "Buscando FormulaCC existentes. FormulaId: {FormulaId}, SedeId: {SedeId}",
+                    formulaId,
+                    sedeId);
+
+                List<FormulaCC> formulasCC = await _context.FormulasCC
+                    .Where(w =>
+                        w.FormulaId == formulaId &&
+                        w.SedeId == sedeId)
+                    .ToListAsync();
+
+                _logger.LogInformation(
+                    "FormulaCC existentes encontrados: {Cantidad}",
+                    formulasCC.Count);
+
+                // Eliminar registros anteriores
+                if (formulasCC.Count > 0)
+                {
+                    _logger.LogInformation(
+                        "Eliminando {Cantidad} FormulaCC anteriores.",
+                        formulasCC.Count);
+
+                    _context.FormulasCC.RemoveRange(formulasCC);
+
+                    await _context.SaveChangesAsync();
+
+                    _logger.LogInformation(
+                        "FormulaCC anteriores eliminados correctamente.");
+                }
+
+                // Insertar nuevos registros
+                foreach (var formula in request.FormulaCCs)
+                {
+                    _logger.LogInformation(
+                        "Insertando FormulaCC. Variable: {Variable}, InsumoId: {InsumoId}",
+                        formula.Variable,
+                        formula.InsumoId);
+
+                    FormulaCC formulaM = _mapper.Map<FormulaCC>(formula);
+
+                    formulaM.FormulaId = formulaId;
+                    formulaM.SedeId = sedeId;
+
+                    _context.FormulasCC.Add(formulaM);
+                }
+
+                _logger.LogInformation(
+                    "FormulaCC nuevas agregadas al contexto.");
+
+                // Buscar laboratorio
+                _logger.LogInformation(
+                    "Buscando Laboratorio. FormulaId: {FormulaId}, SedeId: {SedeId}",
+                    formulaId,
+                    sedeId);
+
+                Laboratorio? laboratorio = await _context.Laboratorios
+                    .FirstOrDefaultAsync(x =>
+                        x.Id == formulaId &&
+                        x.SedeId == sedeId);
+
+                if (laboratorio != null)
+                {
+                    _logger.LogInformation(
+                        "Laboratorio encontrado. Id: {LaboratorioId}",
+                        laboratorio.Id);
+
+                    laboratorio.Procedimiento = request.Procedimiento;
+                    laboratorio.EmpaqueId = request.EmpaqueId;
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "No se encontró Laboratorio para FormulaId: {FormulaId}, SedeId: {SedeId}",
+                        formulaId,
+                        sedeId);
+                }
+
+                // Guardar todo
+                _logger.LogInformation("Guardando cambios finales...");
+
                 await _context.SaveChangesAsync();
-            }
 
-            foreach (var formula in request.FormulaCCs)
+                _logger.LogInformation(
+                    "Actualizar finalizado correctamente. FormulaId: {FormulaId}",
+                    formulaId);
+
+                return "Cambio Exitoso";
+            }
+            catch (Exception ex)
             {
-                FormulaCC formulaM = _mapper.Map<FormulaCC>(formula);
-                formulaM.FormulaId = formulaId;
-                formulaM.SedeId = sedeId;
-                _context.FormulasCC.Add(formulaM);
-            }
+                _logger.LogError(
+                    ex,
+                    "Error en Actualizar. FormulaId: {FormulaId}, SedeId: {SedeId}",
+                    formulaId,
+                    sedeId);
 
-            Laboratorio? laboratorio = await _context.Laboratorios.FirstOrDefaultAsync(foda => foda.Id == formulaId && foda.SedeId == sedeId);
-            if (laboratorio != null)
-            {
-                laboratorio.Procedimiento = request.Procedimiento;
-                laboratorio.EmpaqueId = request.EmpaqueId;
+                return $"Error al actualizar: {ex.Message}";
             }
-
-            await _context.SaveChangesAsync();
-            return "Cambio Exitoso";
         }
+
+
 
         public async Task<List<RecetaRes>?> ListarInsumos(int sedeId)
         {
