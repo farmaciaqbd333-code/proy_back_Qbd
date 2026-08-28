@@ -16,5 +16,6 @@ namespace proy_back_Qbd.Services.Interfaces.INotaSalidaService
         Task Eliminar(int id);
         Task Confirmar(ConfirmarReq request);
         Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(ObtenerRegistroReq request);
+            Task ActualizarObservacion(int idNotaSalida, string observacion);
     }
 }

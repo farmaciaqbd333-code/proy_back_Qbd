@@ -780,5 +780,12 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 throw;
             }
         }
+            public async Task ActualizarObservacion(int idNotaSalida, string observacion)
+        {
+            var nota = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == idNotaSalida);
+            if (nota == null) throw new Exception("Nota de salida no encontrada.");
+            nota.Observacion = observacion;
+            await _context.SaveChangesAsync();
+        }
     }
 }

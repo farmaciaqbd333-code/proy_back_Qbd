@@ -139,5 +139,24 @@ namespace proy_back_Qbd.Controllers
             }
         }
 
+            [HttpPut("{id}/observacion")]
+        public async Task<IActionResult> ActualizarObservacion(int id, [FromBody] ActualizarObservacionReq request)
+        {
+            try
+            {
+                await _serviceNotaSalida.ActualizarObservacion(id, request.Observacion ?? "");
+                return Ok(new
+                {
+                    mensaje = "Observación actualizada correctamente."
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    mensaje = ex.Message
+                });
+            }
+        }
     }
 }

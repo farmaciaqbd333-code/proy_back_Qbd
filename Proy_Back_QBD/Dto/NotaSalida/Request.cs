@@ -52,4 +52,8 @@ namespace proy_back_Qbd.Dto.NotaSalida
         public string? Observacion { get; set; }
     }
 
+    public class ActualizarObservacionReq
+    {
+        public string? Observacion { get; set; }
+    }
 }
