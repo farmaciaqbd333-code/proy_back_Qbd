@@ -21,7 +21,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in articulos)
             {
                 _logger.LogInformation(
-                    "Procesando insumo. IdCompraInsumo: {IdCompraInsumo}, Cantidad: {Cantidad}",
+                    "Procesando insumo. IdCompraInsumo: {IdCompraInsumo}, CantidadRecibida: {Cantidad}",
                     item.IdCompraArticulo,
                     item.CantidadRecibida);
 
@@ -31,8 +31,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == item.IdCompraArticulo);
                 }
+
+                decimal cantidadDespachada = item.CantidadRecibida;
                 if (nsInsumo != null)
                 {
+                    cantidadDespachada = nsInsumo.Cantidad;
                     nsInsumo.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
@@ -55,10 +58,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (stockOrigen == null)
                     continue;
 
-                // Descontar stock origen
-                stockOrigen.StockDisponible -= item.CantidadRecibida;
+                // Descontar stock origen según la cantidad ENVIADA originalmente
+                stockOrigen.StockDisponible -= cantidadDespachada;
 
-                // Crear stock destino
+                // Crear stock destino según la cantidad RECIBIDA
                 var stockDestino = new StockInsumo
                 {
                     IdCompraInsumo = item.IdCompraArticulo,
@@ -73,10 +76,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 _logger.LogInformation(
                     "Insumo procesado correctamente. IdCompraInsumo: {IdCompraInsumo}, " +
-                    "StockDescontado: {Cantidad}, StockRestanteOrigen: {StockRestante}, SedeDestino: {SedeDestino}",
+                    "StockDescontadoOrigen: {CantidadDespachada}, StockRestanteOrigen: {StockRestante}, StockDestino: {CantidadRecibida}, SedeDestino: {SedeDestino}",
                     item.IdCompraArticulo,
-                    item.CantidadRecibida,
+                    cantidadDespachada,
                     stockOrigen.StockDisponible,
+                    item.CantidadRecibida,
                     idSedeDestino);
             }
 
@@ -95,8 +99,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.IdCompraProducto == item.IdCompraArticulo);
                 }
+
+                decimal cantidadDespachada = item.CantidadRecibida;
                 if (nsProd != null)
                 {
+                    cantidadDespachada = nsProd.Cantidad;
                     nsProd.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
@@ -119,10 +126,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (stockOrigen == null)
                     continue;
 
-                // Descontar stock origen
-                stockOrigen.StockDisponible -= item.CantidadRecibida;
+                // Descontar stock origen según lo ENVIADO
+                stockOrigen.StockDisponible -= cantidadDespachada;
 
-                // Crear stock destino
+                // Crear stock destino según lo RECIBIDO
                 var stockDestino = new StockProducto
                 {
                     IdCompraProducto = item.IdCompraArticulo,
@@ -148,8 +155,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.IdCompraEconomato == item.IdCompraArticulo);
                 }
+
+                decimal cantidadDespachada = item.CantidadRecibida;
                 if (nsEco != null)
                 {
+                    cantidadDespachada = nsEco.Cantidad;
                     nsEco.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
@@ -172,10 +182,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (stockOrigen == null)
                     continue;
 
-                // Descontar stock origen
-                stockOrigen.StockDisponible -= item.CantidadRecibida;
+                // Descontar stock origen según lo ENVIADO
+                stockOrigen.StockDisponible -= cantidadDespachada;
 
-                // Crear stock destino
+                // Crear stock destino según lo RECIBIDO
                 var stockDestino = new StockEconomato
                 {
                     IdCompraEconomato = item.IdCompraArticulo,
@@ -201,8 +211,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.IdCompraArticulo);
                 }
+
+                decimal cantidadDespachada = item.CantidadRecibida;
                 if (nsEmp != null)
                 {
+                    cantidadDespachada = nsEmp.Cantidad;
                     nsEmp.CantidadRecibida = item.CantidadRecibida;
                     if (!string.IsNullOrWhiteSpace(item.Observacion))
                     {
@@ -225,10 +238,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (stockOrigen == null)
                     continue;
 
-                // Descontar stock origen
-                stockOrigen.StockDisponible -= item.CantidadRecibida;
+                // Descontar stock origen según lo ENVIADO
+                stockOrigen.StockDisponible -= cantidadDespachada;
 
-                // Crear stock destino
+                // Crear stock destino según lo RECIBIDO
                 var stockDestino = new StockEmpaque
                 {
                     IdCompraEmpaque = item.IdCompraArticulo,
