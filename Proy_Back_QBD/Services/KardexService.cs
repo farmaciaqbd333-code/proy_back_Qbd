@@ -150,7 +150,11 @@ namespace proy_back_Qbd.Services
                         Cantidad = s.PaqueteEmpaques.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario)
                     }).ToListAsync();
                 }
-                return response;
+                response = response.OrderBy(x => {
+                var clean = System.Text.RegularExpressions.Regex.Replace(x.Codigo ?? "0", @"[^\d]", "");
+                return int.TryParse(clean, out int num) ? num : 0;
+            }).ToList();
+            return response;
             }
             else
             {
