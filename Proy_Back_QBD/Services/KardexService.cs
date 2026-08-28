@@ -33,7 +33,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdInsumo == idInsumo)
                 .Select(s => new DetalleInsumoRes
                 {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockInsumos.Any(w => w.IdSede == idSede)
                         ? s.StockInsumos.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible)
@@ -57,7 +57,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdInsumo == idInsumo)
                 .Select(s => new DetalleInsumoRes
                 {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockInsumo.StockDisponible,
                     FechaCompra = s.FechaCreacion,
@@ -81,7 +81,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdEmpaque == empaqueId)
                 .Select(s => new DetalleEmpaqueRes
                 {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockEmpaques.Any(w => w.IdSede == idSede)
                         ? s.StockEmpaques.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible)
@@ -123,7 +123,7 @@ namespace proy_back_Qbd.Services
                 {
                     response = await _context.CompraInsumos.Select(s => new ComprasVencidasRes()
                     {
-                        Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
+                        Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                         Codigo = s.Insumo.Id.ToString("d4"),
                         Descripcion = s.Insumo.Descripcion,
                         Estado = (DateTime.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTime.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
@@ -139,7 +139,7 @@ namespace proy_back_Qbd.Services
                 {
                     response = await _context.CompraEmpaques.Select(s => new ComprasVencidasRes()
                     {
-                        Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
+                        Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                         Codigo = s.Empaque.Id.ToString("d4"),
                         Descripcion = s.Empaque.Descripcion,
                         Estado = (DateTime.UtcNow > s.FechaVencimiento) ? "VENCIDO" : s.FechaVencimiento <= DateTime.UtcNow.AddDays(7) ? "POR VENCER" : "VIGENTE",
@@ -173,14 +173,14 @@ namespace proy_back_Qbd.Services
                 //Suma de cantidad recibida de compraInsumo
                 s.Sum(x => x.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) +
                 //Suma de cantidad recibida de nota de salidas
-                s.Sum(x => x.CompraInsumos.Sum(x2 => x2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida))),
+                s.Sum(x => x.CompraInsumos.Sum(x2 => x2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida ?? x3.Cantidad))),
                 Salidas =
                 //Suma de Producto Intermedio
                 s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) +
                 //Suma de Formulas Magistrales
                 s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)) +
                 //Suma de Notas de Salida
-                s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida)))
+                s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida ?? s3.Cantidad)))
                 ,
                 Ajustes = s.Sum(s2 => s2.CompraInsumos.Sum(s3 => s3.StockInsumos.Sum(s4 => s4.AjusteInsumos.Sum(s5 => s5.Ajuste)))),
                 Baja = s.Sum(x => x.CompraInsumos!
@@ -231,7 +231,7 @@ namespace proy_back_Qbd.Services
                             //Suma de cantidad recibida de compraEmpaque
                             s.Sum(x => x.CompraEmpaques!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) +
                             //Suma de cantidad recibida de nota de salidas
-                            s.Sum(x => x.CompraEmpaques.Sum(x2 => x2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida))),
+                            s.Sum(x => x.CompraEmpaques.Sum(x2 => x2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida > 0 ? x3.CantidadRecibida : x3.Cantidad))),
                             // adjuntar en pi, fm y nota de salida
                             Salidas =
                             //Suma de Productos Intermedios
@@ -239,7 +239,7 @@ namespace proy_back_Qbd.Services
                             //Suma de Laboratorios
                             s.Sum(s => s.Laboratorios.Count(w => w.SedeId == idSede)) +
                             //Suma de Notas de Salida
-                            s.Sum(s => s.CompraEmpaques.Sum(s2 => s2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida))),
+                            s.Sum(s => s.CompraEmpaques.Sum(s2 => s2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida > 0 ? s3.CantidadRecibida : s3.Cantidad))),
                             Ajustes =
                             //Suma de Ajustes hechas a compra empaques
                              s.Sum(s => s.CompraEmpaques.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockEmpaques.Sum(s => s.AjusteEmpaques.Sum(s => s.Ajuste)))),
@@ -277,7 +277,7 @@ namespace proy_back_Qbd.Services
                 .Where(w => w.IdProducto == idProducto)
                 .Select(s => new DetalleInsumoRes
                 {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
+                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = s.StockProductoTerminados.Where(w => w.IdSede == idSede).Sum(s2 => s2.StockDisponible),
                     FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
@@ -300,9 +300,9 @@ namespace proy_back_Qbd.Services
                     Um = "UND",
                     Entradas =
                         s.Sum(x => x.CompraProductos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida ?? ci.CantidadSolicitada)) +
-                        s.Sum(x => x.CompraProductos.Sum(x2 => x2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida))),
+                        s.Sum(x => x.CompraProductos.Sum(x2 => x2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida > 0 ? x3.CantidadRecibida : x3.Cantidad))),
                     Salidas =
-                        s.Sum(x => x.CompraProductos.Sum(s2 => s2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida))),
+                        s.Sum(x => x.CompraProductos.Sum(s2 => s2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.CantidadRecibida > 0 ? s3.CantidadRecibida : s3.Cantidad))),
                     Ajustes =
                         s.Sum(x => x.CompraProductos.Where(w => w.Compra.IdSede == idSede).Sum(cp => cp.StockProductoTerminados.Sum(sp => sp.AjusteProductos.Sum(a => a.Ajuste)))),
                     Baja = s.Sum(x => x.CompraProductos
