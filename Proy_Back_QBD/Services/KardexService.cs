@@ -20,11 +20,17 @@ namespace proy_back_Qbd.Services
         private static readonly List<string> FamiliasAptas = ["MP", "ME"];
         private readonly ISupplyRepository _repository;
         private readonly IUnitOfWork _unitWork;
-        public KardexService(ApiContext context, ISupplyRepository repository, IUnitOfWork unitWork)
+        private readonly ILogger<KardexService> _logger;
+        public KardexService(
+            ApiContext context,
+            ISupplyRepository repository,
+            IUnitOfWork unitWork,
+            ILogger<KardexService> logger)
         {
             _context = context;
             _repository = repository;
             _unitWork = unitWork;
+            _logger = logger;
         }
 
         public async Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int idInsumo, int idSede)
@@ -35,7 +41,17 @@ namespace proy_back_Qbd.Services
                     .ThenInclude(si => si.AjusteInsumos)
                 .Include(w => w.NotaSalidaInsumos)
                     .ThenInclude(nsi => nsi.NotaSalida)
-                .Where(w => w.IdInsumo == idInsumo && w.Compra.IdSede == idSede)
+                .Where(w =>
+    w.IdInsumo == idInsumo &&
+    (
+        (w.Compra != null && w.Compra.IdSede == idSede) ||
+        w.NotaSalidaInsumos.Any(nsi =>
+            nsi.NotaSalida != null &&
+            nsi.NotaSalida.IdSedeDestino == idSede
+        )
+    )
+)
+
                 .ToListAsync();
 
             var salidasFM = await _context.FormulasCC
@@ -48,49 +64,303 @@ namespace proy_back_Qbd.Services
 
             var resultado = new List<DetalleInsumoRes>();
 
+            _logger.LogInformation(
+                "INICIO cálculo de stock de insumos | IdSede: {IdSede} | CantidadCompraInsumos: {CantidadCompraInsumos} | SalidasFM: {SalidasFM} | SalidasPI: {SalidasPI}",
+                idSede,
+                compraInsumos?.Count() ?? 0,
+                salidasFM,
+                salidasPI
+            );
+
             foreach (var compraInsumo in compraInsumos)
             {
-                decimal entradas = 0m;
-                if (compraInsumo.Compra.IdSede == idSede)
+                _logger.LogInformation(
+                    "Procesando CompraInsumo | Id: {CompraInsumoId} | Lote: {Lote} | FechaFabricacion: {FechaFabricacion} | FechaVencimiento: {FechaVencimiento} | CantidadRecibida: {CantidadRecibida} | IdSedeCompra: {IdSedeCompra} | IdSedeConsulta: {IdSede}",
+                    compraInsumo.Id,
+                    compraInsumo.Lote,
+                    compraInsumo.FechaFabricacion,
+                    compraInsumo.FechaVencimiento,
+                    compraInsumo.CantidadRecibida,
+                    compraInsumo.Compra?.IdSede,
+                    idSede
+                );
+
+                decimal entradasCompra = 0m;
+                decimal entradasTraslado = 0m;
+
+                // ============================================================
+                // ENTRADA POR COMPRA
+                // ============================================================
+
+                if (compraInsumo.Compra != null &&
+                    compraInsumo.Compra.IdSede == idSede)
                 {
-                    entradas += compraInsumo.CantidadRecibida ?? 0m;
+                    entradasCompra = compraInsumo.CantidadRecibida ?? 0m;
                 }
-                entradas += compraInsumo.NotaSalidaInsumos
-                    .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede)
+
+                _logger.LogInformation(
+                    "Entrada por compra | CompraInsumoId: {CompraInsumoId} | IdSedeCompra: {IdSedeCompra} | IdSedeConsulta: {IdSede} | CantidadRecibida: {CantidadRecibida} | EntradasCompra: {EntradasCompra}",
+                    compraInsumo.Id,
+                    compraInsumo.Compra?.IdSede,
+                    idSede,
+                    compraInsumo.CantidadRecibida,
+                    entradasCompra
+                );
+
+                // ============================================================
+                // ENTRADAS POR NOTAS DE SALIDA RECIBIDAS EN LA SEDE
+                // ============================================================
+
+                var notasSalidaDestino = compraInsumo.NotaSalidaInsumos
+                    .Where(nsi =>
+                        nsi.NotaSalida != null &&
+                        nsi.NotaSalida.IdSedeDestino == idSede)
+                    .ToList();
+
+                foreach (var nsi in notasSalidaDestino)
+                {
+                    var cantidadEntrada = nsi.CantidadRecibida ?? nsi.Cantidad;
+
+                    _logger.LogInformation(
+                        "Entrada por traslado | CompraInsumoId: {CompraInsumoId} | NotaSalidaInsumoId: {NotaSalidaInsumoId} | NotaSalidaId: {NotaSalidaId} | SedeOrigen: {SedeOrigen} | SedeDestino: {SedeDestino} | Cantidad: {Cantidad} | CantidadRecibida: {CantidadRecibida} | EntradaConsiderada: {EntradaConsiderada}",
+                        compraInsumo.Id,
+                        nsi.Id,
+                        nsi.NotaSalida?.Id,
+                        nsi.NotaSalida?.IdSedeOrigen,
+                        nsi.NotaSalida?.IdSedeDestino,
+                        nsi.Cantidad,
+                        nsi.CantidadRecibida,
+                        cantidadEntrada
+                    );
+                }
+
+                entradasTraslado = notasSalidaDestino
                     .Sum(nsi => nsi.CantidadRecibida ?? nsi.Cantidad);
 
-                decimal salidasNS = compraInsumo.NotaSalidaInsumos
-                    .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
+                decimal entradas = entradasCompra + entradasTraslado;
+
+                _logger.LogInformation(
+                    "TOTAL ENTRADAS | CompraInsumoId: {CompraInsumoId} | EntradasCompra: {EntradasCompra} | EntradasTraslado: {EntradasTraslado} | EntradasTotal: {EntradasTotal}",
+                    compraInsumo.Id,
+                    entradasCompra,
+                    entradasTraslado,
+                    entradas
+                );
+
+                // ============================================================
+                // SALIDAS POR NOTAS DE SALIDA
+                // ============================================================
+
+                var notasSalidaOrigen = compraInsumo.NotaSalidaInsumos
+                    .Where(nsi =>
+                        nsi.NotaSalida != null &&
+                        nsi.NotaSalida.IdSedeOrigen == idSede)
+                    .ToList();
+
+                foreach (var nsi in notasSalidaOrigen)
+                {
+                    _logger.LogInformation(
+                        "Salida por traslado | CompraInsumoId: {CompraInsumoId} | NotaSalidaInsumoId: {NotaSalidaInsumoId} | NotaSalidaId: {NotaSalidaId} | SedeOrigen: {SedeOrigen} | SedeDestino: {SedeDestino} | Cantidad: {Cantidad}",
+                        compraInsumo.Id,
+                        nsi.Id,
+                        nsi.NotaSalida?.Id,
+                        nsi.NotaSalida?.IdSedeOrigen,
+                        nsi.NotaSalida?.IdSedeDestino,
+                        nsi.Cantidad
+                    );
+                }
+
+                decimal salidasNS = notasSalidaOrigen
                     .Sum(nsi => nsi.Cantidad);
+
+                _logger.LogInformation(
+                    "TOTAL SALIDAS NOTAS DE SALIDA | CompraInsumoId: {CompraInsumoId} | SalidasNS: {SalidasNS}",
+                    compraInsumo.Id,
+                    salidasNS
+                );
+
+                // ============================================================
+                // SALIDAS LOCALES
+                // ============================================================
 
                 decimal salidasLocales = salidasFM + salidasPI;
 
-                decimal ajustes = compraInsumo.StockInsumos
+                _logger.LogInformation(
+                    "SALIDAS LOCALES | CompraInsumoId: {CompraInsumoId} | SalidasFM: {SalidasFM} | SalidasPI: {SalidasPI} | SalidasLocales: {SalidasLocales}",
+                    compraInsumo.Id,
+                    salidasFM,
+                    salidasPI,
+                    salidasLocales
+                );
+
+                // ============================================================
+                // AJUSTES
+                // ============================================================
+
+                var stockInsumosSede = compraInsumo.StockInsumos
                     .Where(si => si.IdSede == idSede)
-                    .Sum(si => si.AjusteInsumos.Sum(a => a.Ajuste));
+                    .ToList();
 
-                decimal bajas = (compraInsumo.FechaVencimiento < DateTime.UtcNow)
-                    ? compraInsumo.StockInsumos.Where(si => si.IdSede == idSede).Sum(si => si.StockDisponible)
-                    : 0m;
+                decimal ajustes = 0m;
 
-                decimal saldo = entradas - salidasNS - salidasLocales + ajustes - bajas;
+                foreach (var stockInsumo in stockInsumosSede)
+                {
+                    var ajustesStock = stockInsumo.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>();
+
+                    foreach (var ajuste in ajustesStock)
+                    {
+                        _logger.LogInformation(
+                            "Ajuste de stock | CompraInsumoId: {CompraInsumoId} | StockInsumoId: {StockInsumoId} | AjusteInsumoId: {AjusteInsumoId} | IdSede: {IdSede} | Ajuste: {Ajuste}",
+                            compraInsumo.Id,
+                            stockInsumo.Id,
+                            ajuste.Id,
+                            stockInsumo.IdSede,
+                            ajuste.Ajuste
+                        );
+                    }
+
+                    var totalAjustesStock = ajustesStock.Sum(a => a.Ajuste);
+
+                    _logger.LogInformation(
+                        "Total ajustes por StockInsumo | CompraInsumoId: {CompraInsumoId} | StockInsumoId: {StockInsumoId} | IdSede: {IdSede} | TotalAjustes: {TotalAjustes}",
+                        compraInsumo.Id,
+                        stockInsumo.Id,
+                        stockInsumo.IdSede,
+                        totalAjustesStock
+                    );
+
+                    ajustes += totalAjustesStock;
+                }
+
+                _logger.LogInformation(
+                    "TOTAL AJUSTES | CompraInsumoId: {CompraInsumoId} | IdSede: {IdSede} | Ajustes: {Ajustes}",
+                    compraInsumo.Id,
+                    idSede,
+                    ajustes
+                );
+
+                // ============================================================
+                // BAJAS POR VENCIMIENTO
+                // ============================================================
+
+                bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
+
+                decimal bajas = 0m;
+
+                if (estaVencido)
+                {
+                    foreach (var stockInsumo in stockInsumosSede)
+                    {
+                        _logger.LogInformation(
+                            "Baja por vencimiento | CompraInsumoId: {CompraInsumoId} | StockInsumoId: {StockInsumoId} | IdSede: {IdSede} | StockDisponible: {StockDisponible} | FechaVencimiento: {FechaVencimiento}",
+                            compraInsumo.Id,
+                            stockInsumo.Id,
+                            stockInsumo.IdSede,
+                            stockInsumo.StockDisponible,
+                            compraInsumo.FechaVencimiento
+                        );
+                    }
+
+                    bajas = stockInsumosSede
+                        .Sum(si => si.StockDisponible);
+                }
+
+                _logger.LogInformation(
+                    "BAJAS | CompraInsumoId: {CompraInsumoId} | EstaVencido: {EstaVencido} | FechaVencimiento: {FechaVencimiento} | Bajas: {Bajas}",
+                    compraInsumo.Id,
+                    estaVencido,
+                    compraInsumo.FechaVencimiento,
+                    bajas
+                );
+
+                // ============================================================
+                // CÁLCULO FINAL
+                // ============================================================
+
+                decimal saldo =
+                    entradas
+                    - salidasNS
+                    - salidasLocales
+                    + ajustes
+                    - bajas;
+
+                _logger.LogInformation(
+                    "CÁLCULO SALDO | CompraInsumoId: {CompraInsumoId} | " +
+                    "Entradas: {Entradas} | " +
+                    "SalidasNS: {SalidasNS} | " +
+                    "SalidasLocales: {SalidasLocales} | " +
+                    "Ajustes: {Ajustes} | " +
+                    "Bajas: {Bajas} | " +
+                    "Saldo: {Saldo}",
+                    compraInsumo.Id,
+                    entradas,
+                    salidasNS,
+                    salidasLocales,
+                    ajustes,
+                    bajas,
+                    saldo
+                );
+
+                // ============================================================
+                // VALIDACIÓN DE OMISIÓN
+                // ============================================================
 
                 if (entradas == 0 && salidasNS == 0 && saldo == 0)
                 {
+                    _logger.LogInformation(
+                        "CompraInsumo OMITIDO | CompraInsumoId: {CompraInsumoId} | " +
+                        "Motivo: Entradas = 0, SalidasNS = 0 y Saldo = 0 | " +
+                        "Entradas: {Entradas} | SalidasNS: {SalidasNS} | Saldo: {Saldo}",
+                        compraInsumo.Id,
+                        entradas,
+                        salidasNS,
+                        saldo
+                    );
+
                     continue;
                 }
 
-                resultado.Add(new DetalleInsumoRes
+                // ============================================================
+                // AGREGAR RESULTADO
+                // ============================================================
+
+                var registro = "MP" +
+                               Alfanumerico.ConvertToBase36(compraInsumo.Id);
+
+                var detalle = new DetalleInsumoRes
                 {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id),
+                    Registro = registro,
                     Lote = compraInsumo.Lote ?? "",
                     Saldo = saldo,
-                    FechaCompra = compraInsumo.Compra != null ? compraInsumo.Compra.FechaFactura : null,
+                    FechaCompra = compraInsumo.Compra != null
+                        ? compraInsumo.Compra.FechaFactura
+                        : null,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
                     Observacion = compraInsumo.Observacion
-                });
+                };
+
+                resultado.Add(detalle);
+
+                _logger.LogInformation(
+                    "RESULTADO AGREGADO | CompraInsumoId: {CompraInsumoId} | Registro: {Registro} | Lote: {Lote} | Saldo: {Saldo} | FechaCompra: {FechaCompra} | FechaFabricacion: {FechaFabricacion} | FechaVencimiento: {FechaVencimiento} | Observacion: {Observacion}",
+                    compraInsumo.Id,
+                    registro,
+                    compraInsumo.Lote,
+                    saldo,
+                    detalle.FechaCompra,
+                    detalle.FechaFabricacion,
+                    detalle.FechaVencimiento,
+                    detalle.Observacion
+                );
             }
+
+            _logger.LogInformation(
+                "FIN cálculo de stock de insumos | IdSede: {IdSede} | CantidadResultados: {CantidadResultados}",
+                idSede,
+                resultado.Count
+            );
+
 
             return resultado;
         }
@@ -297,31 +567,455 @@ namespace proy_back_Qbd.Services
         // Fusionar 2 listas para entradas compras y notas de salida
         private async Task<List<StockRes>> ObtenerMateriaPrima(int idSede)
         {
-            return await _context.Insumos.AsNoTracking()
-            .Where(i => (i.Clasificacion == "MP" || i.Clasificacion == null))
-            .GroupBy(g => new { g.Id })
-            .Select(s => new StockRes()
+            _logger.LogInformation(
+                "INICIO ObtenerMateriaPrima | IdSede: {IdSede}",
+                idSede
+            );
+
+            // ============================================================
+            // 1. OBTENER INSUMOS
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 1: Obteniendo insumos de materia prima | IdSede: {IdSede}",
+                idSede
+            );
+
+            var insumos = await _context.Insumos
+                .AsNoTracking()
+                .Where(i => i.Clasificacion == "MP" || i.Clasificacion == null)
+                .Select(i => new
+                {
+                    i.Id,
+                    i.Descripcion,
+                    i.UnidadMedida,
+                    i.Tipo
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 1 FINALIZADA | IdSede: {IdSede} | CantidadInsumos: {CantidadInsumos}",
+                idSede,
+                insumos.Count
+            );
+
+            if (!insumos.Any())
             {
-                Codigo = s.Key.Id + "",
-                Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
-                Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
-                Entradas =
-                s.Sum(x => x.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) + //Suma de cantidad recibida de compraInsumo en esta sede                
-                s.Sum(x => x.CompraInsumos.Sum(x2 => x2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida ?? x3.Cantidad))), //Suma de cantidad recibida de nota de salidas recibidas en esta sede
-                Salidas =
-                s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) + //Suma de Producto Intermedio                
-                s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)) + //Suma de Formulas Magistrales                
-                s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.Cantidad))) //Suma de Notas de Salida despachadas por esta sede
-                ,
-                Ajustes = s.Sum(s2 => s2.CompraInsumos.Sum(s3 => s3.StockInsumos.Where(w => w.IdSede == idSede).Sum(s4 => s4.AjusteInsumos.Sum(s5 => s5.Ajuste)))),
-                Baja = s.Sum(x => x.CompraInsumos!
-                    .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
-                    .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
-                Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
-                CodigoUbicacion = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault()
-            }).ToListAsync()
-            ;
+                _logger.LogWarning(
+                    "No se encontraron insumos de materia prima | IdSede: {IdSede}",
+                    idSede
+                );
+
+                return new List<StockRes>();
+            }
+
+            var insumoIds = insumos
+                .Select(i => i.Id)
+                .ToList();
+
+            // ============================================================
+            // 2. OBTENER ENTRADAS POR COMPRAS
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 2: Obteniendo entradas por compras | IdSede: {IdSede}",
+                idSede
+            );
+
+            var entradasCompra = await _context.CompraInsumos
+                .AsNoTracking()
+                .Where(ci =>
+                    insumoIds.Contains(ci.IdInsumo) &&
+                    ci.Compra.IdSede == idSede)
+                .GroupBy(ci => ci.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(ci => ci.CantidadRecibida ?? 0m)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 2 FINALIZADA | IdSede: {IdSede} | InsumosConEntradasCompra: {Cantidad}",
+                idSede,
+                entradasCompra.Count
+            );
+
+            foreach (var item in entradasCompra)
+            {
+                _logger.LogDebug(
+                    "Entrada compra | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 3. ENTRADAS POR NOTAS DE SALIDA RECIBIDAS
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 3: Obteniendo entradas por notas de salida recibidas | IdSede: {IdSede}",
+                idSede
+            );
+
+            var entradasNotaSalida = await _context.CompraInsumos
+                .AsNoTracking()
+                .Where(ci =>
+                    insumoIds.Contains(ci.IdInsumo) &&
+                    ci.NotaSalidaInsumos.Any(nsi =>
+                        nsi.NotaSalida.IdSedeDestino == idSede))
+                .SelectMany(ci => ci.NotaSalidaInsumos
+                    .Where(nsi =>
+                        nsi.NotaSalida.IdSedeDestino == idSede)
+                    .Select(nsi => new
+                    {
+                        ci.IdInsumo,
+                        Cantidad = nsi.CantidadRecibida ?? nsi.Cantidad
+                    }))
+                .GroupBy(x => x.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(x => x.Cantidad)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 3 FINALIZADA | IdSede: {IdSede} | InsumosConEntradasNS: {Cantidad}",
+                idSede,
+                entradasNotaSalida.Count
+            );
+
+            foreach (var item in entradasNotaSalida)
+            {
+                _logger.LogDebug(
+                    "Entrada nota salida | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 4. SALIDAS A PRODUCTO INTERMEDIO
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 4: Obteniendo salidas a Producto Intermedio | IdSede: {IdSede}",
+                idSede
+            );
+
+            var salidasProductoIntermedio = await _context.InsumoProductoIntermedios
+                .AsNoTracking()
+                .Where(x =>
+                    insumoIds.Contains(x.IdInsumo) &&
+                    x.ProductoIntermedio.IdSede == idSede)
+                .GroupBy(x => x.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(x => x.CantidadLote)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 4 FINALIZADA | IdSede: {IdSede} | InsumosConSalidasPI: {Cantidad}",
+                idSede,
+                salidasProductoIntermedio.Count
+            );
+
+            foreach (var item in salidasProductoIntermedio)
+            {
+                _logger.LogDebug(
+                    "Salida Producto Intermedio | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 5. SALIDAS A FORMULAS MAGISTRALES
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 5: Obteniendo salidas a Fórmulas Magistrales | IdSede: {IdSede}",
+                idSede
+            );
+
+            var salidasFormula = await _context.FormulasCC
+                .AsNoTracking()
+                .Where(x =>
+                    insumoIds.Contains(x.InsumoId) &&
+                    x.Formula.SedeId == idSede)
+                .GroupBy(x => x.InsumoId)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(x => x.CantidadL)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 5 FINALIZADA | IdSede: {IdSede} | InsumosConSalidasFormula: {Cantidad}",
+                idSede,
+                salidasFormula.Count
+            );
+
+            foreach (var item in salidasFormula)
+            {
+                _logger.LogDebug(
+                    "Salida Fórmula Magistral | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 6. SALIDAS POR NOTAS DE SALIDA DESPACHADAS
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 6: Obteniendo salidas por notas de salida | IdSede: {IdSede}",
+                idSede
+            );
+
+            var salidasNotaSalida = await _context.CompraInsumos
+                .AsNoTracking()
+                .Where(ci =>
+                    insumoIds.Contains(ci.IdInsumo) &&
+                    ci.NotaSalidaInsumos.Any(nsi =>
+                        nsi.NotaSalida.IdSedeOrigen == idSede))
+                .SelectMany(ci => ci.NotaSalidaInsumos
+                    .Where(nsi =>
+                        nsi.NotaSalida.IdSedeOrigen == idSede)
+                    .Select(nsi => new
+                    {
+                        ci.IdInsumo,
+                        nsi.Cantidad
+                    }))
+                .GroupBy(x => x.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(x => x.Cantidad)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 6 FINALIZADA | IdSede: {IdSede} | InsumosConSalidasNS: {Cantidad}",
+                idSede,
+                salidasNotaSalida.Count
+            );
+
+            foreach (var item in salidasNotaSalida)
+            {
+                _logger.LogDebug(
+                    "Salida NotaSalida | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 7. AJUSTES
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 7: Obteniendo ajustes de stock | IdSede: {IdSede}",
+                idSede
+            );
+
+            var ajustes = await _context.AjusteInsumos
+                .AsNoTracking()
+                .Where(a =>
+                    a.StockInsumo.IdSede == idSede &&
+                    insumoIds.Contains(a.StockInsumo.CompraInsumo.IdInsumo))
+                .GroupBy(a => a.StockInsumo.CompraInsumo.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(a => a.Ajuste)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 7 FINALIZADA | IdSede: {IdSede} | InsumosConAjustes: {Cantidad}",
+                idSede,
+                ajustes.Count
+            );
+
+            foreach (var item in ajustes)
+            {
+                _logger.LogDebug(
+                    "Ajuste | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 8. BAJAS POR VENCIMIENTO
+            // ============================================================
+
+            var ahora = DateTime.UtcNow;
+
+            _logger.LogInformation(
+                "Solicitud 8: Obteniendo bajas por vencimiento | IdSede: {IdSede} | FechaActualUTC: {FechaActualUTC}",
+                idSede,
+                ahora
+            );
+
+            var bajas = await _context.CompraInsumos
+                .AsNoTracking()
+                .Where(ci =>
+                    insumoIds.Contains(ci.IdInsumo) &&
+                    ci.FechaVencimiento < ahora &&
+                    ci.StockInsumos.Any(si => si.IdSede == idSede))
+                .SelectMany(ci => ci.StockInsumos
+                    .Where(si => si.IdSede == idSede)
+                    .Select(si => new
+                    {
+                        ci.IdInsumo,
+                        si.StockDisponible
+                    }))
+                .GroupBy(x => x.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(x => x.StockDisponible)
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 8 FINALIZADA | IdSede: {IdSede} | InsumosConBajas: {Cantidad}",
+                idSede,
+                bajas.Count
+            );
+
+            foreach (var item in bajas)
+            {
+                _logger.LogDebug(
+                    "Baja vencimiento | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    item.IdInsumo,
+                    item.Total
+                );
+            }
+
+            // ============================================================
+            // 9. UBICACIONES
+            // ============================================================
+
+            _logger.LogInformation(
+                "Solicitud 9: Obteniendo ubicaciones | IdSede: {IdSede}",
+                idSede
+            );
+
+            var ubicaciones = await _context.SiteSupplies
+                .AsNoTracking()
+                .Where(x =>
+                    x.IdSite == idSede &&
+                    insumoIds.Contains(x.IdSupply))
+                .Select(x => new
+                {
+                    x.IdSupply,
+                    x.Location
+                })
+                .ToListAsync();
+
+            _logger.LogInformation(
+                "Solicitud 9 FINALIZADA | IdSede: {IdSede} | Ubicaciones: {Cantidad}",
+                idSede,
+                ubicaciones.Count
+            );
+
+            // ============================================================
+            // 10. ARMAR RESULTADO
+            // ============================================================
+
+            _logger.LogInformation(
+                "Armando resultado final | IdSede: {IdSede} | Insumos: {Cantidad}",
+                idSede,
+                insumos.Count
+            );
+
+            var resultado = new List<StockRes>();
+
+            foreach (var insumo in insumos)
+            {
+                var entradaCompra = entradasCompra
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var entradaNS = entradasNotaSalida
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var salidaPI = salidasProductoIntermedio
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var salidaFormula = salidasFormula
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var salidaNS = salidasNotaSalida
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var ajuste = ajustes
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var baja = bajas
+                    .FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m;
+
+                var entradas = entradaCompra + entradaNS;
+
+                var salidas = salidaPI + salidaFormula + salidaNS;
+
+                var saldo = entradas - salidas + ajuste - baja;
+
+                var ubicacion = ubicaciones
+                    .FirstOrDefault(x => x.IdSupply == insumo.Id)?.Location;
+
+                _logger.LogInformation(
+                    "Cálculo Insumo | IdSede: {IdSede} | IdInsumo: {IdInsumo} | Descripcion: {Descripcion} | " +
+                    "EntradaCompra: {EntradaCompra} | EntradaNS: {EntradaNS} | EntradasTotal: {Entradas} | " +
+                    "SalidaPI: {SalidaPI} | SalidaFormula: {SalidaFormula} | SalidaNS: {SalidaNS} | SalidasTotal: {Salidas} | " +
+                    "Ajuste: {Ajuste} | Baja: {Baja} | Saldo: {Saldo} | Ubicacion: {Ubicacion}",
+                    idSede,
+                    insumo.Id,
+                    insumo.Descripcion,
+                    entradaCompra,
+                    entradaNS,
+                    entradas,
+                    salidaPI,
+                    salidaFormula,
+                    salidaNS,
+                    salidas,
+                    ajuste,
+                    baja,
+                    saldo,
+                    ubicacion
+                );
+
+                resultado.Add(new StockRes
+                {
+                    Codigo = insumo.Id.ToString(),
+                    Descripcion = insumo.Descripcion ?? "",
+                    Um = insumo.UnidadMedida ?? string.Empty,
+                    Entradas = entradas,
+                    Salidas = salidas,
+                    Ajustes = ajuste,
+                    Baja = baja,
+                    Tipo = insumo.Tipo,
+                    CodigoUbicacion = ubicacion
+                });
+            }
+
+            _logger.LogInformation(
+                "FIN ObtenerMateriaPrima | IdSede: {IdSede} | CantidadResultados: {CantidadResultados}",
+                idSede,
+                resultado.Count
+            );
+
+            return resultado;
         }
+
         private async Task<List<StockRes>> ObtenerProductosIntermedios(int idSede)
         {
             return await _context.Insumos.AsNoTracking()
