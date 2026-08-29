@@ -565,7 +565,7 @@ namespace proy_back_Qbd.Services
         }
         public async Task<SiteSupply> AssignLocation(AssignLocationReq request)
         {
-            SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdSede, request.IdInsumo);
+            SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);
 
             if (siteSupply == null)
             {
