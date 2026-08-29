@@ -203,6 +203,7 @@ namespace proy_back_Qbd.Services
 
                     insumoProductoIntermedio.IdCreador = request.IdCreador;
                     insumoProductoIntermedio.ProductoIntermedio = productoIntermedio;
+                    insumoProductoIntermedio.Csp = fInsumo.Csp;
 
                     _context.InsumoProductoIntermedios.Add(
                         insumoProductoIntermedio);
@@ -633,6 +634,7 @@ namespace proy_back_Qbd.Services
 
                     insumoProductoIntermedio.ProductoIntermedio =
                         productoIntermedio;
+                    insumoProductoIntermedio.Csp = fInsumo.Csp;
 
                     _context.InsumoProductoIntermedios.Add(
                         insumoProductoIntermedio);
