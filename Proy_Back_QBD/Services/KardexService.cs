@@ -29,13 +29,13 @@ namespace proy_back_Qbd.Services
 
         public async Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int idInsumo, int idSede)
         {
-            var compras = await _context.CompraInsumos
+            var compraInsumos = await _context.CompraInsumos
                 .Include(w => w.Compra)
                 .Include(w => w.StockInsumos)
                     .ThenInclude(si => si.AjusteInsumos)
                 .Include(w => w.NotaSalidaInsumos)
                     .ThenInclude(nsi => nsi.NotaSalida)
-                .Where(w => w.IdInsumo == idInsumo)
+                .Where(w => w.IdInsumo == idInsumo && w.Compra.IdSede == idSede)
                 .ToListAsync();
 
             var salidasFM = await _context.FormulasCC
@@ -48,47 +48,47 @@ namespace proy_back_Qbd.Services
 
             var resultado = new List<DetalleInsumoRes>();
 
-            foreach (var s in compras)
+            foreach (var compraInsumo in compraInsumos)
             {
-                decimal entradasLote = 0m;
-                if (s.Compra != null && s.Compra.IdSede == idSede)
+                decimal entradas = 0m;
+                if (compraInsumo.Compra.IdSede == idSede)
                 {
-                    entradasLote += (s.CantidadRecibida ?? 0m);
+                    entradas += compraInsumo.CantidadRecibida ?? 0m;
                 }
-                entradasLote += s.NotaSalidaInsumos
+                entradas += compraInsumo.NotaSalidaInsumos
                     .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede)
                     .Sum(nsi => nsi.CantidadRecibida ?? nsi.Cantidad);
 
-                decimal salidasNS = s.NotaSalidaInsumos
+                decimal salidasNS = compraInsumo.NotaSalidaInsumos
                     .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
                     .Sum(nsi => nsi.Cantidad);
 
-                decimal salidasLocales = (idSede == 15) ? salidasPI : (salidasFM + salidasPI);
+                decimal salidasLocales = salidasFM + salidasPI;
 
-                decimal ajustesLote = s.StockInsumos
+                decimal ajustes = compraInsumo.StockInsumos
                     .Where(si => si.IdSede == idSede)
                     .Sum(si => si.AjusteInsumos.Sum(a => a.Ajuste));
 
-                decimal bajasLote = (s.FechaVencimiento < DateTime.UtcNow)
-                    ? s.StockInsumos.Where(si => si.IdSede == idSede).Sum(si => si.StockDisponible)
+                decimal bajas = (compraInsumo.FechaVencimiento < DateTime.UtcNow)
+                    ? compraInsumo.StockInsumos.Where(si => si.IdSede == idSede).Sum(si => si.StockDisponible)
                     : 0m;
 
-                decimal saldo = entradasLote - salidasNS - salidasLocales + ajustesLote - bajasLote;
+                decimal saldo = entradas - salidasNS - salidasLocales + ajustes - bajas;
 
-                if (entradasLote == 0 && salidasNS == 0 && saldo == 0)
+                if (entradas == 0 && salidasNS == 0 && saldo == 0)
                 {
                     continue;
                 }
 
                 resultado.Add(new DetalleInsumoRes
                 {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(s.Id),
-                    Lote = s.Lote ?? "",
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id),
+                    Lote = compraInsumo.Lote ?? "",
                     Saldo = saldo,
-                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.Observacion
+                    FechaCompra = compraInsumo.Compra != null ? compraInsumo.Compra.FechaFactura : null,
+                    FechaFabricacion = compraInsumo.FechaFabricacion,
+                    FechaVencimiento = compraInsumo.FechaVencimiento,
+                    Observacion = compraInsumo.Observacion
                 });
             }
 
@@ -347,7 +347,7 @@ namespace proy_back_Qbd.Services
                     .Where(ci => ci.FechaVencimiento < DateTime.UtcNow && ci.IdSede == idSede)
                     .Sum(s2 => s2.StockInsumo != null ? s2.StockInsumo.StockDisponible : 0)),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
-                CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
+                CodigoUbicacion = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault()
             }).ToListAsync();
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
