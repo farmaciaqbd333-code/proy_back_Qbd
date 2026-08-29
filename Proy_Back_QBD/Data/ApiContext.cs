@@ -67,6 +67,7 @@ namespace Proy_back_QBD.Data
         public DbSet<StockEmpaque> StockEmpaques { get; set; }
         public DbSet<StockProducto> StockProductos { get; set; }
         public DbSet<StockInsumo> StockInsumos { get; set; }
+        public DbSet<InsumoSede> InsumoSedes { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);

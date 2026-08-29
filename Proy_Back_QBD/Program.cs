@@ -108,10 +108,8 @@ Console.WriteLine($"Connection String: {connectionString}");
 builder.Services.AddDbContext<ApiContext>(options =>
 {
     options.UseNpgsql(connectionString);
-
     options.EnableDetailedErrors();
     options.EnableSensitiveDataLogging();
-
 });
 
 // Configurar CORS
