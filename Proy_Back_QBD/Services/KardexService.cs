@@ -172,7 +172,63 @@ namespace proy_back_Qbd.Services
 
             return resultado;
         }
+        public async Task<List<DetalleInsumoRes>> ObtenerDetallePT(int idProducto, int idSede)
+        {
+            var compras = await _context.CompraProductos
+                .Include(w => w.Compra)
+                .Include(w => w.StockProductoTerminados)
+                .Include(w => w.NotaSalidaProductos)
+                    .ThenInclude(nsp => nsp.NotaSalida)
+                .Where(w => w.IdProducto == idProducto)
+                .ToListAsync();
 
+            var resultado = new List<DetalleInsumoRes>();
+
+            foreach (var s in compras)
+            {
+                decimal entradasLote = 0m;
+                if (s.Compra != null && s.Compra.IdSede == idSede)
+                {
+                    entradasLote += (s.CantidadRecibida ?? s.CantidadSolicitada);
+                }
+                entradasLote += s.NotaSalidaProductos
+                    .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeDestino == idSede)
+                    .Sum(nsp => (nsp.CantidadRecibida > 0 ? nsp.CantidadRecibida : nsp.Cantidad));
+
+                decimal salidasNS = s.NotaSalidaProductos
+                    .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeOrigen == idSede)
+                    .Sum(nsp => nsp.Cantidad);
+
+                var stockSede = s.StockProductoTerminados.Where(w => w.IdSede == idSede).ToList();
+
+                decimal saldo = 0m;
+                if (stockSede.Any())
+                {
+                    saldo = stockSede.Sum(sp => sp.StockDisponible);
+                }
+                else if (entradasLote > 0 || salidasNS > 0)
+                {
+                    saldo = entradasLote - salidasNS;
+                }
+                else
+                {
+                    continue;
+                }
+
+                resultado.Add(new DetalleInsumoRes
+                {
+                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote ?? "",
+                    Saldo = saldo,
+                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
+                    FechaFabricacion = s.FechaFabricacion,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Observacion = s.Observacion
+                });
+            }
+
+            return resultado;
+        }
         public async Task<List<StockRes>> StockListaPrincipal(string familia, int idSede)
         {
             List<StockRes> responseMP = familia switch
@@ -250,24 +306,19 @@ namespace proy_back_Qbd.Services
                 Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas =
-                //Suma de cantidad recibida de compraInsumo en esta sede
-                s.Sum(x => x.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) +
-                //Suma de cantidad recibida de nota de salidas recibidas en esta sede
-                s.Sum(x => x.CompraInsumos.Sum(x2 => x2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida ?? x3.Cantidad))),
+                s.Sum(x => x.CompraInsumos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida)) + //Suma de cantidad recibida de compraInsumo en esta sede                
+                s.Sum(x => x.CompraInsumos.Sum(x2 => x2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida ?? x3.Cantidad))), //Suma de cantidad recibida de nota de salidas recibidas en esta sede
                 Salidas =
-                //Suma de Producto Intermedio
-                s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) +
-                //Suma de Formulas Magistrales
-                s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)) +
-                //Suma de Notas de Salida despachadas por esta sede
-                s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.Cantidad)))
+                s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) + //Suma de Producto Intermedio                
+                s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)) + //Suma de Formulas Magistrales                
+                s.Sum(s => s.CompraInsumos.Sum(s2 => s2.NotaSalidaInsumos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.Cantidad))) //Suma de Notas de Salida despachadas por esta sede
                 ,
                 Ajustes = s.Sum(s2 => s2.CompraInsumos.Sum(s3 => s3.StockInsumos.Where(w => w.IdSede == idSede).Sum(s4 => s4.AjusteInsumos.Sum(s5 => s5.Ajuste)))),
                 Baja = s.Sum(x => x.CompraInsumos!
                     .Where(ci => ci.FechaVencimiento < DateTime.UtcNow)
                     .Sum(ci => ci.StockInsumos.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
-                CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
+                CodigoUbicacion = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault()
             }).ToListAsync()
             ;
         }
@@ -347,64 +398,6 @@ namespace proy_back_Qbd.Services
                             Ajustes = s.Sum(s => s.CompraEconomatos.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockEconomatos.Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste)))),
                             Baja = 0
                         }).ToListAsync();
-        }
-
-        public async Task<List<DetalleInsumoRes>> ObtenerDetallePT(int idProducto, int idSede)
-        {
-            var compras = await _context.CompraProductos
-                .Include(w => w.Compra)
-                .Include(w => w.StockProductoTerminados)
-                .Include(w => w.NotaSalidaProductos)
-                    .ThenInclude(nsp => nsp.NotaSalida)
-                .Where(w => w.IdProducto == idProducto)
-                .ToListAsync();
-
-            var resultado = new List<DetalleInsumoRes>();
-
-            foreach (var s in compras)
-            {
-                decimal entradasLote = 0m;
-                if (s.Compra != null && s.Compra.IdSede == idSede)
-                {
-                    entradasLote += (s.CantidadRecibida ?? s.CantidadSolicitada);
-                }
-                entradasLote += s.NotaSalidaProductos
-                    .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeDestino == idSede)
-                    .Sum(nsp => (nsp.CantidadRecibida > 0 ? nsp.CantidadRecibida : nsp.Cantidad));
-
-                decimal salidasNS = s.NotaSalidaProductos
-                    .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeOrigen == idSede)
-                    .Sum(nsp => nsp.Cantidad);
-
-                var stockSede = s.StockProductoTerminados.Where(w => w.IdSede == idSede).ToList();
-
-                decimal saldo = 0m;
-                if (stockSede.Any())
-                {
-                    saldo = stockSede.Sum(sp => sp.StockDisponible);
-                }
-                else if (entradasLote > 0 || salidasNS > 0)
-                {
-                    saldo = entradasLote - salidasNS;
-                }
-                else
-                {
-                    continue;
-                }
-
-                resultado.Add(new DetalleInsumoRes
-                {
-                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
-                    Lote = s.Lote ?? "",
-                    Saldo = saldo,
-                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.Observacion
-                });
-            }
-
-            return resultado;
         }
 
         private async Task<List<StockRes>> ObtenerProductosTerminados(int idSede)
