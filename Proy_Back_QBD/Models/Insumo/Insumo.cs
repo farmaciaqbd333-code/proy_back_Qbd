@@ -47,7 +47,7 @@ namespace Proy_back_QBD.Models
         public List<CompraInsumos> CompraInsumos { get; set; } = new();
         public List<ProductoIntermedio> ProductoIntermedio { get; set; } = new();
         public List<InsumoProductoIntermedio> InsumoProductoIntermedio { get; set; } = new();
-        public List<InsumoSede> InsumoSedes { get; set; } = new();
+        public List<SiteSupply> SiteSupply { get; set; } = new();
 
     }
 

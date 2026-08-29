@@ -1,4 +1,4 @@
-public class CrearInsumoSedeDto
+public class AssignLocationReq
 {
     public int IdSede { get; set; }
     public int IdInsumo { get; set; }

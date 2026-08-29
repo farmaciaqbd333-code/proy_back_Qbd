@@ -1,4 +1,4 @@
 public interface IInsumoSedeService
 {
-    Task<InsumoSede> CrearAsync(CrearInsumoSedeDto dto);
+    Task<SiteSupply> CrearAsync(AssignLocationReq dto);
 }

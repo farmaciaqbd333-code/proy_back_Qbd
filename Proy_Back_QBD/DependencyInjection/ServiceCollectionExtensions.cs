@@ -47,6 +47,7 @@ namespace Proy_back_QBD.DependencyInjection
             services.AddScoped<IRecepcionService, RecepcionService>();
             services.AddScoped<ILaboratorioRepository, LaboratorioRepository>();
             services.AddScoped<IUnitOfWork, UnitWork>();
+            services.AddScoped<ISupplyRepository, SupplyRepository>();
 
             return services;
         }

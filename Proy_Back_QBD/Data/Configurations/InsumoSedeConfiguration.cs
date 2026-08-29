@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-public class InsumoSedeConfiguration : IEntityTypeConfiguration<InsumoSede>
+public class InsumoSedeConfiguration : IEntityTypeConfiguration<SiteSupply>
 {
-    public void Configure(EntityTypeBuilder<InsumoSede> builder)
+    public void Configure(EntityTypeBuilder<SiteSupply> builder)
     {
         builder.ToTable("insumo_sedes");
 
@@ -13,21 +13,21 @@ public class InsumoSedeConfiguration : IEntityTypeConfiguration<InsumoSede>
         builder.Property(x => x.Id)
             .HasColumnName("id");
 
-        builder.Property(x => x.IdSede)
+        builder.Property(x => x.IdSite)
             .HasColumnName("id_sede");
 
-        builder.Property(x => x.IdInsumo)
+        builder.Property(x => x.IdSupply)
             .HasColumnName("id_insumo");
 
-        builder.Property(x => x.Ubicacion)
+        builder.Property(x => x.Location)
             .HasColumnName("ubicacion");
 
-        builder.HasOne(x => x.sede)
-            .WithMany(x => x.InsumoSedes)
-            .HasForeignKey(x => x.IdSede);
+        builder.HasOne(x => x.Sede)
+            .WithMany(x => x.SiteSupply)
+            .HasForeignKey(x => x.IdSite);
 
-        builder.HasOne(x => x.insumo)
-            .WithMany(x => x.InsumoSedes)
-            .HasForeignKey(x => x.IdInsumo);
+        builder.HasOne(x => x.Insumo)
+            .WithMany(x => x.SiteSupply)
+            .HasForeignKey(x => x.IdSupply);
     }
 }

@@ -28,9 +28,9 @@ namespace proy_back_Qbd.Controllers
         public async Task<IActionResult> ObtenerStock(string familia, int idSede)
         {
             List<StockRes> response = await _kardexService.StockListaPrincipal(familia, idSede);
-
             return Ok(response);
         }
+
         [HttpGet("detalle-insumo/{insumoId}")]
         public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId, [FromQuery] int idSede)
         {
@@ -68,11 +68,19 @@ namespace proy_back_Qbd.Controllers
             return Ok(resultado);
         }
 
-            [HttpGet("salidas-insumo/{insumoId}")]
+        [HttpGet("salidas-insumo/{insumoId}")]
         public async Task<IActionResult> ObtenerSalidasInsumo(int insumoId, [FromQuery] int idSede)
         {
             var resultado = await _kardexService.ObtenerSalidasInsumo(insumoId, idSede);
             return Ok(resultado);
         }
-}
+
+        [HttpPut("asignar-ubicacion")]
+        public async Task<IActionResult> AssignLocation(AssignLocationReq request)
+        {
+            var resultado = await _kardexService.AssignLocation(request);
+            return Ok(resultado);
+        }
+
+    }
 }

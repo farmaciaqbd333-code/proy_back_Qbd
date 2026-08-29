@@ -1,4 +1,4 @@
 public interface IUnitOfWork
 {
-    Task GuardarCambios();
+    Task SaveChangesAsync();
 }

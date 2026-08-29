@@ -134,7 +134,7 @@ namespace Proy_back_QBD.Services
             }
 
             await _repositoryLaboritorio.RegistrarLaboratorio(laboratorio);
-            await _repositoryUnitWork.GuardarCambios();
+            await _repositoryUnitWork.SaveChangesAsync();
 
             return "Registro exitoso";
 

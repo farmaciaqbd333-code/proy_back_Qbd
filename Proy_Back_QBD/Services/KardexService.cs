@@ -18,12 +18,16 @@ namespace proy_back_Qbd.Services
     {
         private readonly ApiContext _context;
         private static readonly List<string> FamiliasAptas = ["MP", "ME"];
-        public KardexService(ApiContext context)
+        private readonly ISupplyRepository _repository;
+        private readonly IUnitOfWork _unitWork;
+        public KardexService(ApiContext context, ISupplyRepository repository, IUnitOfWork unitWork)
         {
             _context = context;
+            _repository = repository;
+            _unitWork = unitWork;
         }
 
-                        public async Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int idInsumo, int idSede)
+        public async Task<List<DetalleInsumoRes>> ObtenerDetalleInsumo(int idInsumo, int idSede)
         {
             var compras = await _context.CompraInsumos
                 .Include(w => w.Compra)
@@ -221,11 +225,12 @@ namespace proy_back_Qbd.Services
                         Cantidad = s.PaqueteEmpaques.Sum(s => s.Paquete.CantidadPaquete * s.Paquete.PesoUnitario)
                     }).ToListAsync();
                 }
-                response = response.OrderBy(x => {
-                var clean = System.Text.RegularExpressions.Regex.Replace(x.Codigo ?? "0", @"[^\d]", "");
-                return int.TryParse(clean, out int num) ? num : 0;
-            }).ToList();
-            return response;
+                response = response.OrderBy(x =>
+                {
+                    var clean = System.Text.RegularExpressions.Regex.Replace(x.Codigo ?? "0", @"[^\d]", "");
+                    return int.TryParse(clean, out int num) ? num : 0;
+                }).ToList();
+                return response;
             }
             else
             {
@@ -278,12 +283,12 @@ namespace proy_back_Qbd.Services
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas = s.Sum(s => s!.ProductoIntermedio!
                     .Where(w => w.IdSede == idSede)
-                    .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0) 
-                        ? s2.PesoUnidad.Value 
-                        : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0) 
-                            ? s2.LoteEstTotal.Value 
+                    .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0)
+                        ? s2.PesoUnidad.Value
+                        : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0)
+                            ? s2.LoteEstTotal.Value
                             : (s2.LoteEstandar ?? 0)))),
-                Salidas = 
+                Salidas =
                     s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) +
                     s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)),
                 Ajustes = 0,
@@ -343,8 +348,8 @@ namespace proy_back_Qbd.Services
                             Baja = 0
                         }).ToListAsync();
         }
-    
-                public async Task<List<DetalleInsumoRes>> ObtenerDetallePT(int idProducto, int idSede)
+
+        public async Task<List<DetalleInsumoRes>> ObtenerDetallePT(int idProducto, int idSede)
         {
             var compras = await _context.CompraProductos
                 .Include(w => w.Compra)
@@ -426,7 +431,7 @@ namespace proy_back_Qbd.Services
                 }).ToListAsync();
         }
 
-                        public async Task<List<SalidaInsumoRes>> ObtenerSalidasInsumo(int idInsumo, int idSede)
+        public async Task<List<SalidaInsumoRes>> ObtenerSalidasInsumo(int idInsumo, int idSede)
         {
             var resultado = new List<SalidaInsumoRes>();
 
@@ -442,23 +447,23 @@ namespace proy_back_Qbd.Services
                             .ThenInclude(pi => pi.Elaborador)
                     .Include(x => x.StockInsumo)
                         .ThenInclude(si => si.CompraInsumo)
-                    .Where(x => x.InsumoProductoIntermedio.IdInsumo == idInsumo && 
+                    .Where(x => x.InsumoProductoIntermedio.IdInsumo == idInsumo &&
                                 x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede)
                     .OrderByDescending(x => x.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion)
                     .Select(s => new SalidaInsumoRes
                     {
                         TipoSalida = "ELABORACIÓN PI",
                         RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.InsumoProductoIntermedio.ProductoIntermedio.Id),
-                        DescripcionDestino = s.InsumoProductoIntermedio.ProductoIntermedio.Insumo != null 
-                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Insumo.Descripcion 
+                        DescripcionDestino = s.InsumoProductoIntermedio.ProductoIntermedio.Insumo != null
+                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Insumo.Descripcion
                             : (s.InsumoProductoIntermedio.ProductoIntermedio.Lote ?? "Producto Intermedio"),
                         LoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? (s.StockInsumo.CompraInsumo.Lote ?? "") : "",
                         RegistroLoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? "MP" + Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id) : "",
                         Cantidad = s.Cantidad,
                         Um = s.UnidadMedida ?? s.InsumoProductoIntermedio.UnidadMedida ?? "G",
                         Fecha = s.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion,
-                        Usuario = s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador != null 
-                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador.Codigo 
+                        Usuario = s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador != null
+                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador.Codigo
                             : "ADMIN"
                     })
                     .AsNoTracking()
@@ -481,8 +486,8 @@ namespace proy_back_Qbd.Services
                         {
                             TipoSalida = "ELABORACIÓN PI",
                             RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.ProductoIntermedio.Id),
-                            DescripcionDestino = s.ProductoIntermedio.Insumo != null 
-                                ? s.ProductoIntermedio.Insumo.Descripcion 
+                            DescripcionDestino = s.ProductoIntermedio.Insumo != null
+                                ? s.ProductoIntermedio.Insumo.Descripcion
                                 : (s.ProductoIntermedio.Lote ?? "Producto Intermedio"),
                             LoteInsumo = "",
                             RegistroLoteInsumo = "",
@@ -513,8 +518,8 @@ namespace proy_back_Qbd.Services
                     {
                         TipoSalida = "NOTA DE SALIDA",
                         RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
-                        DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null 
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}" 
+                        DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
+                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
                         LoteInsumo = s.CompraInsumos != null ? (s.CompraInsumos.Lote ?? "") : (s.Lote ?? ""),
                         RegistroLoteInsumo = s.CompraInsumos != null ? "MP" + Alfanumerico.ConvertToBase36(s.CompraInsumos.Id) : "",
@@ -565,5 +570,30 @@ namespace proy_back_Qbd.Services
 
             return resultado.OrderByDescending(x => x.Fecha).ToList();
         }
+        public async Task<SiteSupply> AssignLocation(AssignLocationReq request)
+        {
+            SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdSede, request.IdInsumo);
+
+            if (siteSupply == null)
+            {
+                siteSupply = new SiteSupply
+                {
+                    IdSite = request.IdSede,
+                    IdSupply = request.IdInsumo,
+                    Location = request.Ubicacion
+                };
+
+                siteSupply = await _repository.CreateLocationBySiteAsync(siteSupply);
+            }
+            else
+            {
+                siteSupply.Location = request.Ubicacion;
+            }
+
+            await _unitWork.SaveChangesAsync();
+
+            return siteSupply;
+        }
+
     }
 }
