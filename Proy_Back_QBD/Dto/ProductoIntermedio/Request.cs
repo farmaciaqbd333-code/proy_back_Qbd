@@ -5,6 +5,19 @@ namespace Proy_back_QBD.Request
         public string? CondicionAlmacenamiento { get; set; }
     }
 
+    public class ActualizarCantidadLoteInsumoItemReq
+    {
+        public int IdInsumo { get; set; }
+        public decimal CantidadLote { get; set; }
+        public string? Tipo { get; set; }
+    }
+
+    public class ActualizarInsumosPIReq
+    {
+        public int IdModificador { get; set; }
+        public List<ActualizarCantidadLoteInsumoItemReq> Insumos { get; set; } = new();
+    }
+
     public class ActualizarProductoIntermedioReq
     {
         public required string Lote { get; set; }
@@ -64,7 +77,6 @@ namespace Proy_back_QBD.Request
         public decimal Dilucion { get; set; }
         public required string UnidadMedida { get; set; }
         public decimal CantidadLote { get; set; }
-        public decimal? Practica { get; set; }
         public bool Csp { get; set; }
     }
     public class InsumoProductoIntermedioRes

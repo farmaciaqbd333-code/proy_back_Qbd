@@ -13,7 +13,6 @@ public class InsumoProductoIntermedio
     public decimal Dilucion { get; set; }
     public required string UnidadMedida { get; set; }
     public decimal CantidadLote { get; set; }
-    public decimal Practica { get; set; }
     public bool Csp { get; set; }
     public DateTime FechaCreacion { get; set; }
     public DateTime? FechaModificacion { get; set; }

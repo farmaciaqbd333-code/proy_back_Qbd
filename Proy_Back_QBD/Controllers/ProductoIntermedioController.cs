@@ -36,6 +36,12 @@ namespace Proy_back_QBD.Controllers
             return Ok(await _productoIntermedioService.ActualizarProductoIntermedio(id, request));
         }
 
+        [HttpPut("{id}/insumos")]
+        public async Task<IActionResult> ActualizarInsumos(int id, ActualizarInsumosPIReq request)
+        {
+            return Ok(await _productoIntermedioService.ActualizarInsumosProductoIntermedio(id, request));
+        }
+
         [HttpPut("{id}/condicion-almacenamiento")]
         public async Task<IActionResult> ActualizarCondicion(int id, [FromBody] ActualizarCondicionReq req)
         {

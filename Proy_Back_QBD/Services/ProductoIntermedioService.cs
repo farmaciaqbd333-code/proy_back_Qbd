@@ -746,6 +746,222 @@ namespace proy_back_Qbd.Services
                         : ex.Message);
             }
         }
+
+        public async Task<int> ActualizarInsumosProductoIntermedio(
+            int id,
+            ActualizarInsumosPIReq request)
+        {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            var ahora = DateTime.UtcNow;
+
+            try
+            {
+                var productoIntermedio = await _context.ProductosIntermedios
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+                if (productoIntermedio == null)
+                {
+                    throw new NotFoundException(
+                        $"No existe el Producto Intermedio con id {id}");
+                }
+
+                // ============================================================
+                // OBTENER INSUMOS EXISTENTES Y SU STOCK CONSUMIDO ANTERIORMENTE
+                // ============================================================
+
+                var insumosProductoIntermedio =
+                    await _context.InsumoProductoIntermedios
+                        .Where(x => x.IdProductoIntermedio == id)
+                        .Include(x => x.Insumo)
+                        .Include(x => x.StockInsumoProductoIntermedios)
+                        .ToListAsync();
+
+                if (insumosProductoIntermedio.Count == 0)
+                {
+                    throw new NotFoundException(
+                        $"No se encontraron insumos asociados al Producto Intermedio con id {id}");
+                }
+
+                var consumosInsumos = insumosProductoIntermedio
+                    .SelectMany(x => x.StockInsumoProductoIntermedios)
+                    .ToList();
+
+                // 1. Revertir el stock que había sido consumido anteriormente
+                foreach (var consumo in consumosInsumos)
+                {
+                    var stockInsumo = await _context.StockInsumos
+                        .FirstOrDefaultAsync(x => x.Id == consumo.IdStockInsumo);
+
+                    if (stockInsumo != null)
+                    {
+                        stockInsumo.StockDisponible += consumo.Cantidad;
+                    }
+                }
+
+                // 2. Eliminar los registros antiguos de detalle de consumo de stock
+                if (consumosInsumos.Count > 0)
+                {
+                    _context.StockInsumoProductoIntermedios.RemoveRange(
+                        consumosInsumos);
+                }
+
+                // ============================================================
+                // ACTUALIZAR CantidadLote EN INSUMOS EXISTENTES Y RE-CONSUMIR STOCK
+                // ============================================================
+
+                foreach (var item in request.Insumos)
+                {
+                    var insumoPI = insumosProductoIntermedio
+                        .FirstOrDefault(x => x.IdInsumo == item.IdInsumo);
+
+                    if (insumoPI == null)
+                    {
+                        throw new NotFoundException(
+                            $"El insumo con id {item.IdInsumo} no forma parte de este Producto Intermedio.");
+                    }
+
+                    // Actualizar la propiedad CantidadLote y auditoría en el registro existente
+                    insumoPI.CantidadLote = item.CantidadLote;
+                    insumoPI.FechaModificacion = ahora;
+                    if (request.IdModificador > 0)
+                    {
+                        insumoPI.IdModificador = request.IdModificador;
+                    }
+
+                    decimal cantidadUsar = item.CantidadLote;
+
+                    if (cantidadUsar <= 0)
+                    {
+                        continue;
+                    }
+
+                    string tipo = !string.IsNullOrEmpty(item.Tipo)
+                        ? item.Tipo
+                        : ((insumoPI.Insumo != null && (insumoPI.Insumo.Clasificacion == "PI" || (insumoPI.Insumo.Tipo != null && insumoPI.Insumo.Tipo.StartsWith("PI")))) ? "PI" : "MP");
+
+                    List<StockInsumo> stockInsumos;
+
+                    if (tipo == "MP")
+                    {
+                        stockInsumos = await _context.StockInsumos
+                            .Where(x =>
+                                x.CompraInsumo.IdInsumo == insumoPI.IdInsumo &&
+                                x.IdSede == productoIntermedio.IdSede &&
+                                x.StockDisponible > 0 &&
+                                (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
+                            .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
+                            .ThenBy(x => x.CompraInsumo.Id)
+                            .ToListAsync();
+                    }
+                    else
+                    {
+                        stockInsumos = await _context.StockInsumos
+                            .Where(x =>
+                                x.ProductoIntermedio.IdInsumo == insumoPI.IdInsumo &&
+                                x.IdSede == productoIntermedio.IdSede &&
+                                x.StockDisponible > 0 &&
+                                (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
+                            .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
+                            .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
+                            .ThenBy(x => x.ProductoIntermedio.Id)
+                            .ToListAsync();
+                    }
+
+                    if (stockInsumos.Count == 0)
+                    {
+                        throw new NotFoundException(
+                            $"No hay stock disponible para el insumo {insumoPI.IdInsumo}");
+                    }
+
+                    var stockDisponible =
+                        stockInsumos.Sum(x => x.StockDisponible);
+
+                    if (stockDisponible < cantidadUsar)
+                    {
+                        throw new BadRequestException(
+                            $"Stock insuficiente para el insumo {insumoPI.IdInsumo}. " +
+                            $"Disponible: {stockDisponible}, " +
+                            $"requerido: {cantidadUsar}");
+                    }
+
+                    foreach (var stockInsumo in stockInsumos)
+                    {
+                        if (cantidadUsar <= 0)
+                            break;
+
+                        decimal cantidadConsumida = Math.Min(
+                            stockInsumo.StockDisponible,
+                            cantidadUsar);
+
+                        _context.StockInsumoProductoIntermedios.Add(
+                            new StockInsumoProductoIntermedio
+                            {
+                                Cantidad = cantidadConsumida,
+                                IdCreador = request.IdModificador > 0 ? request.IdModificador : insumoPI.IdCreador,
+                                InsumoProductoIntermedio = insumoPI,
+                                IdStockInsumo = stockInsumo.Id
+                            });
+
+                        stockInsumo.StockDisponible -= cantidadConsumida;
+                        cantidadUsar -= cantidadConsumida;
+                    }
+
+                    if (cantidadUsar > 0)
+                    {
+                        throw new BadRequestException(
+                            $"No se pudo completar el consumo del insumo {insumoPI.IdInsumo}");
+                    }
+                }
+
+                if (request.IdModificador > 0)
+                {
+                    productoIntermedio.IdModificador = request.IdModificador;
+                    productoIntermedio.FechaModificacion = ahora;
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return productoIntermedio.Id;
+            }
+            catch (NotFoundException)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            catch (BadRequestException)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    await transaction.RollbackAsync();
+                }
+                catch (Exception rollbackEx)
+                {
+                    _logger.LogError(
+                        rollbackEx,
+                        "Falló el rollback al actualizar insumos de ProductoIntermedio {Id}",
+                        id);
+                }
+
+                _logger.LogError(
+                    ex,
+                    "Error al actualizar insumos de ProductoIntermedio {Id}: {Detail}",
+                    id,
+                    ex.InnerException?.Message ?? ex.Message);
+
+                throw new BadRequestException(
+                    ex.InnerException != null
+                        ? $"{ex.Message} -> {ex.InnerException.Message}"
+                        : ex.Message);
+            }
+        }
         public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
         {
             // 1. Intentar obtener consumos registrados con lotes de stock
@@ -771,7 +987,6 @@ namespace proy_back_Qbd.Services
                     Dilucion = s.InsumoProductoIntermedio.Dilucion,
                     Um = s.UnidadMedida,
                     CantidadLote = s.Cantidad,
-                    Practica = s.InsumoProductoIntermedio.Practica,
                     CSP = s.InsumoProductoIntermedio.Csp
                 })
                 .AsNoTracking()
@@ -799,7 +1014,6 @@ namespace proy_back_Qbd.Services
                     Dilucion = s.Dilucion,
                     Um = s.UnidadMedida,
                     CantidadLote = s.CantidadLote,
-                    Practica = s.Practica,
                     CSP = s.Csp
                 })
                 .AsNoTracking()
@@ -839,7 +1053,6 @@ namespace proy_back_Qbd.Services
                             Dilucion = s.Dilucion,
                             Um = s.UnidadMedida,
                             CantidadLote = s.CantidadLote,
-                            Practica = s.Practica,
                             CSP = s.Csp
                         })
                         .AsNoTracking()
@@ -1060,7 +1273,6 @@ namespace proy_back_Qbd.Services
                             Dilucion = i.Dilucion,
                             UnidadMedida = i.UnidadMedida,
                             CantidadLote = i.CantidadLote,
-                            Practica = i.Practica,
                             Csp = i.Csp
                         })
                         .ToList()
