@@ -591,6 +591,7 @@ namespace proy_back_Qbd.Services
                     i.UnidadMedida,
                     i.Tipo
                 })
+                .OrderBy(o=> o.Id)
                 .ToListAsync();
 
             _logger.LogInformation(
