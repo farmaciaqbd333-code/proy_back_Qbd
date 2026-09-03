@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
@@ -42,6 +42,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     switch (item.Familia.ToUpper())
                     {
                         case "MP":
+                        case "PI":
                             await CrearDetalleInsumo(notaSalida.Id, request, item);
                             break;
 
@@ -170,6 +171,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     switch (item.Familia.ToUpper())
                     {
                         case "MP":
+                        case "PI":
                             await CrearDetalleInsumo(notaSalida.Id, request, item);
                             break;
 
@@ -248,83 +250,98 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
         public async Task<List<RegistrosListaRes>> ObtenerDatosXRegistro(string registro, int idSede)
         {
-            string familia = registro.Substring(0, registro.IndexOf("-")).Trim();
-            int idRegistro = int.Parse(registro.Substring(registro.IndexOf("-") + 1).Trim());
+            if (string.IsNullOrWhiteSpace(registro))
+                return new List<RegistrosListaRes>();
+
+            string regUpper = registro.Trim().ToUpper();
+            string familia = "";
+            int idRegistro = 0;
+
+            if (regUpper.StartsWith("ECO"))
+            {
+                familia = "ECO";
+                string rest = regUpper.Substring(3).TrimStart('-', ' ');
+                if (!int.TryParse(rest, out idRegistro))
+                    idRegistro = Alfanumerico.ConvertFromBase36(rest);
+            }
+            else if (regUpper.StartsWith("MP") || regUpper.StartsWith("ME") || regUpper.StartsWith("PT") || regUpper.StartsWith("PI"))
+            {
+                familia = regUpper.Substring(0, 2);
+                string rest = regUpper.Substring(2).TrimStart('-', ' ');
+                if (!int.TryParse(rest, out idRegistro))
+                    idRegistro = Alfanumerico.ConvertFromBase36(rest);
+            }
+            else if (regUpper.Contains("-"))
+            {
+                var parts = regUpper.Split('-');
+                familia = parts[0].Trim();
+                string rest = parts[1].Trim();
+                if (!int.TryParse(rest, out idRegistro))
+                    idRegistro = Alfanumerico.ConvertFromBase36(rest);
+            }
+            else
+            {
+                if (!int.TryParse(regUpper, out idRegistro))
+                    idRegistro = Alfanumerico.ConvertFromBase36(regUpper);
+            }
+
+            if (string.IsNullOrEmpty(familia))
+                familia = "MP";
 
             return familia switch
             {
-
                 "MP" => await _context.CompraInsumos
-                    .Where(x => x.Id == idRegistro &&
-                    (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
-                    x.StockInsumos
-                        .Where(s => s.IdSede == idSede)
-                        .Sum(s => s.StockDisponible) > 0)
+                    .Where(x => x.Id == idRegistro)
                     .Select(x => new RegistrosListaRes
                     {
                         IdArticulo = x.IdInsumo,
-                        DescripcionArticulo = x.Insumo.Descripcion,
-                        CodigoArticulo = UtilFamilia.CodigoInsumo(x.Id)
+                        DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
+                        CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo)
                     })
                     .ToListAsync(),
 
                 "ME" => await _context.CompraEmpaques
-                    .Where(x => x.Id == idRegistro &&
-                    (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
-                    x.StockEmpaques
-                        .Where(s => s.IdSede == idSede)
-                        .Sum(s => s.StockDisponible) > 0)
+                    .Where(x => x.Id == idRegistro)
                     .Select(x => new RegistrosListaRes
                     {
-                        IdArticulo = x.Id,
-                        DescripcionArticulo = x.Empaque.Descripcion ?? "",
-                        CodigoArticulo = UtilFamilia.CodigoEmpaque(x.Id)
+                        IdArticulo = x.IdEmpaque,
+                        DescripcionArticulo = x.Empaque != null ? (x.Empaque.Descripcion ?? "") : "",
+                        CodigoArticulo = UtilFamilia.CodigoEmpaque(x.IdEmpaque)
                     })
                     .ToListAsync(),
 
                 "ECO" => await _context.CompraEconomatos
-                    .Where(x => x.Id == idRegistro &&
-                    x.StockEconomatos
-                        .Where(s => s.IdSede == idSede)
-                        .Sum(s => s.StockDisponible) > 0)
+                    .Where(x => x.Id == idRegistro)
                     .Select(x => new RegistrosListaRes
                     {
-                        IdArticulo = x.Id,
-                        DescripcionArticulo = x.Economato.Descripcion ?? "",
-                        CodigoArticulo = UtilFamilia.CodigoEconomato(x.Id)
+                        IdArticulo = x.IdEconomato,
+                        DescripcionArticulo = x.Economato != null ? (x.Economato.Descripcion ?? "") : "",
+                        CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato)
                     })
                     .ToListAsync(),
 
                 "PT" => await _context.CompraProductos
-                    .Where(x => x.Id == idRegistro &&
-                    (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
-                    x.StockProductoTerminados
-                        .Where(s => s.IdSede == idSede)
-                        .Sum(s => s.StockDisponible) > 0)
+                    .Where(x => x.Id == idRegistro)
                     .Select(x => new RegistrosListaRes
                     {
-                        IdArticulo = x.Id,
-                        DescripcionArticulo = x.Producto.Descripcion ?? "",
-                        CodigoArticulo = UtilFamilia.CodigoProducto(x.Id)
+                        IdArticulo = x.IdProducto,
+                        DescripcionArticulo = x.Producto != null ? (x.Producto.Descripcion ?? "") : "",
+                        CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto)
                     })
                     .ToListAsync(),
 
                 "PI" => await _context.ProductosIntermedios
-                    .Where(x => x.Id == idRegistro &&
-                    (!x.FechaVencimiento.HasValue || x.FechaVencimiento.Value.Date >= DateTime.Today) &&
-                    x.StockInsumo != null && x.StockInsumo.IdSede == idSede && x.StockInsumo.StockDisponible > 0)
+                    .Where(x => x.Id == idRegistro)
                     .Select(x => new RegistrosListaRes
                     {
                         IdArticulo = x.IdInsumo,
-                        DescripcionArticulo = x.Insumo!.Descripcion,
+                        DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
                         CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo)
                     })
                     .ToListAsync(),
 
                 _ => new List<RegistrosListaRes>()
-
             };
-
         }
 
         public async Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(ObtenerRegistroReq request)
@@ -333,7 +350,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 "PT" => await _context.CompraProductos
                     .Include(i => i.StockProductoTerminados)
-                    .Where(w => w.Compra.IdSede == request.IdSede)
+                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
                     .Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
@@ -342,8 +359,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .ToListAsync(),
 
                 "MP" => await _context.CompraInsumos
-                .Include(i => i.StockInsumos)
-                .Where(w => w.Compra.IdSede == request.IdSede)
+                    .Include(i => i.StockInsumos)
+                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
                     .Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
@@ -352,8 +369,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .ToListAsync(),
 
                 "ECO" => await _context.CompraEconomatos
-                .Include(i => i.StockEconomatos)
-                .Where(w => w.Compra.IdSede == request.IdSede)
+                    .Include(i => i.StockEconomatos)
+                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
                     .Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
@@ -362,8 +379,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .ToListAsync(),
 
                 "ME" => await _context.CompraEmpaques
-                .Include(i => i.StockEmpaques)
-                .Where(w => w.Compra.IdSede == request.IdSede)
+                    .Include(i => i.StockEmpaques)
+                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
                     .Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
@@ -372,8 +389,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .ToListAsync(),
 
                 "PI" => await _context.ProductosIntermedios
-                .Include(i => i.StockInsumo)
-                .Where(w => w.IdSede == request.IdSede)
+                    .Include(i => i.StockInsumo)
+                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.IdSede == request.IdSede || (w.StockInsumo != null && w.StockInsumo.IdSede == request.IdSede))
                     .Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,

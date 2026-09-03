@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Data;
@@ -22,8 +22,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             var stockOrigen = await _context.StockInsumos
                 .FirstOrDefaultAsync(x =>
-                    x.IdCompraInsumo == item.Registro &&
-                    x.IdSede == request.IdSedeOrigen);
+                    (x.IdCompraInsumo == item.Registro || x.IdProductoIntermedio == item.Registro) &&
+                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+
+            if (stockOrigen == null)
+            {
+                stockOrigen = await _context.StockInsumos
+                    .FirstOrDefaultAsync(x => x.IdCompraInsumo == item.Registro || x.IdProductoIntermedio == item.Registro);
+            }
 
             if (stockOrigen == null)
             {

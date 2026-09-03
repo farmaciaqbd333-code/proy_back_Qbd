@@ -25,5 +25,26 @@ namespace proy_back_Qbd.Util
 
             return result;
         }
+
+        public static int ConvertFromBase36(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return 0;
+
+            const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            value = value.Trim().ToUpper();
+            int result = 0;
+
+            foreach (char c in value)
+            {
+                int digit = chars.IndexOf(c);
+                if (digit < 0)
+                    return 0;
+
+                result = result * 36 + digit;
+            }
+
+            return result;
+        }
     }
 }
