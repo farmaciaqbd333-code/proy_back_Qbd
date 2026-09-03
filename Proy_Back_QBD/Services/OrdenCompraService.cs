@@ -242,7 +242,7 @@ namespace proy_back_Qbd.Services
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
-                                CUO = "OC" + s.Id,
+                                CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
                                 FechaCotizacion = s.FechaCotizacion,
                                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
@@ -271,7 +271,7 @@ namespace proy_back_Qbd.Services
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
-                                CUO = "OC" + s.Id,
+                                CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
                                 FechaCotizacion = s.FechaCotizacion,
                                 NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                                 NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
@@ -781,7 +781,7 @@ namespace proy_back_Qbd.Services
                 .Select(s => new OrdenesYComprasRes
                 {
                     Id = s.Id,
-                    CUO = "OC" + s.Id,
+                    CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
                     FechaCotizacion = s.FechaCotizacion,
                     NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
                     NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",

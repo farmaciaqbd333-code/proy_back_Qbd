@@ -400,7 +400,7 @@ namespace proy_back_Qbd.Services
             .Select(s => new LabListaRes
             {
                 Id = s.Id,
-                CUO = "OC" + s.Id,
+                CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
                 FechaCotizacion = s.FechaCotizacion,
                 FechaFactura = s.FechaFactura,
                 Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
