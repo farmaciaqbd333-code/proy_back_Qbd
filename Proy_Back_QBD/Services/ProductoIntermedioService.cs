@@ -1081,35 +1081,50 @@ namespace proy_back_Qbd.Services
                 query = query.Where(w => w.IdSede == idSede.Value);
             }
 
-            IEnumerable<TablaPIRes> response = await query
-            .OrderByDescending(ob => ob.Id)
-            .Select(s => new TablaPIRes()
+            var items = await query
+                .OrderByDescending(ob => ob.Id)
+                .Include(i => i.Insumo)
+                .Include(i => i.Elaborador)
+                .Include(i => i.InsumoProductoIntermedio)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return items.Select(s =>
             {
-                Id = s.Id,
-                Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
-                Lote = s.Lote,
-                Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
-                Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
-                LoteEstandar = s.LoteEstandar ?? 0,
-                PesoUnidad = s.PesoUnidad,
-                LoteEstTotal = s.LoteEstTotal,
-                Cantidad = (s.PesoUnidad.HasValue && s.PesoUnidad.Value > 0)
+                decimal loteTotal = (s.PesoUnidad.HasValue && s.PesoUnidad.Value > 0)
                     ? s.PesoUnidad.Value
                     : ((s.LoteEstTotal.HasValue && s.LoteEstTotal.Value > 0)
                         ? s.LoteEstTotal.Value
-                        : (s.LoteEstandar ?? 0)),
-                Tipo = s.Insumo != null ? (!string.IsNullOrEmpty(s.Insumo.FormaFarmaceutica) ? s.Insumo.FormaFarmaceutica : s.Insumo.Tipo) : null,
-                TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
-                Um = (s.Insumo != null && !string.IsNullOrEmpty(s.Insumo.UnidadMedida)) ? s.Insumo.UnidadMedida : (s.Um ?? "G"),
-                FechaEmision = s.FechaEmision.Value,
-                FechaVencimiento = s.FechaVencimiento,
-                Elaborado = s.Elaborador != null ? s.Elaborador.Codigo : "",
-                CondicionAlmacenamiento = s.CondicionAlmacenamiento
-            })
-            .AsNoTracking()
-            .ToListAsync();
+                        : (s.LoteEstandar ?? 0m));
 
-            return response;
+                bool tienePractModificado = s.InsumoProductoIntermedio != null && s.InsumoProductoIntermedio.Any(i =>
+                {
+                    if (i.CantidadLote <= 0) return false;
+                    decimal cantTeorica = (loteTotal * i.Porcentaje) / 100m;
+                    return Math.Abs(i.CantidadLote - cantTeorica) > 0.001m;
+                });
+
+                return new TablaPIRes()
+                {
+                    Id = s.Id,
+                    Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote,
+                    Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
+                    Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                    LoteEstandar = s.LoteEstandar ?? 0m,
+                    PesoUnidad = s.PesoUnidad,
+                    LoteEstTotal = s.LoteEstTotal,
+                    Cantidad = loteTotal,
+                    Tipo = s.Insumo != null ? (!string.IsNullOrEmpty(s.Insumo.FormaFarmaceutica) ? s.Insumo.FormaFarmaceutica : s.Insumo.Tipo) : null,
+                    TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
+                    Um = (s.Insumo != null && !string.IsNullOrEmpty(s.Insumo.UnidadMedida)) ? s.Insumo.UnidadMedida : (s.Um ?? "G"),
+                    FechaEmision = s.FechaEmision.HasValue ? s.FechaEmision.Value : DateTime.Now,
+                    FechaVencimiento = s.FechaVencimiento,
+                    Elaborado = s.Elaborador != null ? s.Elaborador.Codigo : "",
+                    CondicionAlmacenamiento = s.CondicionAlmacenamiento,
+                    Descargado = tienePractModificado
+                };
+            }).ToList();
         }
 
         public async Task<IEnumerable<MasterPIRes>> ListaMaestraPI(string tipoUso)
@@ -1282,3 +1297,4 @@ namespace proy_back_Qbd.Services
 
     }
 }
+

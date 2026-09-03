@@ -23,6 +23,7 @@ namespace Proy_back_QBD.Dto
         public DateTime? FechaVencimiento { get; set; }
         public string? Elaborado { get; set; }
         public string? CondicionAlmacenamiento { get; set; }
+        public bool Descargado { get; set; }
     }
     public class ConsumoPIRes
     {
