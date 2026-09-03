@@ -13,10 +13,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             NotaSalidaFamiliasCreateReq item)
         {
             _logger.LogInformation(
-                "Iniciando creación de detalle de insumo/PI. NotaSalida={NotaSalida}, Registro={Registro}, Cantidad={Cantidad}, Familia={Familia}, SedeOrigen={SedeOrigen}",
+                "Iniciando creación de detalle de insumo/PI. NotaSalida={NotaSalida}, Registro={Registro}, Cantidad={Cantidad}, Um={Um}, Familia={Familia}, SedeOrigen={SedeOrigen}",
                 idNotaSalida,
                 item.Registro,
                 item.Cantidad,
+                item.Um,
                 item.Familia,
                 request.IdSedeOrigen);
 
@@ -43,22 +44,50 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     request.IdSedeOrigen,
                     item.Familia);
 
-                throw new Exception($"No existe stock en la sede origen para el registro {item.Registro} de {item.Familia}.");
+                throw new Exception($"No existe stock registrado para el registro {item.Registro} de {item.Familia}.");
+            }
+
+            string stockUm = (stockOrigen.UnidadMedida ?? "G").Trim().ToUpper();
+            string itemUm = (item.Um ?? "G").Trim().ToUpper();
+            decimal cantDescontar = item.Cantidad;
+
+            // Unit conversions between G and KG
+            if ((stockUm == "G" || stockUm == "GR") && itemUm == "KG")
+            {
+                cantDescontar = item.Cantidad * 1000m;
+            }
+            else if (stockUm == "KG" && (itemUm == "G" || itemUm == "GR"))
+            {
+                cantDescontar = item.Cantidad / 1000m;
+            }
+            else if (stockOrigen.StockDisponible < item.Cantidad && item.Cantidad <= stockOrigen.StockDisponible * 1000m && (itemUm == "G" || itemUm == "GR"))
+            {
+                cantDescontar = item.Cantidad / 1000m;
+            }
+            else if (stockOrigen.StockDisponible > 0 && stockOrigen.StockDisponible >= item.Cantidad * 1000m && itemUm == "KG")
+            {
+                cantDescontar = item.Cantidad * 1000m;
             }
 
             _logger.LogInformation(
-                "Stock encontrado. StockActual={StockActual}, CantidadSolicitada={CantidadSolicitada}",
+                "Stock encontrado. StockActual={StockActual} {StockUm}, CantidadSolicitada={CantidadSolicitada} {ItemUm}, CantidadDescontar={CantidadDescontar}",
                 stockOrigen.StockDisponible,
-                item.Cantidad);
+                stockUm,
+                item.Cantidad,
+                itemUm,
+                cantDescontar);
 
-            if (stockOrigen.StockDisponible < item.Cantidad)
+            if (stockOrigen.StockDisponible < cantDescontar)
             {
                 _logger.LogWarning(
-                    "Stock insuficiente. Disponible={Disponible}, Solicitado={Solicitado}",
+                    "Stock insuficiente. Disponible={Disponible} {StockUm}, Solicitado={Solicitado} {ItemUm} (descuento={CantDescontar})",
                     stockOrigen.StockDisponible,
-                    item.Cantidad);
+                    stockUm,
+                    item.Cantidad,
+                    itemUm,
+                    cantDescontar);
 
-                throw new Exception($"Stock insuficiente. Disponible: {stockOrigen.StockDisponible}, Solicitado: {item.Cantidad}");
+                throw new Exception($"Stock insuficiente. Disponible: {stockOrigen.StockDisponible} {stockUm}, Solicitado: {item.Cantidad} {itemUm}");
             }
 
             var detalle = new NotaSalidaInsumo
@@ -83,12 +112,12 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             _context.NotaSalidaInsumos.Add(detalle);
 
-            stockOrigen.StockDisponible -= item.Cantidad;
+            stockOrigen.StockDisponible -= cantDescontar;
             stockOrigen.NotaSalidaInsumo = detalle;
 
             _logger.LogInformation(
-                "Detalle de NotaSalidaInsumo agregado. Registro={Registro}, isPI={isPI}",
-                item.Registro, isPI);
+                "Detalle de NotaSalidaInsumo agregado exitosamente. Registro={Registro}, isPI={isPI}, NuevoStock={NuevoStock}",
+                item.Registro, isPI, stockOrigen.StockDisponible);
 
             _logger.LogInformation(
                 "Finalizó creación de detalle de insumo. NotaSalida={NotaSalida}",
@@ -103,7 +132,13 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             var stockOrigen = await _context.StockEconomatos
                 .FirstOrDefaultAsync(x =>
                     x.IdCompraEconomato == item.Registro &&
-                    x.IdSede == request.IdSedeOrigen);
+                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+
+            if (stockOrigen == null)
+            {
+                stockOrigen = await _context.StockEconomatos
+                    .FirstOrDefaultAsync(x => x.IdCompraEconomato == item.Registro);
+            }
 
             if (stockOrigen == null)
                 throw new Exception("No existe stock en la sede proveniente.");
@@ -142,7 +177,13 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             var stockOrigen = await _context.StockEmpaques
                 .FirstOrDefaultAsync(x =>
                     x.IdCompraEmpaque == item.Registro &&
-                    x.IdSede == request.IdSedeOrigen);
+                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+
+            if (stockOrigen == null)
+            {
+                stockOrigen = await _context.StockEmpaques
+                    .FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.Registro);
+            }
 
             if (stockOrigen == null)
                 throw new Exception("No existe stock en la sede proveniente.");
@@ -181,7 +222,13 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             var stockOrigen = await _context.StockProductos
                 .FirstOrDefaultAsync(x =>
                     x.IdCompraProducto == item.Registro &&
-                    x.IdSede == request.IdSedeOrigen);
+                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+
+            if (stockOrigen == null)
+            {
+                stockOrigen = await _context.StockProductos
+                    .FirstOrDefaultAsync(x => x.IdCompraProducto == item.Registro);
+            }
 
             if (stockOrigen == null)
                 throw new Exception("No existe stock en la sede proveniente.");
