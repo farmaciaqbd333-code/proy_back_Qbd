@@ -37,10 +37,17 @@ namespace proy_back_Qbd.Services
         {
             var compraInsumos = await _context.CompraInsumos
                 .Include(w => w.Compra)
+                    .ThenInclude(c => c!.Proveedor)
+                .Include(w => w.Compra)
+                    .ThenInclude(c => c!.Sede)
                 .Include(w => w.StockInsumos)
                     .ThenInclude(si => si.AjusteInsumos)
                 .Include(w => w.NotaSalidaInsumos)
                     .ThenInclude(nsi => nsi.NotaSalida)
+                        .ThenInclude(ns => ns!.SedeOrigen)
+                .Include(w => w.NotaSalidaInsumos)
+                    .ThenInclude(nsi => nsi.NotaSalida)
+                        .ThenInclude(ns => ns!.SedeDestino)
                 .Where(w =>
     w.IdInsumo == idInsumo &&
     (
@@ -327,17 +334,41 @@ namespace proy_back_Qbd.Services
                 var registro = "MP" +
                                Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
+                string tipoOrigen = "Compra";
+                string sedeOrigen = "";
+                string docOrigen = "";
+                DateTime? fechaIngreso = compraInsumo.Compra != null ? compraInsumo.Compra.FechaFactura : null;
+
+                if (notasSalidaDestino.Any())
+                {
+                    var ultimaNS = notasSalidaDestino.LastOrDefault()?.NotaSalida;
+                    tipoOrigen = "Nota de Salida";
+                    sedeOrigen = ultimaNS?.SedeOrigen?.Nombre ?? "SEDE ORIGEN";
+                    docOrigen = ultimaNS != null ? $"NS{ultimaNS.Id:D8}" : "";
+                    if (ultimaNS != null)
+                    {
+                        fechaIngreso = ultimaNS.FechaSalida != default ? ultimaNS.FechaSalida : ultimaNS.FechaCreacion;
+                    }
+                }
+                else if (compraInsumo.Compra != null)
+                {
+                    tipoOrigen = "Orden de Compra";
+                    sedeOrigen = compraInsumo.Compra.Proveedor?.Datos ?? compraInsumo.Compra.Sede?.Nombre ?? "";
+                    docOrigen = compraInsumo.Compra.NumeroComprobante ?? compraInsumo.Compra.CodFacQBD ?? (compraInsumo.Compra.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
+                }
+
                 var detalle = new DetalleInsumoRes
                 {
                     Registro = registro,
                     Lote = compraInsumo.Lote ?? "",
                     Saldo = saldo,
-                    FechaCompra = compraInsumo.Compra != null
-                        ? compraInsumo.Compra.FechaFactura
-                        : null,
+                    FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
-                    Observacion = compraInsumo.Observacion
+                    Observacion = compraInsumo.Observacion,
+                    TipoOrigen = tipoOrigen,
+                    SedeOrigen = sedeOrigen,
+                    DocumentoOrigen = docOrigen
                 };
 
                 resultado.Add(detalle);

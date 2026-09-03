@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -26,6 +26,9 @@ namespace proy_back_Qbd.Models.Kardex
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
         public string? Observacion { get; set; }
+        public string? TipoOrigen { get; set; }
+        public string? SedeOrigen { get; set; }
+        public string? DocumentoOrigen { get; set; }
     }
     public class DetalleEmpaqueRes
     {
@@ -36,6 +39,9 @@ namespace proy_back_Qbd.Models.Kardex
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
         public string? Observacion { get; set; }
+        public string? TipoOrigen { get; set; }
+        public string? SedeOrigen { get; set; }
+        public string? DocumentoOrigen { get; set; }
     }
 
     public class ComprasVencidasRes
