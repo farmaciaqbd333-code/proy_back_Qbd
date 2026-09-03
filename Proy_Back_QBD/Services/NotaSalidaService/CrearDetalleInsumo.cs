@@ -23,6 +23,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             bool isPI = (item.Familia ?? "").Trim().ToUpper() == "PI";
 
             var stockOrigen = await _context.StockInsumos
+                .Include(s => s.ProductoIntermedio)
                 .FirstOrDefaultAsync(x =>
                     (isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro) &&
                     (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
@@ -30,6 +31,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             if (stockOrigen == null)
             {
                 stockOrigen = await _context.StockInsumos
+                    .Include(s => s.ProductoIntermedio)
                     .FirstOrDefaultAsync(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro);
             }
 
@@ -65,6 +67,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 IdCompraInsumo = isPI ? null : item.Registro,
                 Cantidad = item.Cantidad,
                 Um = item.Um,
+                Lote = isPI ? (stockOrigen.ProductoIntermedio?.Lote ?? stockOrigen.IdProductoIntermedio?.ToString()) : null,
                 IdCreador = request.IdCreador,
                 PaqueteNotaSalidaInsumos = item.Paquetes?.Select(p => new PaqueteNotaSalidaInsumo
                 {

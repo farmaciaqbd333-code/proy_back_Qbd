@@ -406,36 +406,81 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         {
             var resultado = new List<NotaSalidaDetalleRes>();
 
-            // 1. Insumos (MP)
+            // 1. Insumos (MP y PI)
             var insumos = await _context.NotaSalidaInsumos
                 .AsNoTracking()
                 .Include(x => x.CompraInsumos)
                     .ThenInclude(ci => ci!.Insumo)
+                .Include(x => x.StockInsumo)
+                    .ThenInclude(si => si!.ProductoIntermedio)
+                        .ThenInclude(pi => pi!.Insumo)
                 .Include(x => x.PaqueteNotaSalidaInsumos)
                 .Where(x => x.IdNotaSalida == idNotaSalida)
                 .ToListAsync();
 
+            var idsInsumo = insumos.Select(i => i.Id).ToList();
+            var stockInsumosList = await _context.StockInsumos
+                .AsNoTracking()
+                .Include(si => si.ProductoIntermedio)
+                    .ThenInclude(pi => pi!.Insumo)
+                .Where(s => s.IdNotaSalidaInsumo.HasValue && idsInsumo.Contains(s.IdNotaSalidaInsumo.Value))
+                .ToListAsync();
+
             foreach (var item in insumos)
             {
-                var idInsumo = item.CompraInsumos?.IdInsumo ?? 0;
+                var relatedStock = item.StockInsumo ?? stockInsumosList.FirstOrDefault(s => s.IdNotaSalidaInsumo == item.Id);
+                var pi = relatedStock?.ProductoIntermedio;
+                bool isPI = pi != null || (!item.IdCompraInsumo.HasValue);
+
+                if (isPI && pi == null && !string.IsNullOrEmpty(item.Lote))
+                {
+                    pi = await _context.ProductosIntermedios
+                        .AsNoTracking()
+                        .Include(p => p.Insumo)
+                        .FirstOrDefaultAsync(p => p.Lote == item.Lote);
+                }
+
+                if (isPI && pi == null)
+                {
+                    // Fallback to most recent PI if cannot resolve
+                    pi = await _context.ProductosIntermedios
+                        .AsNoTracking()
+                        .Include(p => p.Insumo)
+                        .OrderByDescending(p => p.Id)
+                        .FirstOrDefaultAsync();
+                }
+
+                var idInsumo = isPI ? (pi?.IdInsumo ?? 0) : (item.CompraInsumos?.IdInsumo ?? 0);
+                var fam = isPI ? "PI" : "MP";
+                var desc = isPI ? (pi?.Insumo?.Descripcion ?? (pi != null ? $"PI - {pi.Lote}" : "")) : (item.CompraInsumos?.Insumo?.Descripcion ?? "");
+                var cod = isPI ? (idInsumo > 0 ? UtilFamilia.CodigoProductoIntermedio(idInsumo) : "") : (idInsumo > 0 ? UtilFamilia.CodigoInsumo(idInsumo) : "");
+                var reg = isPI ? (pi != null ? $"PI{Alfanumerico.ConvertToBase36(pi.Id)}" : "") : (item.IdCompraInsumo.HasValue ? $"MP{Alfanumerico.ConvertToBase36(item.IdCompraInsumo.Value)}" : "");
+                var lote = isPI ? (pi?.Lote ?? item.Lote ?? "") : (item.CompraInsumos?.Lote ?? item.Lote ?? "");
+                var fFabric = isPI ? (pi?.FechaEmision?.ToString("yyyy-MM-dd") ?? "") : (item.CompraInsumos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "");
+                var fVcto = isPI ? (pi?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "") : (item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "");
+
+                var tara = item.PaqueteNotaSalidaInsumos?.Sum(p => p.Tara) ?? 0;
+                var pesoNeto = item.PaqueteNotaSalidaInsumos?.Sum(p => p.PesoNeto) ?? item.Cantidad;
+                var pesoBruto = item.PaqueteNotaSalidaInsumos?.Sum(p => p.PesoBruto) ?? (pesoNeto + tara);
+
                 resultado.Add(new NotaSalidaDetalleRes
                 {
                     IdNotaSalidaArticulo = item.Id,
-                    IdCompraArticulo = item.IdCompraInsumo ?? 0,
-                    Familia = "MP",
-                    Codigo = idInsumo > 0 ? UtilFamilia.CodigoInsumo(idInsumo) : "",
-                    DescripcionQBD = item.CompraInsumos?.Insumo?.Descripcion ?? "",
-                    Registro = item.IdCompraInsumo.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraInsumo.Value) : "",
+                    IdCompraArticulo = isPI ? (pi?.Id ?? 0) : (item.IdCompraInsumo ?? 0),
+                    Familia = fam,
+                    Codigo = cod,
+                    DescripcionQBD = desc,
+                    Registro = reg,
                     Cantidad = item.Cantidad,
                     CantidadRecibida = item.CantidadRecibida,
                     Observacion = item.Observacion,
-                    Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (item.CompraInsumos?.Um?.ToUpper() ?? "G"),
-                    // Tara = item.Tara,
-                    // PesoNeto = item.PesoNeto,
-                    // PesoBruto = item.PesoBruto,
-                    Lote = item.CompraInsumos?.Lote ?? item.Lote ?? "",
-                    FFabric = item.CompraInsumos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                    FVcto = item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                    Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (isPI ? (pi?.Um ?? "G") : (item.CompraInsumos?.Um?.ToUpper() ?? "G")),
+                    Tara = tara,
+                    PesoNeto = pesoNeto,
+                    PesoBruto = pesoBruto,
+                    Lote = lote,
+                    FFabric = fFabric,
+                    FVcto = fVcto,
                     Paquetes = item.PaqueteNotaSalidaInsumos?.Select(p => new NotaSalidaDetallePaqueteRes
                     {
                         IdPaquete = (int)p.Id,
