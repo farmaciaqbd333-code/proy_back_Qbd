@@ -292,8 +292,17 @@ namespace proy_back_Qbd.Services
         }
         public async Task<List<MesonListaRes>> ListarMeson(string[] cadena, int idSede)
         {
-            List<MesonListaRes> ordenesEnviadasRes = await _context.Compras
-            .Where(w => cadena.Contains(w.EstadoCompra) && w.IdSede == idSede)
+            var sede = await _context.Sedes.FirstOrDefaultAsync(s => s.Id == idSede);
+            bool esCentral = idSede == 0 || idSede == 15 || (sede != null && sede.Nombre != null && sede.Nombre.ToUpper().Contains("CENTRAL"));
+
+            var query = _context.Compras.AsQueryable();
+            if (!esCentral)
+            {
+                query = query.Where(w => w.IdSede == idSede);
+            }
+
+            List<MesonListaRes> ordenesEnviadasRes = await query
+            .Where(w => cadena.Contains(w.EstadoCompra))
             .Select(s => new MesonListaRes
             {
                 Id = s.Id,
@@ -312,6 +321,7 @@ namespace proy_back_Qbd.Services
             })
             .OrderByDescending(o => o.FechaCotizacion)
             .ToListAsync();
+
             if (ordenesEnviadasRes.Count() == 0) return new List<MesonListaRes>();
 
             return ordenesEnviadasRes;

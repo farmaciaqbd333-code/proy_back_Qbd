@@ -237,8 +237,16 @@ namespace proy_back_Qbd.Services
 
         public async Task<List<OrdenesYComprasRes>> ListaOrdenesDeCompras(int idSede)
         {
-            List<OrdenesYComprasRes> response = await _context.Compras
-                            .Where(w => w.IdSede == idSede)
+            var sede = await _context.Sedes.FirstOrDefaultAsync(s => s.Id == idSede);
+            bool esCentral = idSede == 0 || idSede == 15 || (sede != null && sede.Nombre != null && sede.Nombre.ToUpper().Contains("CENTRAL"));
+
+            var query = _context.Compras.AsQueryable();
+            if (!esCentral)
+            {
+                query = query.Where(w => w.IdSede == idSede);
+            }
+
+            List<OrdenesYComprasRes> response = await query
                             .Select(s => new OrdenesYComprasRes
                             {
                                 Id = s.Id,
@@ -260,7 +268,6 @@ namespace proy_back_Qbd.Services
                             })
                             .OrderByDescending(o => o.Id)
                             .ToListAsync();
-            if (response.Count == 0) throw new NotFoundException("No hay ordenes de compras");
 
             return response;
         }
