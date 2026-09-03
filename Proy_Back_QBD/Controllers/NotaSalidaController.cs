@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -32,7 +32,8 @@ namespace proy_back_Qbd.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+                string msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                return BadRequest(new { message = msg, detail = ex.InnerException?.Message });
             }
         }
 
@@ -46,7 +47,8 @@ namespace proy_back_Qbd.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+                string msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                return BadRequest(new { message = msg, detail = ex.InnerException?.Message });
             }
         }
         /// <summary>
@@ -82,7 +84,8 @@ namespace proy_back_Qbd.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+                string msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
+                return BadRequest(new { message = msg, detail = ex.InnerException?.Message });
             }
         }
 
