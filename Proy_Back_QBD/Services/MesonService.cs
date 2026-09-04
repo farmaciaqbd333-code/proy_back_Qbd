@@ -29,7 +29,7 @@ namespace proy_back_Qbd.Services
             Compra? compra = await _context.Compras.FindAsync(ordenCompraId);
             if (compra == null) throw new NotFoundException("No se encontro compra");
             _mapper.Map(request, compra);
-            compra.FechaMeson = DateTime.Now;
+            compra.FechaMeson = DateTime.UtcNow;
 
             if (request.DetallesOtros != null && request.DetallesOtros.Count != 0)
             {

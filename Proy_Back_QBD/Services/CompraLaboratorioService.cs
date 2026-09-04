@@ -145,7 +145,7 @@ namespace proy_back_Qbd.Services
             {
                 if (compra != null)
                 {
-                    compra.FechaLab = DateTime.Now;
+                    compra.FechaLab = DateTime.UtcNow;
                 }
                 await _context.SaveChangesAsync();
             }

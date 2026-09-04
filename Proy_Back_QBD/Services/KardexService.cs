@@ -338,7 +338,7 @@ namespace proy_back_Qbd.Services
                 string tipoOrigen = "Compra";
                 string sedeOrigen = "";
                 string docOrigen = "";
-                DateTime? fechaIngreso = compraInsumo.Compra != null ? compraInsumo.Compra.FechaFactura : null;
+                DateTime? fechaIngreso = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
 
                 if (notasSalidaDestino.Any())
                 {
@@ -465,7 +465,7 @@ namespace proy_back_Qbd.Services
                     Registro = "ME" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = saldo,
-                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
+                    FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.Observacion
@@ -522,7 +522,7 @@ namespace proy_back_Qbd.Services
                     Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     Saldo = saldo,
-                    FechaCompra = s.Compra != null ? s.Compra.FechaFactura : null,
+                    FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.Observacion
