@@ -509,14 +509,16 @@ namespace proy_back_Qbd.Services
                 .Where(ci =>
                     insumoIds.Contains(ci.IdInsumo) &&
                     ci.NotaSalidaInsumos.Any(nsi =>
-                        nsi.NotaSalida.IdSedeDestino == idSede))
+                        nsi.NotaSalida.IdSedeDestino == idSede &&
+                        (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0))))
                 .SelectMany(ci => ci.NotaSalidaInsumos
                     .Where(nsi =>
-                        nsi.NotaSalida.IdSedeDestino == idSede)
+                        nsi.NotaSalida.IdSedeDestino == idSede &&
+                        (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
                     .Select(nsi => new
                     {
                         ci.IdInsumo,
-                        Cantidad = nsi.CantidadRecibida ?? nsi.Cantidad
+                        Cantidad = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0 ? nsi.CantidadRecibida.Value : nsi.Cantidad)
                     }))
                 .GroupBy(x => x.IdInsumo)
                 .Select(g => new
@@ -636,7 +638,7 @@ namespace proy_back_Qbd.Services
                     .Select(nsi => new
                     {
                         ci.IdInsumo,
-                        nsi.Cantidad
+                        Cantidad = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad
                     }))
                 .GroupBy(x => x.IdInsumo)
                 .Select(g => new
