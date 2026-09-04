@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,11 +17,13 @@ namespace proy_back_Qbd.Models.Kardex
         public string? Tipo { get; set; }
         public string? CodigoUbicacion { get; set; }
     }
-        public class DetalleInsumoRes
+
+    public class DetalleInsumoRes
     {
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
         public decimal? Saldo { get; set; }
+        public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
@@ -30,11 +32,13 @@ namespace proy_back_Qbd.Models.Kardex
         public string? SedeOrigen { get; set; }
         public string? DocumentoOrigen { get; set; }
     }
+
     public class DetalleEmpaqueRes
     {
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
         public decimal? Saldo { get; set; }
+        public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }
         public DateTimeOffset? FechaVencimiento { get; set; }
@@ -69,5 +73,4 @@ namespace proy_back_Qbd.Models.Kardex
         public DateTime? Fecha { get; set; }
         public string Usuario { get; set; } = "";
     }
-
 }
