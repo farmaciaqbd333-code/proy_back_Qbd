@@ -103,7 +103,7 @@ namespace proy_back_Qbd.Services
                     .ToList();
 
                 entradasTraslado = notasSalidaDestino
-                    .Sum(nsi => (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
+                    .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad));
 
                 decimal entradas = entradasCompra + entradasTraslado;
 
@@ -115,7 +115,7 @@ namespace proy_back_Qbd.Services
                     .ToList();
 
                 decimal salidasNS = notasSalidaOrigen
-                    .Sum(nsi => nsi.Cantidad);
+                    .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
 
                 // 4. Ajustes
                 var stockInsumosSede = compraInsumo.StockInsumos
@@ -193,6 +193,7 @@ namespace proy_back_Qbd.Services
                     Registro = registro,
                     Lote = compraInsumo.Lote ?? "",
                     Saldo = saldo,
+                    Um = compraInsumo.Um ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : "G"),
                     FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
