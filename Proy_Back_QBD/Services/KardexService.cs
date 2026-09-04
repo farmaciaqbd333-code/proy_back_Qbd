@@ -51,7 +51,7 @@ namespace proy_back_Qbd.Services
                 .Where(w =>
     w.IdInsumo == idInsumo &&
     (
-        (w.Compra != null && w.Compra.IdSede == idSede && w.Compra.FechaLab != null) ||
+        (w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) ||
         w.NotaSalidaInsumos.Any(nsi =>
             nsi.NotaSalida != null &&
             nsi.NotaSalida.IdSedeDestino == idSede
@@ -101,9 +101,9 @@ namespace proy_back_Qbd.Services
 
                 if (compraInsumo.Compra != null &&
                     compraInsumo.Compra.IdSede == idSede &&
-                    compraInsumo.Compra.FechaLab != null)
+                    (idSede == 15 || compraInsumo.Compra.FechaLab != null))
                 {
-                    entradasCompra = compraInsumo.CantidadRecibida ?? 0m;
+                    entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0) ? compraInsumo.CantidadRecibida.Value : compraInsumo.CantidadSolicitada;
                 }
 
                 _logger.LogInformation(
@@ -424,7 +424,7 @@ namespace proy_back_Qbd.Services
                 .Include(w => w.StockEmpaques)
                 .Include(w => w.NotaSalidaEmpaques)
                     .ThenInclude(nse => nse.NotaSalida)
-                .Where(w => w.IdEmpaque == empaqueId && ((w.Compra != null && w.Compra.IdSede == idSede && w.Compra.FechaLab != null) || w.NotaSalidaEmpaques.Any(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede)))
+                .Where(w => w.IdEmpaque == empaqueId && ((w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) || w.NotaSalidaEmpaques.Any(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede)))
                 .ToListAsync();
 
             var resultado = new List<DetalleEmpaqueRes>();
@@ -432,9 +432,9 @@ namespace proy_back_Qbd.Services
             foreach (var s in compras)
             {
                 decimal entradasLote = 0m;
-                if (s.Compra != null && s.Compra.IdSede == idSede && s.Compra.FechaLab != null)
+                if (s.Compra != null && s.Compra.IdSede == idSede && (idSede == 15 || s.Compra.FechaLab != null))
                 {
-                    entradasLote += (s.CantidadRecibida ?? 0m);
+                    entradasLote += (s.CantidadRecibida.HasValue && s.CantidadRecibida.Value > 0 ? s.CantidadRecibida.Value : s.CantidadSolicitada);
                 }
                 entradasLote += s.NotaSalidaEmpaques
                     .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede)
@@ -661,12 +661,12 @@ namespace proy_back_Qbd.Services
                     insumoIds.Contains(ci.IdInsumo) &&
                     ci.Compra != null &&
                     ci.Compra.IdSede == idSede &&
-                    ci.Compra.FechaLab != null)
+                    (idSede == 15 || ci.Compra.FechaLab != null))
                 .GroupBy(ci => ci.IdInsumo)
                 .Select(g => new
                 {
                     IdInsumo = g.Key,
-                    Total = g.Sum(ci => ci.CantidadRecibida ?? 0m)
+                    Total = g.Sum(ci => (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0 ? ci.CantidadRecibida.Value : ci.CantidadSolicitada))
                 })
                 .ToListAsync();
 
@@ -1090,7 +1090,7 @@ namespace proy_back_Qbd.Services
                             Um = "UND",
                             Entradas =
                             //Suma de cantidad recibida de compraEmpaque
-                            s.Sum(x => x.CompraEmpaques!.Where(w => w.Compra != null && w.Compra.IdSede == idSede && w.Compra.FechaLab != null).Sum(ci => ci.CantidadRecibida)) +
+                            s.Sum(x => x.CompraEmpaques!.Where(w => w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)).Sum(ci => (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0 ? ci.CantidadRecibida.Value : ci.CantidadSolicitada))) +
                             //Suma de cantidad recibida de nota de salidas
                             s.Sum(x => x.CompraEmpaques.Sum(x2 => x2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeDestino == idSede).Sum(x3 => x3.CantidadRecibida > 0 ? x3.CantidadRecibida : x3.Cantidad))),
                             // adjuntar en pi, fm y nota de salida
