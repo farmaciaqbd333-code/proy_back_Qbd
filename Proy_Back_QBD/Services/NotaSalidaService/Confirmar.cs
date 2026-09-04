@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Data;
@@ -53,9 +53,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         x.IdSede == idSedeDestino &&
                         x.IdNotaSalidaInsumo == item.IdNotaSalidaArticulo);
 
+                decimal cantDestino = item.CantidadRecibida;
+                if (!string.IsNullOrEmpty(item.UnidadMedida) && (item.UnidadMedida.ToUpper() == "KG" || item.UnidadMedida.ToUpper() == "KILOGRAMOS"))
+                {
+                    cantDestino = item.CantidadRecibida * 1000m;
+                }
+
                 if (stockDestino != null)
                 {
-                    stockDestino.StockDisponible = item.CantidadRecibida;
+                    stockDestino.StockDisponible = cantDestino;
                     stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
                 }
                 else
@@ -75,7 +81,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     {
                         IdCompraInsumo = item.IdCompraArticulo,
                         Tipo = "MP",
-                        StockDisponible = item.CantidadRecibida,
+                        StockDisponible = cantDestino,
                         UnidadMedida = item.UnidadMedida ?? (stockOrigen != null ? stockOrigen.UnidadMedida : "G"),
                         IdSede = idSedeDestino,
                         IdNotaSalidaInsumo = item.IdNotaSalidaArticulo
