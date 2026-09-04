@@ -972,6 +972,32 @@ namespace proy_back_Qbd.Services
 
             try
             {
+                // Obtener lotes disponibles del insumo en esta sede para asignar origen a las salidas
+                var lotesDisponibles = await _context.CompraInsumos
+                    .Include(ci => ci.Compra)
+                    .Include(ci => ci.NotaSalidaInsumos)
+                        .ThenInclude(nsi => nsi.NotaSalida)
+                    .Where(w => w.IdInsumo == idInsumo &&
+                        (
+                            (w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) ||
+                            w.NotaSalidaInsumos.Any(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede && (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
+                        )
+                    )
+                    .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
+                    .ToListAsync();
+
+                var batchTrackers = lotesDisponibles.Select(ci => new
+                {
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(ci.Id),
+                    Lote = ci.Lote ?? "",
+                    Capacidad = ((ci.Compra != null && ci.Compra.IdSede == idSede && (idSede == 15 || ci.Compra.FechaLab != null))
+                        ? (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0 ? ci.CantidadRecibida.Value : ci.CantidadSolicitada)
+                        : 0m) +
+                        ci.NotaSalidaInsumos
+                            .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede && (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
+                            .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad))
+                }).Select(b => new { b.Registro, b.Lote, SaldoRestante = b.Capacidad }).ToList();
+
                 // 1. Salidas por Productos Intermedios con detalle de stock
                 var consumosStockPI = await _context.StockInsumoProductoIntermedios
                     .Include(x => x.InsumoProductoIntermedio)
@@ -1016,7 +1042,7 @@ namespace proy_back_Qbd.Services
                         .Include(x => x.ProductoIntermedio)
                             .ThenInclude(pi => pi.Elaborador)
                         .Where(x => x.IdInsumo == idInsumo && x.ProductoIntermedio.IdSede == idSede)
-                        .OrderByDescending(x => x.ProductoIntermedio.FechaCreacion)
+                        .OrderBy(x => x.ProductoIntermedio.FechaCreacion)
                         .Select(s => new SalidaInsumoRes
                         {
                             TipoSalida = "ELABORACIÓN PI",
@@ -1077,7 +1103,7 @@ namespace proy_back_Qbd.Services
                         .ThenInclude(f => f.Creador)
                     .Include(x => x.Insumo)
                     .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
-                    .OrderByDescending(x => x.FechaCreacion)
+                    .OrderBy(x => x.FechaCreacion)
                     .Select(s => new SalidaInsumoRes
                     {
                         TipoSalida = "FÓRMULA MAGISTRAL",
@@ -1096,6 +1122,36 @@ namespace proy_back_Qbd.Services
                 if (formulas != null && formulas.Any())
                 {
                     resultado.AddRange(formulas);
+                }
+
+                // Asignar RegistroLoteInsumo y LoteInsumo a las salidas locales (FM o PI directos) en orden FIFO
+                if (batchTrackers.Any())
+                {
+                    int currentBatchIdx = 0;
+                    decimal currentBatchRemaining = batchTrackers[0].SaldoRestante;
+
+                    var salidasLocales = resultado
+                        .Where(r => string.IsNullOrEmpty(r.RegistroLoteInsumo))
+                        .OrderBy(r => r.Fecha)
+                        .ToList();
+
+                    foreach (var s in salidasLocales)
+                    {
+                        decimal cant = s.Cantidad;
+                        while (currentBatchRemaining <= 0 && currentBatchIdx < batchTrackers.Count - 1)
+                        {
+                            currentBatchIdx++;
+                            currentBatchRemaining = batchTrackers[currentBatchIdx].SaldoRestante;
+                        }
+
+                        var activeBatch = batchTrackers[currentBatchIdx];
+                        s.RegistroLoteInsumo = activeBatch.Registro;
+                        if (!string.IsNullOrEmpty(activeBatch.Lote))
+                        {
+                            s.LoteInsumo = activeBatch.Lote;
+                        }
+                        currentBatchRemaining -= cant;
+                    }
                 }
             }
             catch (Exception ex)
