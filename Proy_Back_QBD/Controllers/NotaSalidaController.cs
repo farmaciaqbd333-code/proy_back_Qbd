@@ -70,6 +70,16 @@ namespace proy_back_Qbd.Controllers
             var lista = await _serviceNotaSalida.ObtenerListaPorSedeOrigen(idSedeOrigen);
             return Ok(lista);
         }
+        /// <summary>
+        /// Obtener cabecera de Nota Salida por ID
+        /// </summary>
+        [HttpGet("single/{id}")]
+        public async Task<ActionResult<NotaSalidaListaRes>> ObtenerPorId(int id)
+        {
+            var item = await _serviceNotaSalida.ObtenerPorId(id);
+            if (item == null) return NotFound(new { message = "Nota de salida no encontrada." });
+            return Ok(item);
+        }
 
         /// <summary>
         /// Listar Detalle de Nota Salida

@@ -7,6 +7,9 @@ public class NotaSalidaListaRes
     public required string Responsable { get; set; }
     public string? Observacion { get; set; }
     public string? Estado { get; set; }
+    public string? Origen { get; set; }
+    public int? IdSedeOrigen { get; set; }
+    public int? IdSedeDestino { get; set; }
 }
 public class RegistrosListaRes
 {

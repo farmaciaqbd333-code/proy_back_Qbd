@@ -86,6 +86,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     Codigo = UtilFamilia.CodigoNotaSalida(n.Id),
                     FechaCreacion = n.FechaCreacion,
                     Destino = n.SedeDestino != null ? n.SedeDestino.Nombre ?? string.Empty : string.Empty,
+                    Origen = n.SedeOrigen != null ? n.SedeOrigen.Nombre ?? string.Empty : string.Empty,
+                    IdSedeOrigen = n.IdSedeOrigen,
+                    IdSedeDestino = n.IdSedeDestino,
                     Responsable = n.Creador != null ? n.Creador!.Persona!.NombreCompleto! : "",
                     Observacion = n.Observacion,
                     Estado = (n.Estado == "RECIBIDO" || n.Estado == "RECEPCIONADO" ||
@@ -111,6 +114,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     Codigo = UtilFamilia.CodigoNotaSalida(n.Id),
                     FechaCreacion = n.FechaCreacion,
                     Destino = n.SedeDestino != null ? n.SedeDestino.Nombre ?? string.Empty : string.Empty,
+                    Origen = n.SedeOrigen != null ? n.SedeOrigen.Nombre ?? string.Empty : string.Empty,
+                    IdSedeOrigen = n.IdSedeOrigen,
+                    IdSedeDestino = n.IdSedeDestino,
                     Responsable = n.Creador != null ? n.Creador!.Persona!.NombreCompleto! : "",
                     Observacion = n.Observacion,
                     Estado = (n.Estado == "RECIBIDO" || n.Estado == "RECEPCIONADO" ||
@@ -124,7 +130,32 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .ToListAsync();
         }
 
-
+        public async Task<NotaSalidaListaRes?> ObtenerPorId(int id)
+        {
+            return await _context.NotaSalidas
+                .AsNoTracking()
+                .Where(w => w.Id == id)
+                .Select(n => new NotaSalidaListaRes
+                {
+                    IdNotaSalida = n.Id,
+                    Codigo = UtilFamilia.CodigoNotaSalida(n.Id),
+                    FechaCreacion = n.FechaCreacion,
+                    Destino = n.SedeDestino != null ? n.SedeDestino.Nombre ?? string.Empty : string.Empty,
+                    Origen = n.SedeOrigen != null ? n.SedeOrigen.Nombre ?? string.Empty : string.Empty,
+                    IdSedeOrigen = n.IdSedeOrigen,
+                    IdSedeDestino = n.IdSedeDestino,
+                    Responsable = n.Creador != null ? n.Creador!.Persona!.NombreCompleto! : "",
+                    Observacion = n.Observacion,
+                    Estado = (n.Estado == "RECIBIDO" || n.Estado == "RECEPCIONADO" ||
+                              n.NotaSalidaInsumos.Any(x => x.CantidadRecibida != null && x.CantidadRecibida > 0) ||
+                              n.NotaSalidaEmpaques.Any(x => x.CantidadRecibida > 0) ||
+                              n.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
+                              n.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0))
+                              ? "RECIBIDO"
+                              : "PROCESANDO"
+                })
+                .FirstOrDefaultAsync();
+        }
         public async Task Actualizar(int id, CreateReq request)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
