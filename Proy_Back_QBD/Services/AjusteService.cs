@@ -22,12 +22,16 @@ namespace Proy_back_QBD.Service.AjusteService
 
         public async Task<List<TablaAjustesRes>> ListaAjustes(string familia, int idSede)
         {
+            // Gestión de Inv / Ajuste debe mostrar única y exclusivamente el inventario de CENTRAL (no de otras sedes)
+            var centralSede = await _context.Sedes.FirstOrDefaultAsync(s => s.Nombre.ToUpper().Contains("CENTRAL") || s.Id == 15);
+            int idSedeCentral = centralSede?.Id ?? 15;
+
             List<TablaAjustesRes> Response = familia switch
             {
-                "MP" => await ObtenerMateriaPrima(idSede),
-                "ME" => await ObtenerMateriaEmpaques(idSede),
-                "PT" => await ObtenerProductosTerminados(idSede),
-                "ECO" => await ObtenerEconomatos(idSede),
+                "MP" => await ObtenerMateriaPrima(idSedeCentral),
+                "ME" => await ObtenerMateriaEmpaques(idSedeCentral),
+                "PT" => await ObtenerProductosTerminados(idSedeCentral),
+                "ECO" => await ObtenerEconomatos(idSedeCentral),
                 _ => throw new BadRequestException("Familia no Apta")
             };
 
