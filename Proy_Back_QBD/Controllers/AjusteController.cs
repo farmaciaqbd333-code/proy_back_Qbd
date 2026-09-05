@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -29,12 +29,14 @@ namespace proy_back_Qbd.Controllers
             List<TablaAjustesRes> response = await _ajusteService.ListaAjustes(familia, idSede);
             return Ok(response);
         }
+
         [HttpGet("detalle")]
-        public async Task<IActionResult> DetalleAjustes(int registroId, string familia)
+        public async Task<IActionResult> DetalleAjustes([FromQuery] int registroId, [FromQuery] string familia, [FromQuery] int? idInsumo, [FromQuery] int? idSede)
         {
-            List<DetalleAjusteRes> response = await _ajusteService.DetalleAjuste(registroId, familia);
+            List<DetalleAjusteRes> response = await _ajusteService.DetalleAjuste(registroId, familia, idInsumo, idSede);
             return Ok(response);
         }
+
         [HttpPost("registrar-ajuste")]
         public async Task<IActionResult> RegistrarAjuste([FromBody] CrearAjusteReq request)
         {

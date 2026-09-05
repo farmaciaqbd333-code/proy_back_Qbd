@@ -79,74 +79,136 @@ namespace Proy_back_QBD.Service.AjusteService
             }
         }
 
-        public async Task<List<DetalleAjusteRes>> DetalleAjuste(int registroId, string familia)
+        public async Task<List<DetalleAjusteRes>> DetalleAjuste(int registroId, string familia, int? idInsumo = null, int? idSede = null)
         {
+            if (familia == "PI") familia = "MP";
+
             if (FamiliasAptas.Contains(familia))
             {
                 List<DetalleAjusteRes> response = new();
                 if (familia == "MP")
                 {
-                    response = await _context.AjusteInsumos
-                    .AsNoTracking()
-                    .Where(w => w.StockInsumo != null && w.StockInsumo.IdCompraInsumo == registroId)
-                    .OrderByDescending(odb => odb.FechaCreacion)
-                    .Select(s => new DetalleAjusteRes()
+                    var query = _context.AjusteInsumos
+                        .Include(a => a.StockInsumo)
+                            .ThenInclude(s => s.CompraInsumo)
+                        .Include(a => a.Creador)
+                            .ThenInclude(c => c.Persona)
+                        .AsNoTracking();
+
+                    if (registroId > 0)
                     {
-                        FechaCreacion = s.FechaCreacion,
-                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
-                        Stock = s.StockAnterior,
-                        Diferencia = s.Ajuste,
-                        StockFinal = s.StockNuevo,
-                        Observacion = s.Observacion
-                    }).ToListAsync();
+                        query = query.Where(w => (w.StockInsumo != null && w.StockInsumo.IdCompraInsumo == registroId) || w.IdStockInsumo == registroId);
+                    }
+                    else if (idInsumo.HasValue && idInsumo.Value > 0)
+                    {
+                        query = query.Where(w =>
+                            ((w.StockInsumo != null && w.StockInsumo.CompraInsumo != null && w.StockInsumo.CompraInsumo.IdInsumo == idInsumo.Value) ||
+                             (_context.CompraInsumos.Any(ci => ci.Id == w.IdStockInsumo && ci.IdInsumo == idInsumo.Value))) &&
+                            (!idSede.HasValue || idSede.Value == 0 || (w.StockInsumo != null && w.StockInsumo.IdSede == idSede.Value)));
+                    }
+                    else
+                    {
+                        return response;
+                    }
+
+                    response = await query
+                        .OrderByDescending(odb => odb.FechaCreacion)
+                        .Select(s => new DetalleAjusteRes()
+                        {
+                            FechaCreacion = s.FechaCreacion,
+                            Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
+                            Stock = s.StockAnterior,
+                            Diferencia = s.Ajuste,
+                            StockFinal = s.StockNuevo,
+                            Observacion = s.Observacion ?? ""
+                        }).ToListAsync();
                 }
                 if (familia == "ME")
                 {
-                    response = await _context.AjusteEmpaques
-                    .AsNoTracking()
-                    .Where(w => w.StockEmpaque != null && w.StockEmpaque.IdCompraEmpaque == registroId)
-                    .OrderByDescending(odb => odb.FechaCreacion)
-                    .Select(s => new DetalleAjusteRes()
+                    var query = _context.AjusteEmpaques.AsNoTracking();
+                    if (registroId > 0)
                     {
-                        FechaCreacion = s.FechaCreacion,
-                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
-                        Stock = s.StockAnterior,
-                        Diferencia = s.Ajuste,
-                        StockFinal = s.StockNuevo,
-                        Observacion = s.Observacion ?? ""
-                    }).ToListAsync();
+                        query = query.Where(w => w.StockEmpaque != null && w.StockEmpaque.IdCompraEmpaque == registroId);
+                    }
+                    else if (idInsumo.HasValue && idInsumo.Value > 0)
+                    {
+                        query = query.Where(w => w.StockEmpaque != null && w.StockEmpaque.CompraEmpaque != null && w.StockEmpaque.CompraEmpaque.IdEmpaque == idInsumo.Value &&
+                            (!idSede.HasValue || idSede.Value == 0 || w.StockEmpaque.IdSede == idSede.Value));
+                    }
+                    else
+                    {
+                        return response;
+                    }
+
+                    response = await query
+                        .OrderByDescending(odb => odb.FechaCreacion)
+                        .Select(s => new DetalleAjusteRes()
+                        {
+                            FechaCreacion = s.FechaCreacion,
+                            Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
+                            Stock = s.StockAnterior,
+                            Diferencia = s.Ajuste,
+                            StockFinal = s.StockNuevo,
+                            Observacion = s.Observacion ?? ""
+                        }).ToListAsync();
                 }
                 if (familia == "PT")
                 {
-                    response = await _context.AjusteProductoTerminados
-                    .AsNoTracking()
-                    .Where(w => w.StockProducto != null && w.StockProducto.IdCompraProducto == registroId)
-                    .OrderByDescending(odb => odb.FechaCreacion)
-                    .Select(s => new DetalleAjusteRes()
+                    var query = _context.AjusteProductoTerminados.AsNoTracking();
+                    if (registroId > 0)
                     {
-                        FechaCreacion = s.FechaCreacion,
-                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
-                        Stock = s.StockAnterior,
-                        Diferencia = s.Ajuste,
-                        StockFinal = s.StockNuevo,
-                        Observacion = s.Observacion ?? ""
-                    }).ToListAsync();
+                        query = query.Where(w => w.StockProducto != null && w.StockProducto.IdCompraProducto == registroId);
+                    }
+                    else if (idInsumo.HasValue && idInsumo.Value > 0)
+                    {
+                        query = query.Where(w => w.StockProducto != null && w.StockProducto.CompraProducto != null && w.StockProducto.CompraProducto.IdProducto == idInsumo.Value &&
+                            (!idSede.HasValue || idSede.Value == 0 || w.StockProducto.IdSede == idSede.Value));
+                    }
+                    else
+                    {
+                        return response;
+                    }
+
+                    response = await query
+                        .OrderByDescending(odb => odb.FechaCreacion)
+                        .Select(s => new DetalleAjusteRes()
+                        {
+                            FechaCreacion = s.FechaCreacion,
+                            Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
+                            Stock = s.StockAnterior,
+                            Diferencia = s.Ajuste,
+                            StockFinal = s.StockNuevo,
+                            Observacion = s.Observacion ?? ""
+                        }).ToListAsync();
                 }
                 if (familia == "ECO")
                 {
-                    response = await _context.AjusteEconomatos
-                    .AsNoTracking()
-                    .Where(w => w.StockEconomato != null && w.StockEconomato.IdCompraEconomato == registroId)
-                    .OrderByDescending(odb => odb.FechaCreacion)
-                    .Select(s => new DetalleAjusteRes()
+                    var query = _context.AjusteEconomatos.AsNoTracking();
+                    if (registroId > 0)
                     {
-                        FechaCreacion = s.FechaCreacion,
-                        Usuario = s.Creador.Persona.NombreCompleto ?? "",
-                        Stock = s.StockAnterior,
-                        Diferencia = s.Ajuste,
-                        StockFinal = s.StockNuevo,
-                        Observacion = s.Observacion ?? ""
-                    }).ToListAsync();
+                        query = query.Where(w => w.StockEconomato != null && w.StockEconomato.IdCompraEconomato == registroId);
+                    }
+                    else if (idInsumo.HasValue && idInsumo.Value > 0)
+                    {
+                        query = query.Where(w => w.StockEconomato != null && w.StockEconomato.CompraEconomato != null && w.StockEconomato.CompraEconomato.IdEconomato == idInsumo.Value &&
+                            (!idSede.HasValue || idSede.Value == 0 || w.StockEconomato.IdSede == idSede.Value));
+                    }
+                    else
+                    {
+                        return response;
+                    }
+
+                    response = await query
+                        .OrderByDescending(odb => odb.FechaCreacion)
+                        .Select(s => new DetalleAjusteRes()
+                        {
+                            FechaCreacion = s.FechaCreacion,
+                            Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
+                            Stock = s.StockAnterior,
+                            Diferencia = s.Ajuste,
+                            StockFinal = s.StockNuevo,
+                            Observacion = s.Observacion ?? ""
+                        }).ToListAsync();
                 }
                 return response;
             }
