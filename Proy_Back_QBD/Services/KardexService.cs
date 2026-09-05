@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -62,23 +62,12 @@ namespace proy_back_Qbd.Services
                 .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
                 .ToListAsync();
 
-            var salidasFM = await _context.FormulasCC
-                .Where(f => f.InsumoId == idInsumo && f.Formula != null && f.Formula.SedeId == idSede)
-                .SumAsync(f => (decimal?)f.CantidadL) ?? 0m;
-
-            var salidasPI = await _context.InsumoProductoIntermedios
-                .Where(ipi => ipi.IdInsumo == idInsumo && ipi.ProductoIntermedio != null && ipi.ProductoIntermedio.IdSede == idSede)
-                .SumAsync(ipi => (decimal?)ipi.CantidadLote) ?? 0m;
-
             var resultado = new List<DetalleInsumoRes>();
-            decimal salidasPendientes = salidasFM + salidasPI;
 
             _logger.LogInformation(
-                "INICIO cálculo de stock de insumos | IdSede: {IdSede} | CantidadCompraInsumos: {CantidadCompraInsumos} | SalidasFM: {SalidasFM} | SalidasPI: {SalidasPI}",
+                "INICIO cálculo de stock de insumos | IdSede: {IdSede} | CantidadCompraInsumos: {CantidadCompraInsumos}",
                 idSede,
-                compraInsumos?.Count ?? 0,
-                salidasFM,
-                salidasPI
+                compraInsumos?.Count ?? 0
             );
 
             foreach (var compraInsumo in compraInsumos)
@@ -86,15 +75,17 @@ namespace proy_back_Qbd.Services
                 decimal entradasCompra = 0m;
                 decimal entradasTraslado = 0m;
 
-                // 1. Entrada por compra
+                // 1. Entrada por compra (Cantidad recibida de compra insumo)
                 if (compraInsumo.Compra != null &&
                     compraInsumo.Compra.IdSede == idSede &&
                     (idSede == 15 || compraInsumo.Compra.FechaLab != null))
                 {
-                    entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0) ? compraInsumo.CantidadRecibida.Value : compraInsumo.CantidadSolicitada;
+                    entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0)
+                        ? compraInsumo.CantidadRecibida.Value
+                        : compraInsumo.CantidadSolicitada;
                 }
 
-                // 2. Entradas por Notas de Salida RECIBIDAS en la sede
+                // 2. Entradas por Notas de Salida recibidas que tienen como sede destino la sede recibida como argumento
                 var notasSalidaDestino = compraInsumo.NotaSalidaInsumos
                     .Where(nsi =>
                         nsi.NotaSalida != null &&
@@ -107,58 +98,11 @@ namespace proy_back_Qbd.Services
 
                 decimal entradas = entradasCompra + entradasTraslado;
 
-                // 3. Salidas por Notas de Salida despachadas desde esta sede
-                var notasSalidaOrigen = compraInsumo.NotaSalidaInsumos
-                    .Where(nsi =>
-                        nsi.NotaSalida != null &&
-                        nsi.NotaSalida.IdSedeOrigen == idSede)
-                    .ToList();
+                // Las entradas son la cantidad recibida de compra insumo y las entradas de nota de salida hacia la sede destino, nada más
+                decimal saldo = entradas;
 
-                decimal salidasNS = notasSalidaOrigen
-                    .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
-
-                // 4. Ajustes
-                var stockInsumosSede = compraInsumo.StockInsumos
-                    .Where(si => si.IdSede == idSede)
-                    .ToList();
-
-                decimal ajustes = 0m;
-                foreach (var stockInsumo in stockInsumosSede)
-                {
-                    var ajustesStock = stockInsumo.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>();
-                    ajustes += ajustesStock.Sum(a => a.Ajuste);
-                }
-
-                // 5. Bajas por vencimiento
-                bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
-                decimal bajas = 0m;
-                if (estaVencido)
-                {
-                    bajas = stockInsumosSede.Sum(si => si.StockDisponible);
-                }
-
-                // 6. Deducción FIFO de Salidas Locales (Fórmulas Magistrales + PI)
-                decimal saldoBruto = entradas - salidasNS + ajustes - bajas;
-                decimal descuentoLocal = 0m;
-                if (salidasPendientes > 0 && saldoBruto > 0)
-                {
-                    if (saldoBruto >= salidasPendientes)
-                    {
-                        descuentoLocal = salidasPendientes;
-                        salidasPendientes = 0;
-                    }
-                    else
-                    {
-                        descuentoLocal = saldoBruto;
-                        salidasPendientes -= saldoBruto;
-                    }
-                }
-
-                decimal saldo = entradas - salidasNS - descuentoLocal + ajustes - bajas;
-                if (saldo < 0) saldo = 0;
-
-                // Omitir si no tiene movimientos en esta sede
-                if (entradas == 0 && salidasNS == 0 && saldo == 0)
+                // Omitir si no tiene entradas en esta sede
+                if (saldo == 0)
                 {
                     continue;
                 }
