@@ -1105,6 +1105,73 @@ namespace proy_back_Qbd.Services
 
             return resultado.OrderByDescending(x => x.Fecha).ToList();
         }
+
+        public async Task<List<BajaInsumoRes>> ObtenerBajasInsumo(int idInsumo, int idSede)
+        {
+            var resultado = new List<BajaInsumoRes>();
+            try
+            {
+                var ahora = DateTime.UtcNow;
+
+                var comprasVencidas = await _context.CompraInsumos
+                    .Include(ci => ci.Insumo)
+                    .Include(ci => ci.Compra)
+                        .ThenInclude(c => c!.Proveedor)
+                    .Include(ci => ci.Compra)
+                        .ThenInclude(c => c!.Sede)
+                    .Include(ci => ci.StockInsumos)
+                    .Where(ci =>
+                        ci.IdInsumo == idInsumo &&
+                        ci.FechaVencimiento < ahora &&
+                        ci.StockInsumos.Any(si => si.IdSede == idSede))
+                    .OrderBy(ci => ci.FechaVencimiento)
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                foreach (var ci in comprasVencidas)
+                {
+                    var stockSede = ci.StockInsumos
+                        .Where(si => si.IdSede == idSede)
+                        .Sum(si => si.StockDisponible);
+
+                    int diasVencido = 0;
+                    if (ci.FechaVencimiento.HasValue)
+                    {
+                        diasVencido = (int)(ahora.Date - ci.FechaVencimiento.Value.Date).TotalDays;
+                        if (diasVencido < 0) diasVencido = 0;
+                    }
+
+                    string reg = "MP" + Alfanumerico.ConvertToBase36(ci.Id);
+
+                    resultado.Add(new BajaInsumoRes
+                    {
+                        IdCompraInsumo = ci.Id,
+                        Registro = reg,
+                        IdInsumo = ci.IdInsumo,
+                        Codigo = $"MP-QbD-{ci.IdInsumo}",
+                        Descripcion = ci.Insumo?.Descripcion ?? "",
+                        Lote = ci.Lote ?? "-",
+                        CantidadBaja = stockSede,
+                        Um = ci.Um ?? (ci.Insumo?.UnidadMedida ?? "G"),
+                        FechaFabricacion = ci.FechaFabricacion,
+                        FechaVencimiento = ci.FechaVencimiento,
+                        DiasVencido = diasVencido,
+                        Estado = "VENCIDO",
+                        Proveedor = ci.Compra?.Proveedor?.Datos ?? "",
+                        SedeOrigen = ci.Compra?.Sede?.Nombre ?? "",
+                        DocumentoOrigen = ci.Compra?.NumeroComprobante ?? ci.Compra?.CodFacQBD ?? (ci.Compra != null && ci.Compra.Id != 0 ? $"OC-{ci.Compra.Id}" : ""),
+                        Observacion = ci.Observacion
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener bajas de insumo {IdInsumo} en sede {IdSede}", idInsumo, idSede);
+            }
+
+            return resultado;
+        }
+
         public async Task<SiteSupply> AssignLocation(AssignLocationReq request)
         {
             SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);

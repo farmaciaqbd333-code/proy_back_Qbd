@@ -75,6 +75,13 @@ namespace proy_back_Qbd.Controllers
             return Ok(resultado);
         }
 
+        [HttpGet("bajas-insumo/{insumoId}")]
+        public async Task<IActionResult> ObtenerBajasInsumo(int insumoId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerBajasInsumo(insumoId, idSede);
+            return Ok(resultado);
+        }
+
         [HttpPut("asignar-ubicacion")]
         public async Task<IActionResult> AssignLocation(AssignLocationReq request)
         {
