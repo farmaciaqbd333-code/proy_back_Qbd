@@ -31,6 +31,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string? TipoOrigen { get; set; }
         public string? SedeOrigen { get; set; }
         public string? DocumentoOrigen { get; set; }
+        public string? NumeroFactura { get; set; }
     }
 
     public class DetalleEmpaqueRes

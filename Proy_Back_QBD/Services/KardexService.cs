@@ -113,6 +113,7 @@ namespace proy_back_Qbd.Services
                 string sedeOrigen = "";
                 string docOrigen = "";
                 DateTime? fechaIngreso = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
+                string? numeroFactura = compraInsumo.Compra?.NumeroComprobante;
 
                 if (notasSalidaDestino.Any())
                 {
@@ -124,12 +125,14 @@ namespace proy_back_Qbd.Services
                     {
                         fechaIngreso = ultimaNS.FechaSalida != default ? ultimaNS.FechaSalida : ultimaNS.FechaCreacion;
                     }
+                    numeroFactura = (ultimaNS?.Id ?? notasSalidaDestino.LastOrDefault()?.IdNotaSalida)?.ToString();
                 }
                 else if (compraInsumo.Compra != null)
                 {
                     tipoOrigen = "Orden de Compra";
                     sedeOrigen = compraInsumo.Compra.Proveedor?.Datos ?? compraInsumo.Compra.Sede?.Nombre ?? "";
                     docOrigen = compraInsumo.Compra.NumeroComprobante ?? compraInsumo.Compra.CodFacQBD ?? (compraInsumo.Compra.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
+                    numeroFactura = compraInsumo.Compra.NumeroComprobante;
                 }
 
                 var detalle = new DetalleInsumoRes
@@ -144,7 +147,8 @@ namespace proy_back_Qbd.Services
                     Observacion = compraInsumo.Observacion,
                     TipoOrigen = tipoOrigen,
                     SedeOrigen = sedeOrigen,
-                    DocumentoOrigen = docOrigen
+                    DocumentoOrigen = docOrigen,
+                    NumeroFactura = numeroFactura
                 };
 
                 resultado.Add(detalle);
@@ -280,7 +284,8 @@ namespace proy_back_Qbd.Services
                     FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.Observacion
+                    Observacion = s.Observacion,
+                    NumeroFactura = s.Compra?.NumeroComprobante
                 });
             }
 
