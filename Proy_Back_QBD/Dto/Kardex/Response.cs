@@ -36,6 +36,7 @@ namespace proy_back_Qbd.Models.Kardex
 
     public class DetalleEmpaqueRes
     {
+        public string? NumeroFactura { get; set; }
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
         public decimal? Saldo { get; set; }

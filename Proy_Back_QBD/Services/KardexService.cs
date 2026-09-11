@@ -113,7 +113,7 @@ namespace proy_back_Qbd.Services
                 string sedeOrigen = "";
                 string docOrigen = "";
                 DateTime? fechaIngreso = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
-                string? numeroFactura = compraInsumo.Compra?.SerieComprobante + compraInsumo.Compra?.NumeroComprobante;
+                string? numeroFactura = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
 
                 if (notasSalidaDestino.Any())
                 {
@@ -132,7 +132,7 @@ namespace proy_back_Qbd.Services
                     tipoOrigen = "Orden de Compra";
                     sedeOrigen = compraInsumo.Compra.Proveedor?.Datos ?? compraInsumo.Compra.Sede?.Nombre ?? "";
                     docOrigen = compraInsumo.Compra.NumeroComprobante ?? compraInsumo.Compra.CodFacQBD ?? (compraInsumo.Compra.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
-                    numeroFactura = compraInsumo.Compra?.SerieComprobante + compraInsumo.Compra.NumeroComprobante;
+                    numeroFactura = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
                 }
 
                 var detalle = new DetalleInsumoRes
@@ -227,7 +227,8 @@ namespace proy_back_Qbd.Services
                     FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.Observacion
+                    Observacion = s.Observacion,
+                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? "")
                 });
             }
 
@@ -285,7 +286,7 @@ namespace proy_back_Qbd.Services
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.Observacion,
-                    NumeroFactura = s.Compra?.NumeroComprobante
+                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? "")
                 });
             }
 
