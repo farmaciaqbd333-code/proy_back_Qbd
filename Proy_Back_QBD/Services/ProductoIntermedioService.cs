@@ -218,6 +218,9 @@ namespace proy_back_Qbd.Services
                         decimal cantidadConsumida =
                             Math.Min(stockInsumo.StockDisponible, cantidadUsar);
 
+                        if (cantidadConsumida <= 0)
+                            continue;
+
                         _context.StockInsumoProductoIntermedios.Add(
                             new StockInsumoProductoIntermedio
                             {
@@ -966,69 +969,59 @@ namespace proy_back_Qbd.Services
                         : ex.Message);
             }
         }
-        public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
+                        public async Task<IEnumerable<ConsumoPIRes>> DetalleConsumo(int id)
         {
-            // 1. Intentar obtener consumos registrados con lotes de stock
-            var stockConsumos = await _context.StockInsumoProductoIntermedios
-                .Where(w => w.InsumoProductoIntermedio.IdProductoIntermedio == id)
-                .OrderBy(ob => ob.InsumoProductoIntermedio.Variable)
-                .Select(s => new ConsumoPIRes()
-                {
-                    Codigo = UtilFamilia.CodigoInsumo(s.InsumoProductoIntermedio.IdInsumo),
-                    Porcentaje = s.InsumoProductoIntermedio.Porcentaje,
-                    Descripcion = s.InsumoProductoIntermedio.Insumo != null ? s.InsumoProductoIntermedio.Insumo.Descripcion : "",
-                    V = s.InsumoProductoIntermedio.Variable,
-                    Lote = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null
-                        ? s.StockInsumo.CompraInsumo.Lote
-                        : (s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null ? s.StockInsumo.ProductoIntermedio.Lote : ""),
-                    Registro = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null
-                        ? "MP" + Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id)
-                        : (s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null
-                            ? Alfanumerico.ConvertToBase36(s.StockInsumo.ProductoIntermedio.Id)
-                            : (s.IdStockInsumo > 0 ? Alfanumerico.ConvertToBase36(s.IdStockInsumo) : "")),
-                    CantidadUnidad = s.Cantidad,
-                    FactorCorreccion = s.InsumoProductoIntermedio.FactorCorrecion,
-                    Dilucion = s.InsumoProductoIntermedio.Dilucion,
-                    Um = s.UnidadMedida,
-                    CantidadLote = s.Cantidad,
-                    CSP = s.InsumoProductoIntermedio.Csp
-                })
-                .AsNoTracking()
-                .ToListAsync();
-
-            if (stockConsumos != null && stockConsumos.Any())
-            {
-                return stockConsumos;
-            }
-
-            // 2. Si no hay lotes de stock vinculados, obtener directamente de los insumos de la fórmula del producto intermedio
+            // 1. Obtener la fórmula completa registrada para este Producto Intermedio (fuente de verdad íntegra)
             var insumosFormula = await _context.InsumoProductoIntermedios
+                .Include(i => i.Insumo)
+                .Include(i => i.StockInsumoProductoIntermedios)
+                    .ThenInclude(s => s.StockInsumo)
+                        .ThenInclude(si => si.CompraInsumo)
                 .Where(w => w.IdProductoIntermedio == id)
                 .OrderBy(ob => ob.Variable)
-                .Select(s => new ConsumoPIRes()
-                {
-                    Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
-                    Porcentaje = s.Porcentaje,
-                    Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
-                    V = s.Variable,
-                    Lote = "",
-                    Registro = "",
-                    CantidadUnidad = s.CantidadUnidad,
-                    FactorCorreccion = s.FactorCorrecion,
-                    Dilucion = s.Dilucion,
-                    Um = s.UnidadMedida,
-                    CantidadLote = s.CantidadLote,
-                    CSP = s.Csp
-                })
-                .AsNoTracking()
+                .ThenBy(ob => ob.Id)
                 .ToListAsync();
 
             if (insumosFormula != null && insumosFormula.Any())
             {
-                return insumosFormula;
+                var res = insumosFormula.Select(s => {
+                    string lote = s.Lote ?? "";
+                    string registro = s.Registro ?? "";
+
+                    if (string.IsNullOrEmpty(lote) || string.IsNullOrEmpty(registro))
+                    {
+                        var firstStock = s.StockInsumoProductoIntermedios.FirstOrDefault(x => x.Cantidad > 0);
+                        if (firstStock != null && firstStock.StockInsumo != null)
+                        {
+                            if (string.IsNullOrEmpty(lote))
+                                lote = firstStock.StockInsumo.CompraInsumo?.Lote ?? "";
+                            if (string.IsNullOrEmpty(registro) && firstStock.StockInsumo.CompraInsumo != null)
+                                registro = "MP" + Alfanumerico.ConvertToBase36(firstStock.StockInsumo.CompraInsumo.Id);
+                        }
+                    }
+
+                    return new ConsumoPIRes()
+                    {
+                        Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
+                        Porcentaje = s.Porcentaje,
+                        Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                        V = s.Variable,
+                        Lote = lote,
+                        Registro = registro,
+                        CantidadUnidad = s.CantidadUnidad,
+                        FactorCorreccion = s.FactorCorrecion,
+                        Dilucion = s.Dilucion,
+                        Um = s.UnidadMedida,
+                        CantidadLote = s.CantidadLote,
+                        Practica = s.CantidadLote,
+                        CSP = s.Csp
+                    };
+                }).ToList();
+
+                return res;
             }
 
-            // 3. Fallback maestro: Buscar por el IdInsumo asociado al ProductoIntermedio (fórmula patrón)
+            // 2. Fallback maestro: Buscar por el IdInsumo asociado al ProductoIntermedio (fórmula patrón)
             var pi = await _context.ProductosIntermedios.FindAsync(id);
             if (pi != null && pi.IdInsumo > 0)
             {
