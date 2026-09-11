@@ -113,7 +113,7 @@ namespace proy_back_Qbd.Services
                 string sedeOrigen = "";
                 string docOrigen = "";
                 DateTime? fechaIngreso = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
-                string? numeroFactura = compraInsumo.Compra?.NumeroComprobante;
+                string? numeroFactura = compraInsumo.Compra?.SerieComprobante + compraInsumo.Compra?.NumeroComprobante;
 
                 if (notasSalidaDestino.Any())
                 {
@@ -132,7 +132,7 @@ namespace proy_back_Qbd.Services
                     tipoOrigen = "Orden de Compra";
                     sedeOrigen = compraInsumo.Compra.Proveedor?.Datos ?? compraInsumo.Compra.Sede?.Nombre ?? "";
                     docOrigen = compraInsumo.Compra.NumeroComprobante ?? compraInsumo.Compra.CodFacQBD ?? (compraInsumo.Compra.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
-                    numeroFactura = compraInsumo.Compra.NumeroComprobante;
+                    numeroFactura = compraInsumo.Compra?.SerieComprobante + compraInsumo.Compra.NumeroComprobante;
                 }
 
                 var detalle = new DetalleInsumoRes
@@ -383,7 +383,7 @@ namespace proy_back_Qbd.Services
                     i.UnidadMedida,
                     i.Tipo
                 })
-                .OrderBy(o=> o.Id)
+                .OrderBy(o => o.Id)
                 .ToListAsync();
 
             _logger.LogInformation(
