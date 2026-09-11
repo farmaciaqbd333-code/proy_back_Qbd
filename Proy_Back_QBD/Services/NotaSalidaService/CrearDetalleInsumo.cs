@@ -95,8 +95,13 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 itemUm,
                 cantDescontar);
 
-            if (stockOrigen.StockDisponible < cantDescontar)
+            if (stockOrigen.StockDisponible < cantDescontar || stockOrigen.StockDisponible <= 0)
             {
+                decimal dispFriendly = (stockUm == "G" && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
+                    ? Math.Round(stockOrigen.StockDisponible / 1000m, 3)
+                    : stockOrigen.StockDisponible;
+                string dispUm = (stockUm == "G" && (itemUm == "KG" || itemUm == "KILOGRAMOS")) ? "KG" : stockUm;
+
                 _logger.LogWarning(
                     "Stock insuficiente. Disponible={Disponible} {StockUm}, Solicitado={Solicitado} {ItemUm} (descuento={CantDescontar})",
                     stockOrigen.StockDisponible,
@@ -105,7 +110,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     itemUm,
                     cantDescontar);
 
-                throw new Exception($"Stock insuficiente. Disponible: {stockOrigen.StockDisponible} {stockUm}, Solicitado: {item.Cantidad} {itemUm}");
+                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {dispFriendly} {dispUm}, Solicitado: {item.Cantidad} {itemUm}. No se puede realizar una salida mayor al stock existente.");
             }
 
             var detalle = new NotaSalidaInsumo
