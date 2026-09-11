@@ -59,7 +59,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             decimal cantDescontar = item.Cantidad;
 
             // Unit conversions between G, KG and UND
-            if ((stockUm == "G" || stockUm == "GR") && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
+            if (!isPI && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
+            {
+                cantDescontar = item.Cantidad * 1000m;
+            }
+            else             if ((stockUm == "G" || stockUm == "GR") && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
             {
                 cantDescontar = item.Cantidad * 1000m;
             }

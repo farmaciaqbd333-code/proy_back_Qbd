@@ -330,7 +330,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
+                        StockDisponible = (x.Um == "KG" || x.Um == "KILOGRAMOS")
+                            ? Math.Round((x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m) / 1000m, 3)
+                            : x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -452,7 +454,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = x.Codigo,
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.Stock
+                        StockDisponible = (x.Um == "KG" || x.Um == "KILOGRAMOS")
+                            ? Math.Round((x.Stock ?? 0m) / 1000m, 3)
+                            : x.Stock
                     }).ToList();
 
                 case "ECO":
