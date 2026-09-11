@@ -21,6 +21,8 @@ namespace Proy_back_QBD.Dto.Auxiliares
         public string? Color { get; set; }  // Puede ser nulo
         public string? Olor { get; set; }  // Puede ser nulo
         public string? Ph { get; set; }  // Puede ser nulo
+        public string? Lote { get; set; }  // Lote de producción
+        public string? Registro { get; set; }  // Registro de la fórmula
         public List<InsumoFormR>? Insumos { get; set; }  // Puede ser nulo
     }
 }

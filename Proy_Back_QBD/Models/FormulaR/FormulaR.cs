@@ -40,6 +40,10 @@ namespace Proy_back_QBD.Models
         public string? Tipo { get; set; }  // TÓPICO / ORAL
         [Column("ph")]
         public string? Ph { get; set; }  // Puede ser nulo
+                [Column("lote")]
+        public string? Lote { get; set; }  // Lote de producción
+        [Column("registro")]
+        public string? Registro { get; set; }  // Registro de la fórmula
         [Column("fecha_creacion")]
         public DateTime FechaCreacion { get; set; } = DateTime.Now;           // Fecha de creación del pedido
         [Column("fecha_modificacion")]

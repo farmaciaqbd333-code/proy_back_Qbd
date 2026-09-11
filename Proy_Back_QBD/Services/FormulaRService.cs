@@ -8,7 +8,6 @@ using Proy_back_QBD.Dto.Request;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
-
 namespace Proy_back_QBD.Services
 {
     public class FormulaRService : IFormulaRService
@@ -20,11 +19,9 @@ namespace Proy_back_QBD.Services
             _context = context;
             _mapper = mapper;
         }
-
         public async Task<string> Crear(FormulaRCreReq request)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 // Fórmula
@@ -39,10 +36,10 @@ namespace Proy_back_QBD.Services
                 formulaR.ModificadorId = formulaR.CreadorId;
                 formulaR.FechaCreacion = DateTime.Now;
                 formulaR.FechaModificacion = DateTime.Now;
-
+                formulaR.Lote = request.FormulaR.Lote;
+                formulaR.Registro = request.FormulaR.Registro;
                 await _context.FormulasR.AddAsync(formulaR);
                 await _context.SaveChangesAsync();
-
                 // Insumos
                 if (request.InsumosR != null && request.InsumosR.Any())
                 {
@@ -53,11 +50,9 @@ namespace Proy_back_QBD.Services
                         insumoR.FechaCreacion = DateTime.Now;
                         insumoR.Cantidad = item.Cantidad / 1000;
                         insumoR.FechaModificacion = DateTime.Now;
-
                         await _context.InsumosR.AddAsync(insumoR);
                     }
                 }
-
                 if (request.FormulaR.IdSede.HasValue && request.FormulaR.IdSede.Value > 0)
                 {
                     FormulaRapidaSede formulaRapidaSede = new()
@@ -65,14 +60,10 @@ namespace Proy_back_QBD.Services
                         IdSede = request.FormulaR.IdSede.Value,
                         IdFormulaRapida = formulaR.Id
                     };
-
                     await _context.FormulaRSedes.AddAsync(formulaRapidaSede);
                 }
-
                 await _context.SaveChangesAsync();
-
                 await transaction.CommitAsync();
-
                 return "Registro Exitoso";
             }
             catch (Exception ex)
@@ -90,17 +81,16 @@ namespace Proy_back_QBD.Services
                 var formulaR = await _context.FormulasR
                     .Include(i => i.InsumoR)
                     .FirstOrDefaultAsync(f => f.Id == id);
-
                 if (formulaR == null)
                 {
                     return "La fórmula no existe.";
                 }
-
                 // Actualizamos las propiedades de FormulaR
                 _mapper.Map(request.FormulaR, formulaR);
                 formulaR.FechaModificacion = DateTime.Now;
+                if (request.FormulaR.Lote != null) formulaR.Lote = request.FormulaR.Lote;
+                if (request.FormulaR.Registro != null) formulaR.Registro = request.FormulaR.Registro;
                 formulaR.Cantidad = request.FormulaR.Cantidad / 1000;
-
                 var empaqueVal = request.FormulaR.IdEmpaque ?? request.FormulaR.EmpaqueId;
                 if (empaqueVal.HasValue && empaqueVal.Value > 0)
                 {
@@ -110,7 +100,6 @@ namespace Proy_back_QBD.Services
                 {
                     formulaR.IdEmpaque = null;
                 }
-
                 if (request.FormulaR.IdInsumo.HasValue && request.FormulaR.IdInsumo.Value > 0)
                 {
                     formulaR.IdInsumo = request.FormulaR.IdInsumo.Value;
@@ -119,13 +108,11 @@ namespace Proy_back_QBD.Services
                 {
                     formulaR.IdInsumo = null;
                 }
-
                 // Reemplazar la lista de insumos: eliminar anteriores e insertar la lista recibida
                 if (formulaR.InsumoR != null && formulaR.InsumoR.Any())
                 {
                     _context.InsumosR.RemoveRange(formulaR.InsumoR);
                 }
-
                 if (request.InsumosR != null && request.InsumosR.Any())
                 {
                     foreach (var insumoReq in request.InsumosR)
@@ -147,7 +134,6 @@ namespace Proy_back_QBD.Services
                         }
                     }
                 }
-
                 await _context.SaveChangesAsync();
                 return "Actualización exitosa";
             }
@@ -157,7 +143,6 @@ namespace Proy_back_QBD.Services
                 return $"Error: {ex.Message} -> {innerMsg}";
             }
         }
-
         public async Task<string> Eliminar(int formulaRId)
         {
             try
@@ -166,24 +151,19 @@ namespace Proy_back_QBD.Services
                 var formulaR = await _context.FormulasR
                     .Include(f => f.InsumoR) // Cargar los insumos relacionados
                     .FirstOrDefaultAsync(f => f.Id == formulaRId);
-
                 if (formulaR == null)
                 {
                     return "La fórmula no existe.";
                 }
-
                 // Eliminar insumos relacionados (si no hay eliminación en cascada)
                 if (formulaR.InsumoR != null && formulaR.InsumoR.Any())
                 {
                     _context.InsumosR.RemoveRange(formulaR.InsumoR);
                 }
-
                 // Eliminar la fórmula
                 _context.FormulasR.Remove(formulaR);
-
                 // Guardar cambios
                 var result = await _context.SaveChangesAsync();
-
                 return result > 0
                     ? "Eliminación exitosa"
                     : "No se pudo eliminar la fórmula. Intente nuevamente.";
@@ -194,29 +174,22 @@ namespace Proy_back_QBD.Services
                 return $"Error: {ex.Message}";
             }
         }
-
-
         public async Task<List<FormulaRRes>?> Listar(int idSede, string clasificacion)
         {
             List<int> idFormulasR = await _context.FormulaRSedes
                 .Where(w => w.IdSede == idSede)
                 .Select(s => s.IdFormulaRapida).ToListAsync();
-
             List<int> formulasConSede = await _context.FormulaRSedes
                 .Select(s => s.IdFormulaRapida).Distinct().ToListAsync();
-
             var query = _context.FormulasR.AsQueryable();
-
             if (idSede > 0)
             {
                 query = query.Where(w => idFormulasR.Contains(w.Id) || !formulasConSede.Contains(w.Id));
             }
-
             if (!string.IsNullOrEmpty(clasificacion) && clasificacion.ToUpper() != "TODAS")
             {
                 query = query.Where(w => w.Clasificacion == clasificacion);
             }
-
             List<FormulaRRes> response = await query
                 .OrderByDescending(obd => obd.Id)
                 .Select(s => new FormulaRRes
@@ -234,6 +207,8 @@ namespace Proy_back_QBD.Services
                     Color = s.Color,
                     Olor = s.Olor,
                     Ph = s.Ph,
+                    Lote = s.Lote,
+                    Registro = s.Registro,
                     Insumos = s.InsumoR
                     .OrderBy(obd => obd.Id)
                     .Select(i => new InsumoFormR
@@ -249,33 +224,26 @@ namespace Proy_back_QBD.Services
                     }).ToList()
                 })
                 .ToListAsync();
-
             return response;
         }
-
         public async Task<string> ActualizarSedes(FormulaRapidaSedeUpdReq request)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
-
             try
             {
                 var actuales = await _context.FormulaRSedes
                     .Where(x => x.IdFormulaRapida == request.IdFormulaRapida)
                     .ToListAsync();
-
                 // Eliminar relaciones que ya no existen
                 var eliminar = actuales
                     .Where(x => !request.IdsSede.Contains(x.IdSede))
                     .ToList();
-
                 if (eliminar.Any())
                     _context.FormulaRSedes.RemoveRange(eliminar);
-
                 // Agregar nuevas relaciones
                 var existentes = actuales
                     .Select(x => x.IdSede)
                     .ToHashSet();
-
                 var agregar = request.IdsSede
                     .Where(id => !existentes.Contains(id))
                     .Select(id => new FormulaRapidaSede
@@ -283,12 +251,9 @@ namespace Proy_back_QBD.Services
                         IdFormulaRapida = request.IdFormulaRapida,
                         IdSede = id
                     });
-
                 await _context.FormulaRSedes.AddRangeAsync(agregar);
-
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
                 return "Registro actualizado correctamente.";
             }
             catch (Exception ex)

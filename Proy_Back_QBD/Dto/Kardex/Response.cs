@@ -22,6 +22,8 @@ namespace proy_back_Qbd.Models.Kardex
     {
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
+        public decimal? CantidadIngresada { get; set; }
+        public decimal? Salidas { get; set; }
         public decimal? Saldo { get; set; }
         public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }
@@ -39,6 +41,8 @@ namespace proy_back_Qbd.Models.Kardex
         public string? NumeroFactura { get; set; }
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
+        public decimal? CantidadIngresada { get; set; }
+        public decimal? Salidas { get; set; }
         public decimal? Saldo { get; set; }
         public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }

@@ -67,6 +67,8 @@ namespace Proy_back_QBD.Request
     }
     public class InsumoProductoIntermedioReq
     {
+        public string? Lote { get; set; }
+        public string? Registro { get; set; }
         public int IdInsumo { get; set; }
         public required string CodigoInsumo { get; set; }
         public required string Tipo { get; set; }
@@ -81,6 +83,8 @@ namespace Proy_back_QBD.Request
     }
     public class InsumoProductoIntermedioRes
     {
+        public string? Lote { get; set; }
+        public string? Registro { get; set; }
         public int IdInsumo { get; set; }
         public required string CodigoInsumo { get; set; }
         public decimal Porcentaje { get; set; }

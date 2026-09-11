@@ -14,6 +14,10 @@ public class InsumoProductoIntermedio
     public required string UnidadMedida { get; set; }
     public decimal CantidadLote { get; set; }
     public bool Csp { get; set; }
+    [Column("lote")]
+    public string? Lote { get; set; }
+    [Column("registro")]
+    public string? Registro { get; set; }
     public DateTime FechaCreacion { get; set; }
     public DateTime? FechaModificacion { get; set; }
 

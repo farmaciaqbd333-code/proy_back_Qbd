@@ -96,16 +96,32 @@ namespace proy_back_Qbd.Services
                 entradasTraslado = notasSalidaDestino
                     .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad));
 
-                decimal entradas = entradasCompra + entradasTraslado;
-
-                // Las entradas son la cantidad recibida de compra insumo y las entradas de nota de salida hacia la sede destino, nada más
-                decimal saldo = entradas;
+                                decimal entradas = entradasCompra + entradasTraslado;
 
                 // Omitir si no tiene entradas en esta sede
-                if (saldo == 0)
+                if (entradas == 0)
                 {
                     continue;
                 }
+
+                var stockSede = compraInsumo.StockInsumos
+                    .Where(si => si.IdSede == idSede)
+                    .ToList();
+
+                decimal saldoQueda = 0m;
+                if (stockSede.Any())
+                {
+                    saldoQueda = stockSede.Sum(si => si.StockDisponible);
+                }
+                else
+                {
+                    decimal salidasNS = compraInsumo.NotaSalidaInsumos
+                        .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
+                        .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
+                    saldoQueda = Math.Max(0m, entradas - salidasNS);
+                }
+
+                decimal salidas = Math.Max(0m, entradas - saldoQueda);
 
                 var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
@@ -139,7 +155,9 @@ namespace proy_back_Qbd.Services
                 {
                     Registro = registro,
                     Lote = compraInsumo.Lote ?? "",
-                    Saldo = saldo,
+                    CantidadIngresada = entradas,
+                    Salidas = salidas,
+                    Saldo = saldoQueda,
                     Um = compraInsumo.Um ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : "G"),
                     FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
@@ -165,6 +183,8 @@ namespace proy_back_Qbd.Services
                 {
                     Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
+                    CantidadIngresada = s.LoteEstTotal ?? s.LoteEstandar ?? 0,
+                    Salidas = Math.Max(0, (s.LoteEstTotal ?? s.LoteEstandar ?? 0) - (s.StockInsumo != null ? s.StockInsumo.StockDisponible : (s.LoteEstTotal ?? s.LoteEstandar ?? 0))),
                     Saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : (s.LoteEstTotal ?? s.LoteEstandar ?? 0),
                     FechaCompra = s.FechaCreacion,
                     FechaFabricacion = s.FechaCreacion,
@@ -223,6 +243,8 @@ namespace proy_back_Qbd.Services
                 {
                     Registro = "ME" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
+                    CantidadIngresada = entradasLote,
+                    Salidas = Math.Max(0m, entradasLote - saldo),
                     Saldo = saldo,
                     FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
@@ -281,6 +303,8 @@ namespace proy_back_Qbd.Services
                 {
                     Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
+                    CantidadIngresada = entradasLote,
+                    Salidas = Math.Max(0m, entradasLote - saldo),
                     Saldo = saldo,
                     FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,

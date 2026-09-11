@@ -182,4 +182,22 @@ logger.LogInformation("\nSwagger disponible en:".PadRight(30, ' ') + " http://l
 //     var users = await db.CompraInsumos.FindAsync(53);
 //     Console.WriteLine(users.FechaVencimiento);
 // }
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<ApiContext>();
+        db.Database.ExecuteSqlRaw(@"
+            ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
+            ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;
+            ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS lote text;
+            ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS registro text;
+        ");
+        Console.WriteLine("--> Base de datos: Columnas lote y registro verificadas/creadas correctamente.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"DB Auto-migration error: {ex.Message}");
+    }
+}
 app.Run();
