@@ -22,18 +22,25 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 request.IdSedeOrigen);
 
             bool isPI = (item.Familia ?? "").Trim().ToUpper() == "PI";
+            int sedeOrigen = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
 
             var stockOrigen = await _context.StockInsumos
                 .Include(s => s.ProductoIntermedio)
-                .FirstOrDefaultAsync(x =>
+                .Where(x =>
                     (isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro) &&
-                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+                    x.IdSede == sedeOrigen)
+                .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
+                .ThenByDescending(x => x.StockDisponible)
+                .FirstOrDefaultAsync();
 
             if (stockOrigen == null)
             {
                 stockOrigen = await _context.StockInsumos
                     .Include(s => s.ProductoIntermedio)
-                    .FirstOrDefaultAsync(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro);
+                    .Where(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro)
+                    .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
+                    .ThenByDescending(x => x.StockDisponible)
+                    .FirstOrDefaultAsync();
             }
 
             if (stockOrigen == null)
@@ -51,20 +58,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             string itemUm = (item.Um ?? "G").Trim().ToUpper();
             decimal cantDescontar = item.Cantidad;
 
-            // Unit conversions between G and KG
-            if ((stockUm == "G" || stockUm == "GR") && itemUm == "KG")
+            // Unit conversions between G, KG and UND
+            if ((stockUm == "G" || stockUm == "GR") && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
             {
                 cantDescontar = item.Cantidad * 1000m;
             }
-            else if (stockUm == "KG" && (itemUm == "G" || itemUm == "GR"))
+            else if ((stockUm == "KG" || stockUm == "KILOGRAMOS") && (itemUm == "G" || itemUm == "GR"))
             {
                 cantDescontar = item.Cantidad / 1000m;
+            }
+            else if (stockUm == "UND" && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
+            {
+                if (stockOrigen.StockDisponible >= item.Cantidad * 1000m)
+                {
+                    cantDescontar = item.Cantidad * 1000m;
+                }
             }
             else if (stockOrigen.StockDisponible < item.Cantidad && item.Cantidad <= stockOrigen.StockDisponible * 1000m && (itemUm == "G" || itemUm == "GR"))
             {
                 cantDescontar = item.Cantidad / 1000m;
             }
-            else if (stockOrigen.StockDisponible > 0 && stockOrigen.StockDisponible >= item.Cantidad * 1000m && itemUm == "KG")
+            else if (stockOrigen.StockDisponible > 0 && stockOrigen.StockDisponible >= item.Cantidad * 1000m && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
             {
                 cantDescontar = item.Cantidad * 1000m;
             }
@@ -129,15 +143,20 @@ namespace Proy_back_QBD.Services.NotaSalidaService
              CreateReq request,
              NotaSalidaFamiliasCreateReq item)
         {
+            int sedeOrigenEco = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
             var stockOrigen = await _context.StockEconomatos
-                .FirstOrDefaultAsync(x =>
-                    x.IdCompraEconomato == item.Registro &&
-                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+                .Where(x => x.IdCompraEconomato == item.Registro && x.IdSede == sedeOrigenEco)
+                .OrderBy(x => x.IdNotaSalidaEconomato != null ? 1 : 0)
+                .ThenByDescending(x => x.StockDisponible)
+                .FirstOrDefaultAsync();
 
             if (stockOrigen == null)
             {
                 stockOrigen = await _context.StockEconomatos
-                    .FirstOrDefaultAsync(x => x.IdCompraEconomato == item.Registro);
+                    .Where(x => x.IdCompraEconomato == item.Registro)
+                    .OrderBy(x => x.IdNotaSalidaEconomato != null ? 1 : 0)
+                    .ThenByDescending(x => x.StockDisponible)
+                    .FirstOrDefaultAsync();
             }
 
             if (stockOrigen == null)
@@ -174,15 +193,20 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             CreateReq request,
             NotaSalidaFamiliasCreateReq item)
         {
+            int sedeOrigenEmp = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
             var stockOrigen = await _context.StockEmpaques
-                .FirstOrDefaultAsync(x =>
-                    x.IdCompraEmpaque == item.Registro &&
-                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+                .Where(x => x.IdCompraEmpaque == item.Registro && x.IdSede == sedeOrigenEmp)
+                .OrderBy(x => x.IdNotaSalidaEmpaque != null ? 1 : 0)
+                .ThenByDescending(x => x.StockDisponible)
+                .FirstOrDefaultAsync();
 
             if (stockOrigen == null)
             {
                 stockOrigen = await _context.StockEmpaques
-                    .FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.Registro);
+                    .Where(x => x.IdCompraEmpaque == item.Registro)
+                    .OrderBy(x => x.IdNotaSalidaEmpaque != null ? 1 : 0)
+                    .ThenByDescending(x => x.StockDisponible)
+                    .FirstOrDefaultAsync();
             }
 
             if (stockOrigen == null)
@@ -219,15 +243,20 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             CreateReq request,
             NotaSalidaFamiliasCreateReq item)
         {
+            int sedeOrigenProd = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
             var stockOrigen = await _context.StockProductos
-                .FirstOrDefaultAsync(x =>
-                    x.IdCompraProducto == item.Registro &&
-                    (request.IdSedeOrigen == 0 || request.IdSedeOrigen == 15 || x.IdSede == request.IdSedeOrigen));
+                .Where(x => x.IdCompraProducto == item.Registro && x.IdSede == sedeOrigenProd)
+                .OrderBy(x => x.IdNotaSalidaProducto != null ? 1 : 0)
+                .ThenByDescending(x => x.StockDisponible)
+                .FirstOrDefaultAsync();
 
             if (stockOrigen == null)
             {
                 stockOrigen = await _context.StockProductos
-                    .FirstOrDefaultAsync(x => x.IdCompraProducto == item.Registro);
+                    .Where(x => x.IdCompraProducto == item.Registro)
+                    .OrderBy(x => x.IdNotaSalidaProducto != null ? 1 : 0)
+                    .ThenByDescending(x => x.StockDisponible)
+                    .FirstOrDefaultAsync();
             }
 
             if (stockOrigen == null)
