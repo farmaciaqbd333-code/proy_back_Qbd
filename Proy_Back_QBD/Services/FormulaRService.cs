@@ -235,7 +235,7 @@ namespace Proy_back_QBD.Services
                     Olor = s.Olor,
                     Ph = s.Ph,
                     Insumos = s.InsumoR
-                    .OrderBy(obd => obd.FechaCreacion)
+                    .OrderBy(obd => obd.Id)
                     .Select(i => new InsumoFormR
                     {
                         Id = i.InsumoId,
