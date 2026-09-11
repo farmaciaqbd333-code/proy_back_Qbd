@@ -327,7 +327,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     {
                         IdArticulo = x.IdInsumo,
                         DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
-                        CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo)
+                        CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo),
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -337,7 +340,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     {
                         IdArticulo = x.IdEmpaque,
                         DescripcionArticulo = x.Empaque != null ? (x.Empaque.Descripcion ?? "") : "",
-                        CodigoArticulo = UtilFamilia.CodigoEmpaque(x.IdEmpaque)
+                        CodigoArticulo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.StockEmpaques.Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -347,7 +353,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     {
                         IdArticulo = x.IdEconomato,
                         DescripcionArticulo = x.Economato != null ? (x.Economato.Descripcion ?? "") : "",
-                        CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato)
+                        CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato),
+                        Lote = null,
+                        Um = x.Um,
+                        StockDisponible = x.StockEconomatos != null ? x.StockEconomatos.Sum(s => (decimal?)s.StockDisponible) : null
                     })
                     .ToListAsync(),
 
@@ -357,7 +366,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     {
                         IdArticulo = x.IdProducto,
                         DescripcionArticulo = x.Producto != null ? (x.Producto.Descripcion ?? "") : "",
-                        CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto)
+                        CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto),
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.StockProductoTerminados.Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -367,7 +379,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     {
                         IdArticulo = x.IdInsumo,
                         DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
-                        CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo)
+                        CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.StockInsumo != null ? (decimal?)x.StockInsumo.StockDisponible : null
                     })
                     .ToListAsync(),
 
@@ -377,60 +392,156 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
         public async Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(ObtenerRegistroReq request)
         {
-            return request.Familia.ToUpper() switch
+            if (string.IsNullOrWhiteSpace(request?.Familia))
+                return new List<RegistrosRes>();
+
+            string fam = request.Familia.Trim().ToUpper();
+
+            switch (fam)
             {
-                "PT" => await _context.CompraProductos
-                    .Include(i => i.StockProductoTerminados)
-                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
-                    .Select(x => new RegistrosRes
+                case "PT":
+                    var pts = await _context.CompraProductos
+                        .Include(i => i.Producto)
+                        .Include(i => i.StockProductoTerminados)
+                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockProductoTerminados.Any(s => s.IdSede == request.IdSede))
+                        .OrderByDescending(o => o.Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            Descripcion = x.Producto != null ? x.Producto.Descripcion : "",
+                            Codigo = UtilFamilia.CodigoProducto(x.IdProducto),
+                            x.Lote,
+                            x.Um,
+                            Stock = x.StockProductoTerminados.Sum(s => (decimal?)s.StockDisponible)
+                        })
+                        .ToListAsync();
+
+                    return pts.Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
-                    })
-                    .ToListAsync(),
+                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                        Descripcion = x.Descripcion ?? "",
+                        CodigoArticulo = x.Codigo,
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.Stock
+                    }).ToList();
 
-                "MP" => await _context.CompraInsumos
-                    .Include(i => i.StockInsumos)
-                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
-                    .Select(x => new RegistrosRes
+                case "MP":
+                    var mps = await _context.CompraInsumos
+                        .Include(i => i.Insumo)
+                        .Include(i => i.StockInsumos)
+                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockInsumos.Any(s => s.IdSede == request.IdSede))
+                        .OrderByDescending(o => o.Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            Descripcion = x.Insumo != null ? x.Insumo.Descripcion : "",
+                            Codigo = UtilFamilia.CodigoInsumo(x.IdInsumo),
+                            x.Lote,
+                            x.Um,
+                            Stock = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
+                        })
+                        .ToListAsync();
+
+                    return mps.Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
-                    })
-                    .ToListAsync(),
+                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                        Descripcion = x.Descripcion ?? "",
+                        CodigoArticulo = x.Codigo,
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.Stock
+                    }).ToList();
 
-                "ECO" => await _context.CompraEconomatos
-                    .Include(i => i.StockEconomatos)
-                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
-                    .Select(x => new RegistrosRes
+                case "ECO":
+                    var ecos = await _context.CompraEconomatos
+                        .Include(i => i.Economato)
+                        .Include(i => i.StockEconomatos)
+                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == request.IdSede)))
+                        .OrderByDescending(o => o.Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            Descripcion = x.Economato != null ? x.Economato.Descripcion : "",
+                            Codigo = UtilFamilia.CodigoEconomato(x.IdEconomato),
+                            Lote = (string?)null,
+                            x.Um,
+                            Stock = x.StockEconomatos != null ? x.StockEconomatos.Sum(s => (decimal?)s.StockDisponible) : null
+                        })
+                        .ToListAsync();
+
+                    return ecos.Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
-                    })
-                    .ToListAsync(),
+                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                        Descripcion = x.Descripcion ?? "",
+                        CodigoArticulo = x.Codigo,
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.Stock
+                    }).ToList();
 
-                "ME" => await _context.CompraEmpaques
-                    .Include(i => i.StockEmpaques)
-                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.Compra.IdSede == request.IdSede)
-                    .Select(x => new RegistrosRes
+                case "ME":
+                    var mes = await _context.CompraEmpaques
+                        .Include(i => i.Empaque)
+                        .Include(i => i.StockEmpaques)
+                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockEmpaques.Any(s => s.IdSede == request.IdSede))
+                        .OrderByDescending(o => o.Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            Descripcion = x.Empaque != null ? x.Empaque.Descripcion : "",
+                            Codigo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
+                            x.Lote,
+                            x.Um,
+                            Stock = x.StockEmpaques.Sum(s => (decimal?)s.StockDisponible)
+                        })
+                        .ToListAsync();
+
+                    return mes.Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
-                    })
-                    .ToListAsync(),
+                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                        Descripcion = x.Descripcion ?? "",
+                        CodigoArticulo = x.Codigo,
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.Stock
+                    }).ToList();
 
-                "PI" => await _context.ProductosIntermedios
-                    .Include(i => i.StockInsumo)
-                    .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.IdSede == request.IdSede || (w.StockInsumo != null && w.StockInsumo.IdSede == request.IdSede))
-                    .Select(x => new RegistrosRes
+                case "PI":
+                    var pis = await _context.ProductosIntermedios
+                        .Include(i => i.Insumo)
+                        .Include(i => i.StockInsumo)
+                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.IdSede == request.IdSede || (w.StockInsumo != null && w.StockInsumo.IdSede == request.IdSede))
+                        .OrderByDescending(o => o.Id)
+                        .Select(x => new
+                        {
+                            x.Id,
+                            Descripcion = x.Insumo != null ? x.Insumo.Descripcion : "",
+                            Codigo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
+                            x.Lote,
+                            x.Um,
+                            Stock = x.StockInsumo != null ? (decimal?)x.StockInsumo.StockDisponible : null
+                        })
+                        .ToListAsync();
+
+                    return pis.Select(x => new RegistrosRes
                     {
                         IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id)
-                    })
-                    .ToListAsync(),
+                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                        Descripcion = x.Descripcion ?? "",
+                        CodigoArticulo = x.Codigo,
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = x.Stock
+                    }).ToList();
 
-                _ => throw new ArgumentException("Familia no válida.")
-            };
+                default:
+                    return new List<RegistrosRes>();
+            }
         }
 
         public async Task<List<NotaSalidaDetalleRes>> ObtenerDetalles(int idNotaSalida)

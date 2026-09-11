@@ -126,9 +126,9 @@ namespace proy_back_Qbd.Controllers
                 var resultado = await _serviceNotaSalida.ObtenerRegistrosXFamilia(request);
                 return Ok(resultado);
             }
-            catch (ArgumentException ex)
+            catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return BadRequest(new { message = ex.Message });
             }
         }
         [HttpPost("confirmar")]
