@@ -1274,17 +1274,23 @@ namespace proy_back_Qbd.Services
                         .ToList(),
 
                     Insumos = x.InsumoProductoIntermedio
+                        .OrderBy(i => i.Variable)
+                        .ThenBy(i => i.Id)
                         .Select(i => new InsumoProductoIntermedioRes
                         {
                             IdInsumo = i.IdInsumo,
                             CodigoInsumo = UtilFamilia.CodigoInsumo(i.IdInsumo),
+                            Descripcion = i.Insumo != null ? i.Insumo.Descripcion : null,
                             Porcentaje = i.Porcentaje,
                             Variable = i.Variable,
+                            Lote = i.Lote,
+                            Registro = i.Registro,
                             CantidadUnidad = i.CantidadUnidad,
                             FactorCorrecion = i.FactorCorrecion,
                             Dilucion = i.Dilucion,
                             UnidadMedida = i.UnidadMedida,
                             CantidadLote = i.CantidadLote,
+                            Practica = i.CantidadLote,
                             Csp = i.Csp
                         })
                         .ToList()

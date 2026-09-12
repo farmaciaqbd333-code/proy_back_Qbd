@@ -71,6 +71,7 @@ namespace Proy_back_QBD.Request
         public string? Registro { get; set; }
         public int IdInsumo { get; set; }
         public required string CodigoInsumo { get; set; }
+        public string? Descripcion { get; set; }
         public required string Tipo { get; set; }
         public decimal Porcentaje { get; set; }
         public required string Variable { get; set; }
@@ -87,6 +88,7 @@ namespace Proy_back_QBD.Request
         public string? Registro { get; set; }
         public int IdInsumo { get; set; }
         public required string CodigoInsumo { get; set; }
+        public string? Descripcion { get; set; }
         public decimal Porcentaje { get; set; }
         public required string Variable { get; set; }
         public decimal CantidadUnidad { get; set; }
