@@ -74,6 +74,12 @@ namespace Proy_back_QBD.Models
         public List<ProductoIntermedio>? ProductosIntermedios { get; set; }  // Puede ser nulo
         [JsonIgnore]
         public List<SiteSupply>? SiteSupply { get; set; }  // Puede ser nulo
+        [JsonIgnore]
+        public List<EmpaqueSede>? EmpaqueSedes { get; set; }
+        [JsonIgnore]
+        public List<ProductoSede>? ProductoSedes { get; set; }
+        [JsonIgnore]
+        public List<EconomatoSede>? EconomatoSedes { get; set; }
     }
 
 }

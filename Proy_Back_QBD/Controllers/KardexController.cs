@@ -83,19 +83,26 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpPut("asignar-ubicacion")]
-        public async Task<IActionResult> AssignLocation(AssignLocationReq request)
+        public async Task<IActionResult> AssignLocation([FromBody] AssignLocationReq? body, [FromQuery] int? idSede, [FromQuery] int? idInsumo, [FromQuery] string? ubicacion, [FromQuery] string? familia)
         {
-            var resultado = await _kardexService.AssignLocation(request);
+            var req = body ?? new AssignLocationReq();
+            if (req.IdSede == 0 && idSede.HasValue) req.IdSede = idSede.Value;
+            if (req.IdInsumo == 0 && idInsumo.HasValue) req.IdInsumo = idInsumo.Value;
+            if (string.IsNullOrEmpty(req.Ubicacion) && !string.IsNullOrEmpty(ubicacion)) req.Ubicacion = ubicacion;
+            if (string.IsNullOrEmpty(req.Familia) && !string.IsNullOrEmpty(familia)) req.Familia = familia;
+
+            var resultado = await _kardexService.AssignLocation(req);
             return Ok(resultado);
         }
 
         [HttpPut("asignar-limite")]
-        public async Task<IActionResult> AssignLimite([FromBody] AssignLimiteReq? body, [FromQuery] int? idSede, [FromQuery] int? idInsumo, [FromQuery] decimal? limite)
+        public async Task<IActionResult> AssignLimite([FromBody] AssignLimiteReq? body, [FromQuery] int? idSede, [FromQuery] int? idInsumo, [FromQuery] decimal? limite, [FromQuery] string? familia)
         {
             var req = body ?? new AssignLimiteReq();
             if (req.IdSede == 0 && idSede.HasValue) req.IdSede = idSede.Value;
             if (req.IdInsumo == 0 && idInsumo.HasValue) req.IdInsumo = idInsumo.Value;
             if (!req.Limite.HasValue && limite.HasValue) req.Limite = limite.Value;
+            if (string.IsNullOrEmpty(req.Familia) && !string.IsNullOrEmpty(familia)) req.Familia = familia;
 
             var resultado = await _kardexService.AssignLimite(req);
             return Ok(resultado);

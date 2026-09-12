@@ -11,6 +11,7 @@ using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
+using Proy_back_QBD.Models;
 
 namespace proy_back_Qbd.Services
 {
@@ -902,7 +903,8 @@ namespace proy_back_Qbd.Services
                                     .Where(ce => ce.FechaVencimiento < DateTimeOffset.UtcNow)
                                     .Sum(ce => ce.StockEmpaques.Where(w => w.IdSede == idSede).Sum(sm => sm.StockDisponible))),
                             Tipo = null,
-                            CodigoUbicacion = s.Select(x => x.CodigoUbicacion).FirstOrDefault()
+                            CodigoUbicacion = s.Select(s => s.EmpaqueSedes.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault() ?? s.Select(x => x.CodigoUbicacion).FirstOrDefault(),
+                            Limite = s.Select(s => s.EmpaqueSedes.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
                         }).ToListAsync();
         }
         private async Task<List<StockRes>> ObtenerEconomato(int idSede)
@@ -918,7 +920,10 @@ namespace proy_back_Qbd.Services
                                        s.Sum(x => x.CompraEconomatos.Sum(x2 => x2.NotaSalidaEconomatos.Where(w => w.NotaSalida != null && w.NotaSalida.IdSedeDestino == idSede && (w.NotaSalida.Estado == "RECIBIDO" || w.NotaSalida.Estado == "RECEPCIONADO" || w.NotaSalida.FechaRecepcion != null || w.CantidadRecibida > 0)).Sum(x3 => x3.CantidadRecibida > 0 ? x3.CantidadRecibida : x3.Cantidad))),
                             Salidas = s.Sum(s => s.CompraEconomatos.Sum(s2 => s2.NotaSalidaEconomatos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.Cantidad))),
                             Ajustes = s.Sum(s => s.CompraEconomatos.Where(w => w.Compra.IdSede == idSede).Sum(s => s.StockEconomatos.Sum(s => s.AjusteEconomatos.Sum(s => s.Ajuste)))),
-                            Baja = 0
+                            Baja = 0,
+                            Tipo = null,
+                            CodigoUbicacion = s.Select(s => s.EconomatoSedes.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault(),
+                            Limite = s.Select(s => s.EconomatoSedes.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
                         }).ToListAsync();
         }
 
@@ -942,7 +947,8 @@ namespace proy_back_Qbd.Services
                         .Where(cp => cp.FechaVencimiento < DateTime.UtcNow)
                         .Sum(cp => cp.StockProductoTerminados.Where(w => w.IdSede == idSede).Sum(sp => sp.StockDisponible))),
                     Tipo = null,
-                    CodigoUbicacion = null
+                    CodigoUbicacion = s.Select(s => s.ProductoSedes.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault(),
+                    Limite = s.Select(s => s.ProductoSedes.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
                 }).ToListAsync();
         }
 
@@ -1208,54 +1214,202 @@ namespace proy_back_Qbd.Services
             return resultado;
         }
 
-        public async Task<SiteSupply> AssignLocation(AssignLocationReq request)
+        public async Task<object> AssignLocation(AssignLocationReq request)
         {
-            SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);
+            string fam = (request.Familia ?? "MP").ToUpper().Trim();
 
-            if (siteSupply == null)
+            if (fam == "ME")
             {
-                siteSupply = new SiteSupply
-                {
-                    IdSite = request.IdSede,
-                    IdSupply = request.IdInsumo,
-                    Location = request.Ubicacion
-                };
+                var empaqueSede = await _context.EmpaqueSupplies
+                    .FirstOrDefaultAsync(w => w.IdSite == request.IdSede && w.IdEmpaque == request.IdInsumo);
 
-                siteSupply = await _repository.CreateLocationBySiteAsync(siteSupply);
+                if (empaqueSede == null)
+                {
+                    empaqueSede = new EmpaqueSede
+                    {
+                        IdSite = request.IdSede,
+                        IdEmpaque = request.IdInsumo,
+                        Location = request.Ubicacion
+                    };
+                    await _context.EmpaqueSupplies.AddAsync(empaqueSede);
+                }
+                else
+                {
+                    empaqueSede.Location = request.Ubicacion;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return empaqueSede;
+            }
+            else if (fam == "PT")
+            {
+                var productoSede = await _context.ProductSupplies
+                    .FirstOrDefaultAsync(w => w.IdSite == request.IdSede && w.IdProducto == request.IdInsumo);
+
+                if (productoSede == null)
+                {
+                    productoSede = new ProductoSede
+                    {
+                        IdSite = request.IdSede,
+                        IdProducto = request.IdInsumo,
+                        Location = request.Ubicacion
+                    };
+                    await _context.ProductSupplies.AddAsync(productoSede);
+                }
+                else
+                {
+                    productoSede.Location = request.Ubicacion;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return productoSede;
+            }
+            else if (fam == "ECO")
+            {
+                var economatoSede = await _context.EconomatoSupplies
+                    .FirstOrDefaultAsync(w => w.IdSite == request.IdSede && w.IdEconomato == request.IdInsumo);
+
+                if (economatoSede == null)
+                {
+                    economatoSede = new EconomatoSede
+                    {
+                        IdSite = request.IdSede,
+                        IdEconomato = request.IdInsumo,
+                        Location = request.Ubicacion
+                    };
+                    await _context.EconomatoSupplies.AddAsync(economatoSede);
+                }
+                else
+                {
+                    economatoSede.Location = request.Ubicacion;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return economatoSede;
             }
             else
             {
-                siteSupply.Location = request.Ubicacion;
+                // Default a MP / PI (SiteSupply)
+                SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);
+
+                if (siteSupply == null)
+                {
+                    siteSupply = new SiteSupply
+                    {
+                        IdSite = request.IdSede,
+                        IdSupply = request.IdInsumo,
+                        Location = request.Ubicacion
+                    };
+
+                    siteSupply = await _repository.CreateLocationBySiteAsync(siteSupply);
+                }
+                else
+                {
+                    siteSupply.Location = request.Ubicacion;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return siteSupply;
             }
-
-            await _unitWork.SaveChangesAsync();
-
-            return siteSupply;
         }
 
-        public async Task<SiteSupply> AssignLimite(AssignLimiteReq request)
+        public async Task<object> AssignLimite(AssignLimiteReq request)
         {
-            SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);
+            string fam = (request.Familia ?? "MP").ToUpper().Trim();
 
-            if (siteSupply == null)
+            if (fam == "ME")
             {
-                siteSupply = new SiteSupply
-                {
-                    IdSite = request.IdSede,
-                    IdSupply = request.IdInsumo,
-                    Limite = request.Limite
-                };
+                var empaqueSede = await _context.EmpaqueSupplies
+                    .FirstOrDefaultAsync(w => w.IdSite == request.IdSede && w.IdEmpaque == request.IdInsumo);
 
-                siteSupply = await _repository.CreateLocationBySiteAsync(siteSupply);
+                if (empaqueSede == null)
+                {
+                    empaqueSede = new EmpaqueSede
+                    {
+                        IdSite = request.IdSede,
+                        IdEmpaque = request.IdInsumo,
+                        Limite = request.Limite
+                    };
+                    await _context.EmpaqueSupplies.AddAsync(empaqueSede);
+                }
+                else
+                {
+                    empaqueSede.Limite = request.Limite;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return empaqueSede;
+            }
+            else if (fam == "PT")
+            {
+                var productoSede = await _context.ProductSupplies
+                    .FirstOrDefaultAsync(w => w.IdSite == request.IdSede && w.IdProducto == request.IdInsumo);
+
+                if (productoSede == null)
+                {
+                    productoSede = new ProductoSede
+                    {
+                        IdSite = request.IdSede,
+                        IdProducto = request.IdInsumo,
+                        Limite = request.Limite
+                    };
+                    await _context.ProductSupplies.AddAsync(productoSede);
+                }
+                else
+                {
+                    productoSede.Limite = request.Limite;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return productoSede;
+            }
+            else if (fam == "ECO")
+            {
+                var economatoSede = await _context.EconomatoSupplies
+                    .FirstOrDefaultAsync(w => w.IdSite == request.IdSede && w.IdEconomato == request.IdInsumo);
+
+                if (economatoSede == null)
+                {
+                    economatoSede = new EconomatoSede
+                    {
+                        IdSite = request.IdSede,
+                        IdEconomato = request.IdInsumo,
+                        Limite = request.Limite
+                    };
+                    await _context.EconomatoSupplies.AddAsync(economatoSede);
+                }
+                else
+                {
+                    economatoSede.Limite = request.Limite;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return economatoSede;
             }
             else
             {
-                siteSupply.Limite = request.Limite;
+                // Default a MP / PI (SiteSupply)
+                SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);
+
+                if (siteSupply == null)
+                {
+                    siteSupply = new SiteSupply
+                    {
+                        IdSite = request.IdSede,
+                        IdSupply = request.IdInsumo,
+                        Limite = request.Limite
+                    };
+
+                    siteSupply = await _repository.CreateLocationBySiteAsync(siteSupply);
+                }
+                else
+                {
+                    siteSupply.Limite = request.Limite;
+                }
+
+                await _unitWork.SaveChangesAsync();
+                return siteSupply;
             }
-
-            await _unitWork.SaveChangesAsync();
-
-            return siteSupply;
         }
 
     }
