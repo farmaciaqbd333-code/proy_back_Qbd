@@ -45,6 +45,42 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             if (stockOrigen == null)
             {
+                if (!isPI)
+                {
+                    var ci = await _context.CompraInsumos
+                        .Include(c => c.Compra)
+                        .Include(c => c.NotaSalidaInsumos)
+                            .ThenInclude(nsi => nsi.NotaSalida)
+                        .FirstOrDefaultAsync(c => c.Id == item.Registro);
+
+                    if (ci != null)
+                    {
+                        decimal entradas = (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0)
+                            ? ci.CantidadRecibida.Value
+                            : ci.CantidadSolicitada;
+
+                        decimal salidasNS = ci.NotaSalidaInsumos
+                            .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == sedeOrigen)
+                            .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
+
+                        decimal saldoInicial = Math.Max(0m, entradas - salidasNS);
+
+                        stockOrigen = new StockInsumo
+                        {
+                            IdCompraInsumo = ci.Id,
+                            IdSede = sedeOrigen,
+                            Tipo = "MP",
+                            StockDisponible = saldoInicial,
+                            UnidadMedida = "G"
+                        };
+                        _context.StockInsumos.Add(stockOrigen);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+
+            if (stockOrigen == null)
+            {
                 _logger.LogWarning(
                     "No se encontró stock. Registro={Registro}, SedeOrigen={SedeOrigen}, Familia={Familia}",
                     item.Registro,

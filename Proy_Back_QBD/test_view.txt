@@ -1,0 +1,30 @@
+
+        // Asegurar que el registro esté debidamente resuelto si fue escrito a mano
+        let stockDisp = Number(this.stockRegistro) || 0;
+        const regTermUpper = (this.inputRegistro || regTerm || '').trim().toUpperCase();
+
+        if (stockDisp <= 0 || !this.selectedIdRegistro) {
+            const matched = this.registrosDisponibles.find(r => 
+                this.getCodigoRegistro(r).toUpperCase() === regTermUpper ||
+                (r.codRegistro || '').toUpperCase() === regTermUpper ||
+                String(r.idRegistro) === regTermUpper
+            );
+            if (matched) {
+                this.selectedIdRegistro = matched.idRegistro;
+                if (!this.inputCodigo && matched.codigoArticulo) this.inputCodigo = matched.codigoArticulo;
+                if (!this.inputDescripcionQbd && matched.descripcion) this.inputDescripcionQbd = matched.descripcion;
+                if (!this.inputLote && matched.lote) this.inputLote = matched.lote;
+                if (matched.stockDisponible !== undefined && matched.stockDisponible !== null) {
+                    this.stockRegistro = Number(matched.stockDisponible);
+                    stockDisp = this.stockRegistro;
+                }
+            }
+        }
+
+        // Conversión bidireccional entre la unidad del stock y la unidad requerida (umVal)
+        let stockDispNorm = stockDisp;
+        const sUm = (this.stockRegistroUm || this.inputUm || 'G').trim().toUpperCase();
+        const rUm = (umVal || 'G').trim().toUpperCase();
+
+        if ((sUm === 'KG' || sUm === 'KILOGRAMOS') && (rUm === 'G' || rUm === 'GRAMOS')) {
+            stockDispNorm = Math.round(stockDisp * 1000 * 1000) / 1000;
