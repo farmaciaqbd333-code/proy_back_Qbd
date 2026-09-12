@@ -150,6 +150,17 @@ namespace proy_back_Qbd.Services
                             stockEmpaque.StockDisponible -= cantidadConsumida;
                             cantidadPendiente -= cantidadConsumida;
                         }
+
+                        if (cantidadPendiente > 0)
+                        {
+                            var empaqueDesc = await _context.Empaques
+                                .Where(e => e.Id == conteoEmpaque.Key)
+                                .Select(e => e.Descripcion)
+                                .FirstOrDefaultAsync() ?? conteoEmpaque.Key.ToString();
+
+                            throw new BadRequestException(
+                                $"No se puede registrar por falta de stock en el empaque '{empaqueDesc}'. Faltante: {cantidadPendiente}.");
+                        }
                     }
                 }
 
@@ -233,6 +244,17 @@ namespace proy_back_Qbd.Services
 
                         stockInsumo.StockDisponible -= cantidadConsumida;
                         cantidadUsar -= cantidadConsumida;
+                    }
+
+                    if (cantidadUsar > 0)
+                    {
+                        var insumoNombre = await _context.Insumos
+                            .Where(i => i.Id == fInsumo.IdInsumo)
+                            .Select(i => i.Descripcion)
+                            .FirstOrDefaultAsync() ?? fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString();
+
+                        throw new BadRequestException(
+                            $"No se puede registrar por falta de stock en el insumo '{insumoNombre}'. Cantidad requerida: {fInsumo.CantidadLote}, faltante: {cantidadUsar}.");
                     }
                 }
 
