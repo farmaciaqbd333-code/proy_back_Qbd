@@ -329,10 +329,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
                         CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                         Lote = x.Lote,
-                        Um = (x.Um == "KG" || x.Um == "KILOGRAMOS" || (x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m) > 10000m) ? "KG" : (x.Um ?? "G"),
-                        StockDisponible = (x.Um == "KG" || x.Um == "KILOGRAMOS" || (x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m) > 10000m)
-                            ? Math.Round((x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m) / 1000m, 3)
-                            : x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
+                        Um = (x.Insumo != null && !string.IsNullOrEmpty(x.Insumo.UnidadMedida)) ? x.Insumo.UnidadMedida : (x.Um ?? "G"),
+                        StockDisponible = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m
                     })
                     .ToListAsync(),
 
@@ -453,10 +451,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         Descripcion = x.Descripcion ?? "",
                         CodigoArticulo = x.Codigo,
                         Lote = x.Lote,
-                        Um = (x.Um == "KG" || x.Um == "KILOGRAMOS" || (x.Stock ?? 0m) > 10000m) ? "KG" : (x.Um ?? "G"),
-                        StockDisponible = (x.Um == "KG" || x.Um == "KILOGRAMOS" || (x.Stock ?? 0m) > 10000m)
-                            ? Math.Round((x.Stock ?? 0m) / 1000m, 3)
-                            : x.Stock
+                        Um = (x.Um == "G" || x.Um == "GR" || x.Um == "UND") ? x.Um : "G",
+                        StockDisponible = x.Stock ?? 0m
                     }).ToList();
 
                 case "ECO":
