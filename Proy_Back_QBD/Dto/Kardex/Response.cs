@@ -16,6 +16,7 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Baja { get; set; }
         public string? Tipo { get; set; }
         public string? CodigoUbicacion { get; set; }
+        public decimal? Limite { get; set; }
     }
 
     public class DetalleInsumoRes

@@ -17,6 +17,6 @@ namespace proy_back_Qbd.Services.Interfaces
         public Task<List<SalidaInsumoRes>> ObtenerSalidasInsumo(int insumoId, int idSede);
         public Task<List<BajaInsumoRes>> ObtenerBajasInsumo(int insumoId, int idSede);
         public Task<SiteSupply> AssignLocation(AssignLocationReq request);
-        
+        public Task<SiteSupply> AssignLimite(AssignLimiteReq request);
     }
 }

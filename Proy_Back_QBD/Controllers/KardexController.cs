@@ -89,5 +89,17 @@ namespace proy_back_Qbd.Controllers
             return Ok(resultado);
         }
 
+        [HttpPut("asignar-limite")]
+        public async Task<IActionResult> AssignLimite([FromBody] AssignLimiteReq? body, [FromQuery] int? idSede, [FromQuery] int? idInsumo, [FromQuery] decimal? limite)
+        {
+            var req = body ?? new AssignLimiteReq();
+            if (req.IdSede == 0 && idSede.HasValue) req.IdSede = idSede.Value;
+            if (req.IdInsumo == 0 && idInsumo.HasValue) req.IdInsumo = idInsumo.Value;
+            if (!req.Limite.HasValue && limite.HasValue) req.Limite = limite.Value;
+
+            var resultado = await _kardexService.AssignLimite(req);
+            return Ok(resultado);
+        }
+
     }
 }

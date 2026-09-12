@@ -7,6 +7,7 @@ public class SiteSupply
     public int IdSite { get; set; }
     public int IdSupply { get; set; }
     public string? Location { get; set; }
+    public decimal? Limite { get; set; }
 
     public virtual Sede Sede { get; set; } = null!;
     public virtual Insumo Insumo { get; set; } = null!;

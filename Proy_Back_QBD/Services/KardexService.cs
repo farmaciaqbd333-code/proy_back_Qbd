@@ -740,7 +740,8 @@ namespace proy_back_Qbd.Services
                 .Select(x => new
                 {
                     x.IdSupply,
-                    x.Location
+                    x.Location,
+                    x.Limite
                 })
                 .ToListAsync();
 
@@ -791,14 +792,16 @@ namespace proy_back_Qbd.Services
 
                 var saldo = entradas - salidas + ajuste - baja;
 
-                var ubicacion = ubicaciones
-                    .FirstOrDefault(x => x.IdSupply == insumo.Id)?.Location;
+                var siteSupply = ubicaciones
+                    .FirstOrDefault(x => x.IdSupply == insumo.Id);
+                var ubicacion = siteSupply?.Location;
+                var limite = siteSupply?.Limite;
 
                 _logger.LogInformation(
                     "Cálculo Insumo | IdSede: {IdSede} | IdInsumo: {IdInsumo} | Descripcion: {Descripcion} | " +
                     "EntradaCompra: {EntradaCompra} | EntradaNS: {EntradaNS} | EntradasTotal: {Entradas} | " +
                     "SalidaPI: {SalidaPI} | SalidaFormula: {SalidaFormula} | SalidaNS: {SalidaNS} | SalidasTotal: {Salidas} | " +
-                    "Ajuste: {Ajuste} | Baja: {Baja} | Saldo: {Saldo} | Ubicacion: {Ubicacion}",
+                    "Ajuste: {Ajuste} | Baja: {Baja} | Saldo: {Saldo} | Ubicacion: {Ubicacion} | Limite: {Limite}",
                     idSede,
                     insumo.Id,
                     insumo.Descripcion,
@@ -812,7 +815,8 @@ namespace proy_back_Qbd.Services
                     ajuste,
                     baja,
                     saldo,
-                    ubicacion
+                    ubicacion,
+                    limite
                 );
 
                 resultado.Add(new StockRes
@@ -825,7 +829,8 @@ namespace proy_back_Qbd.Services
                     Ajustes = ajuste,
                     Baja = baja,
                     Tipo = insumo.Tipo,
-                    CodigoUbicacion = ubicacion
+                    CodigoUbicacion = ubicacion,
+                    Limite = limite
                 });
             }
 
@@ -863,7 +868,8 @@ namespace proy_back_Qbd.Services
                     .Where(ci => ci.FechaVencimiento < DateTime.UtcNow && ci.IdSede == idSede)
                     .Sum(s2 => s2.StockInsumo != null ? s2.StockInsumo.StockDisponible : 0)),
                 Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
-                CodigoUbicacion = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault()
+                CodigoUbicacion = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault(),
+                Limite = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
             }).ToListAsync();
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
@@ -1220,6 +1226,31 @@ namespace proy_back_Qbd.Services
             else
             {
                 siteSupply.Location = request.Ubicacion;
+            }
+
+            await _unitWork.SaveChangesAsync();
+
+            return siteSupply;
+        }
+
+        public async Task<SiteSupply> AssignLimite(AssignLimiteReq request)
+        {
+            SiteSupply? siteSupply = await _repository.GetSedeSupplyAsync(request.IdInsumo, request.IdSede);
+
+            if (siteSupply == null)
+            {
+                siteSupply = new SiteSupply
+                {
+                    IdSite = request.IdSede,
+                    IdSupply = request.IdInsumo,
+                    Limite = request.Limite
+                };
+
+                siteSupply = await _repository.CreateLocationBySiteAsync(siteSupply);
+            }
+            else
+            {
+                siteSupply.Limite = request.Limite;
             }
 
             await _unitWork.SaveChangesAsync();
