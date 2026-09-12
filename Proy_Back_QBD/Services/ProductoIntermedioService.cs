@@ -34,13 +34,14 @@ namespace proy_back_Qbd.Services
         {
             List<StockInsumo> stockInsumos = new();
             StockInsumo? targetStock = null;
+            bool registroEspecificado = !string.IsNullOrWhiteSpace(registro) && registro.Trim() != "---" && registro.Trim() != "-";
 
             if (tipo == "MP")
             {
                 int? targetCompraInsumoId = null;
-                if (!string.IsNullOrWhiteSpace(registro))
+                if (registroEspecificado)
                 {
-                    string regClean = registro.Trim().ToUpper();
+                    string regClean = registro!.Trim().ToUpper();
                     if (regClean.StartsWith("MP"))
                     {
                         regClean = regClean.Substring(2);
@@ -93,7 +94,19 @@ namespace proy_back_Qbd.Services
                     }
                 }
 
-                var queryStocks = await _context.StockInsumos
+                // SI SE ESPECIFICÓ UN REGISTRO:
+                // SER ESTRICTO: Solo se puede consumir de ese registro objetivo.
+                // NUNCA desbordar ni agarrar de otros registros/compras.
+                if (registroEspecificado)
+                {
+                    if (targetStock != null)
+                    {
+                        stockInsumos.Add(targetStock);
+                    }
+                    return stockInsumos;
+                }
+
+                stockInsumos = await _context.StockInsumos
                     .Include(x => x.CompraInsumo)
                         .ThenInclude(ci => ci!.Compra)
                     .Where(x =>
@@ -106,23 +119,13 @@ namespace proy_back_Qbd.Services
                     .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
                     .ThenBy(x => x.CompraInsumo.Id)
                     .ToListAsync();
-
-                if (targetStock != null && targetStock.StockDisponible > 0)
-                {
-                    stockInsumos.Add(targetStock);
-                    stockInsumos.AddRange(queryStocks.Where(s => s.Id != targetStock.Id));
-                }
-                else
-                {
-                    stockInsumos = queryStocks;
-                }
             }
             else // PI
             {
                 int? targetPIId = null;
-                if (!string.IsNullOrWhiteSpace(registro))
+                if (registroEspecificado)
                 {
-                    string regClean = registro.Trim().ToUpper();
+                    string regClean = registro!.Trim().ToUpper();
                     if (regClean.StartsWith("PI"))
                     {
                         regClean = regClean.Substring(2);
@@ -141,7 +144,18 @@ namespace proy_back_Qbd.Services
                         .FirstOrDefaultAsync(x => (x.IdProductoIntermedio == targetPIId.Value || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == targetPIId.Value)) && x.IdSede == idSede && x.Tipo == "PI");
                 }
 
-                var queryStocks = await _context.StockInsumos
+                // SI SE ESPECIFICÓ UN REGISTRO:
+                // SER ESTRICTO: Solo se puede consumir de ese registro objetivo.
+                if (registroEspecificado)
+                {
+                    if (targetStock != null)
+                    {
+                        stockInsumos.Add(targetStock);
+                    }
+                    return stockInsumos;
+                }
+
+                stockInsumos = await _context.StockInsumos
                     .Include(x => x.ProductoIntermedio)
                     .Where(x =>
                         x.ProductoIntermedio != null &&
@@ -153,22 +167,12 @@ namespace proy_back_Qbd.Services
                     .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
                     .ThenBy(x => x.ProductoIntermedio.Id)
                     .ToListAsync();
-
-                if (targetStock != null && targetStock.StockDisponible > 0)
-                {
-                    stockInsumos.Add(targetStock);
-                    stockInsumos.AddRange(queryStocks.Where(s => s.Id != targetStock.Id));
-                }
-                else
-                {
-                    stockInsumos = queryStocks;
-                }
             }
 
             return stockInsumos;
         }
-
-public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
+        
+        public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -331,6 +335,21 @@ public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq reques
                         fInsumo.Lote,
                         ahora);
 
+                    decimal stockDisponibleTotal = stockInsumos.Sum(x => x.StockDisponible);
+                    if (stockInsumos.Count == 0 || stockDisponibleTotal < cantidadUsar)
+                    {
+                        var insumoNombre = await _context.Insumos
+                            .Where(i => i.Id == fInsumo.IdInsumo)
+                            .Select(i => i.Descripcion)
+                            .FirstOrDefaultAsync() ?? fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString();
+
+                        string regDetalle = (!string.IsNullOrWhiteSpace(fInsumo.Registro) && fInsumo.Registro != "---" && fInsumo.Registro != "-")
+                            ? $" en el registro '{fInsumo.Registro}'"
+                            : "";
+
+                        throw new BadRequestException(
+                            $"No se puede registrar por falta de stock{regDetalle} en el insumo '{insumoNombre}'. Stock disponible: {stockDisponibleTotal} {fInsumo.UnidadMedida}, requerido: {cantidadUsar} {fInsumo.UnidadMedida}.");
+                    }
 
                     var insumoProductoIntermedio =
                         new ProductoIntermedioMapper()
