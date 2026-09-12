@@ -23,7 +23,152 @@ namespace proy_back_Qbd.Services
             this._logger = _logger;
         }
 
-        public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
+        
+        private async Task<List<StockInsumo>> ObtenerStockInsumosParaConsumo(
+            int idInsumo,
+            string tipo,
+            int idSede,
+            string? registro,
+            string? lote,
+            DateTime ahora)
+        {
+            List<StockInsumo> stockInsumos = new();
+            StockInsumo? targetStock = null;
+
+            if (tipo == "MP")
+            {
+                int? targetCompraInsumoId = null;
+                if (!string.IsNullOrWhiteSpace(registro))
+                {
+                    string regClean = registro.Trim().ToUpper();
+                    if (regClean.StartsWith("MP"))
+                    {
+                        regClean = regClean.Substring(2);
+                    }
+                    int decoded = Alfanumerico.ConvertFromBase36(regClean);
+                    if (decoded > 0)
+                    {
+                        targetCompraInsumoId = decoded;
+                    }
+                }
+
+                if (targetCompraInsumoId.HasValue)
+                {
+                    targetStock = await _context.StockInsumos
+                        .Include(x => x.CompraInsumo)
+                            .ThenInclude(ci => ci!.Compra)
+                        .FirstOrDefaultAsync(x => x.IdCompraInsumo == targetCompraInsumoId.Value && x.IdSede == idSede);
+
+                    if (targetStock == null)
+                    {
+                        var ci = await _context.CompraInsumos
+                            .Include(c => c.Compra)
+                            .Include(c => c.NotaSalidaInsumos)
+                                .ThenInclude(nsi => nsi.NotaSalida)
+                            .FirstOrDefaultAsync(c => c.Id == targetCompraInsumoId.Value);
+
+                        if (ci != null)
+                        {
+                            decimal entradas = (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0)
+                                ? ci.CantidadRecibida.Value
+                                : ci.CantidadSolicitada;
+
+                            decimal salidasNS = ci.NotaSalidaInsumos
+                                .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
+                                .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
+
+                            decimal saldoInicial = Math.Max(0m, entradas - salidasNS);
+
+                            targetStock = new StockInsumo
+                            {
+                                IdCompraInsumo = ci.Id,
+                                IdSede = idSede,
+                                Tipo = "MP",
+                                StockDisponible = saldoInicial,
+                                UnidadMedida = "G"
+                            };
+                            _context.StockInsumos.Add(targetStock);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
+                }
+
+                var queryStocks = await _context.StockInsumos
+                    .Include(x => x.CompraInsumo)
+                        .ThenInclude(ci => ci!.Compra)
+                    .Where(x =>
+                        x.CompraInsumo != null &&
+                        x.CompraInsumo.IdInsumo == idInsumo &&
+                        x.IdSede == idSede &&
+                        x.StockDisponible > 0 &&
+                        (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
+                    .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
+                    .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
+                    .ThenBy(x => x.CompraInsumo.Id)
+                    .ToListAsync();
+
+                if (targetStock != null && targetStock.StockDisponible > 0)
+                {
+                    stockInsumos.Add(targetStock);
+                    stockInsumos.AddRange(queryStocks.Where(s => s.Id != targetStock.Id));
+                }
+                else
+                {
+                    stockInsumos = queryStocks;
+                }
+            }
+            else // PI
+            {
+                int? targetPIId = null;
+                if (!string.IsNullOrWhiteSpace(registro))
+                {
+                    string regClean = registro.Trim().ToUpper();
+                    if (regClean.StartsWith("PI"))
+                    {
+                        regClean = regClean.Substring(2);
+                    }
+                    int decoded = Alfanumerico.ConvertFromBase36(regClean);
+                    if (decoded > 0)
+                    {
+                        targetPIId = decoded;
+                    }
+                }
+
+                if (targetPIId.HasValue)
+                {
+                    targetStock = await _context.StockInsumos
+                        .Include(x => x.ProductoIntermedio)
+                        .FirstOrDefaultAsync(x => (x.IdProductoIntermedio == targetPIId.Value || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == targetPIId.Value)) && x.IdSede == idSede && x.Tipo == "PI");
+                }
+
+                var queryStocks = await _context.StockInsumos
+                    .Include(x => x.ProductoIntermedio)
+                    .Where(x =>
+                        x.ProductoIntermedio != null &&
+                        x.ProductoIntermedio.IdInsumo == idInsumo &&
+                        x.IdSede == idSede &&
+                        x.StockDisponible > 0 &&
+                        (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
+                    .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
+                    .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
+                    .ThenBy(x => x.ProductoIntermedio.Id)
+                    .ToListAsync();
+
+                if (targetStock != null && targetStock.StockDisponible > 0)
+                {
+                    stockInsumos.Add(targetStock);
+                    stockInsumos.AddRange(queryStocks.Where(s => s.Id != targetStock.Id));
+                }
+                else
+                {
+                    stockInsumos = queryStocks;
+                }
+            }
+
+            return stockInsumos;
+        }
+
+public async Task<int> CrearProductoIntermedio(CrearProductoIntermedioReq request)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -178,34 +323,13 @@ namespace proy_back_Qbd.Services
 
                     decimal cantidadUsar = fInsumo.CantidadLote;
 
-                    List<StockInsumo> stockInsumos;
-
-                    if (fInsumo.Tipo == "MP")
-                    {
-                        stockInsumos = await _context.StockInsumos
-                            .Where(x =>
-                                x.CompraInsumo.IdInsumo == fInsumo.IdInsumo &&
-                                x.IdSede == request.IdSede &&
-                                x.StockDisponible > 0 &&
-                                (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
-                            .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
-                            .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
-                            .ThenBy(x => x.CompraInsumo.Id)
-                            .ToListAsync();
-                    }
-                    else
-                    {
-                        stockInsumos = await _context.StockInsumos
-                            .Where(x =>
-                                x.ProductoIntermedio.IdInsumo == fInsumo.IdInsumo &&
-                                x.IdSede == request.IdSede &&
-                                x.StockDisponible > 0 &&
-                                (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
-                            .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
-                            .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
-                            .ThenBy(x => x.ProductoIntermedio.Id)
-                            .ToListAsync();
-                    }
+                    List<StockInsumo> stockInsumos = await ObtenerStockInsumosParaConsumo(
+                        fInsumo.IdInsumo,
+                        fInsumo.Tipo,
+                        request.IdSede,
+                        fInsumo.Registro,
+                        fInsumo.Lote,
+                        ahora);
 
 
                     var insumoProductoIntermedio =
@@ -602,36 +726,13 @@ namespace proy_back_Qbd.Services
 
                     decimal cantidadUsar = fInsumo.CantidadLote;
 
-                    List<StockInsumo> stockInsumos;
-
-                    if (fInsumo.Tipo == "MP")
-                    {
-                        stockInsumos = await _context.StockInsumos
-                            .Where(x =>
-                                x.CompraInsumo.IdInsumo ==
-                                    fInsumo.IdInsumo &&
-                                x.IdSede == productoIntermedio.IdSede &&
-                                x.StockDisponible > 0 &&
-                                (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
-                            .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
-                            .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
-                            .ThenBy(x => x.CompraInsumo.Id)
-                            .ToListAsync();
-                    }
-                    else
-                    {
-                        stockInsumos = await _context.StockInsumos
-                            .Where(x =>
-                                x.ProductoIntermedio.IdInsumo ==
-                                    fInsumo.IdInsumo &&
-                                x.IdSede == productoIntermedio.IdSede &&
-                                x.StockDisponible > 0 &&
-                                (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
-                            .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
-                            .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
-                            .ThenBy(x => x.ProductoIntermedio.Id)
-                            .ToListAsync();
-                    }
+                    List<StockInsumo> stockInsumos = await ObtenerStockInsumosParaConsumo(
+                        fInsumo.IdInsumo,
+                        fInsumo.Tipo,
+                        productoIntermedio.IdSede,
+                        fInsumo.Registro,
+                        fInsumo.Lote,
+                        ahora);
 
                     if (stockInsumos.Count == 0)
                     {
@@ -869,34 +970,13 @@ namespace proy_back_Qbd.Services
                         ? item.Tipo
                         : ((insumoPI.Insumo != null && (insumoPI.Insumo.Clasificacion == "PI" || (insumoPI.Insumo.Tipo != null && insumoPI.Insumo.Tipo.StartsWith("PI")))) ? "PI" : "MP");
 
-                    List<StockInsumo> stockInsumos;
-
-                    if (tipo == "MP")
-                    {
-                        stockInsumos = await _context.StockInsumos
-                            .Where(x =>
-                                x.CompraInsumo.IdInsumo == insumoPI.IdInsumo &&
-                                x.IdSede == productoIntermedio.IdSede &&
-                                x.StockDisponible > 0 &&
-                                (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
-                            .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
-                            .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
-                            .ThenBy(x => x.CompraInsumo.Id)
-                            .ToListAsync();
-                    }
-                    else
-                    {
-                        stockInsumos = await _context.StockInsumos
-                            .Where(x =>
-                                x.ProductoIntermedio.IdInsumo == insumoPI.IdInsumo &&
-                                x.IdSede == productoIntermedio.IdSede &&
-                                x.StockDisponible > 0 &&
-                                (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
-                            .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
-                            .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
-                            .ThenBy(x => x.ProductoIntermedio.Id)
-                            .ToListAsync();
-                    }
+                    List<StockInsumo> stockInsumos = await ObtenerStockInsumosParaConsumo(
+                        insumoPI.IdInsumo,
+                        tipo,
+                        productoIntermedio.IdSede,
+                        insumoPI.Registro,
+                        insumoPI.Lote,
+                        ahora);
 
                     if (stockInsumos.Count == 0)
                     {
