@@ -21,49 +21,45 @@ namespace Proy_back_QBD.Services
         public async Task<ProdTerm?> Actualizar(int id, int sedeId, ProdTermUpdateReq request)
         {
             ProdTerm? prodTerm = await _context.ProdTerms
-            .Where(p => p.Id == id && p.SedeId == sedeId)
-            .FirstOrDefaultAsync();
+                .Include(p => p.Pedido)
+                .FirstOrDefaultAsync(p => p.Id == id && p.SedeId == sedeId);
+
             if (prodTerm == null)
             {
                 return null;
             }
 
-            _mapper.Map(request, prodTerm);
-
-            await _context.SaveChangesAsync();
-
-            Pedido? pedido = await _context.Pedidos
-            .Include(i => i.ProdTerms)
-            .FirstOrDefaultAsync(fod => fod.Id == prodTerm.PedidoId && fod.SedeId == prodTerm.SedeId);
-
-            if (pedido == null)
+            Pedido? pedido = prodTerm.Pedido;
+            if (pedido == null && prodTerm.PedidoId.HasValue)
             {
-                return null;
-            }
-            List<ProdTerm>? prodTerms = pedido.ProdTerms;
-            if (prodTerms == null)
-            {
-                return null;
+                pedido = await _context.Pedidos
+                    .FirstOrDefaultAsync(fod => fod.Id == prodTerm.PedidoId.Value && fod.SedeId == prodTerm.SedeId);
             }
 
-            decimal costoReq = 0;
-            costoReq = request.Costo * request.Cantidad;
-            decimal costoForm = 0;
-            costoForm = prodTerm.Costo * prodTerm.Cantidad;
-            decimal diferencia = Math.Abs(costoReq - costoForm);
-
-            if (costoReq != costoForm)
+            // Descontar del total y saldo el costo anterior antes de modificar
+            if (pedido != null)
             {
-                if (costoReq > costoForm)
-                {
-                    pedido.Total -= diferencia;
-                    pedido.Saldo -= diferencia;
-                }
-                else if (costoReq < costoForm)
-                {
-                    pedido.Total += diferencia;
-                    pedido.Saldo += diferencia;
-                }
+                pedido.Total -= prodTerm.Costo * prodTerm.Cantidad;
+                pedido.Saldo -= prodTerm.Costo * prodTerm.Cantidad;
+            }
+
+            // Traspaso directo sin AutoMapper
+            prodTerm.Costo = request.Costo;
+            prodTerm.Cantidad = request.Cantidad;
+            prodTerm.ProductoId = request.ProductoId;
+            prodTerm.ZonaAplicacion = request.ZonaAplicacion;
+            prodTerm.Diagnostico = request.Diagnostico;
+            if (!string.IsNullOrEmpty(request.Estado))
+            {
+                prodTerm.Estado = request.Estado;
+            }
+            prodTerm.ModificadorId = request.ModificadorId;
+
+            // Sumar el nuevo costo al total y recalcular saldo del pedido
+            if (pedido != null)
+            {
+                pedido.Total += prodTerm.Costo * prodTerm.Cantidad;
+                pedido.Saldo = pedido.Total - pedido.Adelanto;
             }
 
             await _context.SaveChangesAsync();
