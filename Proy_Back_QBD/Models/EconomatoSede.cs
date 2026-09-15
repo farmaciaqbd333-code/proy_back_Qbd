@@ -10,6 +10,7 @@ namespace Proy_back_QBD.Models
         public int IdEconomato { get; set; }
         public string? Location { get; set; }
         public decimal? Limite { get; set; }
+        public decimal? CantidadEnviar { get; set; }
 
         public virtual Sede Sede { get; set; } = null!;
         public virtual Economato Economato { get; set; } = null!;

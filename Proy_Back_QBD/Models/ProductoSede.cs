@@ -9,6 +9,7 @@ namespace Proy_back_QBD.Models
         public int IdProducto { get; set; }
         public string? Location { get; set; }
         public decimal? Limite { get; set; }
+        public decimal? CantidadEnviar { get; set; }
 
         public virtual Sede Sede { get; set; } = null!;
         public virtual Producto Producto { get; set; } = null!;

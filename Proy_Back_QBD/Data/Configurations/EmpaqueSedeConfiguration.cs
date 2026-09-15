@@ -25,6 +25,9 @@ public class EmpaqueSedeConfiguration : IEntityTypeConfiguration<EmpaqueSede>
         builder.Property(x => x.Limite)
             .HasColumnName("limite");
 
+        builder.Property(x => x.CantidadEnviar)
+            .HasColumnName("cantidad_enviar");
+
         builder.HasOne(x => x.Sede)
             .WithMany(x => x.EmpaqueSedes)
             .HasForeignKey(x => x.IdSite);

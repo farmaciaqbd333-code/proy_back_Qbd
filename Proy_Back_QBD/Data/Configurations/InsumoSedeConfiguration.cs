@@ -25,6 +25,9 @@ public class InsumoSedeConfiguration : IEntityTypeConfiguration<SiteSupply>
         builder.Property(x => x.Limite)
             .HasColumnName("limite");
 
+        builder.Property(x => x.CantidadEnviar)
+            .HasColumnName("cantidad_enviar");
+
         builder.HasOne(x => x.Sede)
             .WithMany(x => x.SiteSupply)
             .HasForeignKey(x => x.IdSite);

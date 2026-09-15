@@ -742,7 +742,8 @@ namespace proy_back_Qbd.Services
                 {
                     x.IdSupply,
                     x.Location,
-                    x.Limite
+                    x.Limite,
+                    x.CantidadEnviar
                 })
                 .ToListAsync();
 
@@ -797,6 +798,7 @@ namespace proy_back_Qbd.Services
                     .FirstOrDefault(x => x.IdSupply == insumo.Id);
                 var ubicacion = siteSupply?.Location;
                 var limite = siteSupply?.Limite;
+                var cantidadEnviar = siteSupply?.CantidadEnviar;
 
                 _logger.LogInformation(
                     "Cálculo Insumo | IdSede: {IdSede} | IdInsumo: {IdInsumo} | Descripcion: {Descripcion} | " +
@@ -831,7 +833,8 @@ namespace proy_back_Qbd.Services
                     Baja = baja,
                     Tipo = insumo.Tipo,
                     CodigoUbicacion = ubicacion,
-                    Limite = limite
+                    Limite = limite,
+                    CantidadEnviar = cantidadEnviar
                 });
             }
 
@@ -1335,6 +1338,7 @@ namespace proy_back_Qbd.Services
                 else
                 {
                     empaqueSede.Limite = request.Limite;
+                    empaqueSede.CantidadEnviar = request.CantidadEnviar;
                 }
 
                 await _unitWork.SaveChangesAsync();
@@ -1358,6 +1362,7 @@ namespace proy_back_Qbd.Services
                 else
                 {
                     productoSede.Limite = request.Limite;
+                    productoSede.CantidadEnviar = request.CantidadEnviar;
                 }
 
                 await _unitWork.SaveChangesAsync();
@@ -1381,6 +1386,7 @@ namespace proy_back_Qbd.Services
                 else
                 {
                     economatoSede.Limite = request.Limite;
+                    economatoSede.CantidadEnviar = request.CantidadEnviar;
                 }
 
                 await _unitWork.SaveChangesAsync();
@@ -1405,6 +1411,7 @@ namespace proy_back_Qbd.Services
                 else
                 {
                     siteSupply.Limite = request.Limite;
+                    siteSupply.CantidadEnviar = request.CantidadEnviar;
                 }
 
                 await _unitWork.SaveChangesAsync();

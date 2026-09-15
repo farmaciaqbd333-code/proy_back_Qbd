@@ -17,6 +17,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string? Tipo { get; set; }
         public string? CodigoUbicacion { get; set; }
         public decimal? Limite { get; set; }
+        public decimal? CantidadEnviar { get; set; }
     }
 
     public class DetalleInsumoRes

@@ -96,12 +96,13 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpPut("asignar-limite")]
-        public async Task<IActionResult> AssignLimite([FromBody] AssignLimiteReq? body, [FromQuery] int? idSede, [FromQuery] int? idInsumo, [FromQuery] decimal? limite, [FromQuery] string? familia)
+        public async Task<IActionResult> AssignLimite([FromBody] AssignLimiteReq? body, [FromQuery] int? idSede, [FromQuery] int? idInsumo, [FromQuery] decimal? limite, [FromQuery] decimal? cantidadEnviar, [FromQuery] string? familia)
         {
             var req = body ?? new AssignLimiteReq();
             if (req.IdSede == 0 && idSede.HasValue) req.IdSede = idSede.Value;
             if (req.IdInsumo == 0 && idInsumo.HasValue) req.IdInsumo = idInsumo.Value;
             if (!req.Limite.HasValue && limite.HasValue) req.Limite = limite.Value;
+            if (!req.CantidadEnviar.HasValue && cantidadEnviar.HasValue) req.CantidadEnviar = cantidadEnviar.Value;
             if (string.IsNullOrEmpty(req.Familia) && !string.IsNullOrEmpty(familia)) req.Familia = familia;
 
             var resultado = await _kardexService.AssignLimite(req);

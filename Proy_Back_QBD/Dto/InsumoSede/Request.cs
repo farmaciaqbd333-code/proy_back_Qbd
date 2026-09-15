@@ -11,5 +11,6 @@ public class AssignLimiteReq
     public int IdSede { get; set; }
     public int IdInsumo { get; set; }
     public decimal? Limite { get; set; }
+    public decimal? CantidadEnviar { get; set; }
     public string? Familia { get; set; }
 }
