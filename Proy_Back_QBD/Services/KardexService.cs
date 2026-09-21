@@ -112,7 +112,7 @@ namespace proy_back_Qbd.Services
                 decimal saldoQueda = 0m;
                 if (stockSede.Any())
                 {
-                    saldoQueda = stockSede.Sum(si => si.StockDisponible);
+                    saldoQueda = Math.Min(stockSede.Sum(si => si.StockDisponible), entradas);
                 }
                 else
                 {
