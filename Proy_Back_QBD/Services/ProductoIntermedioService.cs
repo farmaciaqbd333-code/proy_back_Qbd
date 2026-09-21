@@ -1330,8 +1330,8 @@ namespace proy_back_Qbd.Services
 
             return items.Select(s =>
             {
-                decimal loteTotal = (s.PesoUnidad.HasValue && s.PesoUnidad.Value > 0)
-                    ? s.PesoUnidad.Value
+                decimal loteTotal = (s.TipoUso == "PI-FMG" || s.Um == "UND")
+                    ? (s.LoteEstandar ?? 0m)
                     : ((s.LoteEstTotal.HasValue && s.LoteEstTotal.Value > 0)
                         ? s.LoteEstTotal.Value
                         : (s.LoteEstandar ?? 0m));

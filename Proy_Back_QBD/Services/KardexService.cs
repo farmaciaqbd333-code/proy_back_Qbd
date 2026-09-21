@@ -186,9 +186,11 @@ namespace proy_back_Qbd.Services
                 {
                     Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
-                    CantidadIngresada = s.LoteEstTotal ?? s.LoteEstandar ?? 0,
-                    Salidas = Math.Max(0, (s.LoteEstTotal ?? s.LoteEstandar ?? 0) - (s.StockInsumo != null ? s.StockInsumo.StockDisponible : (s.LoteEstTotal ?? s.LoteEstandar ?? 0))),
-                    Saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : (s.LoteEstTotal ?? s.LoteEstandar ?? 0),
+                    CantidadIngresada = (s.TipoUso == "PI-FMG" || s.Um == "UND")
+                        ? (s.LoteEstandar ?? 0)
+                        : (s.LoteEstTotal ?? s.LoteEstandar ?? 0),
+                    Salidas = Math.Max(0, ((s.TipoUso == "PI-FMG" || s.Um == "UND") ? (s.LoteEstandar ?? 0) : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)) - (s.StockInsumo != null ? s.StockInsumo.StockDisponible : ((s.TipoUso == "PI-FMG" || s.Um == "UND") ? (s.LoteEstandar ?? 0) : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)))),
+                    Saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : ((s.TipoUso == "PI-FMG" || s.Um == "UND") ? (s.LoteEstandar ?? 0) : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)),
                     FechaCompra = s.FechaCreacion,
                     FechaFabricacion = s.FechaCreacion,
                     FechaVencimiento = s.FechaVencimiento,
@@ -861,8 +863,8 @@ namespace proy_back_Qbd.Services
                 Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
                 Entradas = s.Sum(s => s!.ProductoIntermedio!
                     .Where(w => w.IdSede == idSede)
-                    .Sum(s2 => (s2.PesoUnidad.HasValue && s2.PesoUnidad.Value > 0)
-                        ? s2.PesoUnidad.Value
+                    .Sum(s2 => (s2.TipoUso == "PI-FMG" || s2.Um == "UND")
+                        ? (s2.LoteEstandar ?? 0)
                         : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0)
                             ? s2.LoteEstTotal.Value
                             : (s2.LoteEstandar ?? 0)))),
