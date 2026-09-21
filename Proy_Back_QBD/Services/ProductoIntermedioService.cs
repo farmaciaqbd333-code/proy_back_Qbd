@@ -142,6 +142,27 @@ namespace proy_back_Qbd.Services
                     targetStock = await _context.StockInsumos
                         .Include(x => x.ProductoIntermedio)
                         .FirstOrDefaultAsync(x => (x.IdProductoIntermedio == targetPIId.Value || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == targetPIId.Value)) && x.IdSede == idSede && x.Tipo == "PI");
+
+                    if (targetStock == null)
+                    {
+                        var piObj = await _context.ProductosIntermedios
+                            .FirstOrDefaultAsync(p => p.Id == targetPIId.Value && p.IdSede == idSede);
+
+                        if (piObj != null)
+                        {
+                            decimal saldoInicial = piObj.LoteEstTotal ?? (decimal)(piObj.LoteEstandar ?? 0);
+                            targetStock = new StockInsumo
+                            {
+                                IdProductoIntermedio = piObj.Id,
+                                IdSede = idSede,
+                                Tipo = "PI",
+                                StockDisponible = saldoInicial,
+                                UnidadMedida = string.IsNullOrWhiteSpace(piObj.Um) ? "G" : piObj.Um
+                            };
+                            _context.StockInsumos.Add(targetStock);
+                            await _context.SaveChangesAsync();
+                        }
+                    }
                 }
 
                 // SI SE ESPECIFICÓ UN REGISTRO:
@@ -153,6 +174,31 @@ namespace proy_back_Qbd.Services
                         stockInsumos.Add(targetStock);
                     }
                     return stockInsumos;
+                }
+
+                // Auto-inicializar cualquier PI huérfano sin StockInsumo para este insumo y sede
+                var pisSinStock = await _context.ProductosIntermedios
+                    .Where(p => p.IdInsumo == idInsumo && p.IdSede == idSede && !_context.StockInsumos.Any(s => s.IdProductoIntermedio == p.Id))
+                    .ToListAsync();
+
+                if (pisSinStock.Count > 0)
+                {
+                    foreach (var piObj in pisSinStock)
+                    {
+                        decimal saldoInicial = piObj.LoteEstTotal ?? (decimal)(piObj.LoteEstandar ?? 0);
+                        if (saldoInicial > 0)
+                        {
+                            _context.StockInsumos.Add(new StockInsumo
+                            {
+                                IdProductoIntermedio = piObj.Id,
+                                IdSede = idSede,
+                                Tipo = "PI",
+                                StockDisponible = saldoInicial,
+                                UnidadMedida = string.IsNullOrWhiteSpace(piObj.Um) ? "G" : piObj.Um
+                            });
+                        }
+                    }
+                    await _context.SaveChangesAsync();
                 }
 
                 stockInsumos = await _context.StockInsumos
