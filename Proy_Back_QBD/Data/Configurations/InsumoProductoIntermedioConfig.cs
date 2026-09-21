@@ -37,6 +37,9 @@ public class InsumoProductoIntermedioConfiguration : IEntityTypeConfiguration<In
         builder.Property(x => x.CantidadLote)
             .HasColumnName("cantidad_lote");
 
+        builder.Property(x => x.Practica)
+            .HasColumnName("practica");
+
 
         builder.Property(x => x.Csp)
             .HasColumnName("csp");

@@ -27,6 +27,8 @@ namespace Proy_back_QBD.Dto
     }
     public class ConsumoPIRes
     {
+        public int? Id { get; set; }
+        public int? IdInsumo { get; set; }
         public string? Codigo { get; set; }
         public decimal? Porcentaje { get; set; }
         public string? Descripcion { get; set; }

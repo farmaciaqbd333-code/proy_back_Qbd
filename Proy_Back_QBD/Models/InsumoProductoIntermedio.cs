@@ -13,6 +13,8 @@ public class InsumoProductoIntermedio
     public decimal Dilucion { get; set; }
     public required string UnidadMedida { get; set; }
     public decimal CantidadLote { get; set; }
+    [Column("practica")]
+    public decimal? Practica { get; set; }
     public bool Csp { get; set; }
     [Column("lote")]
     public string? Lote { get; set; }

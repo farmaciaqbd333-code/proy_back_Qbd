@@ -360,6 +360,7 @@ namespace proy_back_Qbd.Services
                     insumoProductoIntermedio.Csp = fInsumo.Csp;
                     insumoProductoIntermedio.Lote = fInsumo.Lote;
                     insumoProductoIntermedio.Registro = fInsumo.Registro;
+                    insumoProductoIntermedio.Practica = fInsumo.Practica ?? fInsumo.CantidadLote;
 
                     _context.InsumoProductoIntermedios.Add(
                         insumoProductoIntermedio);
@@ -784,6 +785,7 @@ namespace proy_back_Qbd.Services
                     insumoProductoIntermedio.Csp = fInsumo.Csp;
                     insumoProductoIntermedio.Lote = fInsumo.Lote;
                     insumoProductoIntermedio.Registro = fInsumo.Registro;
+                    insumoProductoIntermedio.Practica = fInsumo.Practica ?? fInsumo.CantidadLote;
 
                     _context.InsumoProductoIntermedios.Add(
                         insumoProductoIntermedio);
@@ -961,8 +963,11 @@ namespace proy_back_Qbd.Services
 
                 foreach (var item in request.Insumos)
                 {
-                    var insumoPI = insumosProductoIntermedio
-                        .FirstOrDefault(x => x.IdInsumo == item.IdInsumo);
+                    var insumoPI = (item.Id.HasValue && item.Id.Value > 0)
+                        ? insumosProductoIntermedio.FirstOrDefault(x => x.Id == item.Id.Value)
+                        : (!string.IsNullOrEmpty(item.Variable)
+                            ? insumosProductoIntermedio.FirstOrDefault(x => x.IdInsumo == item.IdInsumo && x.Variable == item.Variable)
+                            : insumosProductoIntermedio.FirstOrDefault(x => x.IdInsumo == item.IdInsumo));
 
                     if (insumoPI == null)
                     {
@@ -972,6 +977,7 @@ namespace proy_back_Qbd.Services
 
                     // Actualizar la propiedad CantidadLote y auditoría en el registro existente
                     insumoPI.CantidadLote = item.CantidadLote;
+                    insumoPI.Practica = item.Practica ?? item.CantidadLote;
                     insumoPI.FechaModificacion = ahora;
                     if (request.IdModificador > 0)
                     {
@@ -1123,6 +1129,8 @@ namespace proy_back_Qbd.Services
 
                     return new ConsumoPIRes()
                     {
+                        Id = s.Id,
+                        IdInsumo = s.IdInsumo,
                         Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
                         Porcentaje = s.Porcentaje,
                         Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
@@ -1134,7 +1142,7 @@ namespace proy_back_Qbd.Services
                         Dilucion = s.Dilucion,
                         Um = s.UnidadMedida,
                         CantidadLote = s.CantidadLote,
-                        Practica = s.CantidadLote,
+                        Practica = s.Practica ?? s.CantidadLote,
                         CSP = s.Csp
                     };
                 }).ToList();
@@ -1160,6 +1168,8 @@ namespace proy_back_Qbd.Services
                         .OrderBy(ob => ob.Variable)
                         .Select(s => new ConsumoPIRes()
                         {
+                            Id = s.Id,
+                            IdInsumo = s.IdInsumo,
                             Codigo = UtilFamilia.CodigoInsumo(s.IdInsumo),
                             Porcentaje = s.Porcentaje,
                             Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
@@ -1171,6 +1181,7 @@ namespace proy_back_Qbd.Services
                             Dilucion = s.Dilucion,
                             Um = s.UnidadMedida,
                             CantidadLote = s.CantidadLote,
+                            Practica = s.Practica ?? s.CantidadLote,
                             CSP = s.Csp
                         })
                         .AsNoTracking()
@@ -1399,6 +1410,7 @@ namespace proy_back_Qbd.Services
                         .ThenBy(i => i.Id)
                         .Select(i => new InsumoProductoIntermedioRes
                         {
+                            Id = i.Id,
                             IdInsumo = i.IdInsumo,
                             CodigoInsumo = UtilFamilia.CodigoInsumo(i.IdInsumo),
                             Descripcion = i.Insumo != null ? i.Insumo.Descripcion : null,
@@ -1411,7 +1423,7 @@ namespace proy_back_Qbd.Services
                             Dilucion = i.Dilucion,
                             UnidadMedida = i.UnidadMedida,
                             CantidadLote = i.CantidadLote,
-                            Practica = i.CantidadLote,
+                            Practica = i.Practica ?? i.CantidadLote,
                             Csp = i.Csp
                         })
                         .ToList()

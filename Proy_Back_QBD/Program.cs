@@ -192,6 +192,7 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;
             ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS lote text;
             ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS registro text;
+            ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS practica numeric;
         ");
         Console.WriteLine("--> Base de datos: Columnas lote y registro verificadas/creadas correctamente.");
     }

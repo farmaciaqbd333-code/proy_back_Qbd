@@ -7,8 +7,11 @@ namespace Proy_back_QBD.Request
 
     public class ActualizarCantidadLoteInsumoItemReq
     {
+        public int? Id { get; set; }
         public int IdInsumo { get; set; }
+        public string? Variable { get; set; }
         public decimal CantidadLote { get; set; }
+        public decimal? Practica { get; set; }
         public string? Tipo { get; set; }
     }
 
@@ -67,6 +70,7 @@ namespace Proy_back_QBD.Request
     }
     public class InsumoProductoIntermedioReq
     {
+        public int? Id { get; set; }
         public string? Lote { get; set; }
         public string? Registro { get; set; }
         public int IdInsumo { get; set; }
@@ -80,10 +84,12 @@ namespace Proy_back_QBD.Request
         public decimal Dilucion { get; set; }
         public required string UnidadMedida { get; set; }
         public decimal CantidadLote { get; set; }
+        public decimal? Practica { get; set; }
         public bool Csp { get; set; }
     }
     public class InsumoProductoIntermedioRes
     {
+        public int? Id { get; set; }
         public string? Lote { get; set; }
         public string? Registro { get; set; }
         public int IdInsumo { get; set; }
