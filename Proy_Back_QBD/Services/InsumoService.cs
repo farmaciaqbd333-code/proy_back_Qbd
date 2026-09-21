@@ -24,7 +24,25 @@ namespace Proy_back_QBD.Services
             {
                 return null;
             }
+            int? currentFamiliaId = insumo.IdFamilia;
             _mapper.Map(request, insumo);
+            if (request.FamiliaId <= 0)
+            {
+                if (currentFamiliaId.HasValue && currentFamiliaId.Value > 0)
+                {
+                    insumo.IdFamilia = currentFamiliaId;
+                }
+                else if (insumo.Clasificacion == "PI" || insumo.Tipo?.StartsWith("PI") == true)
+                {
+                    var piFam = await _context.Familias.FirstOrDefaultAsync(f => f.Abreviatura == "PI");
+                    insumo.IdFamilia = piFam?.Id ?? 8;
+                }
+                else
+                {
+                    var mpFam = await _context.Familias.FirstOrDefaultAsync(f => f.Abreviatura == "MP");
+                    insumo.IdFamilia = mpFam?.Id ?? 1;
+                }
+            }
             await _context.SaveChangesAsync();
             return insumo;
         }
@@ -45,6 +63,19 @@ namespace Proy_back_QBD.Services
         {
             Insumo? insumo = _mapper.Map<Insumo>(request);
             insumo.ModificadorId = insumo.CreadorId;
+            if (request.FamiliaId <= 0)
+            {
+                if (insumo.Clasificacion == "PI" || insumo.Tipo?.StartsWith("PI") == true)
+                {
+                    var piFam = await _context.Familias.FirstOrDefaultAsync(f => f.Abreviatura == "PI");
+                    insumo.IdFamilia = piFam?.Id ?? 8;
+                }
+                else
+                {
+                    var mpFam = await _context.Familias.FirstOrDefaultAsync(f => f.Abreviatura == "MP");
+                    insumo.IdFamilia = mpFam?.Id ?? 1;
+                }
+            }
             _context.Insumos.Add(insumo);
             await _context.SaveChangesAsync();
             return insumo;
