@@ -36,7 +36,34 @@ namespace proy_back_Qbd.Services
             StockInsumo? targetStock = null;
             bool registroEspecificado = !string.IsNullOrWhiteSpace(registro) && registro.Trim() != "---" && registro.Trim() != "-";
 
-            if (tipo == "MP")
+            string tipoEfectivo = (tipo ?? "").Trim().ToUpper();
+            if (registroEspecificado)
+            {
+                string regUpper = registro!.Trim().ToUpper();
+                if (regUpper.StartsWith("PI"))
+                {
+                    tipoEfectivo = "PI";
+                }
+                else if (regUpper.StartsWith("MP"))
+                {
+                    tipoEfectivo = "MP";
+                }
+            }
+
+            if (tipoEfectivo != "PI" && tipoEfectivo != "MP")
+            {
+                var insumoInfo = await _context.Insumos.FirstOrDefaultAsync(i => i.Id == idInsumo);
+                if (insumoInfo != null && ((insumoInfo.Clasificacion ?? "").ToUpper() == "PI" || (insumoInfo.Tipo ?? "").ToUpper().StartsWith("PI")))
+                {
+                    tipoEfectivo = "PI";
+                }
+                else
+                {
+                    tipoEfectivo = "MP";
+                }
+            }
+
+            if (tipoEfectivo == "MP")
             {
                 int? targetCompraInsumoId = null;
                 if (registroEspecificado)
@@ -384,6 +411,15 @@ namespace proy_back_Qbd.Services
 
                 foreach (var fInsumo in request.Insumos)
                 {
+                    if (!string.IsNullOrWhiteSpace(fInsumo.Registro) && fInsumo.Registro.Trim().StartsWith("PI", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fInsumo.Tipo = "PI";
+                    }
+                    else if (!string.IsNullOrWhiteSpace(fInsumo.Registro) && fInsumo.Registro.Trim().StartsWith("MP", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fInsumo.Tipo = "MP";
+                    }
+
                     if (fInsumo.Tipo is not ("MP" or "PI"))
                     {
                         throw new BadRequestException(
@@ -803,6 +839,15 @@ namespace proy_back_Qbd.Services
 
                 foreach (var fInsumo in request.Insumos)
                 {
+                    if (!string.IsNullOrWhiteSpace(fInsumo.Registro) && fInsumo.Registro.Trim().StartsWith("PI", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fInsumo.Tipo = "PI";
+                    }
+                    else if (!string.IsNullOrWhiteSpace(fInsumo.Registro) && fInsumo.Registro.Trim().StartsWith("MP", StringComparison.OrdinalIgnoreCase))
+                    {
+                        fInsumo.Tipo = "MP";
+                    }
+
                     if (fInsumo.Tipo is not ("MP" or "PI"))
                     {
                         throw new BadRequestException(
