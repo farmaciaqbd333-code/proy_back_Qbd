@@ -180,6 +180,8 @@ namespace proy_back_Qbd.Services
             var resultado = await _context.ProductosIntermedios
                 .Include(pi => pi.StockInsumo)
                 .Where(w => w.IdInsumo == idInsumo && w.IdSede == idSede)
+                .OrderByDescending(o => o.FechaCreacion)
+                .ThenByDescending(o => o.Id)
                 .Select(s => new DetalleInsumoRes
                 {
                     Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),

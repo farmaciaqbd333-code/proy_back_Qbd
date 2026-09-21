@@ -94,31 +94,28 @@ namespace proy_back_Qbd.Services
                     }
                 }
 
-                // SI SE ESPECIFICÓ UN REGISTRO:
-                // SER ESTRICTO: Solo se puede consumir de ese registro objetivo.
-                // NUNCA desbordar ni agarrar de otros registros/compras.
-                if (registroEspecificado)
+                if (targetStock != null)
                 {
-                    if (targetStock != null)
-                    {
-                        stockInsumos.Add(targetStock);
-                    }
-                    return stockInsumos;
+                    stockInsumos.Add(targetStock);
                 }
 
-                stockInsumos = await _context.StockInsumos
+                // Si no se especificó registro o el objetivo no tiene suficiente stock, permitir tomar de otros registros con stock
+                var otrosStockMP = await _context.StockInsumos
                     .Include(x => x.CompraInsumo)
                         .ThenInclude(ci => ci!.Compra)
                     .Where(x =>
                         x.CompraInsumo != null &&
                         x.CompraInsumo.IdInsumo == idInsumo &&
-                        x.IdSede == idSede &&
+                        (x.IdSede == idSede || x.IdSede == 15) &&
                         x.StockDisponible > 0 &&
+                        (targetStock == null || x.Id != targetStock.Id) &&
                         (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
                     .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
                     .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
                     .ThenBy(x => x.CompraInsumo.Id)
                     .ToListAsync();
+
+                stockInsumos.AddRange(otrosStockMP);
             }
             else // PI
             {
@@ -139,14 +136,23 @@ namespace proy_back_Qbd.Services
 
                 if (targetPIId.HasValue)
                 {
+                    // 1. Buscar en la sede solicitada o en sede Central (15)
                     targetStock = await _context.StockInsumos
                         .Include(x => x.ProductoIntermedio)
-                        .FirstOrDefaultAsync(x => (x.IdProductoIntermedio == targetPIId.Value || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == targetPIId.Value)) && x.IdSede == idSede && x.Tipo == "PI");
+                        .FirstOrDefaultAsync(x => (x.IdProductoIntermedio == targetPIId.Value || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == targetPIId.Value)) && x.Tipo == "PI" && (x.IdSede == idSede || x.IdSede == 15));
 
                     if (targetStock == null)
                     {
+                        targetStock = await _context.StockInsumos
+                            .Include(x => x.ProductoIntermedio)
+                            .FirstOrDefaultAsync(x => (x.IdProductoIntermedio == targetPIId.Value || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == targetPIId.Value)) && x.Tipo == "PI");
+                    }
+
+                    // 2. Si no existe en StockInsumo, auto-inicializarlo desde ProductosIntermedios
+                    if (targetStock == null)
+                    {
                         var piObj = await _context.ProductosIntermedios
-                            .FirstOrDefaultAsync(p => p.Id == targetPIId.Value && p.IdSede == idSede);
+                            .FirstOrDefaultAsync(p => p.Id == targetPIId.Value);
 
                         if (piObj != null)
                         {
@@ -154,7 +160,7 @@ namespace proy_back_Qbd.Services
                             targetStock = new StockInsumo
                             {
                                 IdProductoIntermedio = piObj.Id,
-                                IdSede = idSede,
+                                IdSede = idSede > 0 ? idSede : piObj.IdSede,
                                 Tipo = "PI",
                                 StockDisponible = saldoInicial,
                                 UnidadMedida = string.IsNullOrWhiteSpace(piObj.Um) ? "G" : piObj.Um
@@ -163,22 +169,44 @@ namespace proy_back_Qbd.Services
                             await _context.SaveChangesAsync();
                         }
                     }
-                }
-
-                // SI SE ESPECIFICÓ UN REGISTRO:
-                // SER ESTRICTO: Solo se puede consumir de ese registro objetivo.
-                if (registroEspecificado)
-                {
-                    if (targetStock != null)
+                    else if (targetStock.StockDisponible <= 0)
                     {
-                        stockInsumos.Add(targetStock);
+                        var tieneConsumos = await _context.StockInsumoProductoIntermedios
+                            .AnyAsync(c => c.IdStockInsumo == targetStock.Id);
+                        if (!tieneConsumos)
+                        {
+                            var piObj = await _context.ProductosIntermedios.FirstOrDefaultAsync(p => p.Id == targetPIId.Value);
+                            if (piObj != null && (piObj.LoteEstTotal > 0 || piObj.LoteEstandar > 0))
+                            {
+                                targetStock.StockDisponible = piObj.LoteEstTotal ?? (decimal)(piObj.LoteEstandar ?? 0);
+                                await _context.SaveChangesAsync();
+                            }
+                        }
                     }
-                    return stockInsumos;
                 }
 
-                // Auto-inicializar cualquier PI huérfano sin StockInsumo para este insumo y sede
+                if (targetStock != null)
+                {
+                    stockInsumos.Add(targetStock);
+                }
+
+                // Incluir los demás registros con stock disponible para este insumo (sede actual o central 15)
+                var otrosStockPI = await _context.StockInsumos
+                    .Include(x => x.ProductoIntermedio)
+                    .Where(x =>
+                        x.ProductoIntermedio != null &&
+                        x.ProductoIntermedio.IdInsumo == idInsumo &&
+                        (x.IdSede == idSede || x.IdSede == 15) &&
+                        x.StockDisponible > 0 &&
+                        (targetStock == null || x.Id != targetStock.Id) &&
+                        (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
+                    .OrderByDescending(x => x.ProductoIntermedio.FechaCreacion)
+                    .ThenByDescending(x => x.ProductoIntermedio.Id)
+                    .ToListAsync();
+
+                // Auto-inicializar cualquier PI huérfano sin StockInsumo
                 var pisSinStock = await _context.ProductosIntermedios
-                    .Where(p => p.IdInsumo == idInsumo && p.IdSede == idSede && !_context.StockInsumos.Any(s => s.IdProductoIntermedio == p.Id))
+                    .Where(p => p.IdInsumo == idInsumo && (p.IdSede == idSede || p.IdSede == 15) && !_context.StockInsumos.Any(s => s.IdProductoIntermedio == p.Id))
                     .ToListAsync();
 
                 if (pisSinStock.Count > 0)
@@ -188,31 +216,22 @@ namespace proy_back_Qbd.Services
                         decimal saldoInicial = piObj.LoteEstTotal ?? (decimal)(piObj.LoteEstandar ?? 0);
                         if (saldoInicial > 0)
                         {
-                            _context.StockInsumos.Add(new StockInsumo
+                            var nuevoStock = new StockInsumo
                             {
                                 IdProductoIntermedio = piObj.Id,
-                                IdSede = idSede,
+                                IdSede = piObj.IdSede,
                                 Tipo = "PI",
                                 StockDisponible = saldoInicial,
                                 UnidadMedida = string.IsNullOrWhiteSpace(piObj.Um) ? "G" : piObj.Um
-                            });
+                            };
+                            _context.StockInsumos.Add(nuevoStock);
+                            await _context.SaveChangesAsync();
+                            otrosStockPI.Add(nuevoStock);
                         }
                     }
-                    await _context.SaveChangesAsync();
                 }
 
-                stockInsumos = await _context.StockInsumos
-                    .Include(x => x.ProductoIntermedio)
-                    .Where(x =>
-                        x.ProductoIntermedio != null &&
-                        x.ProductoIntermedio.IdInsumo == idInsumo &&
-                        x.IdSede == idSede &&
-                        x.StockDisponible > 0 &&
-                        (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
-                    .OrderBy(x => string.IsNullOrEmpty(x.ProductoIntermedio.Lote) ? 1 : 0)
-                    .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
-                    .ThenBy(x => x.ProductoIntermedio.Id)
-                    .ToListAsync();
+                stockInsumos.AddRange(otrosStockPI);
             }
 
             return stockInsumos;
