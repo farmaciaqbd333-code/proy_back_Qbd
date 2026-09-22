@@ -541,7 +541,7 @@ namespace proy_back_Qbd.Services
                 .Select(g => new
                 {
                     IdInsumo = g.Key,
-                    Total = g.Sum(x => x.CantidadLote)
+                    Total = g.Sum(x => (x.Practica.HasValue && x.Practica.Value > 0) ? x.Practica.Value : x.CantidadLote)
                 })
                 .ToListAsync();
 
@@ -869,7 +869,7 @@ namespace proy_back_Qbd.Services
                             ? s2.LoteEstTotal.Value
                             : (s2.LoteEstandar ?? 0)))),
                 Salidas =
-                    s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => s3.CantidadLote)) +
+                    s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => (s3.Practica.HasValue && s3.Practica.Value > 0) ? s3.Practica.Value : s3.CantidadLote)) +
                     s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)),
                 Ajustes = 0,
                 Baja = s.Sum(x => x.ProductoIntermedio!
@@ -1045,7 +1045,7 @@ namespace proy_back_Qbd.Services
                                 : (s.ProductoIntermedio.Lote ?? "Producto Intermedio"),
                             LoteInsumo = "",
                             RegistroLoteInsumo = "",
-                            Cantidad = s.CantidadLote,
+                            Cantidad = (s.Practica.HasValue && s.Practica.Value > 0) ? s.Practica.Value : s.CantidadLote,
                             Um = s.UnidadMedida ?? "G",
                             Fecha = s.ProductoIntermedio.FechaCreacion,
                             Usuario = s.ProductoIntermedio.Elaborador != null ? s.ProductoIntermedio.Elaborador.Codigo : "ADMIN"

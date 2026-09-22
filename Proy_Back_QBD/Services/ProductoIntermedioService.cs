@@ -426,7 +426,7 @@ namespace proy_back_Qbd.Services
                             $"Tipo de insumo no válido: {fInsumo.Tipo}");
                     }
 
-                    decimal cantidadUsar = fInsumo.CantidadLote;
+                    decimal cantidadUsar = (fInsumo.Practica.HasValue && fInsumo.Practica.Value > 0) ? fInsumo.Practica.Value : fInsumo.CantidadLote;
 
                     List<StockInsumo> stockInsumos = await ObtenerStockInsumosParaConsumo(
                         fInsumo.IdInsumo,
@@ -854,7 +854,7 @@ namespace proy_back_Qbd.Services
                             $"Tipo de insumo no válido: {fInsumo.Tipo}");
                     }
 
-                    decimal cantidadUsar = fInsumo.CantidadLote;
+                    decimal cantidadUsar = (fInsumo.Practica.HasValue && fInsumo.Practica.Value > 0) ? fInsumo.Practica.Value : fInsumo.CantidadLote;
 
                     List<StockInsumo> stockInsumos = await ObtenerStockInsumosParaConsumo(
                         fInsumo.IdInsumo,
@@ -1094,7 +1094,7 @@ namespace proy_back_Qbd.Services
                         insumoPI.IdModificador = request.IdModificador;
                     }
 
-                    decimal cantidadUsar = item.CantidadLote;
+                    decimal cantidadUsar = (item.Practica.HasValue && item.Practica.Value > 0) ? item.Practica.Value : item.CantidadLote;
 
                     if (cantidadUsar <= 0)
                     {

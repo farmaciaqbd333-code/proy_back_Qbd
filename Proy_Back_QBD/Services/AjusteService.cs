@@ -248,7 +248,7 @@ namespace Proy_back_QBD.Service.AjusteService
             var salidasPI = await _context.InsumoProductoIntermedios
                 .Where(ipi => ipi.ProductoIntermedio != null && ipi.ProductoIntermedio.IdSede == idSede)
                 .GroupBy(ipi => ipi.IdInsumo)
-                .Select(g => new { IdInsumo = g.Key, Total = g.Sum(ipi => ipi.CantidadLote) })
+                .Select(g => new { IdInsumo = g.Key, Total = g.Sum(ipi => (ipi.Practica.HasValue && ipi.Practica.Value > 0) ? ipi.Practica.Value : ipi.CantidadLote) })
                 .ToDictionaryAsync(x => x.IdInsumo, x => x.Total);
 
             var insumoGrupos = compras.GroupBy(c => c.IdInsumo);
