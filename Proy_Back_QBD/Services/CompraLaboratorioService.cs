@@ -238,7 +238,7 @@ namespace proy_back_Qbd.Services
                     return new CompraLabInsumoModalRes
                     {
                         Id = s2.Id,
-                        Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(4, '0'),
+                        Reg = Alfanumerico.ConvertToBase36(s2.Id).PadLeft(2, '0'),
                         Familia = s2.Familia,
                         Codigo = s2.Codigo.ToString(),
                         DescripcionQBD = s2.DescripcionQBD,
@@ -264,7 +264,7 @@ namespace proy_back_Qbd.Services
                     return new CompraLabEmpaqueModalRes
                     {
                         Id = s3.Id,
-                        Reg = Alfanumerico.ConvertToBase36(s3.Id).PadLeft(4, '0'),
+                        Reg = Alfanumerico.ConvertToBase36(s3.Id).PadLeft(2, '0'),
                         Familia = s3.Familia,
                         Codigo = s3.Codigo.ToString(),
                         DescripcionQBD = s3.DescripcionQBD,
@@ -354,13 +354,13 @@ namespace proy_back_Qbd.Services
             // Lógica que EF Core no puede traducir
             foreach (var item in response.ListaInsumos)
             {
-                item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(4, '0');
+                item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(2, '0');
                 item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
             }
 
             foreach (var item in response.ListaEmpaques)
             {
-                item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(4, '0');
+                item.Reg = Alfanumerico.ConvertToBase36(item.Id).PadLeft(2, '0');
                 item.Conformidad = UtilConformidad.CalcularConformidad(item.FechaVencimiento);
             }
 
