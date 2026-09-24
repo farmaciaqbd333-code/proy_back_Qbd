@@ -662,6 +662,9 @@ namespace proy_back_Qbd.Services
                         insumosProductoIntermedio);
                 }
 
+                // Guardar cambios para que PostgreSQL refleje el stock revertido y los consumos eliminados antes de re-consumir
+                await _context.SaveChangesAsync();
+
                 // ============================================================
                 // ACTUALIZAR PRODUCTO INTERMEDIO
                 // ============================================================
@@ -669,6 +672,7 @@ namespace proy_back_Qbd.Services
                 productoIntermedio.Lote = request.Lote;
                 productoIntermedio.IdInsumo = request.IdInsumo;
                 productoIntermedio.LoteEstandar = request.LoteEstandar;
+                productoIntermedio.PesoUnidad = request.PesoUnidad ?? (request.Cantidad > 0 ? request.Cantidad : productoIntermedio.PesoUnidad);
                 productoIntermedio.LoteEstTotal = request.LoteEstTotal;
                 productoIntermedio.TipoUso = request.TipoUso;
                 productoIntermedio.Um = request.Um;
@@ -684,6 +688,7 @@ namespace proy_back_Qbd.Services
                 productoIntermedio.CondicionAlmacenamiento =
                     request.CondicionAlmacenamiento;
                 productoIntermedio.IdModificador = request.IdModificador;
+                productoIntermedio.FechaModificacion = ahora;
 
                 if (productoIntermedio.FechaEmision.HasValue &&
                     productoIntermedio.FechaEmision.Value.Kind ==
@@ -794,7 +799,9 @@ namespace proy_back_Qbd.Services
                         var empaqueProductoIntermedio =
                             new EmpaqueProductoIntermedio
                             {
+                                Id = 0,
                                 IdEmpaque = conteoEmpaque.Key,
+                                IdProductoIntermedio = productoIntermedio.Id,
                                 ProductoIntermedio = productoIntermedio
                             };
 
@@ -864,34 +871,34 @@ namespace proy_back_Qbd.Services
                         fInsumo.Lote,
                         ahora);
 
-                    if (stockInsumos.Count == 0)
+                    decimal stockDisponibleTotal = stockInsumos.Sum(x => x.StockDisponible);
+                    if (stockInsumos.Count == 0 || stockDisponibleTotal < cantidadUsar)
                     {
-                        throw new NotFoundException(
-                            $"No hay stock disponible para el insumo " +
-                            $"{fInsumo.IdInsumo}");
-                    }
+                        var insumoNombre = await _context.Insumos
+                            .Where(i => i.Id == fInsumo.IdInsumo)
+                            .Select(i => i.Descripcion)
+                            .FirstOrDefaultAsync() ?? fInsumo.CodigoInsumo ?? fInsumo.IdInsumo.ToString();
 
-                    var stockDisponible =
-                        stockInsumos.Sum(x => x.StockDisponible);
+                        string regDetalle = (!string.IsNullOrWhiteSpace(fInsumo.Registro) && fInsumo.Registro != "---" && fInsumo.Registro != "-")
+                            ? $" en el registro '{fInsumo.Registro}'"
+                            : "";
 
-                    if (stockDisponible < cantidadUsar)
-                    {
                         throw new BadRequestException(
-                            $"Stock insuficiente para el insumo " +
-                            $"{fInsumo.IdInsumo}. " +
-                            $"Disponible: {stockDisponible}, " +
-                            $"requerido: {cantidadUsar}");
+                            $"No se puede actualizar por falta de stock{regDetalle} en el insumo '{insumoNombre}'. Stock disponible: {stockDisponibleTotal} {fInsumo.UnidadMedida}, requerido: {cantidadUsar} {fInsumo.UnidadMedida}.");
                     }
 
                     var insumoProductoIntermedio =
                         new ProductoIntermedioMapper()
                             .CrearInsumosProductoIntermedio(fInsumo);
 
+                    insumoProductoIntermedio.Id = 0;
                     insumoProductoIntermedio.IdCreador =
-                        request.IdModificador;
-
-                    insumoProductoIntermedio.ProductoIntermedio =
-                        productoIntermedio;
+                        request.IdModificador > 0 ? request.IdModificador : productoIntermedio.IdCreador;
+                    insumoProductoIntermedio.IdModificador =
+                        request.IdModificador > 0 ? request.IdModificador : null;
+                    insumoProductoIntermedio.FechaModificacion = ahora;
+                    insumoProductoIntermedio.IdProductoIntermedio = productoIntermedio.Id;
+                    insumoProductoIntermedio.ProductoIntermedio = productoIntermedio;
                     insumoProductoIntermedio.Csp = fInsumo.Csp;
                     insumoProductoIntermedio.Lote = fInsumo.Lote;
                     insumoProductoIntermedio.Registro = fInsumo.Registro;
@@ -1066,6 +1073,9 @@ namespace proy_back_Qbd.Services
                     _context.StockInsumoProductoIntermedios.RemoveRange(
                         consumosInsumos);
                 }
+
+                // Guardar cambios para que el stock revertido sea visible en la base de datos
+                await _context.SaveChangesAsync();
 
                 // ============================================================
                 // ACTUALIZAR CantidadLote EN INSUMOS EXISTENTES Y RE-CONSUMIR STOCK
