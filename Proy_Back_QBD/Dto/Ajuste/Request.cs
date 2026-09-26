@@ -4,6 +4,7 @@ namespace proy_back_Qbd.Models.Ajuste.request
     {
         public string Familia { get; set; } = string.Empty;
         public int IdCreador { get; set; }
+        public int? IdSede { get; set; }
         public List<CrearAjustes> ListaAjustes { get; set; } = [];
     }
     public class CrearAjustes

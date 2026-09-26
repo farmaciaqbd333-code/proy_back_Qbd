@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Ajuste;
@@ -51,16 +51,17 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     List<CrearAjustes> listaAjustes = request.ListaAjustes;
 
+                    int targetSede = request.IdSede ?? 0;
                     switch (familia)
                     {
                         case "MP":
-                            await StrategyCrearAjusteInsumo(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteInsumo(listaAjustes, idCreador, targetSede); break;
                         case "ME":
-                            await StrategyCrearAjusteEmpaque(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteEmpaque(listaAjustes, idCreador, targetSede); break;
                         case "ECO":
-                            await StrategyCrearAjusteEconomato(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteEconomato(listaAjustes, idCreador, targetSede); break;
                         case "PT":
-                            await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador, targetSede); break;
                         default: throw new BadRequestException("Familia no apta");
                     }
 
@@ -239,6 +240,21 @@ namespace Proy_back_QBD.Service.AjusteService
                 .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
                 .ToListAsync();
 
+            var compraIds = compras.Select(c => c.Id).ToList();
+
+            var ajustesInsumoQuery = await _context.AjusteInsumos
+                .Include(a => a.StockInsumo)
+                .Where(a =>
+                    (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && compraIds.Contains(a.StockInsumo.IdCompraInsumo.Value) && (idSede == 0 || a.StockInsumo.IdSede == idSede)) ||
+                    compraIds.Contains(a.IdStockInsumo)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorCompra = ajustesInsumoQuery
+                .GroupBy(a => (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && a.StockInsumo.IdCompraInsumo.Value > 0) ? a.StockInsumo.IdCompraInsumo.Value : a.IdStockInsumo)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var salidasFM = await _context.FormulasCC
                 .Where(f => f.Formula != null && f.Formula.SedeId == idSede)
                 .GroupBy(f => f.InsumoId)
@@ -289,42 +305,45 @@ namespace Proy_back_QBD.Service.AjusteService
                         .Where(si => si.IdSede == idSede)
                         .ToList();
 
-                    decimal ajustes = 0m;
+                    var ajustesDeCompra = ajustesPorCompra.ContainsKey(compraInsumo.Id) ? ajustesPorCompra[compraInsumo.Id] : new List<AjusteInsumo>();
+                    var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
+
+                    decimal saldo = 0m;
                     string observacionAjuste = "";
-                    foreach (var stockInsumo in stockInsumosSede)
-                    {
-                        var ajustesStock = stockInsumo.AjusteInsumos?.OrderByDescending(a => a.FechaCreacion).ToList() ?? new List<AjusteInsumo>();
-                        ajustes += ajustesStock.Sum(a => a.Ajuste);
-                        if (string.IsNullOrEmpty(observacionAjuste) && ajustesStock.Any())
-                        {
-                            observacionAjuste = ajustesStock.First().Observacion ?? "";
-                        }
-                    }
 
-                    bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
-                    decimal bajas = 0m;
-                    if (estaVencido)
+                    if (ultimoAjuste != null)
                     {
-                        bajas = stockInsumosSede.Sum(si => si.StockDisponible);
+                        saldo = ultimoAjuste.StockNuevo;
+                        observacionAjuste = ultimoAjuste.Observacion ?? "";
                     }
-
-                    decimal saldoBruto = entradas - salidasNS + ajustes - bajas;
-                    decimal descuentoLocal = 0m;
-                    if (salidasPendientes > 0 && saldoBruto > 0)
+                    else
                     {
-                        if (saldoBruto >= salidasPendientes)
+                        bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
+                        decimal bajas = 0m;
+                        if (estaVencido)
                         {
-                            descuentoLocal = salidasPendientes;
-                            salidasPendientes = 0;
+                            bajas = stockInsumosSede.Sum(si => si.StockDisponible);
                         }
-                        else
-                        {
-                            descuentoLocal = saldoBruto;
-                            salidasPendientes -= saldoBruto;
-                        }
-                    }
 
-                    decimal saldo = entradas - salidasNS - descuentoLocal + ajustes - bajas;
+                        decimal saldoBruto = entradas - salidasNS - bajas;
+                        if (saldoBruto < 0) saldoBruto = 0;
+                        decimal descuentoLocal = 0m;
+                        if (salidasPendientes > 0 && saldoBruto > 0)
+                        {
+                            if (saldoBruto >= salidasPendientes)
+                            {
+                                descuentoLocal = salidasPendientes;
+                                salidasPendientes = 0;
+                            }
+                            else
+                            {
+                                descuentoLocal = saldoBruto;
+                                salidasPendientes -= saldoBruto;
+                            }
+                        }
+
+                        saldo = saldoBruto - descuentoLocal;
+                    }
                     if (saldo < 0) saldo = 0;
 
                     resultado.Add(new TablaAjustesRes
@@ -365,6 +384,21 @@ namespace Proy_back_QBD.Service.AjusteService
                 .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
                 .ToListAsync();
 
+            var compraEmpaqueIds = compras.Select(c => c.Id).ToList();
+
+            var ajustesEmpaqueQuery = await _context.AjusteEmpaques
+                .Include(a => a.StockEmpaque)
+                .Where(a =>
+                    (a.StockEmpaque != null && compraEmpaqueIds.Contains(a.StockEmpaque.IdCompraEmpaque) && (idSede == 0 || a.StockEmpaque.IdSede == idSede)) ||
+                    compraEmpaqueIds.Contains(a.IdStockEmpaque)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorCompraEmpaque = ajustesEmpaqueQuery
+                .GroupBy(a => (a.StockEmpaque != null && a.StockEmpaque.IdCompraEmpaque > 0) ? a.StockEmpaque.IdCompraEmpaque : a.IdStockEmpaque)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var resultado = new List<TablaAjustesRes>();
 
             foreach (var s in compras)
@@ -383,26 +417,24 @@ namespace Proy_back_QBD.Service.AjusteService
                     .Sum(nse => nse.Cantidad);
 
                 var stockSede = s.StockEmpaques.Where(w => w.IdSede == idSede).ToList();
-                decimal ajustes = 0m;
-                string observacionAjuste = "";
-                foreach (var se in stockSede)
-                {
-                    var ajList = se.AjusteEmpaques?.OrderByDescending(a => a.FechaCreacion).ToList() ?? new List<AjusteEmpaque>();
-                    ajustes += ajList.Sum(a => a.Ajuste);
-                    if (string.IsNullOrEmpty(observacionAjuste) && ajList.Any())
-                    {
-                        observacionAjuste = ajList.First().Observacion ?? "";
-                    }
-                }
+                var ajustesDeCompra = ajustesPorCompraEmpaque.ContainsKey(s.Id) ? ajustesPorCompraEmpaque[s.Id] : new List<AjusteEmpaque>();
+                var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
                 decimal saldo = 0m;
-                if (stockSede.Any())
+                string observacionAjuste = "";
+
+                if (ultimoAjuste != null)
+                {
+                    saldo = ultimoAjuste.StockNuevo;
+                    observacionAjuste = ultimoAjuste.Observacion ?? "";
+                }
+                else if (stockSede.Any())
                 {
                     saldo = stockSede.Sum(se => se.StockDisponible);
                 }
                 else
                 {
-                    saldo = entradasLote - salidasNS + ajustes;
+                    saldo = entradasLote - salidasNS;
                 }
 
                 if (saldo < 0) saldo = 0;
@@ -444,6 +476,21 @@ namespace Proy_back_QBD.Service.AjusteService
                 .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
                 .ToListAsync();
 
+            var compraEcoIds = compras.Select(c => c.Id).ToList();
+
+            var ajustesEcoQuery = await _context.AjusteEconomatos
+                .Include(a => a.StockEconomato)
+                .Where(a =>
+                    (a.StockEconomato != null && compraEcoIds.Contains(a.StockEconomato.IdCompraEconomato) && (idSede == 0 || a.StockEconomato.IdSede == idSede)) ||
+                    compraEcoIds.Contains(a.IdStockEconomato)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorCompraEco = ajustesEcoQuery
+                .GroupBy(a => (a.StockEconomato != null && a.StockEconomato.IdCompraEconomato > 0) ? a.StockEconomato.IdCompraEconomato : a.IdStockEconomato)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var resultado = new List<TablaAjustesRes>();
 
             foreach (var s in compras)
@@ -462,26 +509,24 @@ namespace Proy_back_QBD.Service.AjusteService
                     .Sum(nse => nse.Cantidad);
 
                 var stockSede = s.StockEconomatos.Where(w => w.IdSede == idSede).ToList();
-                decimal ajustes = 0m;
-                string observacionAjuste = "";
-                foreach (var se in stockSede)
-                {
-                    var ajList = se.AjusteEconomatos?.OrderByDescending(a => a.FechaCreacion).ToList() ?? new List<AjusteEconomato>();
-                    ajustes += ajList.Sum(a => a.Ajuste);
-                    if (string.IsNullOrEmpty(observacionAjuste) && ajList.Any())
-                    {
-                        observacionAjuste = ajList.First().Observacion ?? "";
-                    }
-                }
+                var ajustesDeCompra = ajustesPorCompraEco.ContainsKey(s.Id) ? ajustesPorCompraEco[s.Id] : new List<AjusteEconomato>();
+                var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
                 decimal saldo = 0m;
-                if (stockSede.Any())
+                string observacionAjuste = "";
+
+                if (ultimoAjuste != null)
+                {
+                    saldo = ultimoAjuste.StockNuevo;
+                    observacionAjuste = ultimoAjuste.Observacion ?? "";
+                }
+                else if (stockSede.Any())
                 {
                     saldo = stockSede.Sum(se => se.StockDisponible);
                 }
                 else
                 {
-                    saldo = entradasLote - salidasNS + ajustes;
+                    saldo = entradasLote - salidasNS;
                 }
 
                 if (saldo < 0) saldo = 0;
@@ -523,6 +568,21 @@ namespace Proy_back_QBD.Service.AjusteService
                 .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
                 .ToListAsync();
 
+            var compraPtIds = compras.Select(c => c.Id).ToList();
+
+            var ajustesPtQuery = await _context.AjusteProductoTerminados
+                .Include(a => a.StockProducto)
+                .Where(a =>
+                    (a.StockProducto != null && compraPtIds.Contains(a.StockProducto.IdCompraProducto) && (idSede == 0 || a.StockProducto.IdSede == idSede)) ||
+                    compraPtIds.Contains(a.IdStockProducto)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorCompraPt = ajustesPtQuery
+                .GroupBy(a => (a.StockProducto != null && a.StockProducto.IdCompraProducto > 0) ? a.StockProducto.IdCompraProducto : a.IdStockProducto)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var resultado = new List<TablaAjustesRes>();
 
             foreach (var s in compras)
@@ -541,26 +601,24 @@ namespace Proy_back_QBD.Service.AjusteService
                     .Sum(nsp => nsp.Cantidad);
 
                 var stockSede = s.StockProductoTerminados.Where(w => w.IdSede == idSede).ToList();
-                decimal ajustes = 0m;
-                string observacionAjuste = "";
-                foreach (var sp in stockSede)
-                {
-                    var ajList = sp.AjusteProductos?.OrderByDescending(a => a.FechaCreacion).ToList() ?? new List<AjusteProducto>();
-                    ajustes += ajList.Sum(a => a.Ajuste);
-                    if (string.IsNullOrEmpty(observacionAjuste) && ajList.Any())
-                    {
-                        observacionAjuste = ajList.First().Observacion ?? "";
-                    }
-                }
+                var ajustesDeCompra = ajustesPorCompraPt.ContainsKey(s.Id) ? ajustesPorCompraPt[s.Id] : new List<AjusteProducto>();
+                var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
                 decimal saldo = 0m;
-                if (stockSede.Any())
+                string observacionAjuste = "";
+
+                if (ultimoAjuste != null)
+                {
+                    saldo = ultimoAjuste.StockNuevo;
+                    observacionAjuste = ultimoAjuste.Observacion ?? "";
+                }
+                else if (stockSede.Any())
                 {
                     saldo = stockSede.Sum(sp => sp.StockDisponible);
                 }
                 else
                 {
-                    saldo = entradasLote - salidasNS + ajustes;
+                    saldo = entradasLote - salidasNS;
                 }
 
                 if (saldo < 0) saldo = 0;
@@ -583,24 +641,24 @@ namespace Proy_back_QBD.Service.AjusteService
         }
 
         // REGISTRAR AJUSTES
-        private async Task StrategyCrearAjusteInsumo(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteInsumo(List<CrearAjustes> listaAjustes, int idCreador, int idSede = 0)
         {
             List<AjusteInsumo> ajusteInsumos = new AjusteMapper().CrearAjusteInsumoList(listaAjustes, idCreador);
             foreach (var item in ajusteInsumos)
             {
                 AjusteInsumo ajusteInsumo = item;
                 StockInsumo? stockInsumo = await _context.StockInsumos
-                    .Where(w => w.IdCompraInsumo == ajusteInsumo.IdStockInsumo)
+                    .Where(w => w.IdCompraInsumo == ajusteInsumo.IdStockInsumo && (idSede <= 0 || w.IdSede == idSede))
                     .FirstOrDefaultAsync();
 
                 if (stockInsumo == null)
                 {
                     var ci = await _context.CompraInsumos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteInsumo.IdStockInsumo);
-                    int idSede = ci?.Compra?.IdSede ?? 15;
+                    int finalSede = idSede > 0 ? idSede : (ci?.Compra?.IdSede ?? 15);
                     stockInsumo = new StockInsumo
                     {
                         IdCompraInsumo = ajusteInsumo.IdStockInsumo,
-                        IdSede = idSede,
+                        IdSede = finalSede,
                         Tipo = "MP",
                         StockDisponible = ajusteInsumo.StockNuevo
                     };
@@ -609,31 +667,31 @@ namespace Proy_back_QBD.Service.AjusteService
                 }
                 else
                 {
-                    stockInsumo.StockDisponible += ajusteInsumo.Ajuste;
+                    stockInsumo.StockDisponible = ajusteInsumo.StockNuevo;
                 }
                 ajusteInsumo.IdStockInsumo = stockInsumo.Id;
                 _context.AjusteInsumos.Add(ajusteInsumo);
             }
         }
 
-        private async Task StrategyCrearAjusteEmpaque(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteEmpaque(List<CrearAjustes> listaAjustes, int idCreador, int idSede = 0)
         {
             List<AjusteEmpaque> ajusteEmpaques = new AjusteMapper().CrearAjusteEmpaqueList(listaAjustes, idCreador);
             foreach (var item in ajusteEmpaques)
             {
                 AjusteEmpaque ajusteEmpaque = item;
                 StockEmpaque? stockEmpaque = await _context.StockEmpaques
-                    .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdStockEmpaque)
+                    .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdStockEmpaque && (idSede <= 0 || w.IdSede == idSede))
                     .FirstOrDefaultAsync();
 
                 if (stockEmpaque == null)
                 {
                     var ce = await _context.CompraEmpaques.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteEmpaque.IdStockEmpaque);
-                    int idSede = ce?.Compra?.IdSede ?? 15;
+                    int finalSede = idSede > 0 ? idSede : (ce?.Compra?.IdSede ?? 15);
                     stockEmpaque = new StockEmpaque
                     {
                         IdCompraEmpaque = ajusteEmpaque.IdStockEmpaque,
-                        IdSede = idSede,
+                        IdSede = finalSede,
                         StockDisponible = ajusteEmpaque.StockNuevo
                     };
                     _context.StockEmpaques.Add(stockEmpaque);
@@ -641,31 +699,31 @@ namespace Proy_back_QBD.Service.AjusteService
                 }
                 else
                 {
-                    stockEmpaque.StockDisponible += ajusteEmpaque.Ajuste;
+                    stockEmpaque.StockDisponible = ajusteEmpaque.StockNuevo;
                 }
                 ajusteEmpaque.IdStockEmpaque = stockEmpaque.Id;
                 _context.AjusteEmpaques.Add(ajusteEmpaque);
             }
         }
 
-        private async Task StrategyCrearAjusteEconomato(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteEconomato(List<CrearAjustes> listaAjustes, int idCreador, int idSede = 0)
         {
             List<AjusteEconomato> ajusteEconomatos = new AjusteMapper().CrearAjusteEconomatoList(listaAjustes, idCreador);
             foreach (var item in ajusteEconomatos)
             {
                 AjusteEconomato ajusteEconomato = item;
                 StockEconomato? stockEconomato = await _context.StockEconomatos
-                    .Where(w => w.IdCompraEconomato == ajusteEconomato.IdStockEconomato)
+                    .Where(w => w.IdCompraEconomato == ajusteEconomato.IdStockEconomato && (idSede <= 0 || w.IdSede == idSede))
                     .FirstOrDefaultAsync();
 
                 if (stockEconomato == null)
                 {
                     var ce = await _context.CompraEconomatos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteEconomato.IdStockEconomato);
-                    int idSede = ce?.Compra?.IdSede ?? 15;
+                    int finalSede = idSede > 0 ? idSede : (ce?.Compra?.IdSede ?? 15);
                     stockEconomato = new StockEconomato
                     {
                         IdCompraEconomato = ajusteEconomato.IdStockEconomato,
-                        IdSede = idSede,
+                        IdSede = finalSede,
                         StockDisponible = ajusteEconomato.StockNuevo
                     };
                     _context.StockEconomatos.Add(stockEconomato);
@@ -673,31 +731,31 @@ namespace Proy_back_QBD.Service.AjusteService
                 }
                 else
                 {
-                    stockEconomato.StockDisponible += ajusteEconomato.Ajuste;
+                    stockEconomato.StockDisponible = ajusteEconomato.StockNuevo;
                 }
                 ajusteEconomato.IdStockEconomato = stockEconomato.Id;
                 _context.AjusteEconomatos.Add(ajusteEconomato);
             }
         }
 
-        private async Task StrategyCrearAjusteProductoTerminado(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteProductoTerminado(List<CrearAjustes> listaAjustes, int idCreador, int idSede = 0)
         {
             List<AjusteProducto> ajusteProductoTerminados = new AjusteMapper().CrearAjusteProductoTerminadoList(listaAjustes, idCreador);
             foreach (var item in ajusteProductoTerminados)
             {
                 AjusteProducto ajusteProductoTerminado = item;
                 StockProducto? stockProducto = await _context.StockProductos
-                    .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdStockProducto)
+                    .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdStockProducto && (idSede <= 0 || w.IdSede == idSede))
                     .FirstOrDefaultAsync();
 
                 if (stockProducto == null)
                 {
                     var cp = await _context.CompraProductos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteProductoTerminado.IdStockProducto);
-                    int idSede = cp?.Compra?.IdSede ?? 15;
+                    int finalSede = idSede > 0 ? idSede : (cp?.Compra?.IdSede ?? 15);
                     stockProducto = new StockProducto
                     {
                         IdCompraProducto = ajusteProductoTerminado.IdStockProducto,
-                        IdSede = idSede,
+                        IdSede = finalSede,
                         StockDisponible = ajusteProductoTerminado.StockNuevo
                     };
                     _context.StockProductos.Add(stockProducto);
@@ -705,7 +763,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 }
                 else
                 {
-                    stockProducto.StockDisponible += ajusteProductoTerminado.Ajuste;
+                    stockProducto.StockDisponible = ajusteProductoTerminado.StockNuevo;
                 }
                 ajusteProductoTerminado.IdStockProducto = stockProducto.Id;
                 _context.AjusteProductoTerminados.Add(ajusteProductoTerminado);
