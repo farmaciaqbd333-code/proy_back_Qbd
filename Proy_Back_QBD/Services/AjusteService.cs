@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Ajuste;
@@ -352,6 +352,7 @@ namespace Proy_back_QBD.Service.AjusteService
                     resultado.Add(new TablaAjustesRes
                     {
                         Codigo = UtilFamilia.CodigoInsumo(compraInsumo.IdInsumo),
+                        IdCompraFamilia = compraInsumo.Id,
                         Registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id),
                         Descripcion = compraInsumo.Insumo?.Descripcion ?? "",
                         Lote = compraInsumo.Lote ?? "",
@@ -445,6 +446,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 resultado.Add(new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoEmpaque(s.IdEmpaque),
+                    IdCompraFamilia = s.Id,
                     Registro = "ME" + Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Empaque?.Descripcion ?? "",
                     Lote = s.Lote ?? "",
@@ -537,6 +539,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 resultado.Add(new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoInsumo(s.IdEconomato),
+                    IdCompraFamilia = s.Id,
                     Registro = "ECO" + Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Economato?.Descripcion ?? "",
                     Lote = "",
@@ -629,6 +632,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 resultado.Add(new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoInsumo(s.IdProducto),
+                    IdCompraFamilia = s.Id,
                     Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Descripcion = s.Producto?.Descripcion ?? "",
                     Lote = s.Lote ?? "",
