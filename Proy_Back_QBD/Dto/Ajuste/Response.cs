@@ -2,6 +2,7 @@ namespace proy_back_Qbd.Models.Ajuste.response
 {
     public class TablaAjustesRes
     {
+        public int IdCompraFamilia { get; set; }
         public required string Codigo { get; set; }
         public required string Registro { get; set; }
         public required string Descripcion { get; set; }

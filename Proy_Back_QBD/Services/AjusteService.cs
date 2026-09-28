@@ -44,6 +44,7 @@ namespace Proy_back_QBD.Service.AjusteService
         {
             string familia = request.Familia;
             int idCreador = request.IdCreador;
+            int idSede = request.IdSede.HasValue && request.IdSede.Value > 0 ? request.IdSede.Value : 15;
             if (FamiliasAptas.Contains(familia))
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
@@ -54,13 +55,13 @@ namespace Proy_back_QBD.Service.AjusteService
                     switch (familia)
                     {
                         case "MP":
-                            await StrategyCrearAjusteInsumo(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteInsumo(listaAjustes, idCreador, idSede); break;
                         case "ME":
-                            await StrategyCrearAjusteEmpaque(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteEmpaque(listaAjustes, idCreador, idSede); break;
                         case "ECO":
-                            await StrategyCrearAjusteEconomato(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteEconomato(listaAjustes, idCreador, idSede); break;
                         case "PT":
-                            await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador); break;
+                            await StrategyCrearAjusteProductoTerminado(listaAjustes, idCreador, idSede); break;
                         default: throw new BadRequestException("Familia no apta");
                     }
 
@@ -583,20 +584,18 @@ namespace Proy_back_QBD.Service.AjusteService
         }
 
         // REGISTRAR AJUSTES
-        private async Task StrategyCrearAjusteInsumo(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteInsumo(List<CrearAjustes> listaAjustes, int idCreador, int idSede)
         {
             List<AjusteInsumo> ajusteInsumos = new AjusteMapper().CrearAjusteInsumoList(listaAjustes, idCreador);
             foreach (var item in ajusteInsumos)
             {
                 AjusteInsumo ajusteInsumo = item;
                 StockInsumo? stockInsumo = await _context.StockInsumos
-                    .Where(w => w.IdCompraInsumo == ajusteInsumo.IdStockInsumo)
+                    .Where(w => w.IdCompraInsumo == ajusteInsumo.IdStockInsumo && w.IdSede == idSede)
                     .FirstOrDefaultAsync();
 
                 if (stockInsumo == null)
                 {
-                    var ci = await _context.CompraInsumos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteInsumo.IdStockInsumo);
-                    int idSede = ci?.Compra?.IdSede ?? 15;
                     stockInsumo = new StockInsumo
                     {
                         IdCompraInsumo = ajusteInsumo.IdStockInsumo,
@@ -616,20 +615,18 @@ namespace Proy_back_QBD.Service.AjusteService
             }
         }
 
-        private async Task StrategyCrearAjusteEmpaque(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteEmpaque(List<CrearAjustes> listaAjustes, int idCreador, int idSede)
         {
             List<AjusteEmpaque> ajusteEmpaques = new AjusteMapper().CrearAjusteEmpaqueList(listaAjustes, idCreador);
             foreach (var item in ajusteEmpaques)
             {
                 AjusteEmpaque ajusteEmpaque = item;
                 StockEmpaque? stockEmpaque = await _context.StockEmpaques
-                    .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdStockEmpaque)
+                    .Where(w => w.IdCompraEmpaque == ajusteEmpaque.IdStockEmpaque && w.IdSede == idSede)
                     .FirstOrDefaultAsync();
 
                 if (stockEmpaque == null)
                 {
-                    var ce = await _context.CompraEmpaques.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteEmpaque.IdStockEmpaque);
-                    int idSede = ce?.Compra?.IdSede ?? 15;
                     stockEmpaque = new StockEmpaque
                     {
                         IdCompraEmpaque = ajusteEmpaque.IdStockEmpaque,
@@ -648,20 +645,18 @@ namespace Proy_back_QBD.Service.AjusteService
             }
         }
 
-        private async Task StrategyCrearAjusteEconomato(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteEconomato(List<CrearAjustes> listaAjustes, int idCreador, int idSede)
         {
             List<AjusteEconomato> ajusteEconomatos = new AjusteMapper().CrearAjusteEconomatoList(listaAjustes, idCreador);
             foreach (var item in ajusteEconomatos)
             {
                 AjusteEconomato ajusteEconomato = item;
                 StockEconomato? stockEconomato = await _context.StockEconomatos
-                    .Where(w => w.IdCompraEconomato == ajusteEconomato.IdStockEconomato)
+                    .Where(w => w.IdCompraEconomato == ajusteEconomato.IdStockEconomato && w.IdSede == idSede)
                     .FirstOrDefaultAsync();
 
                 if (stockEconomato == null)
                 {
-                    var ce = await _context.CompraEconomatos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteEconomato.IdStockEconomato);
-                    int idSede = ce?.Compra?.IdSede ?? 15;
                     stockEconomato = new StockEconomato
                     {
                         IdCompraEconomato = ajusteEconomato.IdStockEconomato,
@@ -680,20 +675,18 @@ namespace Proy_back_QBD.Service.AjusteService
             }
         }
 
-        private async Task StrategyCrearAjusteProductoTerminado(List<CrearAjustes> listaAjustes, int idCreador)
+        private async Task StrategyCrearAjusteProductoTerminado(List<CrearAjustes> listaAjustes, int idCreador, int idSede)
         {
             List<AjusteProducto> ajusteProductoTerminados = new AjusteMapper().CrearAjusteProductoTerminadoList(listaAjustes, idCreador);
             foreach (var item in ajusteProductoTerminados)
             {
                 AjusteProducto ajusteProductoTerminado = item;
                 StockProducto? stockProducto = await _context.StockProductos
-                    .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdStockProducto)
+                    .Where(w => w.IdCompraProducto == ajusteProductoTerminado.IdStockProducto && w.IdSede == idSede)
                     .FirstOrDefaultAsync();
 
                 if (stockProducto == null)
                 {
-                    var cp = await _context.CompraProductos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteProductoTerminado.IdStockProducto);
-                    int idSede = cp?.Compra?.IdSede ?? 15;
                     stockProducto = new StockProducto
                     {
                         IdCompraProducto = ajusteProductoTerminado.IdStockProducto,
