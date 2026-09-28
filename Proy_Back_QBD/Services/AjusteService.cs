@@ -74,7 +74,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 catch (Exception e)
                 {
                     await transaction.RollbackAsync();
-                    throw new ServerException("Ocurrió un error al crear el ajuste.", e);
+                    throw new ServerException($"Ocurrió un error al crear el ajuste: {e.Message}", e);
                 }
             }
             else
@@ -677,8 +677,10 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     stockInsumo.StockDisponible = ajusteInsumo.StockNuevo;
                 }
-                ajusteInsumo.IdStockInsumo = stockInsumo.Id;
-                _context.AjusteInsumos.Add(ajusteInsumo);
+                if (stockInsumo != null) {
+                    ajusteInsumo.IdStockInsumo = stockInsumo.Id;
+                    _context.AjusteInsumos.Add(ajusteInsumo);
+                }
             }
         }
 
@@ -710,8 +712,10 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     stockEmpaque.StockDisponible = ajusteEmpaque.StockNuevo;
                 }
-                ajusteEmpaque.IdStockEmpaque = stockEmpaque.Id;
-                _context.AjusteEmpaques.Add(ajusteEmpaque);
+                if (stockEmpaque != null) {
+                    ajusteEmpaque.IdStockEmpaque = stockEmpaque.Id;
+                    _context.AjusteEmpaques.Add(ajusteEmpaque);
+                }
             }
         }
 
@@ -743,8 +747,10 @@ namespace Proy_back_QBD.Service.AjusteService
                 {
                     stockEconomato.StockDisponible = ajusteEconomato.StockNuevo;
                 }
-                ajusteEconomato.IdStockEconomato = stockEconomato.Id;
-                _context.AjusteEconomatos.Add(ajusteEconomato);
+                if (stockEconomato != null) {
+                    ajusteEconomato.IdStockEconomato = stockEconomato.Id;
+                    _context.AjusteEconomatos.Add(ajusteEconomato);
+                }
             }
         }
 
