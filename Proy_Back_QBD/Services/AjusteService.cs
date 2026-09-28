@@ -31,6 +31,7 @@ namespace Proy_back_QBD.Service.AjusteService
             List<TablaAjustesRes> Response = familia switch
             {
                 "MP" => await ObtenerMateriaPrima(idSede),
+                "PI" => await ObtenerMateriaPrima(idSede),
                 "ME" => await ObtenerMateriaEmpaques(idSede),
                 "PT" => await ObtenerProductosTerminados(idSede),
                 "ECO" => await ObtenerEconomatos(idSede),
