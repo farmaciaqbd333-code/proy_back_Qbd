@@ -43,6 +43,7 @@ namespace Proy_back_QBD.Service.AjusteService
         public async Task RegistrarAjuste(CrearAjusteReq request)
         {
             string familia = request.Familia;
+            if (familia == "PI") familia = "MP";
             int idCreador = request.IdCreador;
             int idSede = request.IdSede.HasValue && request.IdSede.Value > 0 ? request.IdSede.Value : 15;
             if (FamiliasAptas.Contains(familia))
@@ -655,6 +656,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 if (stockInsumo == null)
                 {
                     var ci = await _context.CompraInsumos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteInsumo.IdStockInsumo);
+                    if (ci == null) continue;
                     int finalSede = idSede > 0 ? idSede : (ci?.Compra?.IdSede ?? 15);
                     stockInsumo = new StockInsumo
                     {
@@ -688,6 +690,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 if (stockEmpaque == null)
                 {
                     var ce = await _context.CompraEmpaques.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteEmpaque.IdStockEmpaque);
+                    if (ce == null) continue;
                     int finalSede = idSede > 0 ? idSede : (ce?.Compra?.IdSede ?? 15);
                     stockEmpaque = new StockEmpaque
                     {
@@ -720,6 +723,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 if (stockEconomato == null)
                 {
                     var ce = await _context.CompraEconomatos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteEconomato.IdStockEconomato);
+                    if (ce == null) continue;
                     int finalSede = idSede > 0 ? idSede : (ce?.Compra?.IdSede ?? 15);
                     stockEconomato = new StockEconomato
                     {
@@ -752,6 +756,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 if (stockProducto == null)
                 {
                     var cp = await _context.CompraProductos.Include(c => c.Compra).FirstOrDefaultAsync(c => c.Id == ajusteProductoTerminado.IdStockProducto);
+                    if (cp == null) continue;
                     int finalSede = idSede > 0 ? idSede : (cp?.Compra?.IdSede ?? 15);
                     stockProducto = new StockProducto
                     {
