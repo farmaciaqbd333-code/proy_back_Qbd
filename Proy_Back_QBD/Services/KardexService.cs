@@ -112,7 +112,7 @@ namespace proy_back_Qbd.Services
                 decimal saldoQueda = 0m;
                 if (stockSede.Any())
                 {
-                    saldoQueda = Math.Min(stockSede.Sum(si => si.StockDisponible), entradas);
+                    saldoQueda = stockSede.Sum(si => si.StockDisponible);
                 }
                 else
                 {
@@ -122,7 +122,20 @@ namespace proy_back_Qbd.Services
                     saldoQueda = Math.Max(0m, entradas - salidasNS);
                 }
 
+                var todosAjustes = stockSede
+                    .SelectMany(si => si.AjusteInsumos)
+                    .OrderByDescending(a => a.FechaCreacion)
+                    .ToList();
+                var ultimoAjuste = todosAjustes.FirstOrDefault();
+                if (ultimoAjuste != null)
+                {
+                    saldoQueda = ultimoAjuste.StockNuevo;
+                }
+
                 decimal salidas = Math.Max(0m, entradas - saldoQueda);
+                string? observacionFinal = (ultimoAjuste != null && !string.IsNullOrEmpty(ultimoAjuste.Observacion))
+                    ? ultimoAjuste.Observacion
+                    : compraInsumo.Observacion;
 
                 var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
@@ -163,7 +176,7 @@ namespace proy_back_Qbd.Services
                     FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
-                    Observacion = compraInsumo.Observacion,
+                    Observacion = observacionFinal,
                     TipoOrigen = tipoOrigen,
                     SedeOrigen = sedeOrigen,
                     DocumentoOrigen = docOrigen,
