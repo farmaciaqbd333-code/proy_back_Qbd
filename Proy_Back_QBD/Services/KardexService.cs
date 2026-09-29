@@ -164,14 +164,27 @@ namespace proy_back_Qbd.Services
                 {
                     saldoQueda = stockSede.Sum(si => si.StockDisponible);
                 }
-                else if (tieneAjuste)
-                {
-                    saldoQueda = ajustesDeCompra.First().StockNuevo;
-                }
                 else
                 {
                     saldoQueda = Math.Max(0m, entradas - salidasReales);
                 }
+
+                var todosAjustes = stockSede
+                    .SelectMany(si => si.AjusteInsumos)
+                    .OrderByDescending(a => a.FechaCreacion)
+                    .ToList();
+                var ultimoAjuste = todosAjustes.FirstOrDefault();
+                if (ultimoAjuste != null)
+                {
+                    saldoQueda = ultimoAjuste.StockNuevo;
+                }
+
+                decimal salidas = Math.Max(0m, entradas - saldoQueda);
+                string? observacionFinal = (ultimoAjuste != null && !string.IsNullOrEmpty(ultimoAjuste.Observacion))
+                    ? ultimoAjuste.Observacion
+                    : compraInsumo.Observacion;
+
+                var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
                 string tipoOrigen = "Compra";
                 string sedeOrigen = "";
@@ -212,9 +225,7 @@ namespace proy_back_Qbd.Services
                     FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
-                    Observacion = tieneAjuste && !string.IsNullOrEmpty(ajustesDeCompra.First().Observacion)
-                        ? (string.IsNullOrEmpty(compraInsumo.Observacion) ? ajustesDeCompra.First().Observacion : compraInsumo.Observacion + " | Ajuste: " + ajustesDeCompra.First().Observacion)
-                        : compraInsumo.Observacion,
+                    Observacion = observacionFinal,
                     TipoOrigen = tipoOrigen,
                     SedeOrigen = sedeOrigen,
                     DocumentoOrigen = docOrigen,

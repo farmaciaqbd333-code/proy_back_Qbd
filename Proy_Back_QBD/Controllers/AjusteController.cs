@@ -14,8 +14,9 @@ using Proy_back_QBD.Services;
 
 namespace proy_back_Qbd.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
-    public class AjusteController : Controller
+    public class AjusteController : ControllerBase
     {
         private readonly IAjusteService _ajusteService;
         public AjusteController(IAjusteService _ajusteService)
@@ -38,8 +39,10 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpPost("registrar-ajuste")]
-        public async Task<IActionResult> RegistrarAjuste([FromBody] CrearAjusteReq request)
+        public async Task<IActionResult> RegistrarAjuste([FromBody] CrearAjusteReq? request)
         {
+            if (request == null) return BadRequest(new { message = "El cuerpo de la solicitud no puede ser nulo o tiene formato JSON inválido." });
+            if (request.ListaAjustes == null || request.ListaAjustes.Count == 0) return BadRequest(new { message = "La lista de ajustes está vacía." });
             await _ajusteService.RegistrarAjuste(request);
             return Ok(new
             {
