@@ -173,18 +173,16 @@ namespace proy_back_Qbd.Services
                     .SelectMany(si => si.AjusteInsumos)
                     .OrderByDescending(a => a.FechaCreacion)
                     .ToList();
-                var ultimoAjuste = todosAjustes.FirstOrDefault();
+                var ultimoAjuste = todosAjustes.FirstOrDefault() ?? ajustesDeCompra.FirstOrDefault();
                 if (ultimoAjuste != null)
                 {
                     saldoQueda = ultimoAjuste.StockNuevo;
+                    tieneAjuste = true;
                 }
 
-                decimal salidas = Math.Max(0m, entradas - saldoQueda);
                 string? observacionFinal = (ultimoAjuste != null && !string.IsNullOrEmpty(ultimoAjuste.Observacion))
                     ? ultimoAjuste.Observacion
                     : compraInsumo.Observacion;
-
-                var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
                 string tipoOrigen = "Compra";
                 string sedeOrigen = "";
