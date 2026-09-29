@@ -71,6 +71,38 @@ namespace proy_back_Qbd.Services
                 compraInsumos?.Count ?? 0
             );
 
+            var compraIds = compraInsumos.Select(c => c.Id).ToList();
+
+            var ajustesInsumoQuery = await _context.AjusteInsumos
+                .Include(a => a.StockInsumo)
+                .Where(a =>
+                    (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && compraIds.Contains(a.StockInsumo.IdCompraInsumo.Value) && (idSede == 0 || a.StockInsumo.IdSede == idSede)) ||
+                    compraIds.Contains(a.IdStockInsumo)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorCompra = ajustesInsumoQuery
+                .GroupBy(a => (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && a.StockInsumo.IdCompraInsumo.Value > 0) ? a.StockInsumo.IdCompraInsumo.Value : a.IdStockInsumo)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var salidasList = await ObtenerSalidasInsumo(idInsumo, idSede);
+            var salidasPorReg = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            foreach (var s in salidasList)
+            {
+                if (!string.IsNullOrEmpty(s.RegistroLoteInsumo))
+                {
+                    var key = s.RegistroLoteInsumo.Trim().ToUpper();
+                    decimal cant = s.Cantidad;
+                    if (s.Um == "KG" || s.Um == "KILOGRAMOS" || s.Um == "Kg" || s.Um == "Kgs")
+                    {
+                        cant *= 1000m;
+                    }
+                    if (!salidasPorReg.ContainsKey(key)) salidasPorReg[key] = 0m;
+                    salidasPorReg[key] += cant;
+                }
+            }
+
             foreach (var compraInsumo in compraInsumos)
             {
                 decimal entradasCompra = 0m;
@@ -97,7 +129,7 @@ namespace proy_back_Qbd.Services
                 entradasTraslado = notasSalidaDestino
                     .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad));
 
-                                decimal entradas = entradasCompra + entradasTraslado;
+                decimal entradas = entradasCompra + entradasTraslado;
 
                 // Omitir si no tiene entradas en esta sede
                 if (entradas == 0)
@@ -105,26 +137,41 @@ namespace proy_back_Qbd.Services
                     continue;
                 }
 
+                var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
+
+                decimal salidasReales = 0m;
+                if (salidasPorReg.TryGetValue(registro, out var sVal))
+                {
+                    salidasReales = sVal;
+                }
+                else
+                {
+                    salidasReales = compraInsumo.NotaSalidaInsumos
+                        .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
+                        .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
+                }
+
                 var stockSede = compraInsumo.StockInsumos
                     .Where(si => si.IdSede == idSede)
                     .ToList();
 
+                var ajustesDeCompra = ajustesPorCompra.ContainsKey(compraInsumo.Id) ? ajustesPorCompra[compraInsumo.Id] : new List<AjusteInsumo>();
+                bool tieneAjuste = ajustesDeCompra.Any();
+                decimal totalAjuste = ajustesDeCompra.Sum(a => a.Ajuste);
+
                 decimal saldoQueda = 0m;
                 if (stockSede.Any())
                 {
-                    saldoQueda = Math.Min(stockSede.Sum(si => si.StockDisponible), entradas);
+                    saldoQueda = stockSede.Sum(si => si.StockDisponible);
+                }
+                else if (tieneAjuste)
+                {
+                    saldoQueda = ajustesDeCompra.First().StockNuevo;
                 }
                 else
                 {
-                    decimal salidasNS = compraInsumo.NotaSalidaInsumos
-                        .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
-                        .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
-                    saldoQueda = Math.Max(0m, entradas - salidasNS);
+                    saldoQueda = Math.Max(0m, entradas - salidasReales);
                 }
-
-                decimal salidas = Math.Max(0m, entradas - saldoQueda);
-
-                var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
                 string tipoOrigen = "Compra";
                 string sedeOrigen = "";
@@ -157,17 +204,22 @@ namespace proy_back_Qbd.Services
                     Registro = registro,
                     Lote = compraInsumo.Lote ?? "",
                     CantidadIngresada = entradas,
-                    Salidas = salidas,
+                    Salidas = salidasReales,
+                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                    TieneAjuste = tieneAjuste,
                     Saldo = saldoQueda,
                     Um = compraInsumo.Um ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : "G"),
                     FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
-                    Observacion = compraInsumo.Observacion,
+                    Observacion = tieneAjuste && !string.IsNullOrEmpty(ajustesDeCompra.First().Observacion)
+                        ? (string.IsNullOrEmpty(compraInsumo.Observacion) ? ajustesDeCompra.First().Observacion : compraInsumo.Observacion + " | Ajuste: " + ajustesDeCompra.First().Observacion)
+                        : compraInsumo.Observacion,
                     TipoOrigen = tipoOrigen,
                     SedeOrigen = sedeOrigen,
                     DocumentoOrigen = docOrigen,
-                    NumeroFactura = numeroFactura
+                    NumeroFactura = numeroFactura,
+                    IdCompra = compraInsumo.Id
                 };
 
                 resultado.Add(detalle);
@@ -177,26 +229,44 @@ namespace proy_back_Qbd.Services
         }
         public async Task<List<DetalleInsumoRes>> ObtenerDetallePI(int idInsumo, int idSede)
         {
-            var resultado = await _context.ProductosIntermedios
+            var piList = await _context.ProductosIntermedios
                 .Include(pi => pi.StockInsumo)
+                    .ThenInclude(si => si.AjusteInsumos)
                 .Where(w => w.IdInsumo == idInsumo && w.IdSede == idSede)
                 .OrderByDescending(o => o.FechaCreacion)
                 .ThenByDescending(o => o.Id)
-                .Select(s => new DetalleInsumoRes
+                .ToListAsync();
+
+            var resultado = new List<DetalleInsumoRes>();
+            foreach (var s in piList)
+            {
+                decimal cantIngresada = (s.TipoUso == "PI-FMG" || s.Um == "UND")
+                    ? (s.LoteEstandar ?? 0)
+                    : (s.LoteEstTotal ?? s.LoteEstandar ?? 0);
+
+                var ajustesDePI = s.StockInsumo?.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>();
+                bool tieneAjuste = ajustesDePI.Any();
+                decimal totalAjuste = ajustesDePI.Sum(a => a.Ajuste);
+
+                decimal saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : cantIngresada;
+                decimal salidas = Math.Max(0m, cantIngresada - saldo + totalAjuste);
+
+                resultado.Add(new DetalleInsumoRes
                 {
                     Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
-                    CantidadIngresada = (s.TipoUso == "PI-FMG" || s.Um == "UND")
-                        ? (s.LoteEstandar ?? 0)
-                        : (s.LoteEstTotal ?? s.LoteEstandar ?? 0),
-                    Salidas = Math.Max(0, ((s.TipoUso == "PI-FMG" || s.Um == "UND") ? (s.LoteEstandar ?? 0) : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)) - (s.StockInsumo != null ? s.StockInsumo.StockDisponible : ((s.TipoUso == "PI-FMG" || s.Um == "UND") ? (s.LoteEstandar ?? 0) : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)))),
-                    Saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : ((s.TipoUso == "PI-FMG" || s.Um == "UND") ? (s.LoteEstandar ?? 0) : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)),
+                    CantidadIngresada = cantIngresada,
+                    Salidas = salidas,
+                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                    TieneAjuste = tieneAjuste,
+                    Saldo = saldo,
                     FechaCompra = s.FechaCreacion,
                     FechaFabricacion = s.FechaCreacion,
                     FechaVencimiento = s.FechaVencimiento,
-                    Observacion = ""
-                })
-                .ToListAsync();
+                    Observacion = s.StockInsumo?.AjusteInsumos?.FirstOrDefault()?.Observacion ?? "",
+                    IdCompra = s.Id
+                });
+            }
 
             return resultado;
         }
@@ -206,10 +276,25 @@ namespace proy_back_Qbd.Services
             var compras = await _context.CompraEmpaques
                 .Include(w => w.Compra)
                 .Include(w => w.StockEmpaques)
+                    .ThenInclude(se => se.AjusteEmpaques)
                 .Include(w => w.NotaSalidaEmpaques)
                     .ThenInclude(nse => nse.NotaSalida)
                 .Where(w => w.IdEmpaque == empaqueId && ((w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) || w.NotaSalidaEmpaques.Any(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede && (nse.NotaSalida.Estado == "RECIBIDO" || nse.NotaSalida.Estado == "RECEPCIONADO" || nse.NotaSalida.FechaRecepcion != null || (nse.CantidadRecibida > 0)))))
                 .ToListAsync();
+
+            var compraEmpaqueIds = compras.Select(c => c.Id).ToList();
+            var ajustesEmpaqueQuery = await _context.AjusteEmpaques
+                .Include(a => a.StockEmpaque)
+                .Where(a =>
+                    (a.StockEmpaque != null && compraEmpaqueIds.Contains(a.StockEmpaque.IdCompraEmpaque) && (idSede == 0 || a.StockEmpaque.IdSede == idSede)) ||
+                    compraEmpaqueIds.Contains(a.IdStockEmpaque)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorEmpaque = ajustesEmpaqueQuery
+                .GroupBy(a => (a.StockEmpaque != null && a.StockEmpaque.IdCompraEmpaque > 0) ? a.StockEmpaque.IdCompraEmpaque : a.IdStockEmpaque)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var resultado = new List<DetalleEmpaqueRes>();
 
@@ -229,15 +314,22 @@ namespace proy_back_Qbd.Services
                     .Sum(nse => nse.Cantidad);
 
                 var stockSede = s.StockEmpaques.Where(w => w.IdSede == idSede).ToList();
+                var ajustesDeEmpaque = ajustesPorEmpaque.ContainsKey(s.Id) ? ajustesPorEmpaque[s.Id] : new List<AjusteEmpaque>();
+                bool tieneAjuste = ajustesDeEmpaque.Any();
+                decimal totalAjuste = ajustesDeEmpaque.Sum(a => a.Ajuste);
 
                 decimal saldo = 0m;
                 if (stockSede.Any())
                 {
                     saldo = stockSede.Sum(se => se.StockDisponible);
                 }
+                else if (tieneAjuste)
+                {
+                    saldo = ajustesDeEmpaque.First().StockNuevo;
+                }
                 else if (entradasLote > 0 || salidasNS > 0)
                 {
-                    saldo = entradasLote - salidasNS;
+                    saldo = Math.Max(0m, entradasLote - salidasNS);
                 }
                 else
                 {
@@ -249,13 +341,16 @@ namespace proy_back_Qbd.Services
                     Registro = "ME" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     CantidadIngresada = entradasLote,
-                    Salidas = Math.Max(0m, entradasLote - saldo),
+                    Salidas = salidasNS,
+                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                    TieneAjuste = tieneAjuste,
                     Saldo = saldo,
                     FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.Observacion,
-                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? "")
+                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? ""),
+                    IdCompra = s.Id
                 });
             }
 
@@ -266,10 +361,25 @@ namespace proy_back_Qbd.Services
             var compras = await _context.CompraProductos
                 .Include(w => w.Compra)
                 .Include(w => w.StockProductoTerminados)
+                    .ThenInclude(sp => sp.AjusteProductos)
                 .Include(w => w.NotaSalidaProductos)
                     .ThenInclude(nsp => nsp.NotaSalida)
                 .Where(w => w.IdProducto == idProducto)
                 .ToListAsync();
+
+            var compraPtIds = compras.Select(c => c.Id).ToList();
+            var ajustesPtQuery = await _context.AjusteProductoTerminados
+                .Include(a => a.StockProducto)
+                .Where(a =>
+                    (a.StockProducto != null && compraPtIds.Contains(a.StockProducto.IdCompraProducto) && (idSede == 0 || a.StockProducto.IdSede == idSede)) ||
+                    compraPtIds.Contains(a.IdStockProducto)
+                )
+                .OrderByDescending(a => a.FechaCreacion)
+                .ToListAsync();
+
+            var ajustesPorPt = ajustesPtQuery
+                .GroupBy(a => (a.StockProducto != null && a.StockProducto.IdCompraProducto > 0) ? a.StockProducto.IdCompraProducto : a.IdStockProducto)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var resultado = new List<DetalleInsumoRes>();
 
@@ -289,15 +399,22 @@ namespace proy_back_Qbd.Services
                     .Sum(nsp => nsp.Cantidad);
 
                 var stockSede = s.StockProductoTerminados.Where(w => w.IdSede == idSede).ToList();
+                var ajustesDePt = ajustesPorPt.ContainsKey(s.Id) ? ajustesPorPt[s.Id] : new List<AjusteProducto>();
+                bool tieneAjuste = ajustesDePt.Any();
+                decimal totalAjuste = ajustesDePt.Sum(a => a.Ajuste);
 
                 decimal saldo = 0m;
                 if (stockSede.Any())
                 {
                     saldo = stockSede.Sum(sp => sp.StockDisponible);
                 }
+                else if (tieneAjuste)
+                {
+                    saldo = ajustesDePt.First().StockNuevo;
+                }
                 else if (entradasLote > 0 || salidasNS > 0)
                 {
-                    saldo = entradasLote - salidasNS;
+                    saldo = Math.Max(0m, entradasLote - salidasNS);
                 }
                 else
                 {
@@ -309,13 +426,16 @@ namespace proy_back_Qbd.Services
                     Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote ?? "",
                     CantidadIngresada = entradasLote,
-                    Salidas = Math.Max(0m, entradasLote - saldo),
+                    Salidas = salidasNS,
+                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                    TieneAjuste = tieneAjuste,
                     Saldo = saldo,
                     FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.Observacion,
-                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? "")
+                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? ""),
+                    IdCompra = s.Id
                 });
             }
 

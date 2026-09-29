@@ -26,6 +26,8 @@ namespace proy_back_Qbd.Models.Kardex
         public required string Lote { get; set; }
         public decimal? CantidadIngresada { get; set; }
         public decimal? Salidas { get; set; }
+        public decimal? Ajuste { get; set; }
+        public bool? TieneAjuste { get; set; }
         public decimal? Saldo { get; set; }
         public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }
@@ -36,6 +38,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string? SedeOrigen { get; set; }
         public string? DocumentoOrigen { get; set; }
         public string? NumeroFactura { get; set; }
+        public int? IdCompra { get; set; }
     }
 
     public class DetalleEmpaqueRes
@@ -45,6 +48,8 @@ namespace proy_back_Qbd.Models.Kardex
         public required string Lote { get; set; }
         public decimal? CantidadIngresada { get; set; }
         public decimal? Salidas { get; set; }
+        public decimal? Ajuste { get; set; }
+        public bool? TieneAjuste { get; set; }
         public decimal? Saldo { get; set; }
         public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }
@@ -54,6 +59,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string? TipoOrigen { get; set; }
         public string? SedeOrigen { get; set; }
         public string? DocumentoOrigen { get; set; }
+        public int? IdCompra { get; set; }
     }
 
     public class ComprasVencidasRes
