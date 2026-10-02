@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Ajuste;
@@ -74,7 +74,7 @@ namespace Proy_back_QBD.Service.AjusteService
                 catch (Exception e)
                 {
                     await transaction.RollbackAsync();
-                    throw new ServerException($"Ocurrió un error al crear el ajuste: {e.Message}", e);
+                    throw new ServerException($"OcurriÃ³ un error al crear el ajuste: {e.Message}", e);
                 }
             }
             else
@@ -115,104 +115,215 @@ namespace Proy_back_QBD.Service.AjusteService
                         return response;
                     }
 
-                    response = await query
+                    var rawList = await query
                         .OrderByDescending(odb => odb.FechaCreacion)
-                        .Select(s => new DetalleAjusteRes()
+                        .ToListAsync();
+
+                    var idsCompraInsumo = rawList
+                        .Select(s => (s.StockInsumo != null && s.StockInsumo.IdCompraInsumo.HasValue && s.StockInsumo.IdCompraInsumo.Value > 0) ? s.StockInsumo.IdCompraInsumo.Value : s.IdStockInsumo)
+                        .Where(id => id > 0)
+                        .Distinct()
+                        .ToList();
+
+                    var comprasDict = await _context.CompraInsumos
+                        .Where(ci => idsCompraInsumo.Contains(ci.Id))
+                        .ToDictionaryAsync(ci => ci.Id);
+
+                    response = rawList.Select(s =>
+                    {
+                        int idCompra = (s.StockInsumo != null && s.StockInsumo.IdCompraInsumo.HasValue && s.StockInsumo.IdCompraInsumo.Value > 0) ? s.StockInsumo.IdCompraInsumo.Value : s.IdStockInsumo;
+                        comprasDict.TryGetValue(idCompra, out var ci);
+                        string reg = ci != null ? ("MP" + Alfanumerico.ConvertToBase36(ci.Id)) : (idCompra > 0 ? ("MP" + Alfanumerico.ConvertToBase36(idCompra)) : "-");
+                        string lote = ci?.Lote ?? s.StockInsumo?.CompraInsumo?.Lote ?? "-";
+
+                        return new DetalleAjusteRes
                         {
+                            Registro = reg,
+                            Lote = lote,
                             FechaCreacion = s.FechaCreacion,
                             Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
                             Stock = s.StockAnterior,
                             Diferencia = s.Ajuste,
                             StockFinal = s.StockNuevo,
                             Observacion = s.Observacion ?? ""
-                        }).ToListAsync();
+                        };
+                    }).ToList();
                 }
                 if (familia == "ME")
                 {
-                    var query = _context.AjusteEmpaques.AsNoTracking();
+                    var query = _context.AjusteEmpaques
+                        .Include(a => a.StockEmpaque)
+                            .ThenInclude(s => s.CompraEmpaque)
+                        .Include(a => a.Creador)
+                            .ThenInclude(c => c.Persona)
+                        .AsNoTracking();
+
                     if (registroId > 0)
                     {
-                        query = query.Where(w => w.StockEmpaque != null && w.StockEmpaque.IdCompraEmpaque == registroId);
+                        query = query.Where(w => (w.StockEmpaque != null && w.StockEmpaque.IdCompraEmpaque == registroId) || w.IdStockEmpaque == registroId);
                     }
                     else if (idInsumo.HasValue && idInsumo.Value > 0)
                     {
-                        query = query.Where(w => w.StockEmpaque != null && w.StockEmpaque.CompraEmpaque != null && w.StockEmpaque.CompraEmpaque.IdEmpaque == idInsumo.Value &&
-                            (!idSede.HasValue || idSede.Value == 0 || w.StockEmpaque.IdSede == idSede.Value));
+                        query = query.Where(w =>
+                            ((w.StockEmpaque != null && w.StockEmpaque.CompraEmpaque != null && w.StockEmpaque.CompraEmpaque.IdEmpaque == idInsumo.Value) ||
+                             (_context.CompraEmpaques.Any(ce => ce.Id == w.IdStockEmpaque && ce.IdEmpaque == idInsumo.Value))) &&
+                            (!idSede.HasValue || idSede.Value == 0 || (w.StockEmpaque != null && w.StockEmpaque.IdSede == idSede.Value)));
                     }
                     else
                     {
                         return response;
                     }
 
-                    response = await query
+                    var rawList = await query
                         .OrderByDescending(odb => odb.FechaCreacion)
-                        .Select(s => new DetalleAjusteRes()
+                        .ToListAsync();
+
+                    var idsCompra = rawList
+                        .Select(s => (s.StockEmpaque != null && s.StockEmpaque.IdCompraEmpaque > 0) ? s.StockEmpaque.IdCompraEmpaque : s.IdStockEmpaque)
+                        .Where(id => id > 0)
+                        .Distinct()
+                        .ToList();
+
+                    var comprasDict = await _context.CompraEmpaques
+                        .Where(ce => idsCompra.Contains(ce.Id))
+                        .ToDictionaryAsync(ce => ce.Id);
+
+                    response = rawList.Select(s =>
+                    {
+                        int idCompra = (s.StockEmpaque != null && s.StockEmpaque.IdCompraEmpaque > 0) ? s.StockEmpaque.IdCompraEmpaque : s.IdStockEmpaque;
+                        comprasDict.TryGetValue(idCompra, out var ce);
+                        string reg = ce != null ? ("ME" + Alfanumerico.ConvertToBase36(ce.Id)) : (idCompra > 0 ? ("ME" + Alfanumerico.ConvertToBase36(idCompra)) : "-");
+                        string lote = ce?.Lote ?? s.StockEmpaque?.CompraEmpaque?.Lote ?? "-";
+
+                        return new DetalleAjusteRes
                         {
+                            Registro = reg,
+                            Lote = lote,
                             FechaCreacion = s.FechaCreacion,
                             Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
                             Stock = s.StockAnterior,
                             Diferencia = s.Ajuste,
                             StockFinal = s.StockNuevo,
                             Observacion = s.Observacion ?? ""
-                        }).ToListAsync();
+                        };
+                    }).ToList();
                 }
                 if (familia == "PT")
                 {
-                    var query = _context.AjusteProductoTerminados.AsNoTracking();
+                    var query = _context.AjusteProductoTerminados
+                        .Include(a => a.StockProducto)
+                            .ThenInclude(s => s.CompraProducto)
+                        .Include(a => a.Creador)
+                            .ThenInclude(c => c.Persona)
+                        .AsNoTracking();
+
                     if (registroId > 0)
                     {
-                        query = query.Where(w => w.StockProducto != null && w.StockProducto.IdCompraProducto == registroId);
+                        query = query.Where(w => (w.StockProducto != null && w.StockProducto.IdCompraProducto == registroId) || w.IdStockProducto == registroId);
                     }
                     else if (idInsumo.HasValue && idInsumo.Value > 0)
                     {
-                        query = query.Where(w => w.StockProducto != null && w.StockProducto.CompraProducto != null && w.StockProducto.CompraProducto.IdProducto == idInsumo.Value &&
-                            (!idSede.HasValue || idSede.Value == 0 || w.StockProducto.IdSede == idSede.Value));
+                        query = query.Where(w =>
+                            ((w.StockProducto != null && w.StockProducto.CompraProducto != null && w.StockProducto.CompraProducto.IdProducto == idInsumo.Value) ||
+                             (_context.CompraProductos.Any(cp => cp.Id == w.IdStockProducto && cp.IdProducto == idInsumo.Value))) &&
+                            (!idSede.HasValue || idSede.Value == 0 || (w.StockProducto != null && w.StockProducto.IdSede == idSede.Value)));
                     }
                     else
                     {
                         return response;
                     }
 
-                    response = await query
+                    var rawList = await query
                         .OrderByDescending(odb => odb.FechaCreacion)
-                        .Select(s => new DetalleAjusteRes()
+                        .ToListAsync();
+
+                    var idsCompra = rawList
+                        .Select(s => (s.StockProducto != null && s.StockProducto.IdCompraProducto > 0) ? s.StockProducto.IdCompraProducto : s.IdStockProducto)
+                        .Where(id => id > 0)
+                        .Distinct()
+                        .ToList();
+
+                    var comprasDict = await _context.CompraProductos
+                        .Where(cp => idsCompra.Contains(cp.Id))
+                        .ToDictionaryAsync(cp => cp.Id);
+
+                    response = rawList.Select(s =>
+                    {
+                        int idCompra = (s.StockProducto != null && s.StockProducto.IdCompraProducto > 0) ? s.StockProducto.IdCompraProducto : s.IdStockProducto;
+                        comprasDict.TryGetValue(idCompra, out var cp);
+                        string reg = cp != null ? ("PT" + Alfanumerico.ConvertToBase36(cp.Id)) : (idCompra > 0 ? ("PT" + Alfanumerico.ConvertToBase36(idCompra)) : "-");
+                        string lote = cp?.Lote ?? s.StockProducto?.CompraProducto?.Lote ?? "-";
+
+                        return new DetalleAjusteRes
                         {
+                            Registro = reg,
+                            Lote = lote,
                             FechaCreacion = s.FechaCreacion,
                             Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
                             Stock = s.StockAnterior,
                             Diferencia = s.Ajuste,
                             StockFinal = s.StockNuevo,
                             Observacion = s.Observacion ?? ""
-                        }).ToListAsync();
+                        };
+                    }).ToList();
                 }
                 if (familia == "ECO")
                 {
-                    var query = _context.AjusteEconomatos.AsNoTracking();
+                    var query = _context.AjusteEconomatos
+                        .Include(a => a.StockEconomato)
+                            .ThenInclude(s => s.CompraEconomato)
+                        .Include(a => a.Creador)
+                            .ThenInclude(c => c.Persona)
+                        .AsNoTracking();
+
                     if (registroId > 0)
                     {
-                        query = query.Where(w => w.StockEconomato != null && w.StockEconomato.IdCompraEconomato == registroId);
+                        query = query.Where(w => (w.StockEconomato != null && w.StockEconomato.IdCompraEconomato == registroId) || w.IdStockEconomato == registroId);
                     }
                     else if (idInsumo.HasValue && idInsumo.Value > 0)
                     {
-                        query = query.Where(w => w.StockEconomato != null && w.StockEconomato.CompraEconomato != null && w.StockEconomato.CompraEconomato.IdEconomato == idInsumo.Value &&
-                            (!idSede.HasValue || idSede.Value == 0 || w.StockEconomato.IdSede == idSede.Value));
+                        query = query.Where(w =>
+                            ((w.StockEconomato != null && w.StockEconomato.CompraEconomato != null && w.StockEconomato.CompraEconomato.IdEconomato == idInsumo.Value) ||
+                             (_context.CompraEconomatos.Any(ce => ce.Id == w.IdStockEconomato && ce.IdEconomato == idInsumo.Value))) &&
+                            (!idSede.HasValue || idSede.Value == 0 || (w.StockEconomato != null && w.StockEconomato.IdSede == idSede.Value)));
                     }
                     else
                     {
                         return response;
                     }
 
-                    response = await query
+                    var rawList = await query
                         .OrderByDescending(odb => odb.FechaCreacion)
-                        .Select(s => new DetalleAjusteRes()
+                        .ToListAsync();
+
+                    var idsCompra = rawList
+                        .Select(s => (s.StockEconomato != null && s.StockEconomato.IdCompraEconomato > 0) ? s.StockEconomato.IdCompraEconomato : s.IdStockEconomato)
+                        .Where(id => id > 0)
+                        .Distinct()
+                        .ToList();
+
+                    var comprasDict = await _context.CompraEconomatos
+                        .Where(ce => idsCompra.Contains(ce.Id))
+                        .ToDictionaryAsync(ce => ce.Id);
+
+                    response = rawList.Select(s =>
+                    {
+                        int idCompra = (s.StockEconomato != null && s.StockEconomato.IdCompraEconomato > 0) ? s.StockEconomato.IdCompraEconomato : s.IdStockEconomato;
+                        comprasDict.TryGetValue(idCompra, out var ce);
+                        string reg = ce != null ? ("ECO" + Alfanumerico.ConvertToBase36(ce.Id)) : (idCompra > 0 ? ("ECO" + Alfanumerico.ConvertToBase36(idCompra)) : "-");
+
+                        return new DetalleAjusteRes
                         {
+                            Registro = reg,
+                            Lote = "-",
                             FechaCreacion = s.FechaCreacion,
                             Usuario = s.Creador != null && s.Creador.Persona != null ? (s.Creador.Persona.NombreCompleto ?? "") : "No registrado",
                             Stock = s.StockAnterior,
                             Diferencia = s.Ajuste,
                             StockFinal = s.StockNuevo,
                             Observacion = s.Observacion ?? ""
-                        }).ToListAsync();
+                        };
+                    }).ToList();
                 }
                 return response;
             }
