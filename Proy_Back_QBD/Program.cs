@@ -87,30 +87,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Configurar conexión a PostgreSQL
-var configuration = builder.Configuration;
-
-var baseConnectionString = configuration.GetConnectionString("DefaultConnection") ??
-    $"Host={configuration["POSTGRES_HOST"]};" +
-    $"Port={configuration["POSTGRES_PORT"]};" +
-    $"Username={configuration["POSTGRES_USERNAME"]};" +
-    $"Password={configuration["POSTGRES_PASSWORD"]};" +
-    $"Database={configuration["POSTGRES_DB"]}";
-
-var connectionString = baseConnectionString;
-if (!connectionString.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase))
-{
-    connectionString = connectionString.TrimEnd(';') + ";Pooling=true;MaxPoolSize=20;";
-}
-
-Console.WriteLine($"Connection String: {connectionString}");
-
-builder.Services.AddDbContext<ApiContext>(options =>
-{
-    options.UseNpgsql(connectionString);
-    options.EnableDetailedErrors();
-    options.EnableSensitiveDataLogging();
-});
+builder.Services.AddPersistence(builder.Configuration, builder.Environment);
 
 // Configurar CORS
 builder.Services.AddCors(options =>
@@ -175,7 +152,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("\nSwagger disponible en:".PadRight(30, ' ') + " http://localhost:5051/swagger" + "\n" + "API KEY:".PadRight(30, ' ') + "4554654654754");
+logger.LogInformation("API started. Swagger is available at /swagger.");
 // using (var scope = app.Services.CreateScope())
 // {
 //     var db = scope.ServiceProvider.GetRequiredService<ApiContext>();

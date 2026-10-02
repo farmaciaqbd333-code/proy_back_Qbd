@@ -16,7 +16,13 @@ public class UnitTest1
     [Fact]
     public async Task CheckSchema()
     {
-        var connString = "Host=dpg-d3vb7hur433s73coig6g-a.virginia-postgres.render.com;Port=5432;Database=qbdfarmacia_db;Username=franklinqbd;Password=E4ur6OIbe5R9djYDA1L1ORbWdm3aSn6C;SSL Mode=Require;Trust Server Certificate=true";
+        var connString = Environment.GetEnvironmentVariable("QBD_TEST_CONNECTION_STRING");
+        if (string.IsNullOrWhiteSpace(connString))
+        {
+            _output.WriteLine("Database smoke test skipped: QBD_TEST_CONNECTION_STRING is not set.");
+            return;
+        }
+
         using var conn = new NpgsqlConnection(connString);
         await conn.OpenAsync();
 

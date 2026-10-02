@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
 using Proy_back_QBD.Services.Interfaces;
 using proy_back_Qbd.Services;
@@ -14,6 +16,34 @@ namespace Proy_back_QBD.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration, IHostEnvironment environment)
+        {
+            var baseConnectionString = configuration.GetConnectionString("DefaultConnection") ??
+                $"Host={configuration["POSTGRES_HOST"]};" +
+                $"Port={configuration["POSTGRES_PORT"]};" +
+                $"Username={configuration["POSTGRES_USERNAME"]};" +
+                $"Password={configuration["POSTGRES_PASSWORD"]};" +
+                $"Database={configuration["POSTGRES_DB"]}";
+
+            var connectionString = baseConnectionString;
+            if (!connectionString.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase))
+            {
+                connectionString = connectionString.TrimEnd(';') + ";Pooling=true;MaxPoolSize=20;";
+            }
+
+            services.AddDbContext<ApiContext>(options =>
+            {
+                options.UseNpgsql(connectionString);
+                options.EnableDetailedErrors();
+                if (environment.IsDevelopment())
+                {
+                    options.EnableSensitiveDataLogging();
+                }
+            });
+
+            return services;
+        }
+
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
