@@ -1,4 +1,4 @@
-namespace proy_back_Qbd.Models.Ajuste.response
+﻿namespace proy_back_Qbd.Models.Ajuste.response
 {
     public class TablaAjustesRes
     {
@@ -15,6 +15,8 @@ namespace proy_back_Qbd.Models.Ajuste.response
     }
     public class DetalleAjusteRes
     {
+        public string? Registro { get; set; }
+        public string? Lote { get; set; }
         public DateTimeOffset? FechaCreacion { get; set; }
         public required decimal Stock { get; set; }
         public required decimal Diferencia { get; set; }
@@ -22,5 +24,4 @@ namespace proy_back_Qbd.Models.Ajuste.response
         public required string Usuario { get; set; }
         public required string Observacion { get; set; }
     }
-
 }
