@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
@@ -78,6 +78,7 @@ namespace Proy_back_QBD.DependencyInjection
             services.AddScoped<ILaboratorioRepository, LaboratorioRepository>();
             services.AddScoped<IUnitOfWork, UnitWork>();
             services.AddScoped<ISupplyRepository, SupplyRepository>();
+            services.AddScoped<ICotizacionService, CotizacionService>();
 
             return services;
         }
