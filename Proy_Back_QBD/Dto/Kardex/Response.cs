@@ -25,6 +25,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string Registro { get; set; } = "";
         public required string Lote { get; set; }
         public decimal? CantidadIngresada { get; set; }
+        public decimal? CantidadSolicitada { get; set; }
         public decimal? Salidas { get; set; }
         public decimal? Ajuste { get; set; }
         public bool? TieneAjuste { get; set; }
