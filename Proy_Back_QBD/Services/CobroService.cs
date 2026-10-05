@@ -137,9 +137,9 @@ namespace Proy_back_QBD.Services
             }
             Pedido pedido = response.Pedido;
             pedido.Adelanto = pedido.Adelanto - response.Importe;
-            pedido.Saldo = pedido.Adelanto + response.Importe;
+            pedido.Saldo = pedido.Saldo + response.Importe;
 
-            _context.Remove(response);
+            _context.Remove(response); 
 
             await _context.SaveChangesAsync();
 
