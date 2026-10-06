@@ -85,7 +85,7 @@ namespace proy_back_Qbd.Services
                     targetStock = await _context.StockInsumos
                         .Include(x => x.CompraInsumo)
                             .ThenInclude(ci => ci!.Compra)
-                        .FirstOrDefaultAsync(x => x.IdCompraInsumo == targetCompraInsumoId.Value && x.IdSede == idSede);
+                        .FirstOrDefaultAsync(x => x.IdCompraInsumo == targetCompraInsumoId.Value && (x.IdSede == idSede || x.IdSede == 15));
 
                     if (targetStock == null)
                     {
@@ -97,9 +97,10 @@ namespace proy_back_Qbd.Services
 
                         if (ci != null)
                         {
+                            bool ciEsKg = ci.Um == "KG" || ci.Um == "KILOGRAMOS" || ci.Um == "Kg" || ci.Um == "Kgs";
                             decimal entradas = (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0)
                                 ? ci.CantidadRecibida.Value
-                                : ci.CantidadSolicitada;
+                                : (ciEsKg ? ci.CantidadSolicitada * 1000m : ci.CantidadSolicitada);
 
                             decimal salidasNS = ci.NotaSalidaInsumos
                                 .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)

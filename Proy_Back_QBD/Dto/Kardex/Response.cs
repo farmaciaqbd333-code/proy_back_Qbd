@@ -30,6 +30,7 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Ajuste { get; set; }
         public bool? TieneAjuste { get; set; }
         public decimal? Saldo { get; set; }
+        public decimal? StockDisponible { get; set; }
         public string? Um { get; set; }
         public DateTime? FechaCompra { get; set; }
         public DateTimeOffset? FechaFabricacion { get; set; }

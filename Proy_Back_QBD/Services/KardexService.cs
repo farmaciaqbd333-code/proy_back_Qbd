@@ -108,12 +108,16 @@ namespace proy_back_Qbd.Services
                 decimal entradasCompra = 0m;
                 decimal entradasTraslado = 0m;
 
-                // 1. Entrada por compra (Cantidad solicitada de compra insumo)
+                bool esKg = compraInsumo.Um == "KG" || compraInsumo.Um == "KILOGRAMOS" || compraInsumo.Um == "Kg" || compraInsumo.Um == "Kgs";
+
+                // 1. Entrada por compra (Cantidad recibida de compra insumo o cantidad normalizada en gramos)
                 if (compraInsumo.Compra != null &&
                     compraInsumo.Compra.IdSede == idSede &&
                     (idSede == 15 || compraInsumo.Compra.FechaLab != null))
                 {
-                    entradasCompra = compraInsumo.CantidadSolicitada;
+                    entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0)
+                        ? compraInsumo.CantidadRecibida.Value
+                        : (esKg ? compraInsumo.CantidadSolicitada * 1000m : compraInsumo.CantidadSolicitada);
                 }
 
                 // 2. Entradas por Notas de Salida recibidas que tienen como sede destino la sede recibida como argumento
@@ -127,8 +131,7 @@ namespace proy_back_Qbd.Services
                 entradasTraslado = notasSalidaDestino
                     .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad));
 
-                bool esKg = compraInsumo.Um == "KG" || compraInsumo.Um == "KILOGRAMOS" || compraInsumo.Um == "Kg" || compraInsumo.Um == "Kgs";
-                decimal entradas = entradasCompra + (esKg ? (entradasTraslado / 1000m) : entradasTraslado);
+                decimal entradas = entradasCompra + entradasTraslado;
 
                 // Omitir si no tiene entradas en esta sede
                 if (entradas == 0)
@@ -161,12 +164,11 @@ namespace proy_back_Qbd.Services
                 decimal saldoQueda = 0m;
                 if (stockSede.Any())
                 {
-                    decimal stockDisp = stockSede.Sum(si => si.StockDisponible);
-                    saldoQueda = (esKg && stockDisp >= 100m) ? (stockDisp / 1000m) : stockDisp;
+                    saldoQueda = stockSede.Sum(si => si.StockDisponible);
                 }
                 else
                 {
-                    saldoQueda = Math.Max(0m, entradas - (esKg ? salidasReales / 1000m : salidasReales));
+                    saldoQueda = Math.Max(0m, entradas - salidasReales);
                 }
 
                 var todosAjustes = stockSede
@@ -176,7 +178,7 @@ namespace proy_back_Qbd.Services
                 var ultimoAjuste = todosAjustes.FirstOrDefault() ?? ajustesDeCompra.FirstOrDefault();
                 if (ultimoAjuste != null)
                 {
-                    saldoQueda = (esKg && ultimoAjuste.StockNuevo >= 100m) ? (ultimoAjuste.StockNuevo / 1000m) : ultimoAjuste.StockNuevo;
+                    saldoQueda = ultimoAjuste.StockNuevo;
                     tieneAjuste = true;
                 }
 
@@ -216,11 +218,12 @@ namespace proy_back_Qbd.Services
                     Lote = compraInsumo.Lote ?? "",
                     CantidadIngresada = entradas,
                     CantidadSolicitada = compraInsumo.CantidadSolicitada,
-                    Salidas = esKg ? salidasReales / 1000m : salidasReales,
+                    Salidas = salidasReales,
                     Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
                     TieneAjuste = tieneAjuste,
                     Saldo = saldoQueda,
-                    Um = compraInsumo.Um ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : "G"),
+                    StockDisponible = stockSede.Any() ? stockSede.Sum(si => si.StockDisponible) : saldoQueda,
+                    Um = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G")),
                     FechaCompra = fechaIngreso,
                     FechaFabricacion = compraInsumo.FechaFabricacion,
                     FechaVencimiento = compraInsumo.FechaVencimiento,
