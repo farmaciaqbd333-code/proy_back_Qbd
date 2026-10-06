@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Profiles;
@@ -44,6 +44,7 @@ builder.Services.AddAutoMapper(cfg =>
     cfg.AddProfile<ProductoMap>();
     cfg.AddProfile<OrdenCompraMap>();
     cfg.AddProfile<DetalleOrdenCompraMap>();
+    cfg.AddProfile<CotizacionMap>();
 });
 
 builder.Configuration
