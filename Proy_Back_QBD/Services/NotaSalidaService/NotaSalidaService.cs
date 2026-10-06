@@ -164,39 +164,49 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 var notaSalida = await _context.NotaSalidas
                     .Include(x => x.NotaSalidaInsumos)
+                        .ThenInclude(ni => ni.PaqueteNotaSalidaInsumos)
                     .Include(x => x.NotaSalidaEmpaques)
+                        .ThenInclude(ne => ne.PaqueteNotaSalidaEmpaques)
                     .Include(x => x.NotaSalidaEconomatos)
+                        .ThenInclude(ne => ne.PaqueteNotaSalidaEconomatos)
                     .Include(x => x.NotaSalidaProductos)
+                        .ThenInclude(np => np.PaqueteNotaSalidaProductos)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (notaSalida == null)
                     throw new Exception("Nota salida no encontrada.");
 
-                // 1. Revertir stock anterior
-                await RevertirStockInsumo(notaSalida.Id);
-                await RevertirStockEmpaque(notaSalida.Id);
-                await RevertirStockEconomato(notaSalida.Id);
-                await RevertirStockProducto(notaSalida.Id);
+                // 1. Revertir stock anterior devolviéndolo a la sede origen
+                await RevertirStockDeNotaSalida(notaSalida);
 
+                // 2. Eliminar paquetes anteriores
+                var paquetesInsumo = notaSalida.NotaSalidaInsumos.SelectMany(x => x.PaqueteNotaSalidaInsumos).ToList();
+                if (paquetesInsumo.Any()) _context.PaqueteNotaSalidaInsumos.RemoveRange(paquetesInsumo);
 
-                // 2. Eliminar detalles anteriores
+                var paquetesEmpaque = notaSalida.NotaSalidaEmpaques.SelectMany(x => x.PaqueteNotaSalidaEmpaques).ToList();
+                if (paquetesEmpaque.Any()) _context.PaqueteNotaSalidaEmpaques.RemoveRange(paquetesEmpaque);
+
+                var paquetesEconomato = notaSalida.NotaSalidaEconomatos.SelectMany(x => x.PaqueteNotaSalidaEconomatos).ToList();
+                if (paquetesEconomato.Any()) _context.PaqueteNotaSalidaEconomatos.RemoveRange(paquetesEconomato);
+
+                var paquetesProducto = notaSalida.NotaSalidaProductos.SelectMany(x => x.PaqueteNotaSalidaProductos).ToList();
+                if (paquetesProducto.Any()) _context.PaqueteNotaSalidaProductos.RemoveRange(paquetesProducto);
+
+                // 3. Eliminar detalles anteriores
                 _context.NotaSalidaInsumos.RemoveRange(notaSalida.NotaSalidaInsumos);
                 _context.NotaSalidaEmpaques.RemoveRange(notaSalida.NotaSalidaEmpaques);
                 _context.NotaSalidaEconomatos.RemoveRange(notaSalida.NotaSalidaEconomatos);
                 _context.NotaSalidaProductos.RemoveRange(notaSalida.NotaSalidaProductos);
 
-
-                // 3. Actualizar cabecera
+                // 4. Actualizar cabecera
                 notaSalida.FechaSalida = request.FechaSalida;
                 notaSalida.IdSedeOrigen = request.IdSedeOrigen;
                 notaSalida.IdSedeDestino = request.IdSedeDestino;
                 notaSalida.Observacion = request.Observacion;
 
-
                 await _context.SaveChangesAsync();
 
-
-                // 4. Crear nuevamente detalles y stock
+                // 5. Crear nuevamente detalles y descontar stock actualizado
                 foreach (var item in request.ListaFamilias)
                 {
                     switch (item.Familia.ToUpper())
@@ -230,8 +240,6 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             }
         }
 
-
-
         public async Task Eliminar(int id)
         {
             await using var transaction = await _context.Database.BeginTransactionAsync();
@@ -240,33 +248,42 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 var notaSalida = await _context.NotaSalidas
                     .Include(x => x.NotaSalidaInsumos)
+                        .ThenInclude(ni => ni.PaqueteNotaSalidaInsumos)
                     .Include(x => x.NotaSalidaEmpaques)
+                        .ThenInclude(ne => ne.PaqueteNotaSalidaEmpaques)
                     .Include(x => x.NotaSalidaEconomatos)
+                        .ThenInclude(ne => ne.PaqueteNotaSalidaEconomatos)
                     .Include(x => x.NotaSalidaProductos)
+                        .ThenInclude(np => np.PaqueteNotaSalidaProductos)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (notaSalida == null)
                     throw new Exception("Nota salida no encontrada.");
 
+                // 1. Revertir movimientos de stock
+                await RevertirStockDeNotaSalida(notaSalida);
 
-                // Revertir movimientos de stock
-                await EliminarStockInsumo(notaSalida.NotaSalidaInsumos);
-                await EliminarStockEmpaque(notaSalida.NotaSalidaEmpaques);
-                await EliminarStockEconomato(notaSalida.NotaSalidaEconomatos);
-                await EliminarStockProducto(notaSalida.NotaSalidaProductos);
+                // 2. Eliminar paquetes
+                var paquetesInsumo = notaSalida.NotaSalidaInsumos.SelectMany(x => x.PaqueteNotaSalidaInsumos).ToList();
+                if (paquetesInsumo.Any()) _context.PaqueteNotaSalidaInsumos.RemoveRange(paquetesInsumo);
 
+                var paquetesEmpaque = notaSalida.NotaSalidaEmpaques.SelectMany(x => x.PaqueteNotaSalidaEmpaques).ToList();
+                if (paquetesEmpaque.Any()) _context.PaqueteNotaSalidaEmpaques.RemoveRange(paquetesEmpaque);
 
+                var paquetesEconomato = notaSalida.NotaSalidaEconomatos.SelectMany(x => x.PaqueteNotaSalidaEconomatos).ToList();
+                if (paquetesEconomato.Any()) _context.PaqueteNotaSalidaEconomatos.RemoveRange(paquetesEconomato);
 
-                // Eliminar detalles
+                var paquetesProducto = notaSalida.NotaSalidaProductos.SelectMany(x => x.PaqueteNotaSalidaProductos).ToList();
+                if (paquetesProducto.Any()) _context.PaqueteNotaSalidaProductos.RemoveRange(paquetesProducto);
+
+                // 3. Eliminar detalles
                 _context.NotaSalidaInsumos.RemoveRange(notaSalida.NotaSalidaInsumos);
                 _context.NotaSalidaEmpaques.RemoveRange(notaSalida.NotaSalidaEmpaques);
                 _context.NotaSalidaEconomatos.RemoveRange(notaSalida.NotaSalidaEconomatos);
                 _context.NotaSalidaProductos.RemoveRange(notaSalida.NotaSalidaProductos);
 
-
-                // Eliminar cabecera
+                // 4. Eliminar cabecera
                 _context.NotaSalidas.Remove(notaSalida);
-
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
