@@ -69,9 +69,31 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpGet("salidas-insumo/{insumoId}")]
-        public async Task<IActionResult> ObtenerSalidasInsumo(int insumoId, [FromQuery] int idSede)
+
+        public async Task<IActionResult> ObtenerSalidasInsumo(int insumoId, [FromQuery] int idSede, [FromQuery] string? familia = null)
         {
-            var resultado = await _kardexService.ObtenerSalidasInsumo(insumoId, idSede);
+            var resultado = await _kardexService.ObtenerSalidasInsumo(insumoId, idSede, familia);
+            return Ok(resultado);
+        }
+
+        [HttpGet("salidas-empaque/{empaqueId}")]
+        public async Task<IActionResult> ObtenerSalidasEmpaque(int empaqueId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerSalidasEmpaque(empaqueId, idSede);
+            return Ok(resultado);
+        }
+
+        [HttpGet("salidas-producto/{productoId}")]
+        public async Task<IActionResult> ObtenerSalidasPT(int productoId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerSalidasPT(productoId, idSede);
+            return Ok(resultado);
+        }
+
+        [HttpGet("salidas-economato/{economatoId}")]
+        public async Task<IActionResult> ObtenerSalidasEconomato(int economatoId, [FromQuery] int idSede)
+        {
+            var resultado = await _kardexService.ObtenerSalidasEconomato(economatoId, idSede);
             return Ok(resultado);
         }
 

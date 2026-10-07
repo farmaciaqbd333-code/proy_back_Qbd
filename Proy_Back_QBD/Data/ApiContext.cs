@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.ProductoIntermedio;
 using Proy_back_QBD.Dto.Response;
@@ -71,6 +71,8 @@ namespace Proy_back_QBD.Data
         public DbSet<EmpaqueSede> EmpaqueSupplies { get; set; }
         public DbSet<ProductoSede> ProductSupplies { get; set; }
         public DbSet<EconomatoSede> EconomatoSupplies { get; set; }
+        public DbSet<Cotizacion> Cotizaciones { get; set; }
+        public DbSet<CotizacionDetalle> CotizacionesDetalles { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);
