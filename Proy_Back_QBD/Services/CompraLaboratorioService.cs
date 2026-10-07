@@ -161,6 +161,25 @@ namespace proy_back_Qbd.Services
                 : (umUpper, cantidadSolicitada);
         }
 
+        private static string FormatearDirectorTecnico(string? codigo, string? nombreEncargado)
+        {
+            if (!string.IsNullOrWhiteSpace(codigo))
+            {
+                string sinNumeros = System.Text.RegularExpressions.Regex.Replace(codigo, @"\d+$", "").Trim();
+                if (!string.IsNullOrEmpty(sinNumeros))
+                {
+                    return sinNumeros;
+                }
+                return codigo.Trim();
+            }
+            if (!string.IsNullOrWhiteSpace(nombreEncargado))
+            {
+                var partes = nombreEncargado.Split(new[] { ' ', '.', ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var iniciales = string.Concat(partes.Select(p => p[0])).ToUpper();
+                if (!string.IsNullOrEmpty(iniciales)) return iniciales;
+            }
+            return "FHTL";
+        }
         private static string FormatearFabricante(string? codigo, string? nombre, string? pais)
             => string.IsNullOrEmpty(codigo) && string.IsNullOrEmpty(nombre)
                 ? ""
