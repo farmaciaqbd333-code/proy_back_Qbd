@@ -30,6 +30,10 @@ namespace proy_back_Qbd.Services
             if (compra == null) throw new NotFoundException("No se encontro compra");
             _mapper.Map(request, compra);
             compra.FechaMeson = DateTime.UtcNow;
+            if (request.IdModificador > 0)
+            {
+                compra.IdModificador = request.IdModificador;
+            }
 
             int targetSede = compra.IdSede > 0 ? compra.IdSede : 15;
             bool tieneInsumosOEmpaques = (request.DetallesInsumos != null && request.DetallesInsumos.Any())
