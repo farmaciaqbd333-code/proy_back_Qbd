@@ -31,6 +31,14 @@ namespace proy_back_Qbd.Services
             _mapper.Map(request, compra);
             compra.FechaMeson = DateTime.UtcNow;
 
+            int targetSede = compra.IdSede > 0 ? compra.IdSede : 15;
+            bool tieneInsumosOEmpaques = (request.DetallesInsumos != null && request.DetallesInsumos.Any())
+                || (request.DetallesEmpaques != null && request.DetallesEmpaques.Any());
+            if (!tieneInsumosOEmpaques)
+            {
+                compra.FechaLab = DateTime.UtcNow;
+            }
+
             if (request.DetallesOtros != null && request.DetallesOtros.Count != 0)
             {
                 //Actualizar detalles de la compra
@@ -60,11 +68,15 @@ namespace proy_back_Qbd.Services
             {
                 //Actualizar detalles de la compra
                 var idsDetalleInsumos = request.DetallesInsumos
-                                        .Select(s => s.IdDetalleInsumo);
+                                        .Select(s => s.IdDetalleInsumo)
+                                        .ToList();
                 List<CompraInsumos> detallesInsumos = await _context.CompraInsumos
                     .Where(w => idsDetalleInsumos.Contains(w.Id))
                     .ToListAsync();
 
+                List<StockInsumo> stocksInsumos = await _context.StockInsumos
+                    .Where(w => idsDetalleInsumos.Contains(w.IdCompraInsumo ?? 0) && w.IdNotaSalidaInsumo == null && !w.IdProductoIntermedio.HasValue)
+                    .ToListAsync();
 
                 foreach (var item in detallesInsumos)
                 {
@@ -73,8 +85,44 @@ namespace proy_back_Qbd.Services
                     {
                         var mapper = new MesonMapper();
                         mapper.ActualizarInsumos(item2, item);
+                        item.CantidadRecibida = item2.CantidadRecibida;
                         item.Conformidad = UtilConformidad.CalcularConformidad(item2.FechaVencimiento);
                         item.IdModificador = request.IdModificador;
+
+                        string umUpper = (item.Um ?? "G").ToUpper();
+                        decimal cantStock = item2.CantidadRecibida;
+                        string stockUm = umUpper;
+                        if (umUpper == "KG" || umUpper == "KILOS" || umUpper == "KILOGRAMOS")
+                        {
+                            cantStock = item2.CantidadRecibida * 1000m;
+                            stockUm = "G";
+                        }
+                        else if (umUpper == "L" || umUpper == "LITRO" || umUpper == "LITROS")
+                        {
+                            cantStock = item2.CantidadRecibida * 1000m;
+                            stockUm = "ML";
+                        }
+
+                        StockInsumo? stockInsumo = stocksInsumos.FirstOrDefault(w => w.IdCompraInsumo == item.Id);
+                        if (stockInsumo != null)
+                        {
+                            stockInsumo.StockDisponible = cantStock;
+                            stockInsumo.IdSede = targetSede;
+                            stockInsumo.UnidadMedida = stockUm;
+                        }
+                        else
+                        {
+                            StockInsumo nuevoStock = new()
+                            {
+                                IdCompraInsumo = item.Id,
+                                IdSede = targetSede,
+                                Tipo = "MP",
+                                StockDisponible = cantStock,
+                                UnidadMedida = stockUm,
+                                IdNotaSalidaInsumo = null
+                            };
+                            await _context.StockInsumos.AddAsync(nuevoStock);
+                        }
                     }
                 }
             }
@@ -82,11 +130,15 @@ namespace proy_back_Qbd.Services
             {
                 //Actualizar detalles de la compra
                 var idsDetalleProductos = request.DetallesProductos
-                                        .Select(s => s.IdDetalleProducto);
+                                        .Select(s => s.IdDetalleProducto)
+                                        .ToList();
                 List<CompraProducto> detallesProductos = await _context.CompraProductos
                     .Where(w => idsDetalleProductos.Contains(w.Id))
                     .ToListAsync();
 
+                List<StockProducto> stocksProductos = await _context.StockProductos
+                    .Where(w => idsDetalleProductos.Contains(w.IdCompraProducto) && w.IdNotaSalidaProducto == null)
+                    .ToListAsync();
 
                 foreach (var item in detallesProductos)
                 {
@@ -95,6 +147,7 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.CantidadRecibida = item2.CantidadRecibida;
                         item.Conformidad = UtilConformidad.CalcularConformidad(item2.FechaVencimiento);
                         item.Lote = item2.Lote;
                         item.FechaFabricacion = item2.FechaFabricacion;
@@ -105,6 +158,29 @@ namespace proy_back_Qbd.Services
                         var mapper = new MesonMapper();
                         mapper.ActualizarProductos(item2, item);
                         item.IdModificador = request.IdModificador;
+
+                        StockProducto? stockProducto = stocksProductos.FirstOrDefault(w => w.IdCompraProducto == item.Id);
+                        if (stockProducto != null)
+                        {
+                            stockProducto.StockDisponible = item2.CantidadRecibida;
+                            stockProducto.IdSede = targetSede;
+                            if (!string.IsNullOrEmpty(item.Um))
+                            {
+                                stockProducto.UnidadMedida = item.Um;
+                            }
+                        }
+                        else
+                        {
+                            StockProducto nuevoStock = new()
+                            {
+                                IdCompraProducto = item.Id,
+                                IdSede = targetSede,
+                                StockDisponible = item2.CantidadRecibida,
+                                UnidadMedida = !string.IsNullOrEmpty(item.Um) ? item.Um : "UND",
+                                IdNotaSalidaProducto = null
+                            };
+                            await _context.StockProductos.AddAsync(nuevoStock);
+                        }
                     }
                 }
             }
@@ -112,11 +188,15 @@ namespace proy_back_Qbd.Services
             {
                 //Actualizar detalles de la compra
                 var idsDetalleEconomatos = request.DetallesEconomatos
-                                        .Select(s => s.IdDetalleEconomato);
+                                        .Select(s => s.IdDetalleEconomato)
+                                        .ToList();
                 List<CompraEconomato> detallesEconomatos = await _context.CompraEconomatos
                     .Where(w => idsDetalleEconomatos.Contains(w.Id))
                     .ToListAsync();
 
+                List<StockEconomato> stocksEconomatos = await _context.StockEconomatos
+                    .Where(w => idsDetalleEconomatos.Contains(w.IdCompraEconomato) && w.IdNotaSalidaEconomato == null)
+                    .ToListAsync();
 
                 foreach (var item in detallesEconomatos)
                 {
@@ -125,12 +205,36 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.CantidadRecibida = item2.CantidadRecibida;
                         item.Conformidad = "Conforme";
                         item.IdFabricante = item2.IdFabricante;
 
                         var mapper = new MesonMapper();
                         mapper.ActualizarEconomatos(item2, item);
                         item.IdModificador = request.IdModificador;
+
+                        StockEconomato? stockEconomato = stocksEconomatos.FirstOrDefault(w => w.IdCompraEconomato == item.Id);
+                        if (stockEconomato != null)
+                        {
+                            stockEconomato.StockDisponible = item2.CantidadRecibida;
+                            stockEconomato.IdSede = targetSede;
+                            if (!string.IsNullOrEmpty(item.Um))
+                            {
+                                stockEconomato.UnidadMedida = item.Um;
+                            }
+                        }
+                        else
+                        {
+                            StockEconomato nuevoStock = new()
+                            {
+                                IdCompraEconomato = item.Id,
+                                IdSede = targetSede,
+                                StockDisponible = item2.CantidadRecibida,
+                                UnidadMedida = !string.IsNullOrEmpty(item.Um) ? item.Um : "UND",
+                                IdNotaSalidaEconomato = null
+                            };
+                            await _context.StockEconomatos.AddAsync(nuevoStock);
+                        }
                     }
                 }
             }
@@ -138,11 +242,15 @@ namespace proy_back_Qbd.Services
             {
                 //Actualizar detalles de la compra
                 var idsDetalleEmpaques = request.DetallesEmpaques
-                                        .Select(s => s.IdDetalleEmpaque);
+                                        .Select(s => s.IdDetalleEmpaque)
+                                        .ToList();
                 List<CompraEmpaque> detallesEmpaques = await _context.CompraEmpaques
                     .Where(w => idsDetalleEmpaques.Contains(w.Id))
                     .ToListAsync();
 
+                List<StockEmpaque> stocksEmpaques = await _context.StockEmpaques
+                    .Where(w => idsDetalleEmpaques.Contains(w.IdCompraEmpaque) && w.IdNotaSalidaEmpaque == null)
+                    .ToListAsync();
 
                 foreach (var item in detallesEmpaques)
                 {
@@ -151,6 +259,7 @@ namespace proy_back_Qbd.Services
                     {
                         item.DescripcionFactura = item2.DescripcionFactura;
                         item.CantidadSolicitada = item2.CantidadRecibida;
+                        item.CantidadRecibida = item2.CantidadRecibida;
                         item.Conformidad = UtilConformidad.CalcularConformidad(item2.FechaVencimiento);
                         item.Lote = item2.Lote;
                         item.FechaFabricacion = item2.FechaFabricacion;
@@ -161,6 +270,29 @@ namespace proy_back_Qbd.Services
                         var mapper = new MesonMapper();
                         mapper.ActualizarEmpaques(item2, item);
                         item.IdModificador = request.IdModificador;
+
+                        StockEmpaque? stockEmpaque = stocksEmpaques.FirstOrDefault(w => w.IdCompraEmpaque == item.Id);
+                        if (stockEmpaque != null)
+                        {
+                            stockEmpaque.StockDisponible = item2.CantidadRecibida;
+                            stockEmpaque.IdSede = targetSede;
+                            if (!string.IsNullOrEmpty(item.Um))
+                            {
+                                stockEmpaque.UnidadMedida = item.Um;
+                            }
+                        }
+                        else
+                        {
+                            StockEmpaque nuevoStock = new()
+                            {
+                                IdCompraEmpaque = item.Id,
+                                IdSede = targetSede,
+                                StockDisponible = item2.CantidadRecibida,
+                                UnidadMedida = !string.IsNullOrEmpty(item.Um) ? item.Um : "UND",
+                                IdNotaSalidaEmpaque = null
+                            };
+                            await _context.StockEmpaques.AddAsync(nuevoStock);
+                        }
                     }
                 }
             }
