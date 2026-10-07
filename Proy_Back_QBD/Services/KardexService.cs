@@ -1031,8 +1031,6 @@ namespace proy_back_Qbd.Services
                             Salidas =
                             //Suma de Productos Intermedios
                             s.Sum(s => s.EmpaqueProductoIntermedios.Count(w => w.ProductoIntermedio.IdSede == idSede)) +
-                            //Suma de Laboratorios
-                            s.Sum(s => s.Laboratorios.Count(w => w.SedeId == idSede)) +
                             //Suma de Notas de Salida
                             s.Sum(s => s.CompraEmpaques.Sum(s2 => s2.NotaSalidaEmpaques.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.Cantidad))),
                             Ajustes =
