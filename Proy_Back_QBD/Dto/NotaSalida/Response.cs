@@ -12,6 +12,7 @@ namespace proy_back_Qbd.Dto.NotaSalida
         public string? Origen { get; set; }
         public int? IdSedeOrigen { get; set; }
         public int? IdSedeDestino { get; set; }
+        public string? Familia { get; set; }
     }
 
     public class RegistrosListaRes

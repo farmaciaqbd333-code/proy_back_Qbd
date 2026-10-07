@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
@@ -97,7 +97,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                               n.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
                               n.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0))
                               ? "RECIBIDO"
-                              : "PROCESANDO"
+                              : "PROCESANDO",
+                    Familia = (n.NotaSalidaEmpaques.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaProductos.Any() && !n.NotaSalidaEconomatos.Any())
+                              ? "ME"
+                              : (n.NotaSalidaProductos.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaEconomatos.Any())
+                                  ? "PT"
+                                  : (n.NotaSalidaEconomatos.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaProductos.Any())
+                                      ? "ECO"
+                                      : (n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaProductos.Any() && !n.NotaSalidaEconomatos.Any())
+                                          ? "MP"
+                                          : (n.NotaSalidaEmpaques.Any() && n.NotaSalidaInsumos.Any())
+                                              ? "MP, ME"
+                                              : (n.NotaSalidaEmpaques.Any() ? "ME" : (n.NotaSalidaProductos.Any() ? "PT" : (n.NotaSalidaEconomatos.Any() ? "ECO" : "MP")))
                 })
                 .ToListAsync();
         }
@@ -125,7 +136,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                               n.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
                               n.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0))
                               ? "RECIBIDO"
-                              : "PROCESANDO"
+                              : "PROCESANDO",
+                    Familia = (n.NotaSalidaEmpaques.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaProductos.Any() && !n.NotaSalidaEconomatos.Any())
+                              ? "ME"
+                              : (n.NotaSalidaProductos.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaEconomatos.Any())
+                                  ? "PT"
+                                  : (n.NotaSalidaEconomatos.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaProductos.Any())
+                                      ? "ECO"
+                                      : (n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaProductos.Any() && !n.NotaSalidaEconomatos.Any())
+                                          ? "MP"
+                                          : (n.NotaSalidaEmpaques.Any() && n.NotaSalidaInsumos.Any())
+                                              ? "MP, ME"
+                                              : (n.NotaSalidaEmpaques.Any() ? "ME" : (n.NotaSalidaProductos.Any() ? "PT" : (n.NotaSalidaEconomatos.Any() ? "ECO" : "MP")))
                 })
                 .ToListAsync();
         }
@@ -152,7 +174,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                               n.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
                               n.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0))
                               ? "RECIBIDO"
-                              : "PROCESANDO"
+                              : "PROCESANDO",
+                    Familia = (n.NotaSalidaEmpaques.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaProductos.Any() && !n.NotaSalidaEconomatos.Any())
+                              ? "ME"
+                              : (n.NotaSalidaProductos.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaEconomatos.Any())
+                                  ? "PT"
+                                  : (n.NotaSalidaEconomatos.Any() && !n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaProductos.Any())
+                                      ? "ECO"
+                                      : (n.NotaSalidaInsumos.Any() && !n.NotaSalidaEmpaques.Any() && !n.NotaSalidaProductos.Any() && !n.NotaSalidaEconomatos.Any())
+                                          ? "MP"
+                                          : (n.NotaSalidaEmpaques.Any() && n.NotaSalidaInsumos.Any())
+                                              ? "MP, ME"
+                                              : (n.NotaSalidaEmpaques.Any() ? "ME" : (n.NotaSalidaProductos.Any() ? "PT" : (n.NotaSalidaEconomatos.Any() ? "ECO" : "MP")))
                 })
                 .FirstOrDefaultAsync();
         }
