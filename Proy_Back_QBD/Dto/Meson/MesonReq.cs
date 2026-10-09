@@ -38,6 +38,8 @@ namespace proy_back_Qbd.Models
         public required string RegistroSanitario { get; set; }
         public required DateTime FechaFabricacion { get; set; }
         public required DateTime FechaVencimiento { get; set; }
+        public bool? Mediato { get; set; }
+        public bool? Inmediato { get; set; }
     }
     public class MesonDetEconomatoConvReq
     {

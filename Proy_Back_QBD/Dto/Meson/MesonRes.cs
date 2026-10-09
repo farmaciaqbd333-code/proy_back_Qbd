@@ -141,6 +141,8 @@ namespace proy_back_Qbd.Models
         public DateTime? FechaVencimiento { get; set; }
         public string? Conformidad { get; set; }
         public string? Familia { get; set; }
+        public bool? Mediato { get; set; }
+        public bool? Inmediato { get; set; }
     }
      public class CompraInsumoRes2
     {

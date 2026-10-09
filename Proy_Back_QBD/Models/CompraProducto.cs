@@ -30,6 +30,8 @@ namespace proy_back_Qbd.Models
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         [Column("observacion")] public string? Observacion { get; set; }
         [Column("cantidad_recibida")] public decimal? CantidadRecibida { get; set; }
+        [Column("mediato")] public bool? Mediato { get; set; } = true;
+        [Column("inmediato")] public bool? Inmediato { get; set; } = true;
         public Compra? Compra { get; set; }
         public Producto? Producto { get; set; }        
         public List<NotaSalidaProducto>? NotaSalidaProductos { get; set; }

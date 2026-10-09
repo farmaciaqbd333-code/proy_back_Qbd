@@ -158,6 +158,8 @@ namespace proy_back_Qbd.Services
                         item.FechaVencimiento = item2.FechaVencimiento;
                         item.RegistroSanitario = item2.RegistroSanitario;
                         item.IdFabricante = item2.IdFabricante;
+                          item.Mediato = item2.Mediato ?? true;
+                          item.Inmediato = item2.Inmediato ?? true;
 
                         var mapper = new MesonMapper();
                         mapper.ActualizarProductos(item2, item);
@@ -385,7 +387,9 @@ namespace proy_back_Qbd.Services
                     FechaFabricacion = s2.FechaFabricacion,
                     FechaVencimiento = s2.FechaVencimiento,
                     Conformidad = s2.Conformidad,
-                    Familia = "PT"
+                    Familia = "PT",
+                      Mediato = s2.Mediato ?? true,
+                      Inmediato = s2.Inmediato ?? true
                 }).ToList() : new List<DetalleMesonProductosRes>(),
                 ListaEmpaques = s.CompraEmpaques != null ? s.CompraEmpaques.Select(s2 => new DetalleMesonEmpaquesRes
                 {
