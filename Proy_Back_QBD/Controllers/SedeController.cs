@@ -35,6 +35,10 @@ public class SedeController : ControllerBase
     public async Task<IActionResult> ActualizarSede(int sedeId, [FromBody] SedeUpdateReq request)
     {
         Sede? response = await _sedeService.Actualizar(sedeId, request);
+        if (response == null)
+        {
+            return NotFound(new { message = $"Sede con id {sedeId} no encontrada" });
+        }
         return Ok(response);
     }
 
@@ -50,11 +54,23 @@ public class SedeController : ControllerBase
         return Ok(response);
     }
 
+    [HttpGet("{sedeId}")]
+    [SwaggerResponse(200, "Operación exitosa", typeof(SedeFindAllResponse))]
+    public async Task<IActionResult> ObtenerSedePorId(int sedeId)
+    {
+        SedeFindAllResponse? response = await _sedeService.ObtenerPorId(sedeId);
+        if (response == null)
+        {
+            return NotFound(new { message = $"Sede con id {sedeId} no encontrada" });
+        }
+        return Ok(response);
+    }
+
     [HttpGet("msgs/{id}")]
     [SwaggerResponse(200, "Operación exitosa", typeof(GeneralRes))]
     public async Task<IActionResult> DatosGenerales(int id)
     {
-        GeneralRes? response = await _sedeService.ObtGeneral(id); ;
+        GeneralRes? response = await _sedeService.ObtGeneral(id);
         if (response == null)
         {
             return NotFound();
