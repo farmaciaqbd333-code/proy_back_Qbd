@@ -1347,11 +1347,18 @@ namespace proy_back_Qbd.Services
                         ? s.LoteEstTotal.Value
                         : (s.LoteEstandar ?? 0m));
 
+
                 bool tienePractModificado = s.InsumoProductoIntermedio != null && s.InsumoProductoIntermedio.Any(i =>
                 {
-                    if (i.CantidadLote <= 0) return false;
                     decimal cantTeorica = (loteTotal * i.Porcentaje) / 100m;
-                    return Math.Abs(i.CantidadLote - cantTeorica) > 0.001m;
+                    if (cantTeorica <= 0 && i.CantidadUnidad > 0 && loteTotal > 0 && (s.TipoUso == "PI-FMG" || s.Um == "UND"))
+                    {
+                        cantTeorica = i.CantidadUnidad * loteTotal;
+                    }
+                    if (cantTeorica <= 0) cantTeorica = i.CantidadLote;
+
+                    decimal cantComparar = (i.Practica.HasValue && i.Practica.Value > 0) ? i.Practica.Value : i.CantidadLote;
+                    return cantComparar > 0 && Math.Abs(cantComparar - cantTeorica) > 0.001m;
                 });
 
                 return new TablaPIRes()
