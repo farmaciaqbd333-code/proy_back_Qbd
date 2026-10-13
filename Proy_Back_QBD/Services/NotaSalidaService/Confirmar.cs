@@ -18,28 +18,40 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 idSedeOrigen,
                 idSedeDestino);
 
-            foreach (var item in articulos)
+            var grupos = articulos.GroupBy(x => x.IdNotaSalidaArticulo > 0 ? x.IdNotaSalidaArticulo : x.IdCompraArticulo).ToList();
+
+            foreach (var grupo in grupos)
             {
+                var primerItem = grupo.First();
+                decimal cantRecibidaGramosTotal = 0;
+                var observaciones = grupo.Select(g => g.Observacion).Where(o => !string.IsNullOrWhiteSpace(o)).Distinct().ToList();
+                string obs = string.Join("; ", observaciones);
+
+                foreach (var item in grupo)
+                {
+                    decimal cant = item.CantidadRecibida;
+                    string umItem = (item.UnidadMedida ?? "").Trim().ToUpper();
+                    if (umItem == "KG" || umItem == "KILOGRAMOS" || umItem == "Kg")
+                    {
+                        cant *= 1000m;
+                    }
+                    cantRecibidaGramosTotal += cant;
+                }
+
                 _logger.LogInformation(
-                    "Procesando insumo. IdCompraInsumo: {IdCompraInsumo}, CantidadRecibida: {Cantidad}",
-                    item.IdCompraArticulo,
-                    item.CantidadRecibida);
+                    "Procesando grupo insumo. IdNotaSalidaArticulo: {IdNotaSalidaArticulo}, IdCompraInsumo: {IdCompraInsumo}, CantidadTotal: {Cantidad}",
+                    primerItem.IdNotaSalidaArticulo,
+                    primerItem.IdCompraArticulo,
+                    cantRecibidaGramosTotal);
 
                 // Actualizar detalle de la nota de salida con cantidad recibida y observacion
-                var nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
-                if (nsInsumo == null && item.IdCompraArticulo > 0)
+                var nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
+                if (nsInsumo == null && primerItem.IdCompraArticulo > 0)
                 {
-                    nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == item.IdCompraArticulo);
+                    nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == primerItem.IdCompraArticulo);
                 }
 
-                decimal cantRecibidaGramos = item.CantidadRecibida;
-                string umItem = (item.UnidadMedida ?? "").Trim().ToUpper();
-                if (umItem == "KG" || umItem == "KILOGRAMOS" || umItem == "Kg")
-                {
-                    cantRecibidaGramos = item.CantidadRecibida * 1000m;
-                }
-
-                decimal cantidadDespachada = cantRecibidaGramos;
+                decimal cantidadDespachada = cantRecibidaGramosTotal;
                 if (nsInsumo != null)
                 {
                     string nsUm = (nsInsumo.Um ?? "").Trim().ToUpper();
@@ -50,8 +62,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
 
                     cantidadDespachada = nsInsumo.Cantidad;
-                    nsInsumo.CantidadRecibida = cantRecibidaGramos;
-                    nsInsumo.Observacion = item.Observacion;
+                    nsInsumo.CantidadRecibida = cantRecibidaGramosTotal;
+                    if (!string.IsNullOrWhiteSpace(obs))
+                    {
+                        nsInsumo.Observacion = obs;
+                    }
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsInsumo.IdNotaSalida);
                     if (parentNS != null)
@@ -60,11 +75,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - cantRecibidaGramos;
+                decimal diferenciaNoRecibida = cantidadDespachada - cantRecibidaGramosTotal;
                 if (diferenciaNoRecibida > 0)
                 {
                     var stockOrigenReembolso = await _context.StockInsumos
-                        .FirstOrDefaultAsync(x => x.IdCompraInsumo == item.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                        .FirstOrDefaultAsync(x => x.IdCompraInsumo == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
                     if (stockOrigenReembolso != null)
                     {
                         stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
@@ -74,11 +89,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 // Verificar si ya existe stock destino para esta nota/articulo (modificacion)
                 var stockDestino = await _context.StockInsumos
                     .FirstOrDefaultAsync(x =>
-                        x.IdCompraInsumo == item.IdCompraArticulo &&
+                        x.IdCompraInsumo == primerItem.IdCompraArticulo &&
                         x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaInsumo == item.IdNotaSalidaArticulo);
+                        x.IdNotaSalidaInsumo == primerItem.IdNotaSalidaArticulo);
 
-                decimal cantDestino = cantRecibidaGramos;
+                decimal cantDestino = cantRecibidaGramosTotal;
 
                 if (stockDestino != null)
                 {
@@ -89,12 +104,12 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 {
                     stockDestino = new StockInsumo
                     {
-                        IdCompraInsumo = item.IdCompraArticulo,
+                        IdCompraInsumo = primerItem.IdCompraArticulo,
                         Tipo = "MP",
                         StockDisponible = cantDestino,
                         UnidadMedida = "G",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaInsumo = item.IdNotaSalidaArticulo
+                        IdNotaSalidaInsumo = primerItem.IdNotaSalidaArticulo
                     };
 
                     _context.StockInsumos.Add(stockDestino);
@@ -103,8 +118,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 _logger.LogInformation(
                     "Insumo procesado correctamente. IdCompraInsumo: {IdCompraInsumo}, " +
                     "StockDestino: {CantidadRecibida}, SedeDestino: {SedeDestino}",
-                    item.IdCompraArticulo,
-                    item.CantidadRecibida,
+                    primerItem.IdCompraArticulo,
+                    cantRecibidaGramosTotal,
                     idSedeDestino);
             }
         }
@@ -114,20 +129,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             int idSedeOrigen,
             int idSedeDestino)
         {
-            foreach (var item in articulos)
+            var grupos = articulos.GroupBy(x => x.IdNotaSalidaArticulo > 0 ? x.IdNotaSalidaArticulo : x.IdCompraArticulo).ToList();
+
+            foreach (var grupo in grupos)
             {
-                var nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
-                if (nsProd == null && item.IdCompraArticulo > 0)
+                var primerItem = grupo.First();
+                decimal totalRecibido = grupo.Sum(g => g.CantidadRecibida);
+                var observaciones = grupo.Select(g => g.Observacion).Where(o => !string.IsNullOrWhiteSpace(o)).Distinct().ToList();
+                string obs = string.Join("; ", observaciones);
+
+                var nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
+                if (nsProd == null && primerItem.IdCompraArticulo > 0)
                 {
-                    nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.IdCompraProducto == item.IdCompraArticulo);
+                    nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.IdCompraProducto == primerItem.IdCompraArticulo);
                 }
 
-                decimal cantidadDespachada = item.CantidadRecibida;
+                decimal cantidadDespachada = totalRecibido;
                 if (nsProd != null)
                 {
                     cantidadDespachada = nsProd.Cantidad;
-                    nsProd.CantidadRecibida = item.CantidadRecibida;
-                    nsProd.Observacion = item.Observacion;
+                    nsProd.CantidadRecibida = totalRecibido;
+                    if (!string.IsNullOrWhiteSpace(obs)) nsProd.Observacion = obs;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsProd.IdNotaSalida);
                     if (parentNS != null)
@@ -136,11 +158,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - item.CantidadRecibida;
+                decimal diferenciaNoRecibida = cantidadDespachada - totalRecibido;
                 if (diferenciaNoRecibida > 0)
                 {
                     var stockOrigenReembolso = await _context.StockProductos
-                        .FirstOrDefaultAsync(x => x.IdCompraProducto == item.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                        .FirstOrDefaultAsync(x => x.IdCompraProducto == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
                     if (stockOrigenReembolso != null)
                     {
                         stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
@@ -149,24 +171,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 var stockDestino = await _context.StockProductos
                     .FirstOrDefaultAsync(x =>
-                        x.IdCompraProducto == item.IdCompraArticulo &&
+                        x.IdCompraProducto == primerItem.IdCompraArticulo &&
                         x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaProducto == item.IdNotaSalidaArticulo);
+                        x.IdNotaSalidaProducto == primerItem.IdNotaSalidaArticulo);
 
                 if (stockDestino != null)
                 {
-                    stockDestino.StockDisponible = item.CantidadRecibida;
-                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                    stockDestino.StockDisponible = totalRecibido;
+                    stockDestino.UnidadMedida = primerItem.UnidadMedida ?? stockDestino.UnidadMedida;
                 }
                 else
                 {
                     stockDestino = new StockProducto
                     {
-                        IdCompraProducto = item.IdCompraArticulo,
-                        StockDisponible = item.CantidadRecibida,
-                        UnidadMedida = item.UnidadMedida ?? "UND",
+                        IdCompraProducto = primerItem.IdCompraArticulo,
+                        StockDisponible = totalRecibido,
+                        UnidadMedida = primerItem.UnidadMedida ?? "UND",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaProducto = item.IdNotaSalidaArticulo
+                        IdNotaSalidaProducto = primerItem.IdNotaSalidaArticulo
                     };
 
                     _context.StockProductos.Add(stockDestino);
@@ -179,20 +201,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             int idSedeOrigen,
             int idSedeDestino)
         {
-            foreach (var item in articulos)
+            var grupos = articulos.GroupBy(x => x.IdNotaSalidaArticulo > 0 ? x.IdNotaSalidaArticulo : x.IdCompraArticulo).ToList();
+
+            foreach (var grupo in grupos)
             {
-                var nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
-                if (nsEco == null && item.IdCompraArticulo > 0)
+                var primerItem = grupo.First();
+                decimal totalRecibido = grupo.Sum(g => g.CantidadRecibida);
+                var observaciones = grupo.Select(g => g.Observacion).Where(o => !string.IsNullOrWhiteSpace(o)).Distinct().ToList();
+                string obs = string.Join("; ", observaciones);
+
+                var nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
+                if (nsEco == null && primerItem.IdCompraArticulo > 0)
                 {
-                    nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.IdCompraEconomato == item.IdCompraArticulo);
+                    nsEco = await _context.NotaSalidaEconomatos.FirstOrDefaultAsync(x => x.IdCompraEconomato == primerItem.IdCompraArticulo);
                 }
 
-                decimal cantidadDespachada = item.CantidadRecibida;
+                decimal cantidadDespachada = totalRecibido;
                 if (nsEco != null)
                 {
                     cantidadDespachada = nsEco.Cantidad;
-                    nsEco.CantidadRecibida = item.CantidadRecibida;
-                    nsEco.Observacion = item.Observacion;
+                    nsEco.CantidadRecibida = totalRecibido;
+                    if (!string.IsNullOrWhiteSpace(obs)) nsEco.Observacion = obs;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEco.IdNotaSalida);
                     if (parentNS != null)
@@ -201,11 +230,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - item.CantidadRecibida;
+                decimal diferenciaNoRecibida = cantidadDespachada - totalRecibido;
                 if (diferenciaNoRecibida > 0)
                 {
                     var stockOrigenReembolso = await _context.StockEconomatos
-                        .FirstOrDefaultAsync(x => x.IdCompraEconomato == item.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                        .FirstOrDefaultAsync(x => x.IdCompraEconomato == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
                     if (stockOrigenReembolso != null)
                     {
                         stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
@@ -214,24 +243,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 var stockDestino = await _context.StockEconomatos
                     .FirstOrDefaultAsync(x =>
-                        x.IdCompraEconomato == item.IdCompraArticulo &&
+                        x.IdCompraEconomato == primerItem.IdCompraArticulo &&
                         x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaEconomato == item.IdNotaSalidaArticulo);
+                        x.IdNotaSalidaEconomato == primerItem.IdNotaSalidaArticulo);
 
                 if (stockDestino != null)
                 {
-                    stockDestino.StockDisponible = item.CantidadRecibida;
-                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                    stockDestino.StockDisponible = totalRecibido;
+                    stockDestino.UnidadMedida = primerItem.UnidadMedida ?? stockDestino.UnidadMedida;
                 }
                 else
                 {
                     stockDestino = new StockEconomato
                     {
-                        IdCompraEconomato = item.IdCompraArticulo,
-                        StockDisponible = item.CantidadRecibida,
-                        UnidadMedida = item.UnidadMedida ?? "UND",
+                        IdCompraEconomato = primerItem.IdCompraArticulo,
+                        StockDisponible = totalRecibido,
+                        UnidadMedida = primerItem.UnidadMedida ?? "UND",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaEconomato = item.IdNotaSalidaArticulo
+                        IdNotaSalidaEconomato = primerItem.IdNotaSalidaArticulo
                     };
 
                     _context.StockEconomatos.Add(stockDestino);
@@ -244,20 +273,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             int idSedeOrigen,
             int idSedeDestino)
         {
-            foreach (var item in articulos)
+            var grupos = articulos.GroupBy(x => x.IdNotaSalidaArticulo > 0 ? x.IdNotaSalidaArticulo : x.IdCompraArticulo).ToList();
+
+            foreach (var grupo in grupos)
             {
-                var nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.Id == item.IdNotaSalidaArticulo);
-                if (nsEmp == null && item.IdCompraArticulo > 0)
+                var primerItem = grupo.First();
+                decimal totalRecibido = grupo.Sum(g => g.CantidadRecibida);
+                var observaciones = grupo.Select(g => g.Observacion).Where(o => !string.IsNullOrWhiteSpace(o)).Distinct().ToList();
+                string obs = string.Join("; ", observaciones);
+
+                var nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
+                if (nsEmp == null && primerItem.IdCompraArticulo > 0)
                 {
-                    nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.IdCompraArticulo);
+                    nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.IdCompraEmpaque == primerItem.IdCompraArticulo);
                 }
 
-                decimal cantidadDespachada = item.CantidadRecibida;
+                decimal cantidadDespachada = totalRecibido;
                 if (nsEmp != null)
                 {
                     cantidadDespachada = nsEmp.Cantidad;
-                    nsEmp.CantidadRecibida = item.CantidadRecibida;
-                    nsEmp.Observacion = item.Observacion;
+                    nsEmp.CantidadRecibida = totalRecibido;
+                    if (!string.IsNullOrWhiteSpace(obs)) nsEmp.Observacion = obs;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEmp.IdNotaSalida);
                     if (parentNS != null)
@@ -266,11 +302,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - item.CantidadRecibida;
+                decimal diferenciaNoRecibida = cantidadDespachada - totalRecibido;
                 if (diferenciaNoRecibida > 0)
                 {
                     var stockOrigenReembolso = await _context.StockEmpaques
-                        .FirstOrDefaultAsync(x => x.IdCompraEmpaque == item.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                        .FirstOrDefaultAsync(x => x.IdCompraEmpaque == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
                     if (stockOrigenReembolso != null)
                     {
                         stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
@@ -279,24 +315,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 var stockDestino = await _context.StockEmpaques
                     .FirstOrDefaultAsync(x =>
-                        x.IdCompraEmpaque == item.IdCompraArticulo &&
+                        x.IdCompraEmpaque == primerItem.IdCompraArticulo &&
                         x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaEmpaque == item.IdNotaSalidaArticulo);
+                        x.IdNotaSalidaEmpaque == primerItem.IdNotaSalidaArticulo);
 
                 if (stockDestino != null)
                 {
-                    stockDestino.StockDisponible = item.CantidadRecibida;
-                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                    stockDestino.StockDisponible = totalRecibido;
+                    stockDestino.UnidadMedida = primerItem.UnidadMedida ?? stockDestino.UnidadMedida;
                 }
                 else
                 {
                     stockDestino = new StockEmpaque
                     {
-                        IdCompraEmpaque = item.IdCompraArticulo,
-                        StockDisponible = item.CantidadRecibida,
-                        UnidadMedida = item.UnidadMedida ?? "UND",
+                        IdCompraEmpaque = primerItem.IdCompraArticulo,
+                        StockDisponible = totalRecibido,
+                        UnidadMedida = primerItem.UnidadMedida ?? "UND",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaEmpaque = item.IdNotaSalidaArticulo
+                        IdNotaSalidaEmpaque = primerItem.IdNotaSalidaArticulo
                     };
 
                     _context.StockEmpaques.Add(stockDestino);
