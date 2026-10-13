@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Data;
@@ -149,23 +149,37 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {dispFriendly} {dispUm}, Solicitado: {item.Cantidad} {itemUm}. No se puede realizar una salida mayor al stock existente.");
             }
 
+            // Si la unidad enviada es KG, convertir a Gramos para guardarlo siempre en G en la base de datos
+            decimal cantidadAGuardar = item.Cantidad;
+            string umAGuardar = (item.Um ?? "G").Trim().ToUpper();
+
+            if (!isPI && (umAGuardar == "KG" || umAGuardar == "KILOGRAMOS" || umAGuardar == "Kg"))
+            {
+                cantidadAGuardar = item.Cantidad * 1000m;
+                umAGuardar = "G";
+            }
+
             var detalle = new NotaSalidaInsumo
             {
                 IdNotaSalida = idNotaSalida,
                 IdCompraInsumo = isPI ? null : item.Registro,
-                Cantidad = item.Cantidad,
-                Um = item.Um,
+                Cantidad = cantidadAGuardar,
+                Um = umAGuardar,
                 Lote = isPI ? (stockOrigen.ProductoIntermedio?.Lote ?? stockOrigen.IdProductoIntermedio?.ToString()) : null,
                 IdCreador = request.IdCreador,
-                PaqueteNotaSalidaInsumos = item.Paquetes?.Select(p => new PaqueteNotaSalidaInsumo
+                PaqueteNotaSalidaInsumos = item.Paquetes?.Select(p =>
                 {
-                    IdCreador = request.IdCreador,
-                    CantidadPaquete = p.CantidadPaquete,
-                    Peso = p.Peso,
-                    Tara = p.Tara,
-                    Um = p.Um,
-                    PesoNeto = p.PesoNeto,
-                    PesoBruto = p.PesoBruto
+                    bool esPaqKg = !isPI && ((p.Um ?? "").Trim().ToUpper() == "KG" || (p.Um ?? "").Trim().ToUpper() == "KILOGRAMOS" || (p.Um ?? "").Trim().ToUpper() == "Kg");
+                    return new PaqueteNotaSalidaInsumo
+                    {
+                        IdCreador = request.IdCreador,
+                        CantidadPaquete = p.CantidadPaquete,
+                        Peso = esPaqKg ? p.Peso * 1000m : p.Peso,
+                        Tara = esPaqKg ? p.Tara * 1000m : p.Tara,
+                        Um = esPaqKg ? "G" : (p.Um ?? "G"),
+                        PesoNeto = esPaqKg ? p.PesoNeto * 1000m : p.PesoNeto,
+                        PesoBruto = esPaqKg ? p.PesoBruto * 1000m : p.PesoBruto
+                    };
                 }).ToList()
             };
 

@@ -32,11 +32,25 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == item.IdCompraArticulo);
                 }
 
-                decimal cantidadDespachada = item.CantidadRecibida;
+                decimal cantRecibidaGramos = item.CantidadRecibida;
+                string umItem = (item.UnidadMedida ?? "").Trim().ToUpper();
+                if (umItem == "KG" || umItem == "KILOGRAMOS" || umItem == "Kg")
+                {
+                    cantRecibidaGramos = item.CantidadRecibida * 1000m;
+                }
+
+                decimal cantidadDespachada = cantRecibidaGramos;
                 if (nsInsumo != null)
                 {
+                    string nsUm = (nsInsumo.Um ?? "").Trim().ToUpper();
+                    if (nsUm == "KG" || nsUm == "KILOGRAMOS" || nsUm == "Kg")
+                    {
+                        nsInsumo.Cantidad *= 1000m;
+                        nsInsumo.Um = "G";
+                    }
+
                     cantidadDespachada = nsInsumo.Cantidad;
-                    nsInsumo.CantidadRecibida = item.CantidadRecibida;
+                    nsInsumo.CantidadRecibida = cantRecibidaGramos;
                     nsInsumo.Observacion = item.Observacion;
 
                     var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsInsumo.IdNotaSalida);
@@ -46,19 +60,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - item.CantidadRecibida;
+                decimal diferenciaNoRecibida = cantidadDespachada - cantRecibidaGramos;
                 if (diferenciaNoRecibida > 0)
                 {
-                    decimal cantReembolso = diferenciaNoRecibida;
-                    if (!string.IsNullOrEmpty(item.UnidadMedida) && (item.UnidadMedida.ToUpper() == "KG" || item.UnidadMedida.ToUpper() == "KILOGRAMOS"))
-                    {
-                        cantReembolso *= 1000m;
-                    }
                     var stockOrigenReembolso = await _context.StockInsumos
                         .FirstOrDefaultAsync(x => x.IdCompraInsumo == item.IdCompraArticulo && x.IdSede == idSedeOrigen);
                     if (stockOrigenReembolso != null)
                     {
-                        stockOrigenReembolso.StockDisponible += cantReembolso;
+                        stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
                     }
                 }
 
@@ -69,16 +78,12 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         x.IdSede == idSedeDestino &&
                         x.IdNotaSalidaInsumo == item.IdNotaSalidaArticulo);
 
-                decimal cantDestino = item.CantidadRecibida;
-                if (!string.IsNullOrEmpty(item.UnidadMedida) && (item.UnidadMedida.ToUpper() == "KG" || item.UnidadMedida.ToUpper() == "KILOGRAMOS"))
-                {
-                    cantDestino = item.CantidadRecibida * 1000m;
-                }
+                decimal cantDestino = cantRecibidaGramos;
 
                 if (stockDestino != null)
                 {
                     stockDestino.StockDisponible = cantDestino;
-                    stockDestino.UnidadMedida = item.UnidadMedida ?? stockDestino.UnidadMedida;
+                    stockDestino.UnidadMedida = "G";
                 }
                 else
                 {
@@ -87,7 +92,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         IdCompraInsumo = item.IdCompraArticulo,
                         Tipo = "MP",
                         StockDisponible = cantDestino,
-                        UnidadMedida = item.UnidadMedida ?? "G",
+                        UnidadMedida = "G",
                         IdSede = idSedeDestino,
                         IdNotaSalidaInsumo = item.IdNotaSalidaArticulo
                     };

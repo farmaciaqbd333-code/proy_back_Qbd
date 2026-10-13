@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using DotNetEnv;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Profiles;
@@ -171,6 +171,20 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS lote text;
             ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS registro text;
             ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS practica numeric;
+
+            UPDATE nota_salida_insumo
+            SET cantidad = cantidad * 1000,
+                um = 'G',
+                cantidad_recibida = CASE WHEN cantidad_recibida IS NOT NULL AND cantidad_recibida > 0 AND cantidad_recibida < 100 THEN cantidad_recibida * 1000 ELSE cantidad_recibida END
+            WHERE UPPER(um) IN ('KG', 'KILOGRAMOS', 'KGS');
+
+            UPDATE paquete_nota_salida_insumo
+            SET peso = peso * 1000,
+                tara = tara * 1000,
+                peso_neto = peso_neto * 1000,
+                peso_bruto = peso_bruto * 1000,
+                um = 'G'
+            WHERE UPPER(um) IN ('KG', 'KILOGRAMOS', 'KGS');
         ");
         Console.WriteLine("--> Base de datos: Columnas lote y registro verificadas/creadas correctamente.");
     }

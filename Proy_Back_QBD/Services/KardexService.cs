@@ -1798,7 +1798,7 @@ namespace proy_back_Qbd.Services
                         Descripcion = ci.Insumo?.Descripcion ?? "",
                         Lote = ci.Lote ?? "-",
                         CantidadBaja = stockSede,
-                        Um = ci.Um ?? (ci.Insumo?.UnidadMedida ?? "G"),
+                        Um = ci.Insumo?.UnidadMedida ?? (ci.StockInsumos.FirstOrDefault(si => si.IdSede == idSede)?.UnidadMedida ?? "G"),
                         FechaFabricacion = ci.FechaFabricacion,
                         FechaVencimiento = ci.FechaVencimiento,
                         DiasVencido = diasVencido,
