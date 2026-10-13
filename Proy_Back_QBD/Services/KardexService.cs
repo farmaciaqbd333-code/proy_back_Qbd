@@ -105,36 +105,32 @@ namespace proy_back_Qbd.Services
 
             foreach (var compraInsumo in compraInsumos)
             {
-                decimal entradasCompra = 0m;
-                decimal entradasTraslado = 0m;
-
                 bool esKg = compraInsumo.Um == "KG" || compraInsumo.Um == "KILOGRAMOS" || compraInsumo.Um == "Kg" || compraInsumo.Um == "Kgs";
 
-                // 1. Entrada por compra (Cantidad recibida de compra insumo o cantidad normalizada en gramos)
-                if (compraInsumo.Compra != null &&
+                // 1. Entrada por compra (si esta sede fue quien compró a proveedor)
+                bool esCompraEstaSede = compraInsumo.Compra != null &&
                     compraInsumo.Compra.IdSede == idSede &&
-                    (idSede == 15 || compraInsumo.Compra.FechaLab != null))
+                    (idSede == 15 || compraInsumo.Compra.FechaLab != null);
+
+                decimal entradasCompra = 0m;
+                if (esCompraEstaSede)
                 {
                     entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0)
                         ? compraInsumo.CantidadRecibida.Value
                         : (esKg ? compraInsumo.CantidadSolicitada * 1000m : compraInsumo.CantidadSolicitada);
                 }
 
-                // 2. Entradas por Notas de Salida recibidas que tienen como sede destino la sede recibida como argumento
+                // 2. Entradas por Notas de Salida recibidas que tienen como sede destino esta sede
                 var notasSalidaDestino = compraInsumo.NotaSalidaInsumos
                     .Where(nsi =>
                         nsi.NotaSalida != null &&
                         nsi.NotaSalida.IdSedeDestino == idSede &&
                         (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
+                    .OrderBy(nsi => nsi.NotaSalida != null ? (nsi.NotaSalida.FechaSalida != default ? nsi.NotaSalida.FechaSalida : nsi.NotaSalida.FechaCreacion) : DateTime.MinValue)
                     .ToList();
 
-                entradasTraslado = notasSalidaDestino
-                    .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad));
-
-                decimal entradas = entradasCompra + entradasTraslado;
-
                 // Omitir si no tiene entradas en esta sede
-                if (entradas == 0)
+                if (entradasCompra == 0 && !notasSalidaDestino.Any())
                 {
                     continue;
                 }
@@ -161,81 +157,132 @@ namespace proy_back_Qbd.Services
                 bool tieneAjuste = ajustesDeCompra.Any();
                 decimal totalAjuste = ajustesDeCompra.Sum(a => a.Ajuste);
 
-                decimal saldoQueda = 0m;
-                if (stockSede.Any())
-                {
-                    saldoQueda = stockSede.Sum(si => si.StockDisponible);
-                }
-                else
-                {
-                    saldoQueda = Math.Max(0m, entradas - salidasReales);
-                }
+                string umDefecto = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G"));
 
-                var todosAjustes = stockSede
-                    .SelectMany(si => si.AjusteInsumos)
-                    .OrderByDescending(a => a.FechaCreacion)
-                    .ToList();
-                var ultimoAjuste = todosAjustes.FirstOrDefault() ?? ajustesDeCompra.FirstOrDefault();
-                if (ultimoAjuste != null)
+                // 1. ENTRADA POR COMPRA (si corresponde a esta sede)
+                if (esCompraEstaSede && entradasCompra > 0)
                 {
-                    saldoQueda = ultimoAjuste.StockNuevo;
-                    tieneAjuste = true;
-                }
-
-                string? observacionFinal = (ultimoAjuste != null && !string.IsNullOrEmpty(ultimoAjuste.Observacion))
-                    ? ultimoAjuste.Observacion
-                    : compraInsumo.Observacion;
-
-                string tipoOrigen = "Compra";
-                string sedeOrigen = "";
-                string docOrigen = "";
-                DateTime? fechaIngreso = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
-                string? numeroFactura = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
-
-                if (notasSalidaDestino.Any())
-                {
-                    var ultimaNS = notasSalidaDestino.LastOrDefault()?.NotaSalida;
-                    tipoOrigen = "Nota de Salida";
-                    sedeOrigen = ultimaNS?.SedeOrigen?.Nombre ?? "SEDE ORIGEN";
-                    docOrigen = ultimaNS != null ? $"NS{ultimaNS.Id:D8}" : "";
-                    if (ultimaNS != null)
+                    var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == null || w.IdNotaSalidaInsumo == 0);
+                    decimal saldoCompra = 0m;
+                    if (stockPrincipal != null)
                     {
-                        fechaIngreso = ultimaNS.FechaSalida != default ? ultimaNS.FechaSalida : ultimaNS.FechaCreacion;
+                        saldoCompra = stockPrincipal.StockDisponible;
                     }
-                    numeroFactura = (ultimaNS?.Id ?? notasSalidaDestino.LastOrDefault()?.IdNotaSalida)?.ToString();
-                }
-                else if (compraInsumo.Compra != null)
-                {
-                    tipoOrigen = "Orden de Compra";
-                    sedeOrigen = compraInsumo.Compra.Proveedor?.Datos ?? compraInsumo.Compra.Sede?.Nombre ?? "";
-                    docOrigen = compraInsumo.Compra.NumeroComprobante ?? compraInsumo.Compra.CodFacQBD ?? (compraInsumo.Compra.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
-                    numeroFactura = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
+                    else if (!notasSalidaDestino.Any())
+                    {
+                        var todosAjustes = stockSede
+                            .SelectMany(si => si.AjusteInsumos ?? new List<AjusteInsumo>())
+                            .OrderByDescending(a => a.FechaCreacion)
+                            .ToList();
+                        var ultimoAjuste = todosAjustes.FirstOrDefault() ?? ajustesDeCompra.FirstOrDefault();
+                        if (ultimoAjuste != null)
+                        {
+                            saldoCompra = ultimoAjuste.StockNuevo;
+                        }
+                        else
+                        {
+                            saldoCompra = stockSede.Any() ? stockSede.Sum(si => si.StockDisponible) : Math.Max(0m, entradasCompra - salidasReales);
+                        }
+                    }
+                    else
+                    {
+                        saldoCompra = Math.Max(0m, entradasCompra - salidasReales);
+                    }
+
+                    decimal salidasCompra = stockPrincipal != null
+                        ? Math.Max(0m, entradasCompra - stockPrincipal.StockDisponible)
+                        : salidasReales;
+
+                    string sedeOrigenCompra = compraInsumo.Compra?.Proveedor?.Datos ?? compraInsumo.Compra?.Sede?.Nombre ?? "COMPRA";
+                    string docOrigenCompra = compraInsumo.Compra?.NumeroComprobante ?? compraInsumo.Compra?.CodFacQBD ?? (compraInsumo.Compra?.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
+                    string? numeroFacturaCompra = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
+                    DateTime? fechaIngresoCompra = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
+
+                    resultado.Add(new DetalleInsumoRes
+                    {
+                        Registro = registro,
+                        Lote = compraInsumo.Lote ?? "",
+                        CantidadIngresada = entradasCompra,
+                        CantidadSolicitada = compraInsumo.CantidadSolicitada,
+                        Salidas = salidasCompra,
+                        Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                        TieneAjuste = tieneAjuste,
+                        Saldo = saldoCompra,
+                        StockDisponible = saldoCompra,
+                        Um = stockPrincipal?.UnidadMedida ?? umDefecto,
+                        FechaCompra = fechaIngresoCompra,
+                        FechaFabricacion = compraInsumo.FechaFabricacion,
+                        FechaVencimiento = compraInsumo.FechaVencimiento,
+                        Observacion = compraInsumo.Observacion,
+                        TipoOrigen = "Orden de Compra",
+                        SedeOrigen = sedeOrigenCompra,
+                        DocumentoOrigen = docOrigenCompra,
+                        NumeroFactura = numeroFacturaCompra,
+                        IdCompra = compraInsumo.Id
+                    });
                 }
 
-                var detalle = new DetalleInsumoRes
+                // 2. ENTRADAS POR NOTA DE SALIDA (traslados recibidos en esta sede)
+                foreach (var nsi in notasSalidaDestino)
                 {
-                    Registro = registro,
-                    Lote = compraInsumo.Lote ?? "",
-                    CantidadIngresada = entradas,
-                    CantidadSolicitada = compraInsumo.CantidadSolicitada,
-                    Salidas = salidasReales,
-                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
-                    TieneAjuste = tieneAjuste,
-                    Saldo = saldoQueda,
-                    StockDisponible = stockSede.Any() ? stockSede.Sum(si => si.StockDisponible) : saldoQueda,
-                    Um = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G")),
-                    FechaCompra = fechaIngreso,
-                    FechaFabricacion = compraInsumo.FechaFabricacion,
-                    FechaVencimiento = compraInsumo.FechaVencimiento,
-                    Observacion = observacionFinal,
-                    TipoOrigen = tipoOrigen,
-                    SedeOrigen = sedeOrigen,
-                    DocumentoOrigen = docOrigen,
-                    NumeroFactura = numeroFactura,
-                    IdCompra = compraInsumo.Id
-                };
+                    decimal cantRecibida = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
+                        ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
 
-                resultado.Add(detalle);
+                    var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == nsi.Id);
+                    decimal saldoNS = 0m;
+                    if (stockNS != null)
+                    {
+                        saldoNS = stockNS.StockDisponible;
+                    }
+                    else if (!esCompraEstaSede && notasSalidaDestino.Count == 1 && stockSede.Any())
+                    {
+                        saldoNS = stockSede.Sum(se => se.StockDisponible);
+                    }
+                    else
+                    {
+                        saldoNS = cantRecibida;
+                    }
+
+                    var ajustesNS = stockNS?.AjusteInsumos?.ToList();
+                    bool tieneAjusteNS = ajustesNS != null && ajustesNS.Any();
+                    decimal totalAjusteNS = tieneAjusteNS ? ajustesNS!.Sum(a => a.Ajuste) : 0m;
+
+                    decimal salidasNS = !esCompraEstaSede && notasSalidaDestino.Count == 1
+                        ? salidasReales
+                        : Math.Max(0m, cantRecibida - saldoNS);
+
+                    DateTime? fechaNS = nsi.NotaSalida != null
+                        ? (nsi.NotaSalida.FechaSalida != default ? nsi.NotaSalida.FechaSalida : nsi.NotaSalida.FechaCreacion)
+                        : null;
+
+                    string sedeOrigenNS = nsi.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN";
+                    string docOrigenNS = nsi.NotaSalida != null ? $"NS{nsi.NotaSalida.Id:D8}" : "";
+                    string numFacturaNS = nsi.NotaSalida?.Id.ToString() ?? nsi.IdNotaSalida.ToString();
+                    string obsNS = !string.IsNullOrEmpty(nsi.Observacion) ? nsi.Observacion : (nsi.NotaSalida?.Observacion ?? compraInsumo.Observacion ?? "");
+
+                    resultado.Add(new DetalleInsumoRes
+                    {
+                        Registro = registro,
+                        Lote = compraInsumo.Lote ?? "",
+                        CantidadIngresada = cantRecibida,
+                        CantidadSolicitada = nsi.Cantidad,
+                        Salidas = salidasNS,
+                        Ajuste = tieneAjusteNS ? totalAjusteNS : (decimal?)null,
+                        TieneAjuste = tieneAjusteNS,
+                        Saldo = saldoNS,
+                        StockDisponible = saldoNS,
+                        Um = stockNS?.UnidadMedida ?? umDefecto,
+                        FechaCompra = fechaNS,
+                        FechaFabricacion = compraInsumo.FechaFabricacion,
+                        FechaVencimiento = compraInsumo.FechaVencimiento,
+                        Observacion = obsNS,
+                        TipoOrigen = "Nota de Salida",
+                        SedeOrigen = sedeOrigenNS,
+                        DocumentoOrigen = docOrigenNS,
+                        NumeroFactura = numFacturaNS,
+                        IdCompra = compraInsumo.Id
+                    });
+                }
             }
 
             return resultado;
@@ -438,6 +485,7 @@ namespace proy_back_Qbd.Services
                     .ThenInclude(sp => sp.AjusteProductos)
                 .Include(w => w.NotaSalidaProductos)
                     .ThenInclude(nsp => nsp.NotaSalida)
+                        .ThenInclude(ns => ns!.SedeOrigen)
                 .Where(w => w.IdProducto == idProducto)
                 .ToListAsync();
 
@@ -459,14 +507,20 @@ namespace proy_back_Qbd.Services
 
             foreach (var s in compras)
             {
-                decimal entradasLote = 0m;
-                if (s.Compra != null && s.Compra.IdSede == idSede)
-                {
-                    entradasLote += (s.CantidadRecibida ?? s.CantidadSolicitada);
-                }
-                entradasLote += s.NotaSalidaProductos
+                bool esCompraEstaSede = s.Compra != null && s.Compra.IdSede == idSede;
+                decimal cantCompra = esCompraEstaSede
+                    ? (s.CantidadRecibida.HasValue && s.CantidadRecibida.Value > 0 ? s.CantidadRecibida.Value : s.CantidadSolicitada)
+                    : 0m;
+
+                var notasSalidaDestino = s.NotaSalidaProductos
                     .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeDestino == idSede && (nsp.NotaSalida.Estado == "RECIBIDO" || nsp.NotaSalida.Estado == "RECEPCIONADO" || nsp.NotaSalida.FechaRecepcion != null || (nsp.CantidadRecibida > 0)))
-                    .Sum(nsp => (nsp.CantidadRecibida > 0 ? nsp.CantidadRecibida : nsp.Cantidad));
+                    .OrderBy(nsp => nsp.NotaSalida != null ? (nsp.NotaSalida.FechaSalida != default ? nsp.NotaSalida.FechaSalida : nsp.NotaSalida.FechaCreacion) : DateTime.MinValue)
+                    .ToList();
+
+                if (cantCompra == 0 && !notasSalidaDestino.Any())
+                {
+                    continue;
+                }
 
                 decimal salidasNS = s.NotaSalidaProductos
                     .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeOrigen == idSede)
@@ -477,40 +531,66 @@ namespace proy_back_Qbd.Services
                 bool tieneAjuste = ajustesDePt.Any();
                 decimal totalAjuste = ajustesDePt.Sum(a => a.Ajuste);
 
-                decimal saldo = 0m;
-                if (stockSede.Any())
+                if (esCompraEstaSede && cantCompra > 0)
                 {
-                    saldo = stockSede.Sum(sp => sp.StockDisponible);
-                }
-                else if (tieneAjuste)
-                {
-                    saldo = ajustesDePt.First().StockNuevo;
-                }
-                else if (entradasLote > 0 || salidasNS > 0)
-                {
-                    saldo = Math.Max(0m, entradasLote - salidasNS);
-                }
-                else
-                {
-                    continue;
+                    var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaProducto == null || w.IdNotaSalidaProducto == 0);
+                    decimal saldoCompra = stockPrincipal != null
+                        ? stockPrincipal.StockDisponible
+                        : (tieneAjuste ? ajustesDePt.First().StockNuevo : Math.Max(0m, cantCompra - salidasNS));
+
+                    resultado.Add(new DetalleInsumoRes
+                    {
+                        Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
+                        Lote = s.Lote ?? "",
+                        CantidadIngresada = cantCompra,
+                        Salidas = salidasNS,
+                        Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                        TieneAjuste = tieneAjuste,
+                        Saldo = saldoCompra,
+                        StockDisponible = saldoCompra,
+                        FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
+                        FechaFabricacion = s.FechaFabricacion,
+                        FechaVencimiento = s.FechaVencimiento,
+                        Observacion = s.Observacion,
+                        TipoOrigen = "Orden de Compra",
+                        SedeOrigen = s.Compra?.Proveedor?.Datos ?? s.Compra?.Sede?.Nombre ?? "PROVEEDOR",
+                        DocumentoOrigen = s.Compra?.NumeroComprobante ?? s.Compra?.CodFacQBD ?? (s.Compra?.Id != 0 ? $"OC-{s.Compra?.Id}" : ""),
+                        NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? ""),
+                        IdCompra = s.Id
+                    });
                 }
 
-                resultado.Add(new DetalleInsumoRes
+                foreach (var nsp in notasSalidaDestino)
                 {
-                    Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
-                    Lote = s.Lote ?? "",
-                    CantidadIngresada = entradasLote,
-                    Salidas = salidasNS,
-                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
-                    TieneAjuste = tieneAjuste,
-                    Saldo = saldo,
-                    FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
-                    FechaFabricacion = s.FechaFabricacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.Observacion,
-                    NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? ""),
-                    IdCompra = s.Id
-                });
+                    decimal cantRecibida = nsp.CantidadRecibida > 0 ? nsp.CantidadRecibida : nsp.Cantidad;
+                    var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaProducto == nsp.Id);
+                    decimal saldoNS = stockNS != null
+                        ? stockNS.StockDisponible
+                        : (!esCompraEstaSede && stockSede.Any() ? stockSede.Sum(sp => sp.StockDisponible) : cantRecibida);
+
+                    decimal salidasDeEsteItem = !esCompraEstaSede ? salidasNS : Math.Max(0m, cantRecibida - saldoNS);
+
+                    resultado.Add(new DetalleInsumoRes
+                    {
+                        Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
+                        Lote = s.Lote ?? "",
+                        CantidadIngresada = cantRecibida,
+                        Salidas = salidasDeEsteItem,
+                        Ajuste = null,
+                        TieneAjuste = false,
+                        Saldo = saldoNS,
+                        StockDisponible = saldoNS,
+                        FechaCompra = nsp.NotaSalida != null ? (nsp.NotaSalida.FechaSalida != default ? nsp.NotaSalida.FechaSalida : nsp.NotaSalida.FechaCreacion) : null,
+                        FechaFabricacion = s.FechaFabricacion,
+                        FechaVencimiento = s.FechaVencimiento,
+                        Observacion = !string.IsNullOrEmpty(nsp.Observacion) ? nsp.Observacion : (nsp.NotaSalida?.Observacion ?? s.Observacion ?? ""),
+                        TipoOrigen = "Nota de Salida",
+                        SedeOrigen = nsp.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN",
+                        DocumentoOrigen = nsp.NotaSalida != null ? $"NS{nsp.NotaSalida.Id:D8}" : "",
+                        NumeroFactura = nsp.NotaSalida?.Id.ToString() ?? nsp.IdNotaSalida.ToString(),
+                        IdCompra = s.Id
+                    });
+                }
             }
 
             return resultado;
