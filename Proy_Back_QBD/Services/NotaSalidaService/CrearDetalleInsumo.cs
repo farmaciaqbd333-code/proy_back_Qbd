@@ -24,24 +24,26 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             bool isPI = (item.Familia ?? "").Trim().ToUpper() == "PI";
             int sedeOrigen = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
 
-            var stockOrigen = await _context.StockInsumos
+            var stocksOrigen = await _context.StockInsumos
                 .Include(s => s.ProductoIntermedio)
                 .Where(x =>
                     (isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro) &&
                     x.IdSede == sedeOrigen)
                 .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
                 .ThenByDescending(x => x.StockDisponible)
-                .FirstOrDefaultAsync();
+                .ToListAsync();
 
-            if (stockOrigen == null)
+            if (!stocksOrigen.Any())
             {
-                stockOrigen = await _context.StockInsumos
+                stocksOrigen = await _context.StockInsumos
                     .Include(s => s.ProductoIntermedio)
                     .Where(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro)
                     .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
                     .ThenByDescending(x => x.StockDisponible)
-                    .FirstOrDefaultAsync();
+                    .ToListAsync();
             }
+
+            var stockOrigen = stocksOrigen.FirstOrDefault();
 
             if (stockOrigen == null)
             {
@@ -131,16 +133,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 itemUm,
                 cantDescontar);
 
-            if (stockOrigen.StockDisponible < cantDescontar || stockOrigen.StockDisponible <= 0)
+            decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
+
+            if (totalDisponible < cantDescontar || totalDisponible <= 0)
             {
                 decimal dispFriendly = (stockUm == "G" && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
-                    ? Math.Round(stockOrigen.StockDisponible / 1000m, 3)
-                    : stockOrigen.StockDisponible;
+                    ? Math.Round(totalDisponible / 1000m, 3)
+                    : totalDisponible;
                 string dispUm = (stockUm == "G" && (itemUm == "KG" || itemUm == "KILOGRAMOS")) ? "KG" : stockUm;
 
                 _logger.LogWarning(
                     "Stock insuficiente. Disponible={Disponible} {StockUm}, Solicitado={Solicitado} {ItemUm} (descuento={CantDescontar})",
-                    stockOrigen.StockDisponible,
+                    totalDisponible,
                     stockUm,
                     item.Cantidad,
                     itemUm,
@@ -185,8 +189,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             _context.NotaSalidaInsumos.Add(detalle);
 
-            stockOrigen.StockDisponible -= cantDescontar;
-            stockOrigen.NotaSalidaInsumo = detalle;
+            decimal pendienteDescontar = cantDescontar;
+            foreach (var st in stocksOrigen)
+            {
+                if (pendienteDescontar <= 0) break;
+                decimal aDescontar = Math.Min(st.StockDisponible, pendienteDescontar);
+                st.StockDisponible -= aDescontar;
+                pendienteDescontar -= aDescontar;
+                st.NotaSalidaInsumo = detalle;
+            }
 
             _logger.LogInformation(
                 "Detalle de NotaSalidaInsumo agregado exitosamente. Registro={Registro}, isPI={isPI}, NuevoStock={NuevoStock}",

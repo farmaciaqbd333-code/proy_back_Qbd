@@ -369,6 +369,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             if (string.IsNullOrEmpty(familia))
                 familia = "MP";
 
+            int targetSede = idSede > 0 ? idSede : 15;
+
             return familia switch
             {
                 "MP" => await _context.CompraInsumos
@@ -380,7 +382,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                         Lote = x.Lote,
                         Um = (x.Insumo != null && !string.IsNullOrEmpty(x.Insumo.UnidadMedida)) ? x.Insumo.UnidadMedida : (x.Um ?? "G"),
-                        StockDisponible = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m
+                        StockDisponible = x.StockInsumos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) ?? 0m
                     })
                     .ToListAsync(),
 
@@ -393,7 +395,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockEmpaques.Sum(s => (decimal?)s.StockDisponible)
+                        StockDisponible = x.StockEmpaques.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -406,7 +408,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato),
                         Lote = null,
                         Um = x.Um,
-                        StockDisponible = x.StockEconomatos != null ? x.StockEconomatos.Sum(s => (decimal?)s.StockDisponible) : null
+                        StockDisponible = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
                     })
                     .ToListAsync(),
 
@@ -419,7 +421,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockProductoTerminados.Sum(s => (decimal?)s.StockDisponible)
+                        StockDisponible = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -432,7 +434,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockInsumo != null ? (decimal?)x.StockInsumo.StockDisponible : null
+                        StockDisponible = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
                     })
                     .ToListAsync(),
 
@@ -446,6 +448,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 return new List<RegistrosRes>();
 
             string fam = request.Familia.Trim().ToUpper();
+            int targetSede = (request.IdSede > 0) ? request.IdSede : 15;
 
             switch (fam)
             {
@@ -453,7 +456,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var pts = await _context.CompraProductos
                         .Include(i => i.Producto)
                         .Include(i => i.StockProductoTerminados)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockProductoTerminados.Any(s => s.IdSede == request.IdSede))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockProductoTerminados.Any(s => s.IdSede == targetSede))
                         .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
@@ -462,7 +465,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoProducto(x.IdProducto),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockProductoTerminados.Sum(s => (decimal?)s.StockDisponible)
+                            Stock = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
@@ -481,7 +484,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var mps = await _context.CompraInsumos
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumos)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockInsumos.Any(s => s.IdSede == request.IdSede))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockInsumos.Any(s => s.IdSede == targetSede))
                         .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
@@ -490,7 +493,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
+                            Stock = x.StockInsumos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
@@ -509,7 +512,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var ecos = await _context.CompraEconomatos
                         .Include(i => i.Economato)
                         .Include(i => i.StockEconomatos)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == request.IdSede)))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == targetSede)))
                         .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
@@ -518,7 +521,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoEconomato(x.IdEconomato),
                             Lote = (string?)null,
                             x.Um,
-                            Stock = x.StockEconomatos != null ? x.StockEconomatos.Sum(s => (decimal?)s.StockDisponible) : null
+                            Stock = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
                         })
                         .ToListAsync();
 
@@ -537,7 +540,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var mes = await _context.CompraEmpaques
                         .Include(i => i.Empaque)
                         .Include(i => i.StockEmpaques)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockEmpaques.Any(s => s.IdSede == request.IdSede))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockEmpaques.Any(s => s.IdSede == targetSede))
                         .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
@@ -546,7 +549,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockEmpaques.Sum(s => (decimal?)s.StockDisponible)
+                            Stock = x.StockEmpaques.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
@@ -565,7 +568,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var pis = await _context.ProductosIntermedios
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumo)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.IdSede == request.IdSede || (w.StockInsumo != null && w.StockInsumo.IdSede == request.IdSede))
+                        .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede))
                         .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
@@ -574,7 +577,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockInsumo != null ? (decimal?)x.StockInsumo.StockDisponible : null
+                            Stock = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
                         })
                         .ToListAsync();
 
