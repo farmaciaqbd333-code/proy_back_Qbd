@@ -116,10 +116,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     cantDescontar = item.Cantidad * 1000m;
                 }
             }
-            else if (stockOrigen.StockDisponible < item.Cantidad && item.Cantidad <= stockOrigen.StockDisponible * 1000m && (itemUm == "G" || itemUm == "GR"))
-            {
-                cantDescontar = item.Cantidad / 1000m;
-            }
+
             else if (stockOrigen.StockDisponible > 0 && stockOrigen.StockDisponible >= item.Cantidad * 1000m && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
             {
                 cantDescontar = item.Cantidad * 1000m;
@@ -196,7 +193,6 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 decimal aDescontar = Math.Min(st.StockDisponible, pendienteDescontar);
                 st.StockDisponible -= aDescontar;
                 pendienteDescontar -= aDescontar;
-                st.NotaSalidaInsumo = detalle;
             }
 
             _logger.LogInformation(
@@ -214,26 +210,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
              NotaSalidaFamiliasCreateReq item)
         {
             int sedeOrigenEco = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
-            var stockOrigen = await _context.StockEconomatos
+            var stocksOrigen = await _context.StockEconomatos
                 .Where(x => x.IdCompraEconomato == item.Registro && x.IdSede == sedeOrigenEco)
                 .OrderBy(x => x.IdNotaSalidaEconomato != null ? 1 : 0)
-                .ThenByDescending(x => x.StockDisponible)
-                .FirstOrDefaultAsync();
+                .ThenBy(x => x.Id)
+                .ToListAsync();
 
-            if (stockOrigen == null)
+            if (!stocksOrigen.Any())
             {
-                stockOrigen = await _context.StockEconomatos
+                stocksOrigen = await _context.StockEconomatos
                     .Where(x => x.IdCompraEconomato == item.Registro)
                     .OrderBy(x => x.IdNotaSalidaEconomato != null ? 1 : 0)
-                    .ThenByDescending(x => x.StockDisponible)
-                    .FirstOrDefaultAsync();
+                    .ThenBy(x => x.Id)
+                    .ToListAsync();
             }
 
-            if (stockOrigen == null)
-                throw new Exception("No existe stock en la sede proveniente.");
+            if (!stocksOrigen.Any())
+                throw new Exception($"No existe stock registrado para el economato {item.Registro}.");
 
-            if (stockOrigen.StockDisponible < item.Cantidad)
-                throw new Exception("Stock insuficiente.");
+            decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
+            if (totalDisponible < item.Cantidad || totalDisponible <= 0)
+                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaEconomato
             {
@@ -255,7 +252,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             };
 
             _context.NotaSalidaEconomatos.Add(detalle);
-            stockOrigen.StockDisponible -= item.Cantidad;
+
+            decimal pendienteDescontar = item.Cantidad;
+            foreach (var st in stocksOrigen)
+            {
+                if (pendienteDescontar <= 0) break;
+                decimal aDescontar = Math.Min(st.StockDisponible, pendienteDescontar);
+                st.StockDisponible -= aDescontar;
+                pendienteDescontar -= aDescontar;
+            }
         }
 
         private async Task CrearDetalleEmpaque(
@@ -264,26 +269,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             NotaSalidaFamiliasCreateReq item)
         {
             int sedeOrigenEmp = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
-            var stockOrigen = await _context.StockEmpaques
+            var stocksOrigen = await _context.StockEmpaques
                 .Where(x => x.IdCompraEmpaque == item.Registro && x.IdSede == sedeOrigenEmp)
                 .OrderBy(x => x.IdNotaSalidaEmpaque != null ? 1 : 0)
-                .ThenByDescending(x => x.StockDisponible)
-                .FirstOrDefaultAsync();
+                .ThenBy(x => x.Id)
+                .ToListAsync();
 
-            if (stockOrigen == null)
+            if (!stocksOrigen.Any())
             {
-                stockOrigen = await _context.StockEmpaques
+                stocksOrigen = await _context.StockEmpaques
                     .Where(x => x.IdCompraEmpaque == item.Registro)
                     .OrderBy(x => x.IdNotaSalidaEmpaque != null ? 1 : 0)
-                    .ThenByDescending(x => x.StockDisponible)
-                    .FirstOrDefaultAsync();
+                    .ThenBy(x => x.Id)
+                    .ToListAsync();
             }
 
-            if (stockOrigen == null)
-                throw new Exception("No existe stock en la sede proveniente.");
+            if (!stocksOrigen.Any())
+                throw new Exception($"No existe stock registrado para el empaque {item.Registro}.");
 
-            if (stockOrigen.StockDisponible < item.Cantidad)
-                throw new Exception("Stock insuficiente.");
+            decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
+            if (totalDisponible < item.Cantidad || totalDisponible <= 0)
+                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaEmpaque
             {
@@ -305,7 +311,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             };
 
             _context.NotaSalidaEmpaques.Add(detalle);
-            stockOrigen.StockDisponible -= item.Cantidad;
+
+            decimal pendienteDescontar = item.Cantidad;
+            foreach (var st in stocksOrigen)
+            {
+                if (pendienteDescontar <= 0) break;
+                decimal aDescontar = Math.Min(st.StockDisponible, pendienteDescontar);
+                st.StockDisponible -= aDescontar;
+                pendienteDescontar -= aDescontar;
+            }
         }
 
         private async Task CrearDetalleProducto(
@@ -314,26 +328,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             NotaSalidaFamiliasCreateReq item)
         {
             int sedeOrigenProd = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
-            var stockOrigen = await _context.StockProductos
+            var stocksOrigen = await _context.StockProductos
                 .Where(x => x.IdCompraProducto == item.Registro && x.IdSede == sedeOrigenProd)
                 .OrderBy(x => x.IdNotaSalidaProducto != null ? 1 : 0)
-                .ThenByDescending(x => x.StockDisponible)
-                .FirstOrDefaultAsync();
+                .ThenBy(x => x.Id)
+                .ToListAsync();
 
-            if (stockOrigen == null)
+            if (!stocksOrigen.Any())
             {
-                stockOrigen = await _context.StockProductos
+                stocksOrigen = await _context.StockProductos
                     .Where(x => x.IdCompraProducto == item.Registro)
                     .OrderBy(x => x.IdNotaSalidaProducto != null ? 1 : 0)
-                    .ThenByDescending(x => x.StockDisponible)
-                    .FirstOrDefaultAsync();
+                    .ThenBy(x => x.Id)
+                    .ToListAsync();
             }
 
-            if (stockOrigen == null)
-                throw new Exception("No existe stock en la sede proveniente.");
+            if (!stocksOrigen.Any())
+                throw new Exception($"No existe stock registrado para el producto {item.Registro}.");
 
-            if (stockOrigen.StockDisponible < item.Cantidad)
-                throw new Exception("Stock insuficiente.");
+            decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
+            if (totalDisponible < item.Cantidad || totalDisponible <= 0)
+                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaProducto
             {
@@ -355,7 +370,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             };
 
             _context.NotaSalidaProductos.Add(detalle);
-            stockOrigen.StockDisponible -= item.Cantidad;
+
+            decimal pendienteDescontar = item.Cantidad;
+            foreach (var st in stocksOrigen)
+            {
+                if (pendienteDescontar <= 0) break;
+                decimal aDescontar = Math.Min(st.StockDisponible, pendienteDescontar);
+                st.StockDisponible -= aDescontar;
+                pendienteDescontar -= aDescontar;
+            }
         }
     }
 }

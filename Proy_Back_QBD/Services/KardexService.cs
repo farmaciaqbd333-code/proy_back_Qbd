@@ -159,39 +159,19 @@ namespace proy_back_Qbd.Services
 
                 string umDefecto = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G"));
 
+                // 1. DISTRIBUCION FIFO DE SALIDAS ENTRE ENTRADAS DE ESTE REGISTRO
+                decimal salidasRestantes = salidasReales;
+
                 // 1. ENTRADA POR COMPRA (si corresponde a esta sede)
                 if (esCompraEstaSede && entradasCompra > 0)
                 {
                     var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == null || w.IdNotaSalidaInsumo == 0);
-                    decimal saldoCompra = 0m;
-                    if (stockPrincipal != null)
-                    {
-                        saldoCompra = stockPrincipal.StockDisponible;
-                    }
-                    else if (!notasSalidaDestino.Any())
-                    {
-                        var todosAjustes = stockSede
-                            .SelectMany(si => si.AjusteInsumos ?? new List<AjusteInsumo>())
-                            .OrderByDescending(a => a.FechaCreacion)
-                            .ToList();
-                        var ultimoAjuste = todosAjustes.FirstOrDefault() ?? ajustesDeCompra.FirstOrDefault();
-                        if (ultimoAjuste != null)
-                        {
-                            saldoCompra = ultimoAjuste.StockNuevo;
-                        }
-                        else
-                        {
-                            saldoCompra = stockSede.Any() ? stockSede.Sum(si => si.StockDisponible) : Math.Max(0m, entradasCompra - salidasReales);
-                        }
-                    }
-                    else
-                    {
-                        saldoCompra = Math.Max(0m, entradasCompra - salidasReales);
-                    }
+                    decimal salidasCompra = Math.Min(entradasCompra, salidasRestantes);
+                    salidasRestantes -= salidasCompra;
 
-                    decimal salidasCompra = stockPrincipal != null
-                        ? Math.Max(0m, entradasCompra - stockPrincipal.StockDisponible)
-                        : salidasReales;
+                    decimal saldoCompra = tieneAjuste
+                        ? (ajustesDeCompra.FirstOrDefault()?.StockNuevo ?? Math.Max(0m, entradasCompra - salidasCompra + totalAjuste))
+                        : Math.Max(0m, entradasCompra - salidasCompra);
 
                     string sedeOrigenCompra = compraInsumo.Compra?.Proveedor?.Datos ?? compraInsumo.Compra?.Sede?.Nombre ?? "COMPRA";
                     string docOrigenCompra = compraInsumo.Compra?.NumeroComprobante ?? compraInsumo.Compra?.CodFacQBD ?? (compraInsumo.Compra?.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
@@ -228,28 +208,17 @@ namespace proy_back_Qbd.Services
                     decimal cantRecibida = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
                         ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
 
-                    var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == nsi.Id);
-                    decimal saldoNS = 0m;
-                    if (stockNS != null)
-                    {
-                        saldoNS = stockNS.StockDisponible;
-                    }
-                    else if (!esCompraEstaSede && notasSalidaDestino.Count == 1 && stockSede.Any())
-                    {
-                        saldoNS = stockSede.Sum(se => se.StockDisponible);
-                    }
-                    else
-                    {
-                        saldoNS = cantRecibida;
-                    }
+                    decimal salidasNS = Math.Min(cantRecibida, salidasRestantes);
+                    salidasRestantes -= salidasNS;
 
+                    var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == nsi.Id);
                     var ajustesNS = stockNS?.AjusteInsumos?.ToList();
                     bool tieneAjusteNS = ajustesNS != null && ajustesNS.Any();
                     decimal totalAjusteNS = tieneAjusteNS ? ajustesNS!.Sum(a => a.Ajuste) : 0m;
 
-                    decimal salidasNS = !esCompraEstaSede && notasSalidaDestino.Count == 1
-                        ? salidasReales
-                        : Math.Max(0m, cantRecibida - saldoNS);
+                    decimal saldoNS = tieneAjusteNS
+                        ? (ajustesNS!.OrderByDescending(a => a.FechaCreacion).FirstOrDefault()?.StockNuevo ?? Math.Max(0m, cantRecibida - salidasNS + totalAjusteNS))
+                        : Math.Max(0m, cantRecibida - salidasNS);
 
                     DateTime? fechaNS = nsi.NotaSalida != null
                         ? (nsi.NotaSalida.FechaSalida != default ? nsi.NotaSalida.FechaSalida : nsi.NotaSalida.FechaCreacion)
