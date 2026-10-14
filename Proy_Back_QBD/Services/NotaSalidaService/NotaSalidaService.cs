@@ -457,7 +457,6 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         .Include(i => i.Producto)
                         .Include(i => i.StockProductoTerminados)
                         .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockProductoTerminados.Any(s => s.IdSede == targetSede))
-                        .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
                             x.Id,
@@ -465,27 +464,33 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoProducto(x.IdProducto),
                             x.Lote,
                             x.Um,
+                            x.FechaVencimiento,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaFabricacion,
                             Stock = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
-                    return pts.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return pts
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 case "MP":
                     var mps = await _context.CompraInsumos
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumos)
                         .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockInsumos.Any(s => s.IdSede == targetSede))
-                        .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
                             x.Id,
@@ -493,27 +498,33 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                             x.Lote,
                             x.Um,
+                            x.FechaVencimiento,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
                             Stock = x.StockInsumos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
-                    return mps.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = (x.Um == "G" || x.Um == "GR" || x.Um == "UND") ? x.Um : "G",
-                        StockDisponible = x.Stock ?? 0m
-                    }).ToList();
+                    return mps
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = (x.Um == "G" || x.Um == "GR" || x.Um == "UND") ? x.Um : "G",
+                            StockDisponible = x.Stock ?? 0m
+                        }).ToList();
 
                 case "ECO":
                     var ecos = await _context.CompraEconomatos
                         .Include(i => i.Economato)
                         .Include(i => i.StockEconomatos)
                         .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == targetSede)))
-                        .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
                             x.Id,
@@ -521,27 +532,31 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoEconomato(x.IdEconomato),
                             Lote = (string?)null,
                             x.Um,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
                             Stock = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
                         })
                         .ToListAsync();
 
-                    return ecos.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return ecos
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 case "ME":
                     var mes = await _context.CompraEmpaques
                         .Include(i => i.Empaque)
                         .Include(i => i.StockEmpaques)
                         .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockEmpaques.Any(s => s.IdSede == targetSede))
-                        .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
                             x.Id,
@@ -549,27 +564,33 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
                             x.Lote,
                             x.Um,
+                            x.FechaVencimiento,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
                             Stock = x.StockEmpaques.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
-                    return mes.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return mes
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 case "PI":
                     var pis = await _context.ProductosIntermedios
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumo)
                         .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede))
-                        .OrderByDescending(o => o.Id)
                         .Select(x => new
                         {
                             x.Id,
@@ -577,20 +598,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                             x.Lote,
                             x.Um,
+                            x.FechaVencimiento,
+                            FechaCompra = x.FechaCreacion,
                             Stock = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
                         })
                         .ToListAsync();
 
-                    return pis.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return pis
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 default:
                     return new List<RegistrosRes>();

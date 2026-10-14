@@ -122,7 +122,7 @@ namespace proy_back_Qbd.Services
                     }
                 }
 
-                if (targetStock != null)
+                if (targetStock != null && targetStock.StockDisponible > 0)
                 {
                     stockInsumos.Add(targetStock);
                 }
@@ -139,7 +139,8 @@ namespace proy_back_Qbd.Services
                         (targetStock == null || x.Id != targetStock.Id) &&
                         (x.CompraInsumo.FechaVencimiento == null || x.CompraInsumo.FechaVencimiento >= ahora))
                     .OrderBy(x => string.IsNullOrEmpty(x.CompraInsumo.Lote) || x.CompraInsumo.Compra == null ? 1 : 0)
-                    .ThenBy(x => x.CompraInsumo.Compra != null ? x.CompraInsumo.Compra.FechaFactura : x.CompraInsumo.FechaCreacion)
+                    .ThenBy(x => x.CompraInsumo.FechaVencimiento.HasValue ? x.CompraInsumo.FechaVencimiento.Value : DateTime.MaxValue)
+                    .ThenBy(x => x.CompraInsumo.Compra != null ? (x.CompraInsumo.Compra.FechaLab ?? x.CompraInsumo.Compra.FechaFactura) : x.CompraInsumo.FechaCreacion)
                     .ThenBy(x => x.CompraInsumo.Id)
                     .ToListAsync();
 
@@ -228,8 +229,9 @@ namespace proy_back_Qbd.Services
                         x.StockDisponible > 0 &&
                         (targetStock == null || x.Id != targetStock.Id) &&
                         (x.ProductoIntermedio.FechaVencimiento == null || x.ProductoIntermedio.FechaVencimiento >= ahora))
-                    .OrderByDescending(x => x.ProductoIntermedio.FechaCreacion)
-                    .ThenByDescending(x => x.ProductoIntermedio.Id)
+                    .OrderBy(x => x.ProductoIntermedio.FechaVencimiento.HasValue ? x.ProductoIntermedio.FechaVencimiento.Value : DateTime.MaxValue)
+                    .ThenBy(x => x.ProductoIntermedio.FechaCreacion)
+                    .ThenBy(x => x.ProductoIntermedio.Id)
                     .ToListAsync();
 
                 // Auto-inicializar cualquier PI huérfano sin StockInsumo
@@ -357,6 +359,7 @@ namespace proy_back_Qbd.Services
                                 x.StockDisponible > 0 &&
                                 (x.CompraEmpaque.FechaVencimiento == null || x.CompraEmpaque.FechaVencimiento >= ahora))
                             .OrderBy(x => string.IsNullOrEmpty(x.CompraEmpaque.Lote) ? 1 : 0)
+                            .ThenBy(x => x.CompraEmpaque.FechaVencimiento.HasValue ? x.CompraEmpaque.FechaVencimiento.Value : DateTime.MaxValue)
                             .ThenBy(x => x.CompraEmpaque.FechaCreacion)
                             .ThenBy(x => x.CompraEmpaque.Id)
                             .ToListAsync();
@@ -774,6 +777,7 @@ namespace proy_back_Qbd.Services
                                 x.StockDisponible > 0 &&
                                 (x.CompraEmpaque.FechaVencimiento == null || x.CompraEmpaque.FechaVencimiento >= ahora))
                             .OrderBy(x => string.IsNullOrEmpty(x.CompraEmpaque.Lote) ? 1 : 0)
+                            .ThenBy(x => x.CompraEmpaque.FechaVencimiento.HasValue ? x.CompraEmpaque.FechaVencimiento.Value : DateTime.MaxValue)
                             .ThenBy(x => x.CompraEmpaque.FechaCreacion)
                             .ThenBy(x => x.CompraEmpaque.Id)
                             .ToListAsync();
