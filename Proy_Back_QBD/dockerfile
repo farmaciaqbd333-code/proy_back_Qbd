@@ -23,8 +23,9 @@ RUN apt-get update && apt-get install -y tzdata && \
 # Copiar los archivos publicados desde la etapa de build
 COPY --from=build /app/out .
 
-# Exponer el puerto usado por la API
-EXPOSE 80
+# Exponer y configurar el puerto usado por Render (por defecto 10000)
+ENV PORT=10000
+EXPOSE 10000
 
 # Comando para ejecutar la aplicación
 ENTRYPOINT ["dotnet", "Proy_back_QBD.dll"]

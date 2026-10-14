@@ -23,6 +23,13 @@ Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
 Environment.SetEnvironmentVariable("DOTNET_HOSTBUILDER__RELOADCONFIGONCHANGE", "false");
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar puerto dinámico para Render u otros entornos de hosting
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 builder.Services.AddAutoMapper(cfg =>
 {
     cfg.AddProfile<PersonaMappingProfile>();  // Registra tu perfil explícitamente
