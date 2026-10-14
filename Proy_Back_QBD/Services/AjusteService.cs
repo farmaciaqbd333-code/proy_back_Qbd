@@ -427,7 +427,16 @@ namespace Proy_back_QBD.Service.AjusteService
 
                     if (ultimoAjuste != null)
                     {
-                        saldo = ultimoAjuste.StockNuevo;
+                        bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
+                        if (estaVencido)
+                        {
+                            saldo = 0m;
+                        }
+                        else
+                        {
+                            var stockPrincipal = stockInsumosSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == null || w.IdNotaSalidaInsumo == 0);
+                            saldo = stockPrincipal != null ? stockPrincipal.StockDisponible : (stockInsumosSede.Any() ? stockInsumosSede.Sum(si => si.StockDisponible) : ultimoAjuste.StockNuevo);
+                        }
                         observacionAjuste = ultimoAjuste.Observacion ?? "";
                     }
                     else

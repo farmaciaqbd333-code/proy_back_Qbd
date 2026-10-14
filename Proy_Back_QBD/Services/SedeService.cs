@@ -29,6 +29,7 @@ namespace Proy_back_QBD.Services
         public async Task<Sede?> Actualizar(int id, SedeUpdateReq request)
         {
             Sede? req = await _context.Sedes.FirstOrDefaultAsync(foda => foda.Id == id);
+            if (req == null) return null;
             _mapper.Map(request, req);
             await _context.SaveChangesAsync();
             return req;
@@ -37,24 +38,33 @@ namespace Proy_back_QBD.Services
         public async Task<List<SedeFindAllResponse?>> Obtener()
         {
             var sedes = await _context.Sedes.ToListAsync();
-            var personas = await _context.Personas.ToListAsync();
             var usuarios = await _context.Usuarios.Include(u => u.Persona).ToListAsync();
+            var personas = await _context.Personas.ToListAsync();
 
+            var usuarioDict = usuarios.Where(u => u.Persona != null)
+                                      .ToDictionary(u => u.Id.ToString(), u => u.Persona!.NombreCompleto ?? "");
             var personaDict = personas.ToDictionary(p => p.Id.ToString(), p => p.NombreCompleto ?? "");
-            var usuarioDict = usuarios.Where(u => u.Persona != null).ToDictionary(u => u.Id.ToString(), u => u.Persona!.NombreCompleto ?? "");
 
             List<SedeFindAllResponse> response = sedes.Select(a => {
-                string encargadoNombre = a.Encargado ?? "";
+                string encargadoId = a.Encargado ?? "";
+                string encargadoNombre = "";
+
                 if (!string.IsNullOrWhiteSpace(a.Encargado))
                 {
                     string key = a.Encargado.Trim();
-                    if (personaDict.TryGetValue(key, out var nombrePersona) && !string.IsNullOrWhiteSpace(nombrePersona))
+                    // Prioridad 1: Buscar por ID de usuario (clave guardada al seleccionar el responsable)
+                    if (usuarioDict.TryGetValue(key, out var nombreUsuario) && !string.IsNullOrWhiteSpace(nombreUsuario))
+                    {
+                        encargadoNombre = nombreUsuario;
+                    }
+                    // Prioridad 2: Buscar por ID de persona por compatibilidad histórica
+                    else if (personaDict.TryGetValue(key, out var nombrePersona) && !string.IsNullOrWhiteSpace(nombrePersona))
                     {
                         encargadoNombre = nombrePersona;
                     }
-                    else if (usuarioDict.TryGetValue(key, out var nombreUsuario) && !string.IsNullOrWhiteSpace(nombreUsuario))
+                    else
                     {
-                        encargadoNombre = nombreUsuario;
+                        encargadoNombre = key;
                     }
                 }
 
@@ -63,12 +73,49 @@ namespace Proy_back_QBD.Services
                     Id = a.Id,
                     Nombre = a.Nombre,
                     Direccion = a.Direccion,
-                    Encargado = encargadoNombre,
+                    Encargado = encargadoId,
+                    EncargadoId = encargadoId,
+                    EncargadoNombre = encargadoNombre,
                     Telefono = a.Telefono,
                 };
             }).ToList();
 
             return response;
+        }
+
+        public async Task<SedeFindAllResponse?> ObtenerPorId(int id)
+        {
+            var a = await _context.Sedes.FirstOrDefaultAsync(s => s.Id == id);
+            if (a == null) return null;
+
+            string encargadoId = a.Encargado ?? "";
+            string encargadoNombre = "";
+
+            if (!string.IsNullOrWhiteSpace(a.Encargado))
+            {
+                string key = a.Encargado.Trim();
+                var usuario = await _context.Usuarios.Include(u => u.Persona).FirstOrDefaultAsync(u => u.Id.ToString() == key);
+                if (usuario?.Persona?.NombreCompleto != null)
+                {
+                    encargadoNombre = usuario.Persona.NombreCompleto;
+                }
+                else
+                {
+                    var persona = await _context.Personas.FirstOrDefaultAsync(p => p.Id.ToString() == key);
+                    encargadoNombre = persona?.NombreCompleto ?? key;
+                }
+            }
+
+            return new SedeFindAllResponse
+            {
+                Id = a.Id,
+                Nombre = a.Nombre,
+                Direccion = a.Direccion,
+                Encargado = encargadoId,
+                EncargadoId = encargadoId,
+                EncargadoNombre = encargadoNombre,
+                Telefono = a.Telefono,
+            };
         }
 
         public async Task<GeneralRes?> ObtGeneral(int id)

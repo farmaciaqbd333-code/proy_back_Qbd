@@ -369,6 +369,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             if (string.IsNullOrEmpty(familia))
                 familia = "MP";
 
+            int targetSede = idSede > 0 ? idSede : 15;
+
             return familia switch
             {
                 "MP" => await _context.CompraInsumos
@@ -380,7 +382,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                         Lote = x.Lote,
                         Um = (x.Insumo != null && !string.IsNullOrEmpty(x.Insumo.UnidadMedida)) ? x.Insumo.UnidadMedida : (x.Um ?? "G"),
-                        StockDisponible = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible) ?? 0m
+                        StockDisponible = x.StockInsumos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) ?? 0m
                     })
                     .ToListAsync(),
 
@@ -393,7 +395,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockEmpaques.Sum(s => (decimal?)s.StockDisponible)
+                        StockDisponible = x.StockEmpaques.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -406,7 +408,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato),
                         Lote = null,
                         Um = x.Um,
-                        StockDisponible = x.StockEconomatos != null ? x.StockEconomatos.Sum(s => (decimal?)s.StockDisponible) : null
+                        StockDisponible = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
                     })
                     .ToListAsync(),
 
@@ -419,7 +421,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockProductoTerminados.Sum(s => (decimal?)s.StockDisponible)
+                        StockDisponible = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -432,7 +434,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = x.StockInsumo != null ? (decimal?)x.StockInsumo.StockDisponible : null
+                        StockDisponible = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
                     })
                     .ToListAsync(),
 
@@ -446,6 +448,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 return new List<RegistrosRes>();
 
             string fam = request.Familia.Trim().ToUpper();
+            int targetSede = (request.IdSede > 0) ? request.IdSede : 15;
 
             switch (fam)
             {
@@ -453,8 +456,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var pts = await _context.CompraProductos
                         .Include(i => i.Producto)
                         .Include(i => i.StockProductoTerminados)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockProductoTerminados.Any(s => s.IdSede == request.IdSede))
-                        .OrderByDescending(o => o.Id)
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockProductoTerminados.Any(s => s.IdSede == targetSede))
                         .Select(x => new
                         {
                             x.Id,
@@ -462,27 +464,33 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoProducto(x.IdProducto),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockProductoTerminados.Sum(s => (decimal?)s.StockDisponible)
+                            x.FechaVencimiento,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaFabricacion,
+                            Stock = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
-                    return pts.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return pts
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 case "MP":
                     var mps = await _context.CompraInsumos
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumos)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockInsumos.Any(s => s.IdSede == request.IdSede))
-                        .OrderByDescending(o => o.Id)
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockInsumos.Any(s => s.IdSede == targetSede))
                         .Select(x => new
                         {
                             x.Id,
@@ -490,27 +498,33 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoInsumo(x.IdInsumo),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockInsumos.Sum(s => (decimal?)s.StockDisponible)
+                            x.FechaVencimiento,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
+                            Stock = x.StockInsumos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
-                    return mps.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = (x.Um == "G" || x.Um == "GR" || x.Um == "UND") ? x.Um : "G",
-                        StockDisponible = x.Stock ?? 0m
-                    }).ToList();
+                    return mps
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = (x.Um == "G" || x.Um == "GR" || x.Um == "UND") ? x.Um : "G",
+                            StockDisponible = x.Stock ?? 0m
+                        }).ToList();
 
                 case "ECO":
                     var ecos = await _context.CompraEconomatos
                         .Include(i => i.Economato)
                         .Include(i => i.StockEconomatos)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == request.IdSede)))
-                        .OrderByDescending(o => o.Id)
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == targetSede)))
                         .Select(x => new
                         {
                             x.Id,
@@ -518,27 +532,31 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoEconomato(x.IdEconomato),
                             Lote = (string?)null,
                             x.Um,
-                            Stock = x.StockEconomatos != null ? x.StockEconomatos.Sum(s => (decimal?)s.StockDisponible) : null
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
+                            Stock = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
                         })
                         .ToListAsync();
 
-                    return ecos.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return ecos
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 case "ME":
                     var mes = await _context.CompraEmpaques
                         .Include(i => i.Empaque)
                         .Include(i => i.StockEmpaques)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || (w.Compra != null && w.Compra.IdSede == request.IdSede) || w.StockEmpaques.Any(s => s.IdSede == request.IdSede))
-                        .OrderByDescending(o => o.Id)
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockEmpaques.Any(s => s.IdSede == targetSede))
                         .Select(x => new
                         {
                             x.Id,
@@ -546,27 +564,33 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockEmpaques.Sum(s => (decimal?)s.StockDisponible)
+                            x.FechaVencimiento,
+                            FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
+                            Stock = x.StockEmpaques.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
-                    return mes.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return mes
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 case "PI":
                     var pis = await _context.ProductosIntermedios
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumo)
-                        .Where(w => request.IdSede == 0 || request.IdSede == 15 || w.IdSede == request.IdSede || (w.StockInsumo != null && w.StockInsumo.IdSede == request.IdSede))
-                        .OrderByDescending(o => o.Id)
+                        .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede))
                         .Select(x => new
                         {
                             x.Id,
@@ -574,20 +598,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Codigo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                             x.Lote,
                             x.Um,
-                            Stock = x.StockInsumo != null ? (decimal?)x.StockInsumo.StockDisponible : null
+                            x.FechaVencimiento,
+                            FechaCompra = x.FechaCreacion,
+                            Stock = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
                         })
                         .ToListAsync();
 
-                    return pis.Select(x => new RegistrosRes
-                    {
-                        IdRegistro = x.Id,
-                        CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
-                        Descripcion = x.Descripcion ?? "",
-                        CodigoArticulo = x.Codigo,
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.Stock
-                    }).ToList();
+                    return pis
+                        .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
+                        .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
+                        .ThenBy(x => x.FechaCompra)
+                        .ThenBy(x => x.Id)
+                        .Select(x => new RegistrosRes
+                        {
+                            IdRegistro = x.Id,
+                            CodRegistro = Alfanumerico.ConvertToBase36(x.Id),
+                            Descripcion = x.Descripcion ?? "",
+                            CodigoArticulo = x.Codigo,
+                            Lote = x.Lote,
+                            Um = x.Um,
+                            StockDisponible = x.Stock
+                        }).ToList();
 
                 default:
                     return new List<RegistrosRes>();
@@ -651,45 +682,97 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 var fFabric = isPI ? (pi?.FechaEmision?.ToString("yyyy-MM-dd") ?? "") : (item.CompraInsumos?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "");
                 var fVcto = isPI ? (pi?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "") : (item.CompraInsumos?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "");
 
-                var tara = item.PaqueteNotaSalidaInsumos?.Sum(p => p.Tara) ?? 0;
-                var pesoNeto = item.PaqueteNotaSalidaInsumos?.Sum(p => p.PesoNeto) ?? item.Cantidad;
-                var pesoBruto = item.PaqueteNotaSalidaInsumos?.Sum(p => p.PesoBruto) ?? (pesoNeto + tara);
-
-                resultado.Add(new NotaSalidaDetalleRes
+                var paquetes = item.PaqueteNotaSalidaInsumos?.ToList() ?? new List<PaqueteNotaSalidaInsumo>();
+                if (paquetes.Count > 1)
                 {
-                    IdNotaSalidaArticulo = item.Id,
-                    IdCompraArticulo = isPI ? (pi?.Id ?? 0) : (item.IdCompraInsumo ?? 0),
-                    Familia = fam,
-                    Codigo = cod,
-                    DescripcionQBD = desc,
-                    Registro = reg,
-                    Cantidad = item.Cantidad,
-                    CantidadRecibida = item.CantidadRecibida,
-                    Observacion = item.Observacion,
-                    Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (isPI ? (pi?.Um ?? "G") : (item.CompraInsumos?.Um?.ToUpper() ?? "G")),
-                    Tara = tara,
-                    PesoNeto = pesoNeto,
-                    PesoBruto = pesoBruto,
-                    Lote = lote,
-                    FFabric = fFabric,
-                    FVcto = fVcto,
-                    Paquetes = item.PaqueteNotaSalidaInsumos?.Select(p => new NotaSalidaDetallePaqueteRes
+                    foreach (var p in paquetes)
                     {
-                        IdPaquete = (int)p.Id,
-                        CantidadPaquete = p.CantidadPaquete,
-                        Peso = p.Peso,
-                        Tara = p.Tara,
-                        Um = p.Um,
-                        PesoNeto = p.PesoNeto,
-                        PesoBruto = p.PesoBruto,
-                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
-                        PesoRecibida = p.PesoRecibida,
-                        TaraRecibida = p.TaraRecibida,
-                        PesoNetoRecibida = p.PesoNetoRecibida,
-                        PesoBrutoRecibida = p.PesoBrutoRecibida,
-                        IdVerificador = p.IdVerificador
-                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
-                });
+                        var pTara = p.Tara ?? 0m;
+                        var pNeto = (p.PesoNeto ?? 0m) > 0 ? (p.PesoNeto ?? 0m) : ((p.Peso ?? 0m) * p.CantidadPaquete);
+                        var pBruto = (p.PesoBruto ?? 0m) > 0 ? (p.PesoBruto ?? 0m) : (pNeto + pTara);
+
+                        resultado.Add(new NotaSalidaDetalleRes
+                        {
+                            IdNotaSalidaArticulo = item.Id,
+                            IdCompraArticulo = isPI ? (pi?.Id ?? 0) : (item.IdCompraInsumo ?? 0),
+                            Familia = fam,
+                            Codigo = cod,
+                            DescripcionQBD = desc,
+                            Registro = reg,
+                            Cantidad = pNeto,
+                            CantidadRecibida = p.PesoNetoRecibida ?? pNeto,
+                            Observacion = item.Observacion,
+                            Um = !string.IsNullOrEmpty(p.Um) ? p.Um.ToUpper() : (!string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (isPI ? (pi?.Um ?? "G") : (item.CompraInsumos?.Um?.ToUpper() ?? "G"))),
+                            Tara = pTara,
+                            PesoNeto = pNeto,
+                            PesoBruto = pBruto,
+                            Lote = lote,
+                            FFabric = fFabric,
+                            FVcto = fVcto,
+                            Paquetes = new List<NotaSalidaDetallePaqueteRes>
+                            {
+                                new NotaSalidaDetallePaqueteRes
+                                {
+                                    IdPaquete = (int)p.Id,
+                                    CantidadPaquete = p.CantidadPaquete,
+                                    Peso = p.Peso,
+                                    Tara = p.Tara,
+                                    Um = p.Um,
+                                    PesoNeto = p.PesoNeto,
+                                    PesoBruto = p.PesoBruto,
+                                    CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                                    PesoRecibida = p.PesoRecibida,
+                                    TaraRecibida = p.TaraRecibida,
+                                    PesoNetoRecibida = p.PesoNetoRecibida,
+                                    PesoBrutoRecibida = p.PesoBrutoRecibida,
+                                    IdVerificador = p.IdVerificador
+                                }
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    var tara = paquetes.Sum(p => p.Tara ?? 0m);
+                    var pesoNeto = paquetes.Any(p => (p.PesoNeto ?? 0m) > 0) ? paquetes.Sum(p => p.PesoNeto ?? 0m) : item.Cantidad;
+                    var pesoBruto = paquetes.Any(p => (p.PesoBruto ?? 0m) > 0) ? paquetes.Sum(p => p.PesoBruto ?? 0m) : (pesoNeto + tara);
+
+                    resultado.Add(new NotaSalidaDetalleRes
+                    {
+                        IdNotaSalidaArticulo = item.Id,
+                        IdCompraArticulo = isPI ? (pi?.Id ?? 0) : (item.IdCompraInsumo ?? 0),
+                        Familia = fam,
+                        Codigo = cod,
+                        DescripcionQBD = desc,
+                        Registro = reg,
+                        Cantidad = item.Cantidad,
+                        CantidadRecibida = item.CantidadRecibida,
+                        Observacion = item.Observacion,
+                        Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : (isPI ? (pi?.Um ?? "G") : (item.CompraInsumos?.Um?.ToUpper() ?? "G")),
+                        Tara = tara,
+                        PesoNeto = pesoNeto,
+                        PesoBruto = pesoBruto,
+                        Lote = lote,
+                        FFabric = fFabric,
+                        FVcto = fVcto,
+                        Paquetes = paquetes.Select(p => new NotaSalidaDetallePaqueteRes
+                        {
+                            IdPaquete = (int)p.Id,
+                            CantidadPaquete = p.CantidadPaquete,
+                            Peso = p.Peso,
+                            Tara = p.Tara,
+                            Um = p.Um,
+                            PesoNeto = p.PesoNeto,
+                            PesoBruto = p.PesoBruto,
+                            CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                            PesoRecibida = p.PesoRecibida,
+                            TaraRecibida = p.TaraRecibida,
+                            PesoNetoRecibida = p.PesoNetoRecibida,
+                            PesoBrutoRecibida = p.PesoBrutoRecibida,
+                            IdVerificador = p.IdVerificador
+                        }).ToList()
+                    });
+                }
             }
 
             // 2. Empaques (ME)
@@ -704,41 +787,95 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in empaques)
             {
                 var idEmpaque = item.CompraEmpaques?.IdEmpaque ?? 0;
-                resultado.Add(new NotaSalidaDetalleRes
+                var paquetes = item.PaqueteNotaSalidaEmpaques?.ToList() ?? new List<PaqueteNotaSalidaEmpaque>();
+
+                if (paquetes.Count > 1)
                 {
-                    IdNotaSalidaArticulo = item.Id,
-                    IdCompraArticulo = item.IdCompraEmpaque ?? 0,
-                    Familia = "ME",
-                    Codigo = idEmpaque > 0 ? UtilFamilia.CodigoEmpaque(idEmpaque) : "",
-                    DescripcionQBD = item.CompraEmpaques?.Empaque?.Descripcion ?? "",
-                    Registro = item.IdCompraEmpaque.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEmpaque.Value) : "",
-                    Cantidad = item.Cantidad,
-                    CantidadRecibida = item.CantidadRecibida,
-                    Observacion = item.Observacion,
-                    Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
-                    Tara = 0,
-                    PesoNeto = 0,
-                    PesoBruto = 0,
-                    Lote = item.CompraEmpaques?.Lote ?? item.Lote ?? "",
-                    FFabric = item.CompraEmpaques?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                    FVcto = item.CompraEmpaques?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
-                    Paquetes = item.PaqueteNotaSalidaEmpaques?.Select(p => new NotaSalidaDetallePaqueteRes
+                    foreach (var p in paquetes)
                     {
-                        IdPaquete = (int)p.Id,
-                        CantidadPaquete = p.CantidadPaquete,
-                        Peso = p.Peso,
-                        Tara = p.Tara,
-                        Um = p.Um,
-                        PesoNeto = p.PesoNeto,
-                        PesoBruto = p.PesoBruto,
-                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
-                        PesoRecibida = p.PesoRecibida,
-                        TaraRecibida = p.TaraRecibida,
-                        PesoNetoRecibida = p.PesoNetoRecibida,
-                        PesoBrutoRecibida = p.PesoBrutoRecibida,
-                        IdVerificador = p.IdVerificador
-                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
-                });
+                        var pTara = p.Tara ?? 0m;
+                        var pNeto = (p.PesoNeto ?? 0m) > 0 ? (p.PesoNeto ?? 0m) : ((p.Peso ?? 0m) * p.CantidadPaquete);
+                        if (pNeto <= 0) pNeto = p.CantidadPaquete;
+                        var pBruto = (p.PesoBruto ?? 0m) > 0 ? (p.PesoBruto ?? 0m) : (pNeto + pTara);
+
+                        resultado.Add(new NotaSalidaDetalleRes
+                        {
+                            IdNotaSalidaArticulo = item.Id,
+                            IdCompraArticulo = item.IdCompraEmpaque ?? 0,
+                            Familia = "ME",
+                            Codigo = idEmpaque > 0 ? UtilFamilia.CodigoEmpaque(idEmpaque) : "",
+                            DescripcionQBD = item.CompraEmpaques?.Empaque?.Descripcion ?? "",
+                            Registro = item.IdCompraEmpaque.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEmpaque.Value) : "",
+                            Cantidad = pNeto,
+                            CantidadRecibida = p.PesoNetoRecibida ?? pNeto,
+                            Observacion = item.Observacion,
+                            Um = !string.IsNullOrEmpty(p.Um) ? p.Um.ToUpper() : (!string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND"),
+                            Tara = pTara,
+                            PesoNeto = pNeto,
+                            PesoBruto = pBruto,
+                            Lote = item.CompraEmpaques?.Lote ?? item.Lote ?? "",
+                            FFabric = item.CompraEmpaques?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                            FVcto = item.CompraEmpaques?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                            Paquetes = new List<NotaSalidaDetallePaqueteRes>
+                            {
+                                new NotaSalidaDetallePaqueteRes
+                                {
+                                    IdPaquete = (int)p.Id,
+                                    CantidadPaquete = p.CantidadPaquete,
+                                    Peso = p.Peso,
+                                    Tara = p.Tara,
+                                    Um = p.Um,
+                                    PesoNeto = p.PesoNeto,
+                                    PesoBruto = p.PesoBruto,
+                                    CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                                    PesoRecibida = p.PesoRecibida,
+                                    TaraRecibida = p.TaraRecibida,
+                                    PesoNetoRecibida = p.PesoNetoRecibida,
+                                    PesoBrutoRecibida = p.PesoBrutoRecibida,
+                                    IdVerificador = p.IdVerificador
+                                }
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    resultado.Add(new NotaSalidaDetalleRes
+                    {
+                        IdNotaSalidaArticulo = item.Id,
+                        IdCompraArticulo = item.IdCompraEmpaque ?? 0,
+                        Familia = "ME",
+                        Codigo = idEmpaque > 0 ? UtilFamilia.CodigoEmpaque(idEmpaque) : "",
+                        DescripcionQBD = item.CompraEmpaques?.Empaque?.Descripcion ?? "",
+                        Registro = item.IdCompraEmpaque.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEmpaque.Value) : "",
+                        Cantidad = item.Cantidad,
+                        CantidadRecibida = item.CantidadRecibida,
+                        Observacion = item.Observacion,
+                        Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
+                        Tara = 0,
+                        PesoNeto = 0,
+                        PesoBruto = 0,
+                        Lote = item.CompraEmpaques?.Lote ?? item.Lote ?? "",
+                        FFabric = item.CompraEmpaques?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                        FVcto = item.CompraEmpaques?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                        Paquetes = paquetes.Select(p => new NotaSalidaDetallePaqueteRes
+                        {
+                            IdPaquete = (int)p.Id,
+                            CantidadPaquete = p.CantidadPaquete,
+                            Peso = p.Peso,
+                            Tara = p.Tara,
+                            Um = p.Um,
+                            PesoNeto = p.PesoNeto,
+                            PesoBruto = p.PesoBruto,
+                            CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                            PesoRecibida = p.PesoRecibida,
+                            TaraRecibida = p.TaraRecibida,
+                            PesoNetoRecibida = p.PesoNetoRecibida,
+                            PesoBrutoRecibida = p.PesoBrutoRecibida,
+                            IdVerificador = p.IdVerificador
+                        }).ToList()
+                    });
+                }
             }
 
             // 3. Economatos (ECO)
@@ -753,37 +890,87 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in economatos)
             {
                 var idEco = item.CompraEconomato?.IdEconomato ?? 0;
-                resultado.Add(new NotaSalidaDetalleRes
+                var paquetes = item.PaqueteNotaSalidaEconomatos?.ToList() ?? new List<PaqueteNotaSalidaEconomato>();
+
+                if (paquetes.Count > 1)
                 {
-                    Familia = "ECO",
-                    Codigo = idEco > 0 ? UtilFamilia.CodigoEconomato(idEco) : "",
-                    DescripcionQBD = item.CompraEconomato?.Economato?.Descripcion ?? "",
-                    Registro = item.IdCompraEconomato.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEconomato.Value) : "",
-                    Cantidad = item.Cantidad,
-                    Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
-                    Tara = 0,
-                    PesoNeto = 0,
-                    PesoBruto = 0,
-                    Lote = item.Lote ?? "",
-                    FFabric = "",
-                    FVcto = "",
-                    Paquetes = item.PaqueteNotaSalidaEconomatos?.Select(p => new NotaSalidaDetallePaqueteRes
+                    foreach (var p in paquetes)
                     {
-                        IdPaquete = (int)p.Id,
-                        CantidadPaquete = p.CantidadPaquete,
-                        Peso = p.Peso,
-                        Tara = p.Tara,
-                        Um = p.Um,
-                        PesoNeto = p.PesoNeto,
-                        PesoBruto = p.PesoBruto,
-                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
-                        PesoRecibida = p.PesoRecibida,
-                        TaraRecibida = p.TaraRecibida,
-                        PesoNetoRecibida = p.PesoNetoRecibida,
-                        PesoBrutoRecibida = p.PesoBrutoRecibida,
-                        IdVerificador = p.IdVerificador
-                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
-                });
+                        var pTara = p.Tara ?? 0m;
+                        var pNeto = (p.PesoNeto ?? 0m) > 0 ? (p.PesoNeto ?? 0m) : ((p.Peso ?? 0m) * p.CantidadPaquete);
+                        if (pNeto <= 0) pNeto = p.CantidadPaquete;
+                        var pBruto = (p.PesoBruto ?? 0m) > 0 ? (p.PesoBruto ?? 0m) : (pNeto + pTara);
+
+                        resultado.Add(new NotaSalidaDetalleRes
+                        {
+                            Familia = "ECO",
+                            Codigo = idEco > 0 ? UtilFamilia.CodigoEconomato(idEco) : "",
+                            DescripcionQBD = item.CompraEconomato?.Economato?.Descripcion ?? "",
+                            Registro = item.IdCompraEconomato.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEconomato.Value) : "",
+                            Cantidad = pNeto,
+                            Um = !string.IsNullOrEmpty(p.Um) ? p.Um.ToUpper() : (!string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND"),
+                            Tara = pTara,
+                            PesoNeto = pNeto,
+                            PesoBruto = pBruto,
+                            Lote = item.Lote ?? "",
+                            FFabric = "",
+                            FVcto = "",
+                            Paquetes = new List<NotaSalidaDetallePaqueteRes>
+                            {
+                                new NotaSalidaDetallePaqueteRes
+                                {
+                                    IdPaquete = (int)p.Id,
+                                    CantidadPaquete = p.CantidadPaquete,
+                                    Peso = p.Peso,
+                                    Tara = p.Tara,
+                                    Um = p.Um,
+                                    PesoNeto = p.PesoNeto,
+                                    PesoBruto = p.PesoBruto,
+                                    CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                                    PesoRecibida = p.PesoRecibida,
+                                    TaraRecibida = p.TaraRecibida,
+                                    PesoNetoRecibida = p.PesoNetoRecibida,
+                                    PesoBrutoRecibida = p.PesoBrutoRecibida,
+                                    IdVerificador = p.IdVerificador
+                                }
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    resultado.Add(new NotaSalidaDetalleRes
+                    {
+                        Familia = "ECO",
+                        Codigo = idEco > 0 ? UtilFamilia.CodigoEconomato(idEco) : "",
+                        DescripcionQBD = item.CompraEconomato?.Economato?.Descripcion ?? "",
+                        Registro = item.IdCompraEconomato.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraEconomato.Value) : "",
+                        Cantidad = item.Cantidad,
+                        Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
+                        Tara = 0,
+                        PesoNeto = 0,
+                        PesoBruto = 0,
+                        Lote = item.Lote ?? "",
+                        FFabric = "",
+                        FVcto = "",
+                        Paquetes = paquetes.Select(p => new NotaSalidaDetallePaqueteRes
+                        {
+                            IdPaquete = (int)p.Id,
+                            CantidadPaquete = p.CantidadPaquete,
+                            Peso = p.Peso,
+                            Tara = p.Tara,
+                            Um = p.Um,
+                            PesoNeto = p.PesoNeto,
+                            PesoBruto = p.PesoBruto,
+                            CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                            PesoRecibida = p.PesoRecibida,
+                            TaraRecibida = p.TaraRecibida,
+                            PesoNetoRecibida = p.PesoNetoRecibida,
+                            PesoBrutoRecibida = p.PesoBrutoRecibida,
+                            IdVerificador = p.IdVerificador
+                        }).ToList()
+                    });
+                }
             }
 
             // 4. Productos Terminados (PT)
@@ -798,37 +985,87 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             foreach (var item in productos)
             {
                 var idPt = item.CompraProducto?.IdProducto ?? 0;
-                resultado.Add(new NotaSalidaDetalleRes
+                var paquetes = item.PaqueteNotaSalidaProductos?.ToList() ?? new List<PaqueteNotaSalidaProducto>();
+
+                if (paquetes.Count > 1)
                 {
-                    Familia = "PT",
-                    Codigo = idPt > 0 ? UtilFamilia.CodigoProducto(idPt) : "",
-                    DescripcionQBD = item.CompraProducto?.Producto?.Descripcion ?? "",
-                    Registro = item.IdCompraProducto.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraProducto.Value) : "",
-                    Cantidad = item.Cantidad,
-                    Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
-                    Tara = 0,
-                    PesoNeto = 0,
-                    PesoBruto = 0,
-                    Lote = item.CompraProducto?.Lote ?? item.Lote ?? "",
-                    FFabric = item.CompraProducto?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
-                    FVcto = item.CompraProducto?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
-                    Paquetes = item.PaqueteNotaSalidaProductos?.Select(p => new NotaSalidaDetallePaqueteRes
+                    foreach (var p in paquetes)
                     {
-                        IdPaquete = (int)p.Id,
-                        CantidadPaquete = p.CantidadPaquete,
-                        Peso = p.Peso,
-                        Tara = p.Tara,
-                        Um = p.Um,
-                        PesoNeto = p.PesoNeto,
-                        PesoBruto = p.PesoBruto,
-                        CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
-                        PesoRecibida = p.PesoRecibida,
-                        TaraRecibida = p.TaraRecibida,
-                        PesoNetoRecibida = p.PesoNetoRecibida,
-                        PesoBrutoRecibida = p.PesoBrutoRecibida,
-                        IdVerificador = p.IdVerificador
-                    }).ToList() ?? new List<NotaSalidaDetallePaqueteRes>()
-                });
+                        var pTara = p.Tara ?? 0m;
+                        var pNeto = (p.PesoNeto ?? 0m) > 0 ? (p.PesoNeto ?? 0m) : ((p.Peso ?? 0m) * p.CantidadPaquete);
+                        if (pNeto <= 0) pNeto = p.CantidadPaquete;
+                        var pBruto = (p.PesoBruto ?? 0m) > 0 ? (p.PesoBruto ?? 0m) : (pNeto + pTara);
+
+                        resultado.Add(new NotaSalidaDetalleRes
+                        {
+                            Familia = "PT",
+                            Codigo = idPt > 0 ? UtilFamilia.CodigoProducto(idPt) : "",
+                            DescripcionQBD = item.CompraProducto?.Producto?.Descripcion ?? "",
+                            Registro = item.IdCompraProducto.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraProducto.Value) : "",
+                            Cantidad = pNeto,
+                            Um = !string.IsNullOrEmpty(p.Um) ? p.Um.ToUpper() : (!string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND"),
+                            Tara = pTara,
+                            PesoNeto = pNeto,
+                            PesoBruto = pBruto,
+                            Lote = item.CompraProducto?.Lote ?? item.Lote ?? "",
+                            FFabric = item.CompraProducto?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                            FVcto = item.CompraProducto?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                            Paquetes = new List<NotaSalidaDetallePaqueteRes>
+                            {
+                                new NotaSalidaDetallePaqueteRes
+                                {
+                                    IdPaquete = (int)p.Id,
+                                    CantidadPaquete = p.CantidadPaquete,
+                                    Peso = p.Peso,
+                                    Tara = p.Tara,
+                                    Um = p.Um,
+                                    PesoNeto = p.PesoNeto,
+                                    PesoBruto = p.PesoBruto,
+                                    CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                                    PesoRecibida = p.PesoRecibida,
+                                    TaraRecibida = p.TaraRecibida,
+                                    PesoNetoRecibida = p.PesoNetoRecibida,
+                                    PesoBrutoRecibida = p.PesoBrutoRecibida,
+                                    IdVerificador = p.IdVerificador
+                                }
+                            }
+                        });
+                    }
+                }
+                else
+                {
+                    resultado.Add(new NotaSalidaDetalleRes
+                    {
+                        Familia = "PT",
+                        Codigo = idPt > 0 ? UtilFamilia.CodigoProducto(idPt) : "",
+                        DescripcionQBD = item.CompraProducto?.Producto?.Descripcion ?? "",
+                        Registro = item.IdCompraProducto.HasValue ? Alfanumerico.ConvertToBase36(item.IdCompraProducto.Value) : "",
+                        Cantidad = item.Cantidad,
+                        Um = !string.IsNullOrEmpty(item.Um) ? item.Um.ToUpper() : "UND",
+                        Tara = 0,
+                        PesoNeto = 0,
+                        PesoBruto = 0,
+                        Lote = item.CompraProducto?.Lote ?? item.Lote ?? "",
+                        FFabric = item.CompraProducto?.FechaFabricacion?.ToString("yyyy-MM-dd") ?? "",
+                        FVcto = item.CompraProducto?.FechaVencimiento?.ToString("yyyy-MM-dd") ?? "",
+                        Paquetes = paquetes.Select(p => new NotaSalidaDetallePaqueteRes
+                        {
+                            IdPaquete = (int)p.Id,
+                            CantidadPaquete = p.CantidadPaquete,
+                            Peso = p.Peso,
+                            Tara = p.Tara,
+                            Um = p.Um,
+                            PesoNeto = p.PesoNeto,
+                            PesoBruto = p.PesoBruto,
+                            CantidadPaqueteRecibida = p.CantidadPaqueteRecibida,
+                            PesoRecibida = p.PesoRecibida,
+                            TaraRecibida = p.TaraRecibida,
+                            PesoNetoRecibida = p.PesoNetoRecibida,
+                            PesoBrutoRecibida = p.PesoBrutoRecibida,
+                            IdVerificador = p.IdVerificador
+                        }).ToList()
+                    });
+                }
             }
 
             return resultado;
