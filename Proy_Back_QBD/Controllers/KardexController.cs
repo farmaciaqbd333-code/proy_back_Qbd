@@ -98,9 +98,9 @@ namespace proy_back_Qbd.Controllers
         }
 
         [HttpGet("bajas-insumo/{insumoId}")]
-        public async Task<IActionResult> ObtenerBajasInsumo(int insumoId, [FromQuery] int idSede)
+        public async Task<IActionResult> ObtenerBajasInsumo(int insumoId, [FromQuery] int idSede, [FromQuery] string? familia = null)
         {
-            var resultado = await _kardexService.ObtenerBajasInsumo(insumoId, idSede);
+            var resultado = await _kardexService.ObtenerBajasInsumo(insumoId, idSede, familia);
             return Ok(resultado);
         }
 
