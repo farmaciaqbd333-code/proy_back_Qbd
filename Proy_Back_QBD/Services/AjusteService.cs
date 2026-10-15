@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Ajuste;
@@ -381,14 +381,42 @@ namespace Proy_back_QBD.Service.AjusteService
                 .Select(g => new { IdInsumo = g.Key, Total = g.Sum(ipi => (ipi.Practica.HasValue && ipi.Practica.Value > 0) ? ipi.Practica.Value : ipi.CantidadLote) })
                 .ToDictionaryAsync(x => x.IdInsumo, x => x.Total);
 
+            // Consumos directos por lote desde StockInsumoProductoIntermedio
+            var consumosPIDirectos = await _context.StockInsumoProductoIntermedios
+                .Include(x => x.InsumoProductoIntermedio)
+                    .ThenInclude(ipi => ipi.ProductoIntermedio)
+                .Include(x => x.StockInsumo)
+                .Where(x => x.InsumoProductoIntermedio != null &&
+                            x.InsumoProductoIntermedio.ProductoIntermedio != null &&
+                            x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede &&
+                            x.StockInsumo != null &&
+                            x.StockInsumo.IdCompraInsumo.HasValue &&
+                            compraIds.Contains(x.StockInsumo.IdCompraInsumo.Value))
+                .GroupBy(x => x.StockInsumo!.IdCompraInsumo!.Value)
+                .Select(g => new { IdCompra = g.Key, Total = g.Sum(x => x.Cantidad) })
+                .ToDictionaryAsync(x => x.IdCompra, x => x.Total);
+
+            var totalPIDirectoPorInsumo = await _context.StockInsumoProductoIntermedios
+                .Include(x => x.InsumoProductoIntermedio)
+                    .ThenInclude(ipi => ipi.ProductoIntermedio)
+                .Where(x => x.InsumoProductoIntermedio != null &&
+                            x.InsumoProductoIntermedio.ProductoIntermedio != null &&
+                            x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede)
+                .GroupBy(x => x.InsumoProductoIntermedio!.IdInsumo)
+                .Select(g => new { IdInsumo = g.Key, Total = g.Sum(x => x.Cantidad) })
+                .ToDictionaryAsync(x => x.IdInsumo, x => x.Total);
+
             var insumoGrupos = compras.GroupBy(c => c.IdInsumo);
             var resultado = new List<TablaAjustesRes>();
 
             foreach (var grupo in insumoGrupos)
             {
                 int idInsumo = grupo.Key;
-                decimal salidasPendientes = (salidasFM.ContainsKey(idInsumo) ? salidasFM[idInsumo] : 0m) +
-                                            (salidasPI.ContainsKey(idInsumo) ? salidasPI[idInsumo] : 0m);
+                decimal piDirecto = totalPIDirectoPorInsumo.ContainsKey(idInsumo) ? totalPIDirectoPorInsumo[idInsumo] : 0m;
+                decimal totalPI = salidasPI.ContainsKey(idInsumo) ? salidasPI[idInsumo] : 0m;
+                decimal salidasPIPendientes = Math.Max(0m, totalPI - piDirecto);
+
+                decimal salidasPendientes = (salidasFM.ContainsKey(idInsumo) ? salidasFM[idInsumo] : 0m) + salidasPIPendientes;
 
                 foreach (var compraInsumo in grupo)
                 {
@@ -414,6 +442,9 @@ namespace Proy_back_QBD.Service.AjusteService
 
                     decimal salidasNS = notasSalidaOrigen
                         .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
+
+                    decimal salidasPIDirectas = consumosPIDirectos.ContainsKey(compraInsumo.Id) ? consumosPIDirectos[compraInsumo.Id] : 0m;
+                    decimal salidasLote = salidasNS + salidasPIDirectas;
 
                     var stockInsumosSede = compraInsumo.StockInsumos
                         .Where(si => si.IdSede == idSede)
@@ -448,7 +479,7 @@ namespace Proy_back_QBD.Service.AjusteService
                             bajas = stockInsumosSede.Sum(si => si.StockDisponible);
                         }
 
-                        decimal saldoBruto = entradas - salidasNS - bajas;
+                        decimal saldoBruto = entradas - salidasLote - bajas;
                         if (saldoBruto < 0) saldoBruto = 0;
                         decimal descuentoLocal = 0m;
                         if (salidasPendientes > 0 && saldoBruto > 0)
