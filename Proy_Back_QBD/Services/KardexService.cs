@@ -1721,13 +1721,188 @@ namespace proy_back_Qbd.Services
             return resultado.OrderByDescending(x => x.Fecha).ToList();
         }
 
-        public async Task<List<BajaInsumoRes>> ObtenerBajasInsumo(int idInsumo, int idSede)
+        public async Task<List<BajaInsumoRes>> ObtenerBajasInsumo(int idInsumo, int idSede, string? familia = null)
         {
             var resultado = new List<BajaInsumoRes>();
             try
             {
                 var ahora = DateTime.UtcNow;
+                var fam = (familia ?? "").ToUpper().Trim();
 
+                if (fam == "ME")
+                {
+                    var empaquesVencidos = await _context.CompraEmpaques
+                        .Include(ce => ce.Empaque)
+                        .Include(ce => ce.Compra)
+                            .ThenInclude(c => c!.Proveedor)
+                        .Include(ce => ce.Compra)
+                            .ThenInclude(c => c!.Sede)
+                        .Include(ce => ce.StockEmpaques)
+                        .Where(ce =>
+                            ce.IdEmpaque == idInsumo &&
+                            ce.FechaVencimiento < ahora &&
+                            ce.StockEmpaques != null &&
+                            ce.StockEmpaques.Any(se => se.IdSede == idSede && se.StockDisponible > 0))
+                        .OrderBy(ce => ce.FechaVencimiento)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    foreach (var ce in empaquesVencidos)
+                    {
+                        var stockSede = ce.StockEmpaques?
+                            .Where(se => se.IdSede == idSede)
+                            .Sum(se => se.StockDisponible) ?? 0m;
+
+                        if (stockSede <= 0) continue;
+
+                        int diasVencido = 0;
+                        if (ce.FechaVencimiento.HasValue)
+                        {
+                            diasVencido = Math.Max(0, (int)(ahora.Date - ce.FechaVencimiento.Value.Date).TotalDays);
+                        }
+
+                        string reg = "ME" + Alfanumerico.ConvertToBase36(ce.Id);
+
+                        resultado.Add(new BajaInsumoRes
+                        {
+                            IdCompraInsumo = ce.Id,
+                            Registro = reg,
+                            IdInsumo = ce.IdEmpaque,
+                            Codigo = ce.IdEmpaque.ToString(),
+                            Descripcion = ce.Empaque?.Descripcion ?? "",
+                            Lote = ce.Lote ?? "-",
+                            CantidadBaja = stockSede,
+                            Um = ce.Um ?? "UND",
+                            FechaFabricacion = ce.FechaFabricacion,
+                            FechaVencimiento = ce.FechaVencimiento,
+                            DiasVencido = diasVencido,
+                            Estado = "VENCIDO",
+                            Proveedor = ce.Compra?.Proveedor?.Datos ?? "",
+                            SedeOrigen = ce.Compra?.Sede?.Nombre ?? "",
+                            DocumentoOrigen = ce.Compra?.NumeroComprobante ?? ce.Compra?.CodFacQBD ?? (ce.Compra != null && ce.Compra.Id != 0 ? $"OC-{ce.Compra.Id}" : ""),
+                            Observacion = ce.Observacion
+                        });
+                    }
+
+                    return resultado;
+                }
+
+                if (fam == "PT")
+                {
+                    var productosVencidos = await _context.CompraProductos
+                        .Include(cp => cp.Producto)
+                        .Include(cp => cp.Compra)
+                            .ThenInclude(c => c!.Proveedor)
+                        .Include(cp => cp.Compra)
+                            .ThenInclude(c => c!.Sede)
+                        .Include(cp => cp.StockProductoTerminados)
+                        .Where(cp =>
+                            cp.IdProducto == idInsumo &&
+                            cp.FechaVencimiento < ahora &&
+                            cp.StockProductoTerminados.Any(sp => sp.IdSede == idSede && sp.StockDisponible > 0))
+                        .OrderBy(cp => cp.FechaVencimiento)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    foreach (var cp in productosVencidos)
+                    {
+                        var stockSede = cp.StockProductoTerminados
+                            .Where(sp => sp.IdSede == idSede)
+                            .Sum(sp => sp.StockDisponible);
+
+                        if (stockSede <= 0) continue;
+
+                        int diasVencido = 0;
+                        if (cp.FechaVencimiento.HasValue)
+                        {
+                            diasVencido = Math.Max(0, (int)(ahora.Date - cp.FechaVencimiento.Value.Date).TotalDays);
+                        }
+
+                        string reg = "PT" + Alfanumerico.ConvertToBase36(cp.Id);
+
+                        resultado.Add(new BajaInsumoRes
+                        {
+                            IdCompraInsumo = cp.Id,
+                            Registro = reg,
+                            IdInsumo = cp.IdProducto,
+                            Codigo = cp.IdProducto.ToString(),
+                            Descripcion = cp.Producto?.Descripcion ?? "",
+                            Lote = cp.Lote ?? "-",
+                            CantidadBaja = stockSede,
+                            Um = cp.Um ?? "UND",
+                            FechaFabricacion = cp.FechaFabricacion,
+                            FechaVencimiento = cp.FechaVencimiento,
+                            DiasVencido = diasVencido,
+                            Estado = "VENCIDO",
+                            Proveedor = cp.Compra?.Proveedor?.Datos ?? "",
+                            SedeOrigen = cp.Compra?.Sede?.Nombre ?? "",
+                            DocumentoOrigen = cp.Compra?.NumeroComprobante ?? (cp.Compra != null && cp.Compra.Id != 0 ? $"OC-{cp.Compra.Id}" : ""),
+                            Observacion = cp.Observacion
+                        });
+                    }
+
+                    return resultado;
+                }
+
+                if (fam == "PI")
+                {
+                    var pisVencidos = await _context.ProductosIntermedios
+                        .Include(pi => pi.Insumo)
+                        .Include(pi => pi.StockInsumo)
+                        .Include(pi => pi.Sede)
+                        .Where(pi =>
+                            (pi.IdInsumo == idInsumo || pi.Id == idInsumo) &&
+                            pi.IdSede == idSede &&
+                            pi.FechaVencimiento < ahora &&
+                            pi.StockInsumo != null &&
+                            pi.StockInsumo.StockDisponible > 0)
+                        .OrderBy(pi => pi.FechaVencimiento)
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    foreach (var pi in pisVencidos)
+                    {
+                        var stockSede = pi.StockInsumo?.StockDisponible ?? 0m;
+                        if (stockSede <= 0) continue;
+
+                        int diasVencido = 0;
+                        if (pi.FechaVencimiento.HasValue)
+                        {
+                            diasVencido = Math.Max(0, (int)(ahora.Date - pi.FechaVencimiento.Value.Date).TotalDays);
+                        }
+
+                        string reg = "PI" + Alfanumerico.ConvertToBase36(pi.Id);
+
+                        resultado.Add(new BajaInsumoRes
+                        {
+                            IdCompraInsumo = pi.Id,
+                            Registro = reg,
+                            IdInsumo = pi.IdInsumo,
+                            Codigo = $"PI-QbD-{pi.IdInsumo}",
+                            Descripcion = pi.Insumo?.Descripcion ?? "",
+                            Lote = pi.Lote ?? "-",
+                            CantidadBaja = stockSede,
+                            Um = pi.Um ?? "G",
+                            FechaFabricacion = pi.FechaEmision ?? pi.FechaCreacion,
+                            FechaVencimiento = pi.FechaVencimiento,
+                            DiasVencido = diasVencido,
+                            Estado = "VENCIDO",
+                            Proveedor = "PRODUCCIÓN INTERNA",
+                            SedeOrigen = pi.Sede?.Nombre ?? "",
+                            DocumentoOrigen = $"PI-{pi.Id}",
+                            Observacion = pi.Procedimiento
+                        });
+                    }
+
+                    return resultado;
+                }
+
+                if (fam == "ECO")
+                {
+                    return resultado;
+                }
+
+                // Default: MP (Materia Prima)
                 var comprasVencidas = await _context.CompraInsumos
                     .Include(ci => ci.Insumo)
                     .Include(ci => ci.Compra)
@@ -1738,7 +1913,7 @@ namespace proy_back_Qbd.Services
                     .Where(ci =>
                         ci.IdInsumo == idInsumo &&
                         ci.FechaVencimiento < ahora &&
-                        ci.StockInsumos.Any(si => si.IdSede == idSede))
+                        ci.StockInsumos.Any(si => si.IdSede == idSede && si.StockDisponible > 0))
                     .OrderBy(ci => ci.FechaVencimiento)
                     .AsNoTracking()
                     .ToListAsync();
@@ -1748,6 +1923,8 @@ namespace proy_back_Qbd.Services
                     var stockSede = ci.StockInsumos
                         .Where(si => si.IdSede == idSede)
                         .Sum(si => si.StockDisponible);
+
+                    if (stockSede <= 0) continue;
 
                     int diasVencido = 0;
                     if (ci.FechaVencimiento.HasValue)
@@ -1781,7 +1958,7 @@ namespace proy_back_Qbd.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener bajas de insumo {IdInsumo} en sede {IdSede}", idInsumo, idSede);
+                _logger.LogError(ex, "Error al obtener bajas de insumo {IdInsumo} en sede {IdSede} (Familia: {Familia})", idInsumo, idSede, familia);
             }
 
             return resultado;
