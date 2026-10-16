@@ -13,6 +13,7 @@ namespace proy_back_Qbd.Models
     public class PaqueteInsumoListRes
     {
         public int IdPaquete { get; set; }
+        public int IdCompraInsumo { get; set; }
         public string? CodigoCompraInsumo { get; set; }
         public decimal CantidadPaquete { get; set; }
         public decimal PesoUnitario { get; set; }
@@ -21,6 +22,7 @@ namespace proy_back_Qbd.Models
     public class PaqueteEmpaqueListRes
     {
         public int IdPaquete { get; set; }
+        public int IdCompraEmpaque { get; set; }
         public string? CodigoCompraEmpaque { get; set; }
         public decimal CantidadPaquete { get; set; }
         public decimal PesoUnitario { get; set; }

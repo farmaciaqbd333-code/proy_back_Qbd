@@ -231,6 +231,7 @@ namespace proy_back_Qbd.Services
             .Select(s => new PaqueteInsumoListRes
             {
                 IdPaquete = s.IdPaquete,
+                IdCompraInsumo = s.IdCompraInsumo,
                 CodigoCompraInsumo = s.CompraInsumo != null ? ("MP-QbD-" + s.CompraInsumo.IdInsumo.ToString("D4")) : "",
                 CantidadPaquete = s.Paquete != null ? s.Paquete.CantidadPaquete : 0,
                 PesoUnitario = s.Paquete != null ? s.Paquete.PesoUnitario : 0,
@@ -241,6 +242,7 @@ namespace proy_back_Qbd.Services
             .Select(s => new PaqueteEmpaqueListRes
             {
                 IdPaquete = s.IdPaquete,
+                IdCompraEmpaque = s.IdCompraEmpaque,
                 CodigoCompraEmpaque = "ME-QbD-" + (s.CompraEmpaques != null ? s.CompraEmpaques.IdEmpaque.ToString("D4") : ""),
                 CantidadPaquete = s.Paquete != null ? s.Paquete.CantidadPaquete : 0,
                 PesoUnitario = s.Paquete != null ? s.Paquete.PesoUnitario : 0,
