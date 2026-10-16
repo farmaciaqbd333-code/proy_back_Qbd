@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -64,10 +64,17 @@ namespace proy_back_Qbd.Services
 
                         item.CantidadRecibida = cantidadRecibida;
                         x = 1;
+                        bool esKg = item.Um != null && (
+                            string.Equals(item.Um.Trim(), "KG", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(item.Um.Trim(), "KILOGRAMO", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(item.Um.Trim(), "KILOGRAMOS", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(item.Um.Trim(), "KGS", StringComparison.OrdinalIgnoreCase)
+                        );
+                        decimal stockEnGramos = esKg ? cantidadRecibida * 1000m : cantidadRecibida;
                         StockInsumo? stockInsumo = await _context.StockInsumos.FirstOrDefaultAsync(f => f.IdCompraInsumo == item.Id);
                         if (stockInsumo != null)
                         {
-                            stockInsumo.StockDisponible = cantidadRecibida;
+                            stockInsumo.StockDisponible = stockEnGramos;
                             if (compra != null && (stockInsumo.IdSede == null || stockInsumo.IdSede == 0))
                             {
                                 stockInsumo.IdSede = compra.IdSede;
@@ -80,7 +87,7 @@ namespace proy_back_Qbd.Services
                                 IdCompraInsumo = item.Id,
                                 IdSede = compra != null ? compra.IdSede : 15,
                                 Tipo = "MP",
-                                StockDisponible = cantidadRecibida,
+                                StockDisponible = stockEnGramos,
                                 UnidadMedida = "G"
                             };
                             await _context.StockInsumos.AddAsync(stockInsumo2);
