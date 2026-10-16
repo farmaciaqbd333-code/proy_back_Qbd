@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -131,5 +131,12 @@ namespace proy_back_Qbd.Controllers
             return Ok(resultado);
         }
 
+
+        [HttpPost("resolver-lotes-formula")]
+        public async Task<IActionResult> ResolverLotesFormula([FromBody] ResolverLotesFormulaReq request)
+        {
+            var resultado = await _kardexService.ResolverLotesFormula(request);
+            return Ok(resultado);
+        }
     }
 }

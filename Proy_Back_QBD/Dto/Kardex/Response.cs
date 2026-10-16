@@ -14,6 +14,8 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Salidas { get; set; }
         public decimal? Ajustes { get; set; }
         public decimal? Baja { get; set; }
+        public decimal? Stock { get; set; }
+        public decimal? Saldo { get; set; }
         public string? Tipo { get; set; }
         public string? CodigoUbicacion { get; set; }
         public decimal? Limite { get; set; }

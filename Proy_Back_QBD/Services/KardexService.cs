@@ -66,7 +66,7 @@ namespace proy_back_Qbd.Services
             var resultado = new List<DetalleInsumoRes>();
 
             _logger.LogInformation(
-                "INICIO cálculo de stock de insumos | IdSede: {IdSede} | CantidadCompraInsumos: {CantidadCompraInsumos}",
+                "INICIO c�lculo de stock de insumos | IdSede: {IdSede} | CantidadCompraInsumos: {CantidadCompraInsumos}",
                 idSede,
                 compraInsumos?.Count ?? 0
             );
@@ -107,7 +107,7 @@ namespace proy_back_Qbd.Services
             {
                 bool esKg = compraInsumo.Um == "KG" || compraInsumo.Um == "KILOGRAMOS" || compraInsumo.Um == "Kg" || compraInsumo.Um == "Kgs";
 
-                // 1. Entrada por compra (si esta sede fue quien compró a proveedor)
+                // 1. Entrada por compra (si esta sede fue quien compr� a proveedor)
                 bool esCompraEstaSede = compraInsumo.Compra != null &&
                     compraInsumo.Compra.IdSede == idSede &&
                     (idSede == 15 || compraInsumo.Compra.FechaLab != null);
@@ -342,7 +342,7 @@ namespace proy_back_Qbd.Services
                     .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeOrigen == idSede)
                     .Sum(nse => nse.Cantidad);
 
-                // Auto-corrección si Compra 159 en CENTRAL sufrió doble deducción por confirmación
+                // Auto-correcci�n si Compra 159 en CENTRAL sufri� doble deducci�n por confirmaci�n
                 if (s.Id == 159 && idSede == 15)
                 {
                     var stockPrincipal159 = stockSede.FirstOrDefault(w => w.IdNotaSalidaEmpaque == null);
@@ -353,7 +353,7 @@ namespace proy_back_Qbd.Services
                     }
                 }
 
-                // 1. ENTRADA POR ORDEN DE COMPRA (si esta sede fue quien compró a proveedor)
+                // 1. ENTRADA POR ORDEN DE COMPRA (si esta sede fue quien compr� a proveedor)
                 bool esCompraEstaSede = s.Compra != null && s.Compra.IdSede == idSede && (idSede == 15 || s.Compra.FechaLab != null);
                 decimal cantCompra = esCompraEstaSede ? (s.CantidadRecibida.HasValue && s.CantidadRecibida.Value > 0 ? s.CantidadRecibida.Value : s.CantidadSolicitada) : 0m;
 
@@ -576,6 +576,16 @@ namespace proy_back_Qbd.Services
                 _ => throw new BadRequestException("FAMILIA NO VALIDA")
 
             };
+            foreach (var item in responseMP)
+            {
+                if (item.Stock == null || item.Saldo == null)
+                {
+                    var calc = (item.Entradas ?? 0) - (item.Salidas ?? 0) + (item.Ajustes ?? 0) - (item.Baja ?? 0);
+                    item.Stock ??= calc;
+                    item.Saldo ??= calc;
+                }
+            }
+
 
             return responseMP;
         }
@@ -808,7 +818,7 @@ namespace proy_back_Qbd.Services
             // ============================================================
 
             _logger.LogInformation(
-                "Solicitud 5: Obteniendo salidas a Fórmulas Magistrales | IdSede: {IdSede}",
+                "Solicitud 5: Obteniendo salidas a F�rmulas Magistrales | IdSede: {IdSede}",
                 idSede
             );
 
@@ -834,7 +844,7 @@ namespace proy_back_Qbd.Services
             foreach (var item in salidasFormula)
             {
                 _logger.LogDebug(
-                    "Salida Fórmula Magistral | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
+                    "Salida F�rmula Magistral | IdInsumo: {IdInsumo} | Cantidad: {Cantidad}",
                     item.IdInsumo,
                     item.Total
                 );
@@ -1048,7 +1058,7 @@ namespace proy_back_Qbd.Services
                 var cantidadEnviar = siteSupply?.CantidadEnviar;
 
                 _logger.LogInformation(
-                    "Cálculo Insumo | IdSede: {IdSede} | IdInsumo: {IdInsumo} | Descripcion: {Descripcion} | " +
+                    "C�lculo Insumo | IdSede: {IdSede} | IdInsumo: {IdInsumo} | Descripcion: {Descripcion} | " +
                     "EntradaCompra: {EntradaCompra} | EntradaNS: {EntradaNS} | EntradasTotal: {Entradas} | " +
                     "SalidaPI: {SalidaPI} | SalidaFormula: {SalidaFormula} | SalidaNS: {SalidaNS} | SalidasTotal: {Salidas} | " +
                     "Ajuste: {Ajuste} | Baja: {Baja} | Saldo: {Saldo} | Ubicacion: {Ubicacion} | Limite: {Limite}",
@@ -1078,6 +1088,8 @@ namespace proy_back_Qbd.Services
                     Salidas = salidas,
                     Ajustes = ajuste,
                     Baja = baja,
+                    Stock = saldo,
+                    Saldo = saldo,
                     Tipo = insumo.Tipo,
                     CodigoUbicacion = ubicacion,
                     Limite = limite,
@@ -1282,7 +1294,7 @@ namespace proy_back_Qbd.Services
                     .OrderByDescending(x => x.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion)
                     .Select(s => new SalidaInsumoRes
                     {
-                        TipoSalida = "ELABORACIÓN PI",
+                        TipoSalida = "ELABORACI�N PI",
                         RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.InsumoProductoIntermedio.ProductoIntermedio.Id),
                         DescripcionDestino = s.InsumoProductoIntermedio.ProductoIntermedio.Insumo != null
                             ? s.InsumoProductoIntermedio.ProductoIntermedio.Insumo.Descripcion
@@ -1314,7 +1326,7 @@ namespace proy_back_Qbd.Services
                         .OrderBy(x => x.ProductoIntermedio.FechaCreacion)
                         .Select(s => new SalidaInsumoRes
                         {
-                            TipoSalida = "ELABORACIÓN PI",
+                            TipoSalida = "ELABORACI�N PI",
                             RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.ProductoIntermedio.Id),
                             DescripcionDestino = s.ProductoIntermedio.Insumo != null
                                 ? s.ProductoIntermedio.Insumo.Descripcion
@@ -1349,7 +1361,7 @@ namespace proy_back_Qbd.Services
                         TipoSalida = "NOTA DE SALIDA",
                         RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
+                            ? $"Env�o a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
                         LoteInsumo = s.CompraInsumos != null ? (s.CompraInsumos.Lote ?? "") : (s.Lote ?? ""),
                         RegistroLoteInsumo = s.CompraInsumos != null ? "MP" + Alfanumerico.ConvertToBase36(s.CompraInsumos.Id) : "",
@@ -1366,7 +1378,7 @@ namespace proy_back_Qbd.Services
                     resultado.AddRange(notasSalida);
                 }
 
-                // 3. Salidas por Fórmulas Magistrales
+                // 3. Salidas por F�rmulas Magistrales
                 var formulas = await _context.FormulasCC
                     .Include(x => x.Formula)
                         .ThenInclude(f => f.Creador)
@@ -1375,9 +1387,9 @@ namespace proy_back_Qbd.Services
                     .OrderBy(x => x.FechaCreacion)
                     .Select(s => new SalidaInsumoRes
                     {
-                        TipoSalida = "FÓRMULA MAGISTRAL",
+                        TipoSalida = "F�RMULA MAGISTRAL",
                         RegistroDestino = s.Formula != null ? ("FM-" + s.Formula.Id) : "FM",
-                        DescripcionDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("Fórmula #" + s.Formula.Id)) : "Fórmula",
+                        DescripcionDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("F�rmula #" + s.Formula.Id)) : "F�rmula",
                         LoteInsumo = s.Formula != null ? (s.Formula.Lote ?? "") : "",
                         RegistroLoteInsumo = "",
                         Cantidad = s.CantidadL,
@@ -1466,7 +1478,7 @@ namespace proy_back_Qbd.Services
                             .Sum(nse => (nse.CantidadRecibida > 0 ? nse.CantidadRecibida : nse.Cantidad))
                 }).Select(b => new { b.Registro, b.Lote, SaldoRestante = b.Capacidad }).ToList();
 
-                // 2. Salidas por Laboratorios (Fórmulas Magistrales)
+                // 2. Salidas por Laboratorios (F�rmulas Magistrales)
                 var laboratorios = await _context.Laboratorios
                     .Include(l => l.Formula)
                     .Include(l => l.ElaboradoU)
@@ -1474,10 +1486,10 @@ namespace proy_back_Qbd.Services
                     .OrderByDescending(l => l.FechaCreacion)
                     .Select(l => new SalidaInsumoRes
                     {
-                        TipoSalida = "FÓRMULA MAGISTRAL",
+                        TipoSalida = "F�RMULA MAGISTRAL",
                         RegistroDestino = l.Formula != null ? ("FM-" + l.Formula.Id) : ("LAB-" + (l.Id ?? 0)),
                         DescripcionDestino = l.Formula != null
-                            ? (l.Formula.FormulaMagistral ?? ("Fórmula #" + l.Formula.Id))
+                            ? (l.Formula.FormulaMagistral ?? ("F�rmula #" + l.Formula.Id))
                             : (!string.IsNullOrEmpty(l.Procedimiento) ? l.Procedimiento : "Laboratorio"),
                         LoteInsumo = l.Formula != null ? (l.Formula.Lote ?? "") : "",
                         RegistroLoteInsumo = "",
@@ -1510,7 +1522,7 @@ namespace proy_back_Qbd.Services
                     .OrderByDescending(x => x.EmpaqueProductoIntermedio.ProductoIntermedio.FechaCreacion)
                     .Select(s => new SalidaInsumoRes
                     {
-                        TipoSalida = "ELABORACIÓN PI",
+                        TipoSalida = "ELABORACI�N PI",
                         RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.EmpaqueProductoIntermedio.ProductoIntermedio.Id),
                         DescripcionDestino = s.EmpaqueProductoIntermedio.ProductoIntermedio.Insumo != null
                             ? s.EmpaqueProductoIntermedio.ProductoIntermedio.Insumo.Descripcion
@@ -1542,7 +1554,7 @@ namespace proy_back_Qbd.Services
                         .OrderByDescending(x => x.ProductoIntermedio.FechaCreacion)
                         .Select(s => new SalidaInsumoRes
                         {
-                            TipoSalida = "ELABORACIÓN PI",
+                            TipoSalida = "ELABORACI�N PI",
                             RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.ProductoIntermedio.Id),
                             DescripcionDestino = s.ProductoIntermedio.Insumo != null
                                 ? s.ProductoIntermedio.Insumo.Descripcion
@@ -1578,7 +1590,7 @@ namespace proy_back_Qbd.Services
                         TipoSalida = "NOTA DE SALIDA",
                         RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
+                            ? $"Env�o a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
                         LoteInsumo = s.CompraEmpaques != null ? (s.CompraEmpaques.Lote ?? "") : (s.Lote ?? ""),
                         RegistroLoteInsumo = s.CompraEmpaques != null ? "ME" + Alfanumerico.ConvertToBase36(s.CompraEmpaques.Id) : "",
@@ -1652,7 +1664,7 @@ namespace proy_back_Qbd.Services
                         TipoSalida = "NOTA DE SALIDA",
                         RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
+                            ? $"Env�o a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
                         LoteInsumo = s.CompraProducto != null ? (s.CompraProducto.Lote ?? "") : (s.Lote ?? ""),
                         RegistroLoteInsumo = s.CompraProducto != null ? "PT" + Alfanumerico.ConvertToBase36(s.CompraProducto.Id) : "",
@@ -1696,7 +1708,7 @@ namespace proy_back_Qbd.Services
                         TipoSalida = "NOTA DE SALIDA",
                         RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
+                            ? $"Env�o a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
                         LoteInsumo = s.Lote ?? "",
                         RegistroLoteInsumo = s.CompraEconomato != null ? "ECO" + Alfanumerico.ConvertToBase36(s.CompraEconomato.Id) : "",
@@ -1887,7 +1899,7 @@ namespace proy_back_Qbd.Services
                             FechaVencimiento = pi.FechaVencimiento,
                             DiasVencido = diasVencido,
                             Estado = "VENCIDO",
-                            Proveedor = "PRODUCCIÓN INTERNA",
+                            Proveedor = "PRODUCCI�N INTERNA",
                             SedeOrigen = pi.Sede?.Nombre ?? "",
                             DocumentoOrigen = $"PI-{pi.Id}",
                             Observacion = pi.Procedimiento
@@ -2166,5 +2178,154 @@ namespace proy_back_Qbd.Services
             }
         }
 
+
+        public async Task<List<LoteAsignadoRes>> ResolverLotesFormula(ResolverLotesFormulaReq request)
+        {
+            var resultado = new List<LoteAsignadoRes>();
+            if (request == null || request.Insumos == null || !request.Insumos.Any())
+            {
+                return resultado;
+            }
+
+            int idSede = request.IdSede;
+            var hoy = DateTime.UtcNow.Date;
+
+            // Cache de lotes por IdInsumo para evitar consultas duplicadas
+            var lotesPorInsumo = new Dictionary<int, (List<DetalleInsumoRes> lotes, string tipo)>();
+            // Rastreo de saldo consumido por lote/registro para esta f�rmula
+            var saldoConsumidoPorRegistro = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var item in request.Insumos)
+            {
+                var resItem = new LoteAsignadoRes
+                {
+                    Index = item.Index,
+                    IdInsumo = item.IdInsumo,
+                    Codigo = item.Codigo,
+                    Descripcion = item.Descripcion,
+                    Registro = "---",
+                    Lote = "---",
+                    StockDisponible = 0m,
+                    TipoInsumo = item.Tipo ?? "MP"
+                };
+
+                if (item.IdInsumo <= 0)
+                {
+                    resultado.Add(resItem);
+                    continue;
+                }
+
+                // 1. Obtener lotes si no est�n en cach�
+                if (!lotesPorInsumo.ContainsKey(item.IdInsumo))
+                {
+                    string tipoDetectado = item.Tipo ?? "MP";
+                    List<DetalleInsumoRes> listaLotes = new();
+
+                    try
+                    {
+                        if (tipoDetectado.StartsWith("PI", StringComparison.OrdinalIgnoreCase))
+                        {
+                            listaLotes = await ObtenerDetallePI(item.IdInsumo, idSede);
+                            if (listaLotes == null || !listaLotes.Any(l => (l.StockDisponible ?? l.Saldo ?? 0) > 0))
+                            {
+                                var fallbackMp = await ObtenerDetalleInsumo(item.IdInsumo, idSede);
+                                if (fallbackMp != null && fallbackMp.Any(l => (l.StockDisponible ?? l.Saldo ?? 0) > 0))
+                                {
+                                    listaLotes = fallbackMp;
+                                    tipoDetectado = "MP";
+                                }
+                            }
+                        }
+                        else
+                        {
+                            listaLotes = await ObtenerDetalleInsumo(item.IdInsumo, idSede);
+                            if (listaLotes == null || !listaLotes.Any(l => (l.StockDisponible ?? l.Saldo ?? 0) > 0))
+                            {
+                                var fallbackPi = await ObtenerDetallePI(item.IdInsumo, idSede);
+                                if (fallbackPi != null && fallbackPi.Any(l => (l.StockDisponible ?? l.Saldo ?? 0) > 0))
+                                {
+                                    listaLotes = fallbackPi;
+                                    tipoDetectado = "PI";
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error obteniendo detalle para insumo {IdInsumo}", item.IdInsumo);
+                    }
+
+                    lotesPorInsumo[item.IdInsumo] = (listaLotes ?? new List<DetalleInsumoRes>(), tipoDetectado);
+                }
+
+                var (rawLotes, tipoFinal) = lotesPorInsumo[item.IdInsumo];
+                resItem.TipoInsumo = tipoFinal;
+
+                // 2. Filtrar �nicamente lotes con stock > 0 y NO vencidos
+                var conStock = rawLotes.Where(d =>
+                {
+                    decimal stock = d.StockDisponible ?? d.Saldo ?? 0m;
+                    if (stock <= 0m) return false;
+                    if (d.FechaVencimiento.HasValue && d.FechaVencimiento.Value.UtcDateTime.Date < hoy) return false;
+                    return true;
+                }).ToList();
+
+                // 3. Ordenamiento FIFO puro
+                conStock.Sort((a, b) =>
+                {
+                    DateTime fcA = a.FechaCompra ?? (a.FechaFabricacion.HasValue ? a.FechaFabricacion.Value.UtcDateTime : DateTime.MaxValue);
+                    DateTime fcB = b.FechaCompra ?? (b.FechaFabricacion.HasValue ? b.FechaFabricacion.Value.UtcDateTime : DateTime.MaxValue);
+                    if (fcA != fcB) return fcA.CompareTo(fcB);
+
+                    DateTime fvA = a.FechaVencimiento.HasValue ? a.FechaVencimiento.Value.UtcDateTime : DateTime.MaxValue;
+                    DateTime fvB = b.FechaVencimiento.HasValue ? b.FechaVencimiento.Value.UtcDateTime : DateTime.MaxValue;
+                    if (fvA != fvB) return fvA.CompareTo(fvB);
+
+                    int idA = Alfanumerico.ConvertFromBase36(a.Registro?.Replace("MP", "").Replace("PI", "").Replace("ME", "").Replace("PT", "").Replace("ECO", "").Trim() ?? "");
+                    int idB = Alfanumerico.ConvertFromBase36(b.Registro?.Replace("MP", "").Replace("PI", "").Replace("ME", "").Replace("PT", "").Replace("ECO", "").Trim() ?? "");
+                    return idA.CompareTo(idB);
+                });
+
+                resItem.LotesDisponibles = conStock;
+
+                // 4. Buscar el primer lote que a�n tenga saldo disponible
+                DetalleInsumoRes loteAsignado = null;
+                decimal saldoRestanteLote = 0m;
+
+                foreach (var l in conStock)
+                {
+                    string regKey = (l.Registro ?? "").Trim();
+                    decimal totalLote = l.StockDisponible ?? l.Saldo ?? 0m;
+                    decimal yaConsumido = saldoConsumidoPorRegistro.ContainsKey(regKey) ? saldoConsumidoPorRegistro[regKey] : 0m;
+                    decimal disponible = totalLote - yaConsumido;
+
+                    if (disponible > 0m)
+                    {
+                        loteAsignado = l;
+                        saldoRestanteLote = disponible;
+                        break;
+                    }
+                }
+
+                if (loteAsignado != null)
+                {
+                    string regKey = (loteAsignado.Registro ?? "").Trim();
+                    resItem.Registro = regKey;
+                    resItem.Lote = loteAsignado.Lote ?? "";
+                    resItem.StockDisponible = saldoRestanteLote;
+
+                    decimal cantConsumir = item.CantidadRequerida > 0 ? item.CantidadRequerida : 0m;
+                    if (!saldoConsumidoPorRegistro.ContainsKey(regKey))
+                    {
+                        saldoConsumidoPorRegistro[regKey] = 0m;
+                    }
+                    saldoConsumidoPorRegistro[regKey] += cantConsumir;
+                }
+
+                resultado.Add(resItem);
+            }
+
+            return resultado;
+        }
     }
 }

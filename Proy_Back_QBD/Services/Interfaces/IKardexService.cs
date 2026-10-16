@@ -21,5 +21,6 @@ namespace proy_back_Qbd.Services.Interfaces
         public Task<List<BajaInsumoRes>> ObtenerBajasInsumo(int insumoId, int idSede, string? familia = null);
         public Task<object> AssignLocation(AssignLocationReq request);
         public Task<object> AssignLimite(AssignLimiteReq request);
+        public Task<List<LoteAsignadoRes>> ResolverLotesFormula(ResolverLotesFormulaReq request);
     }
 }
