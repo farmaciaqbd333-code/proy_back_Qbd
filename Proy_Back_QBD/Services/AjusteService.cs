@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Ajuste;
@@ -420,10 +420,38 @@ namespace Proy_back_QBD.Service.AjusteService
 
                 foreach (var compraInsumo in grupo)
                 {
+                    bool esKg = compraInsumo.Um != null && (
+                        string.Equals(compraInsumo.Um.Trim(), "KG", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(compraInsumo.Um.Trim(), "KILOGRAMO", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(compraInsumo.Um.Trim(), "KILOGRAMOS", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(compraInsumo.Um.Trim(), "KGS", StringComparison.OrdinalIgnoreCase)
+                    );
+
                     decimal entradasCompra = 0m;
                     if (compraInsumo.Compra != null && compraInsumo.Compra.IdSede == idSede && (idSede == 15 || compraInsumo.Compra.FechaLab != null))
                     {
-                        entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0) ? compraInsumo.CantidadRecibida.Value : compraInsumo.CantidadSolicitada;
+                        if (esKg)
+                        {
+                            if (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0)
+                            {
+                                if (compraInsumo.CantidadRecibida.Value <= compraInsumo.CantidadSolicitada * 2 && compraInsumo.CantidadRecibida.Value < 500)
+                                {
+                                    entradasCompra = compraInsumo.CantidadRecibida.Value * 1000m;
+                                }
+                                else
+                                {
+                                    entradasCompra = compraInsumo.CantidadRecibida.Value;
+                                }
+                            }
+                            else
+                            {
+                                entradasCompra = compraInsumo.CantidadSolicitada * 1000m;
+                            }
+                        }
+                        else
+                        {
+                            entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0) ? compraInsumo.CantidadRecibida.Value : compraInsumo.CantidadSolicitada;
+                        }
                     }
 
                     var notasSalidaDestino = compraInsumo.NotaSalidaInsumos
