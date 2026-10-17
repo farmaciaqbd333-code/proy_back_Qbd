@@ -36,16 +36,23 @@ namespace Proy_back_QBD.DependencyInjection
 
         private static string GetPostgresConnectionString(IConfiguration configuration)
         {
-            // 1 variable para la URL externa o connection string de PostgreSQL
+            // 1. Variable única para la URL externa (DATABASE_URL o POSTGRES_URL)
             var rawUrl = configuration["DATABASE_URL"] 
                 ?? configuration["POSTGRES_URL"] 
                 ?? configuration.GetConnectionString("DefaultConnection");
+
+            NpgsqlConnectionStringBuilder builder;
 
             if (!string.IsNullOrWhiteSpace(rawUrl))
             {
                 rawUrl = rawUrl.Trim().Trim('"', '\'');
 
-                // Si viene en formato URL estándar (postgresql://user:password@host:port/database)
+                if (rawUrl.StartsWith("jdbc:", StringComparison.OrdinalIgnoreCase))
+                {
+                    rawUrl = rawUrl.Substring(5);
+                }
+
+                // Formato URI (postgresql://user:password@host:port/database)
                 if (rawUrl.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase) ||
                     rawUrl.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
                 {
@@ -55,66 +62,69 @@ namespace Proy_back_QBD.DependencyInjection
                     var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : string.Empty;
                     var database = uri.LocalPath.Trim('/');
 
-                    var builder = new NpgsqlConnectionStringBuilder
+                    builder = new NpgsqlConnectionStringBuilder
                     {
                         Host = uri.Host,
                         Port = uri.Port > 0 ? uri.Port : 5432,
                         Username = username,
                         Password = password,
-                        Database = string.IsNullOrEmpty(database) ? "postgres" : database,
-                        Pooling = true,
-                        MaxPoolSize = 20
+                        Database = string.IsNullOrEmpty(database) ? "postgres" : database
                     };
 
-                    // En servidores cloud externos (Render, Supabase, Neon, etc.), habilitar SSL y confiar en el certificado
-                    if (builder.Host != "localhost" && builder.Host != "127.0.0.1")
+                    if (!string.IsNullOrEmpty(uri.Query))
                     {
-                        builder.SslMode = SslMode.Require;
-                        builder.TrustServerCertificate = true;
-                    }
-
-                    return builder.ConnectionString;
-                }
-
-                // Si ya está en formato ADO.NET (Host=...;Database=...;...)
-                var directBuilder = new NpgsqlConnectionStringBuilder(rawUrl);
-                if (!rawUrl.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase))
-                {
-                    directBuilder.MaxPoolSize = 20;
-                }
-                if (!rawUrl.Contains("Pooling", StringComparison.OrdinalIgnoreCase))
-                {
-                    directBuilder.Pooling = true;
-                }
-                if (directBuilder.Host != "localhost" && directBuilder.Host != "127.0.0.1")
-                {
-                    if (!rawUrl.Contains("SSL Mode", StringComparison.OrdinalIgnoreCase) &&
-                        !rawUrl.Contains("SslMode", StringComparison.OrdinalIgnoreCase))
-                    {
-                        directBuilder.SslMode = SslMode.Require;
-                    }
-                    if (!rawUrl.Contains("Trust Server Certificate", StringComparison.OrdinalIgnoreCase) &&
-                        !rawUrl.Contains("TrustServerCertificate", StringComparison.OrdinalIgnoreCase))
-                    {
-                        directBuilder.TrustServerCertificate = true;
+                        var query = uri.Query.TrimStart('?');
+                        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            var kv = pair.Split('=', 2);
+                            var key = Uri.UnescapeDataString(kv[0]).ToLowerInvariant();
+                            var val = kv.Length > 1 ? Uri.UnescapeDataString(kv[1]) : string.Empty;
+                            if (key == "sslmode" && Enum.TryParse<SslMode>(val, true, out var parsedMode))
+                            {
+                                builder.SslMode = parsedMode;
+                            }
+                        }
                     }
                 }
-                return directBuilder.ConnectionString;
+                else
+                {
+                    // Formato ADO.NET (Host=...;Database=...;...)
+                    builder = new NpgsqlConnectionStringBuilder(rawUrl);
+                }
             }
-
-            // Fallback: Variables individuales si no se definió DATABASE_URL
-            var fallback = $"Host={configuration["POSTGRES_HOST"]};" +
-                $"Port={configuration["POSTGRES_PORT"] ?? "5432"};" +
-                $"Username={configuration["POSTGRES_USERNAME"]};" +
-                $"Password={configuration["POSTGRES_PASSWORD"]};" +
-                $"Database={configuration["POSTGRES_DB"]}";
-
-            if (!fallback.Contains("MaxPoolSize", StringComparison.OrdinalIgnoreCase))
+            else
             {
-                fallback = fallback.TrimEnd(';') + ";Pooling=true;MaxPoolSize=20;";
+                // 2. Fallback: Variables individuales si no se definió DATABASE_URL
+                builder = new NpgsqlConnectionStringBuilder
+                {
+                    Host = configuration["POSTGRES_HOST"] ?? "localhost",
+                    Port = int.TryParse(configuration["POSTGRES_PORT"], out var p) ? p : 5432,
+                    Username = configuration["POSTGRES_USERNAME"] ?? "postgres",
+                    Password = configuration["POSTGRES_PASSWORD"] ?? "",
+                    Database = configuration["POSTGRES_DB"] ?? "postgres"
+                };
             }
 
-            return fallback;
+            // Parámetros de estabilidad y rendimiento
+            builder.Pooling = true;
+            if (builder.MaxPoolSize <= 0 || builder.MaxPoolSize == 100)
+            {
+                builder.MaxPoolSize = 20;
+            }
+            builder.KeepAlive = 30;
+            builder.Timeout = 30;
+
+            // Para servidores cloud remotos (como Render), SSL es obligatorio y requiere confiar en el certificado
+            if (builder.Host != "localhost" && builder.Host != "127.0.0.1")
+            {
+                if (builder.SslMode == SslMode.Disable || builder.SslMode == SslMode.Prefer)
+                {
+                    builder.SslMode = SslMode.Require;
+                }
+                builder.TrustServerCertificate = true;
+            }
+
+            return builder.ConnectionString;
         }
 
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
