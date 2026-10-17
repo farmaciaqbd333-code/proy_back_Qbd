@@ -231,6 +231,14 @@ namespace proy_back_Qbd.Services
             .Select(s => new PaqueteInsumoListRes
             {
                 IdPaquete = s.IdPaquete,
+
+
+
+
+
+
+
+
                 IdCompraInsumo = s.IdCompraInsumo,
                 CodigoCompraInsumo = s.CompraInsumo != null ? ("MP-QbD-" + s.CompraInsumo.IdInsumo.ToString("D4")) : "",
                 CantidadPaquete = s.Paquete != null ? s.Paquete.CantidadPaquete : 0,

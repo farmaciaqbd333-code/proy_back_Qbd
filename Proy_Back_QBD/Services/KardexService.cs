@@ -200,7 +200,8 @@ namespace proy_back_Qbd.Services
                         : Math.Max(0m, entradasCompra - salidasCompra);
 
                     string sedeOrigenCompra = compraInsumo.Compra?.Proveedor?.Datos ?? compraInsumo.Compra?.Sede?.Nombre ?? "COMPRA";
-                    string docOrigenCompra = compraInsumo.Compra?.NumeroComprobante ?? compraInsumo.Compra?.CodFacQBD ?? (compraInsumo.Compra?.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : "");
+                    string cuoCompra = compraInsumo.Compra != null ? ((compraInsumo.Compra.IdSede == 1 ? "OCL" : (compraInsumo.Compra.IdSede == 2 ? "OCPJ" : (compraInsumo.Compra.IdSede == 3 ? "OCP" : (compraInsumo.Compra.IdSede == 4 ? "OCT" : (compraInsumo.Compra.IdSede == 12 ? "OCCS" : "OC"))))) + compraInsumo.Compra.Id) : "";
+                    string docOrigenCompra = !string.IsNullOrEmpty(cuoCompra) ? cuoCompra : (compraInsumo.Compra?.NumeroComprobante ?? compraInsumo.Compra?.CodFacQBD ?? (compraInsumo.Compra?.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : ""));
                     string? numeroFacturaCompra = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
                     DateTime? fechaIngresoCompra = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
 
@@ -224,7 +225,8 @@ namespace proy_back_Qbd.Services
                         SedeOrigen = sedeOrigenCompra,
                         DocumentoOrigen = docOrigenCompra,
                         NumeroFactura = numeroFacturaCompra,
-                        IdCompra = compraInsumo.Id
+                        IdCompra = compraInsumo.Id,
+                        CUO = !string.IsNullOrEmpty(cuoCompra) ? cuoCompra : null
                     });
                 }
 
@@ -415,7 +417,7 @@ namespace proy_back_Qbd.Services
                         Observacion = s.Observacion,
                         TipoOrigen = "Orden de Compra",
                         SedeOrigen = s.Compra?.Proveedor?.Datos ?? s.Compra?.Sede?.Nombre ?? "PROVEEDOR",
-                        DocumentoOrigen = s.Compra?.NumeroComprobante ?? s.Compra?.CodFacQBD ?? (s.Compra?.Id != 0 ? $"OC-{s.Compra?.Id}" : ""),
+                        DocumentoOrigen = (s.Compra != null ? ((s.Compra.IdSede == 1 ? "OCL" : (s.Compra.IdSede == 2 ? "OCPJ" : (s.Compra.IdSede == 3 ? "OCP" : (s.Compra.IdSede == 4 ? "OCT" : (s.Compra.IdSede == 12 ? "OCCS" : "OC"))))) + s.Compra.Id) : "") is string cuoEmp && !string.IsNullOrEmpty(cuoEmp) ? cuoEmp : (s.Compra?.NumeroComprobante ?? s.Compra?.CodFacQBD ?? (s.Compra?.Id != 0 ? $"OC-{s.Compra?.Id}" : "")),
                         NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? ""),
                         IdCompra = s.Id
                     });

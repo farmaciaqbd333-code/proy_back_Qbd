@@ -43,6 +43,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string? DocumentoOrigen { get; set; }
         public string? NumeroFactura { get; set; }
         public int? IdCompra { get; set; }
+        public string? CUO { get; set; }
     }
 
     public class DetalleEmpaqueRes
@@ -64,6 +65,7 @@ namespace proy_back_Qbd.Models.Kardex
         public string? SedeOrigen { get; set; }
         public string? DocumentoOrigen { get; set; }
         public int? IdCompra { get; set; }
+        public string? CUO { get; set; }
     }
 
     public class ComprasVencidasRes
