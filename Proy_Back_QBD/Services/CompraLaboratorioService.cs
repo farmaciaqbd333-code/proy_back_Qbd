@@ -70,7 +70,28 @@ namespace proy_back_Qbd.Services
                             string.Equals(item.Um.Trim(), "KILOGRAMOS", StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(item.Um.Trim(), "KGS", StringComparison.OrdinalIgnoreCase)
                         );
-                        decimal stockEnGramos = esKg ? cantidadRecibida * 1000m : cantidadRecibida;
+                        decimal stockEnGramos = cantidadRecibida;
+                        if (item.PaqueteInsumos != null && item.PaqueteInsumos.Any(p => p.Paquete != null && (p.Paquete.CantidadPaquete * p.Paquete.PesoUnitario) > 0))
+                        {
+                            // Si tiene paquetes registrados, el peso de paquetes siempre se registra en gramos
+                            stockEnGramos = cantidadRecibida;
+                        }
+                        else if (esKg)
+                        {
+                            // Si se ingreso en KG (menor a 500 y no mayor al doble de lo solicitado), convertir a gramos
+                            if (cantidadRecibida <= item.CantidadSolicitada * 2 && cantidadRecibida < 500)
+                            {
+                                stockEnGramos = cantidadRecibida * 1000m;
+                            }
+                            else
+                            {
+                                stockEnGramos = cantidadRecibida;
+                            }
+                        }
+                        else
+                        {
+                            stockEnGramos = cantidadRecibida;
+                        }
                         StockInsumo? stockInsumo = await _context.StockInsumos.FirstOrDefaultAsync(f => f.IdCompraInsumo == item.Id);
                         if (stockInsumo != null)
                         {

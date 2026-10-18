@@ -1975,6 +1975,25 @@ namespace proy_back_Qbd.Services
 
                     string reg = "MP" + Alfanumerico.ConvertToBase36(ci.Id);
 
+                    decimal cantidadBajaReal = stockSede;
+                    bool esKgBaja = ci.Um != null && (
+                        string.Equals(ci.Um.Trim(), "KG", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(ci.Um.Trim(), "KILOGRAMO", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(ci.Um.Trim(), "KILOGRAMOS", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(ci.Um.Trim(), "KGS", StringComparison.OrdinalIgnoreCase)
+                    );
+                    decimal entradasCI = (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0)
+                        ? (esKgBaja && ci.CantidadRecibida.Value <= ci.CantidadSolicitada * 2 && ci.CantidadRecibida.Value < 500 ? ci.CantidadRecibida.Value * 1000m : ci.CantidadRecibida.Value)
+                        : (esKgBaja ? ci.CantidadSolicitada * 1000m : ci.CantidadSolicitada);
+
+                    if (entradasCI > 0 && cantidadBajaReal > entradasCI * 1.5m && cantidadBajaReal >= 1000m)
+                    {
+                        if (cantidadBajaReal / 1000m <= entradasCI * 1.1m)
+                        {
+                            cantidadBajaReal /= 1000m;
+                        }
+                    }
+
                     resultado.Add(new BajaInsumoRes
                     {
                         IdCompraInsumo = ci.Id,
@@ -1983,7 +2002,7 @@ namespace proy_back_Qbd.Services
                         Codigo = $"MP-QbD-{ci.IdInsumo}",
                         Descripcion = ci.Insumo?.Descripcion ?? "",
                         Lote = ci.Lote ?? "-",
-                        CantidadBaja = stockSede,
+                        CantidadBaja = cantidadBajaReal,
                         Um = ci.Insumo?.UnidadMedida ?? (ci.StockInsumos.FirstOrDefault(si => si.IdSede == idSede)?.UnidadMedida ?? "G"),
                         FechaFabricacion = ci.FechaFabricacion,
                         FechaVencimiento = ci.FechaVencimiento,
