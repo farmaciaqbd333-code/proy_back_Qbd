@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
@@ -1149,7 +1149,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     throw new Exception("Existe un artículo con IdNotaSalidaArticulo inválido.");
                 }
 
-                if (item.IdCompraArticulo <= 0)
+                if (item.IdCompraArticulo <= 0 && item.IdNotaSalidaArticulo <= 0)
                 {
                     _logger.LogWarning(
                         "Artículo inválido. IdCompraArticulo: {IdCompraArticulo}",
@@ -1166,7 +1166,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         item.CantidadRecibida);
 
                     throw new Exception(
-                        $"La cantidad recibida debe ser mayor a cero. IdCompraArticulo: {item.IdCompraArticulo}");
+                        $"La cantidad recibida debe ser mayor a cero.");
                 }
             }
 

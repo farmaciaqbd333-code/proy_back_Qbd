@@ -147,7 +147,7 @@ namespace proy_back_Qbd.Controllers
             {
                 return BadRequest(new
                 {
-                    mensaje = ex.Message
+                    mensaje = ex.InnerException != null ? $"{ex.Message} --> {ex.InnerException.Message}" : ex.Message
                 });
             }
         }

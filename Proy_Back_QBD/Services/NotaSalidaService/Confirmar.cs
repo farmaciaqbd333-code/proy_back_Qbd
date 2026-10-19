@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Data;
@@ -51,6 +51,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == primerItem.IdCompraArticulo);
                 }
 
+                bool isPI = nsInsumo != null && !nsInsumo.IdCompraInsumo.HasValue;
+
                 decimal cantidadDespachada = cantRecibidaGramosTotal;
                 if (nsInsumo != null)
                 {
@@ -78,8 +80,25 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 decimal diferenciaNoRecibida = cantidadDespachada - cantRecibidaGramosTotal;
                 if (diferenciaNoRecibida > 0)
                 {
-                    var stockOrigenReembolso = await _context.StockInsumos
-                        .FirstOrDefaultAsync(x => x.IdCompraInsumo == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                    StockInsumo? stockOrigenReembolso = null;
+                    if (isPI)
+                    {
+                        stockOrigenReembolso = await _context.StockInsumos
+                            .Include(x => x.ProductoIntermedio)
+                            .FirstOrDefaultAsync(x => x.Tipo == "PI" && x.IdSede == idSedeOrigen &&
+                                (x.ProductoIntermedio != null && x.ProductoIntermedio.Lote == nsInsumo!.Lote));
+                    }
+                    else if (nsInsumo?.IdCompraInsumo.HasValue == true)
+                    {
+                        stockOrigenReembolso = await _context.StockInsumos
+                            .FirstOrDefaultAsync(x => x.IdCompraInsumo == nsInsumo.IdCompraInsumo.Value && x.IdSede == idSedeOrigen);
+                    }
+                    else if (primerItem.IdCompraArticulo > 0)
+                    {
+                        stockOrigenReembolso = await _context.StockInsumos
+                            .FirstOrDefaultAsync(x => x.IdCompraInsumo == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                    }
+
                     if (stockOrigenReembolso != null)
                     {
                         stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
@@ -87,11 +106,23 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 }
 
                 // Verificar si ya existe stock destino para esta nota/articulo (modificacion)
-                var stockDestino = await _context.StockInsumos
-                    .FirstOrDefaultAsync(x =>
-                        x.IdCompraInsumo == primerItem.IdCompraArticulo &&
-                        x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaInsumo == primerItem.IdNotaSalidaArticulo);
+                StockInsumo? stockDestino = null;
+                if (primerItem.IdNotaSalidaArticulo > 0)
+                {
+                    stockDestino = await _context.StockInsumos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdSede == idSedeDestino &&
+                            x.IdNotaSalidaInsumo == primerItem.IdNotaSalidaArticulo);
+                }
+
+                if (stockDestino == null && !isPI && primerItem.IdCompraArticulo > 0)
+                {
+                    stockDestino = await _context.StockInsumos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdCompraInsumo == primerItem.IdCompraArticulo &&
+                            x.IdSede == idSedeDestino &&
+                            x.IdNotaSalidaInsumo == primerItem.IdNotaSalidaArticulo);
+                }
 
                 decimal cantDestino = cantRecibidaGramosTotal;
 
@@ -102,23 +133,38 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 }
                 else
                 {
+                    int? fkCompra = null;
+                    if (!isPI)
+                    {
+                        if (nsInsumo?.IdCompraInsumo.HasValue == true)
+                        {
+                            fkCompra = nsInsumo.IdCompraInsumo.Value;
+                        }
+                        else if (primerItem.IdCompraArticulo > 0 && await _context.CompraInsumos.AnyAsync(c => c.Id == primerItem.IdCompraArticulo))
+                        {
+                            fkCompra = primerItem.IdCompraArticulo;
+                        }
+                    }
+
                     stockDestino = new StockInsumo
                     {
-                        IdCompraInsumo = primerItem.IdCompraArticulo,
-                        Tipo = "MP",
+                        IdCompraInsumo = fkCompra,
+                        IdProductoIntermedio = null, // En destino se mantiene null para evitar violar el indice unico
+                        Tipo = isPI ? "PI" : "MP",
                         StockDisponible = cantDestino,
                         UnidadMedida = "G",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaInsumo = primerItem.IdNotaSalidaArticulo
+                        IdNotaSalidaInsumo = primerItem.IdNotaSalidaArticulo > 0 ? primerItem.IdNotaSalidaArticulo : (nsInsumo?.Id)
                     };
 
                     _context.StockInsumos.Add(stockDestino);
                 }
 
                 _logger.LogInformation(
-                    "Insumo procesado correctamente. IdCompraInsumo: {IdCompraInsumo}, " +
+                    "Insumo procesado correctamente. IdNotaSalidaArticulo: {IdNotaSalidaArticulo}, isPI: {IsPI}, " +
                     "StockDestino: {CantidadRecibida}, SedeDestino: {SedeDestino}",
-                    primerItem.IdCompraArticulo,
+                    primerItem.IdNotaSalidaArticulo,
+                    isPI,
                     cantRecibidaGramosTotal,
                     idSedeDestino);
             }
@@ -142,6 +188,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (nsProd == null && primerItem.IdCompraArticulo > 0)
                 {
                     nsProd = await _context.NotaSalidaProductos.FirstOrDefaultAsync(x => x.IdCompraProducto == primerItem.IdCompraArticulo);
+                }
+
+                // Redireccion segura si el item era realmente un insumo o producto intermedio
+                if (nsProd == null)
+                {
+                    var esInsumoOPI = await _context.NotaSalidaInsumos.AnyAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
+                    if (esInsumoOPI)
+                    {
+                        _logger.LogInformation("Item {Id} recibido en productos pero pertenece a NotaSalidaInsumos. Redirigiendo a ProcesarInsumos.", primerItem.IdNotaSalidaArticulo);
+                        await ProcesarInsumos(grupo.ToList(), idSedeOrigen, idSedeDestino);
+                        continue;
+                    }
                 }
 
                 decimal cantidadDespachada = totalRecibido;
@@ -169,11 +227,23 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
                 }
 
-                var stockDestino = await _context.StockProductos
-                    .FirstOrDefaultAsync(x =>
-                        x.IdCompraProducto == primerItem.IdCompraArticulo &&
-                        x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaProducto == primerItem.IdNotaSalidaArticulo);
+                StockProducto? stockDestino = null;
+                if (primerItem.IdNotaSalidaArticulo > 0)
+                {
+                    stockDestino = await _context.StockProductos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdSede == idSedeDestino &&
+                            x.IdNotaSalidaProducto == primerItem.IdNotaSalidaArticulo);
+                }
+
+                if (stockDestino == null && primerItem.IdCompraArticulo > 0)
+                {
+                    stockDestino = await _context.StockProductos
+                        .FirstOrDefaultAsync(x =>
+                            x.IdCompraProducto == primerItem.IdCompraArticulo &&
+                            x.IdSede == idSedeDestino &&
+                            x.IdNotaSalidaProducto == primerItem.IdNotaSalidaArticulo);
+                }
 
                 if (stockDestino != null)
                 {
@@ -182,13 +252,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 }
                 else
                 {
+                    int fkCompraProd = (nsProd?.IdCompraProducto.HasValue == true)
+                        ? nsProd.IdCompraProducto.Value
+                        : primerItem.IdCompraArticulo;
+
                     stockDestino = new StockProducto
                     {
-                        IdCompraProducto = primerItem.IdCompraArticulo,
+                        IdCompraProducto = fkCompraProd,
                         StockDisponible = totalRecibido,
                         UnidadMedida = primerItem.UnidadMedida ?? "UND",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaProducto = primerItem.IdNotaSalidaArticulo
+                        IdNotaSalidaProducto = primerItem.IdNotaSalidaArticulo > 0 ? primerItem.IdNotaSalidaArticulo : (nsProd?.Id)
                     };
 
                     _context.StockProductos.Add(stockDestino);
