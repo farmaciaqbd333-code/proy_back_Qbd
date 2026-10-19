@@ -184,7 +184,9 @@ namespace proy_back_Qbd.Services
                 decimal totalAjuste = ajustesDeCompra.Sum(a => a.Ajuste);
 
                 string umDefecto = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G"));
-
+                string? numeroFacturaCompra = !string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) && !string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante)
+                    ? $"{compraInsumo.Compra.SerieComprobante}-{compraInsumo.Compra.NumeroComprobante}"
+                    : (!string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? compraInsumo.Compra.NumeroComprobante : compraInsumo.Compra?.CodFacQBD);
                 // 1. DISTRIBUCION FIFO DE SALIDAS ENTRE ENTRADAS DE ESTE REGISTRO
                 decimal salidasRestantes = salidasReales;
 
@@ -202,7 +204,7 @@ namespace proy_back_Qbd.Services
                     string sedeOrigenCompra = compraInsumo.Compra?.Proveedor?.Datos ?? compraInsumo.Compra?.Sede?.Nombre ?? "COMPRA";
                     string cuoCompra = compraInsumo.Compra != null ? ((compraInsumo.Compra.IdSede == 1 ? "OCL" : (compraInsumo.Compra.IdSede == 2 ? "OCPJ" : (compraInsumo.Compra.IdSede == 3 ? "OCP" : (compraInsumo.Compra.IdSede == 4 ? "OCT" : (compraInsumo.Compra.IdSede == 12 ? "OCCS" : "OC"))))) + compraInsumo.Compra.Id) : "";
                     string docOrigenCompra = !string.IsNullOrEmpty(cuoCompra) ? cuoCompra : (compraInsumo.Compra?.NumeroComprobante ?? compraInsumo.Compra?.CodFacQBD ?? (compraInsumo.Compra?.Id != 0 ? $"OC-{compraInsumo.Compra.Id}" : ""));
-                    string? numeroFacturaCompra = (compraInsumo.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) || string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? "" : "-") + (compraInsumo.Compra?.NumeroComprobante ?? "");
+                    // Factura ya obtenida en numeroFacturaCompra
                     DateTime? fechaIngresoCompra = compraInsumo.Compra != null ? (compraInsumo.Compra.FechaLab ?? compraInsumo.Compra.FechaFactura) : null;
 
                     resultado.Add(new DetalleInsumoRes
@@ -253,8 +255,8 @@ namespace proy_back_Qbd.Services
                         : null;
 
                     string sedeOrigenNS = nsi.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN";
-                    string docOrigenNS = nsi.NotaSalida != null ? $"NS{nsi.NotaSalida.Id:D8}" : "";
-                    string numFacturaNS = nsi.NotaSalida?.Id.ToString() ?? nsi.IdNotaSalida.ToString();
+                    string docOrigenNS = nsi.NotaSalida != null ? $"MP-{nsi.NotaSalida.Id}" : (nsi.IdNotaSalida != 0 ? $"MP-{nsi.IdNotaSalida}" : "NOTA SALIDA");
+                    string? numFacturaNS = (!string.IsNullOrEmpty(numeroFacturaCompra) && numeroFacturaCompra != "-") ? numeroFacturaCompra : null;
                     string obsNS = !string.IsNullOrEmpty(nsi.Observacion) ? nsi.Observacion : (nsi.NotaSalida?.Observacion ?? compraInsumo.Observacion ?? "");
 
                     resultado.Add(new DetalleInsumoRes
@@ -277,7 +279,8 @@ namespace proy_back_Qbd.Services
                         SedeOrigen = sedeOrigenNS,
                         DocumentoOrigen = docOrigenNS,
                         NumeroFactura = numFacturaNS,
-                        IdCompra = compraInsumo.Id
+                        IdCompra = compraInsumo.Id,
+                        CUO = docOrigenNS
                     });
                 }
             }
@@ -465,8 +468,8 @@ namespace proy_back_Qbd.Services
                         Observacion = !string.IsNullOrEmpty(nse.Observacion) ? nse.Observacion : (nse.NotaSalida?.Observacion ?? ""),
                         TipoOrigen = "Nota de Salida",
                         SedeOrigen = nse.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN",
-                        DocumentoOrigen = nse.NotaSalida != null ? $"BDNS-{nse.NotaSalida.Id:D4}" : $"NS{nse.IdNotaSalida:D4}",
-                        NumeroFactura = nse.NotaSalida != null ? $"BDNS-{nse.NotaSalida.Id:D4}" : nse.IdNotaSalida.ToString(),
+                        DocumentoOrigen = nse.NotaSalida != null ? $"ME-{nse.NotaSalida.Id}" : (nse.IdNotaSalida != 0 ? $"ME-{nse.IdNotaSalida}" : "NOTA SALIDA"),
+                        NumeroFactura = (!string.IsNullOrEmpty(s.Compra?.SerieComprobante) && !string.IsNullOrEmpty(s.Compra?.NumeroComprobante)) ? $"{s.Compra.SerieComprobante}-{s.Compra.NumeroComprobante}" : (!string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? s.Compra.NumeroComprobante : s.Compra?.CodFacQBD),
                         IdCompra = s.Id
                     });
                 }
@@ -583,8 +586,8 @@ namespace proy_back_Qbd.Services
                         Observacion = !string.IsNullOrEmpty(nsp.Observacion) ? nsp.Observacion : (nsp.NotaSalida?.Observacion ?? s.Observacion ?? ""),
                         TipoOrigen = "Nota de Salida",
                         SedeOrigen = nsp.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN",
-                        DocumentoOrigen = nsp.NotaSalida != null ? $"NS{nsp.NotaSalida.Id:D8}" : "",
-                        NumeroFactura = nsp.NotaSalida?.Id.ToString() ?? nsp.IdNotaSalida.ToString(),
+                        DocumentoOrigen = nsp.NotaSalida != null ? $"PT-{nsp.NotaSalida.Id}" : (nsp.IdNotaSalida != 0 ? $"PT-{nsp.IdNotaSalida}" : "NOTA SALIDA"),
+                        NumeroFactura = (!string.IsNullOrEmpty(s.Compra?.SerieComprobante) && !string.IsNullOrEmpty(s.Compra?.NumeroComprobante)) ? $"{s.Compra.SerieComprobante}-{s.Compra.NumeroComprobante}" : (!string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? s.Compra.NumeroComprobante : s.Compra?.CodFacQBD),
                         IdCompra = s.Id
                     });
                 }
