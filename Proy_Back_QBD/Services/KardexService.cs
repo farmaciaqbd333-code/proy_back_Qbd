@@ -255,7 +255,7 @@ namespace proy_back_Qbd.Services
                         : null;
 
                     string sedeOrigenNS = nsi.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN";
-                    string docOrigenNS = nsi.NotaSalida != null ? $"MP-{nsi.NotaSalida.Id}" : (nsi.IdNotaSalida != 0 ? $"MP-{nsi.IdNotaSalida}" : "NOTA SALIDA");
+                    string docOrigenNS = nsi.NotaSalida != null ? $"NT{nsi.NotaSalida.Id}" : (nsi.IdNotaSalida != 0 ? $"NT{nsi.IdNotaSalida}" : "NOTA SALIDA");
                     string? numFacturaNS = (!string.IsNullOrEmpty(numeroFacturaCompra) && numeroFacturaCompra != "-") ? numeroFacturaCompra : null;
                     string obsNS = !string.IsNullOrEmpty(nsi.Observacion) ? nsi.Observacion : (nsi.NotaSalida?.Observacion ?? compraInsumo.Observacion ?? "");
 
@@ -468,7 +468,7 @@ namespace proy_back_Qbd.Services
                         Observacion = !string.IsNullOrEmpty(nse.Observacion) ? nse.Observacion : (nse.NotaSalida?.Observacion ?? ""),
                         TipoOrigen = "Nota de Salida",
                         SedeOrigen = nse.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN",
-                        DocumentoOrigen = nse.NotaSalida != null ? $"ME-{nse.NotaSalida.Id}" : (nse.IdNotaSalida != 0 ? $"ME-{nse.IdNotaSalida}" : "NOTA SALIDA"),
+                        DocumentoOrigen = nse.NotaSalida != null ? $"NT{nse.NotaSalida.Id}" : (nse.IdNotaSalida != 0 ? $"NT{nse.IdNotaSalida}" : "NOTA SALIDA"),
                         NumeroFactura = (!string.IsNullOrEmpty(s.Compra?.SerieComprobante) && !string.IsNullOrEmpty(s.Compra?.NumeroComprobante)) ? $"{s.Compra.SerieComprobante}-{s.Compra.NumeroComprobante}" : (!string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? s.Compra.NumeroComprobante : s.Compra?.CodFacQBD),
                         IdCompra = s.Id
                     });
@@ -586,7 +586,7 @@ namespace proy_back_Qbd.Services
                         Observacion = !string.IsNullOrEmpty(nsp.Observacion) ? nsp.Observacion : (nsp.NotaSalida?.Observacion ?? s.Observacion ?? ""),
                         TipoOrigen = "Nota de Salida",
                         SedeOrigen = nsp.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN",
-                        DocumentoOrigen = nsp.NotaSalida != null ? $"PT-{nsp.NotaSalida.Id}" : (nsp.IdNotaSalida != 0 ? $"PT-{nsp.IdNotaSalida}" : "NOTA SALIDA"),
+                        DocumentoOrigen = nsp.NotaSalida != null ? $"NT{nsp.NotaSalida.Id}" : (nsp.IdNotaSalida != 0 ? $"NT{nsp.IdNotaSalida}" : "NOTA SALIDA"),
                         NumeroFactura = (!string.IsNullOrEmpty(s.Compra?.SerieComprobante) && !string.IsNullOrEmpty(s.Compra?.NumeroComprobante)) ? $"{s.Compra.SerieComprobante}-{s.Compra.NumeroComprobante}" : (!string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? s.Compra.NumeroComprobante : s.Compra?.CodFacQBD),
                         IdCompra = s.Id
                     });
