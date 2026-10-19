@@ -289,6 +289,9 @@ namespace proy_back_Qbd.Services
         }
         public async Task<List<DetalleInsumoRes>> ObtenerDetallePI(int idInsumo, int idSede)
         {
+            var resultado = new List<DetalleInsumoRes>();
+
+            // 1. Elaboraciones directas en esta sede
             var piList = await _context.ProductosIntermedios
                 .Include(pi => pi.StockInsumo)
                     .ThenInclude(si => si.AjusteInsumos)
@@ -297,7 +300,6 @@ namespace proy_back_Qbd.Services
                 .ThenByDescending(o => o.Id)
                 .ToListAsync();
 
-            var resultado = new List<DetalleInsumoRes>();
             foreach (var s in piList)
             {
                 decimal cantIngresada = (s.TipoUso == "PI-FMG" || s.Um == "UND")
@@ -320,11 +322,76 @@ namespace proy_back_Qbd.Services
                     Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
                     TieneAjuste = tieneAjuste,
                     Saldo = saldo,
+                    StockDisponible = saldo,
                     FechaCompra = s.FechaCreacion,
                     FechaFabricacion = s.FechaCreacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Observacion = s.StockInsumo?.AjusteInsumos?.FirstOrDefault()?.Observacion ?? "",
                     IdCompra = s.Id
+                });
+            }
+
+            // 2. Transferencias recibidas por Nota de Salida en esta sede
+            var lotesDelInsumo = await _context.ProductosIntermedios.AsNoTracking()
+                .Where(p => p.IdInsumo == idInsumo && !string.IsNullOrEmpty(p.Lote))
+                .ToListAsync();
+
+            var loteDict = lotesDelInsumo
+                .GroupBy(p => p.Lote!.Trim().ToUpper())
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var notasSalidaDestino = await _context.NotaSalidaInsumos.AsNoTracking()
+                .Include(nsi => nsi.NotaSalida)
+                    .ThenInclude(ns => ns!.SedeOrigen)
+                .Where(nsi => !nsi.IdCompraInsumo.HasValue &&
+                              nsi.NotaSalida != null &&
+                              nsi.NotaSalida.IdSedeDestino == idSede &&
+                              (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
+                .OrderByDescending(nsi => nsi.NotaSalida!.FechaRecepcion ?? nsi.NotaSalida!.FechaSalida)
+                .ToListAsync();
+
+            foreach (var nsi in notasSalidaDestino)
+            {
+                if (string.IsNullOrEmpty(nsi.Lote)) continue;
+                var key = nsi.Lote.Trim().ToUpper();
+                if (!loteDict.TryGetValue(key, out var piRef)) continue;
+
+                var stockNS = await _context.StockInsumos.AsNoTracking()
+                    .Include(s => s.AjusteInsumos)
+                    .FirstOrDefaultAsync(s => s.IdSede == idSede && s.IdNotaSalidaInsumo == nsi.Id);
+
+                decimal cantRecibida = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
+                    ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
+
+                var ajustesNS = stockNS?.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>();
+                bool tieneAjusteNS = ajustesNS.Any();
+                decimal totalAjusteNS = tieneAjusteNS ? ajustesNS.Sum(a => a.Ajuste) : 0m;
+
+                decimal saldo = stockNS != null ? stockNS.StockDisponible : cantRecibida;
+                decimal salidas = Math.Max(0m, cantRecibida - saldo + totalAjusteNS);
+
+                DateTime? fechaNS = nsi.NotaSalida != null
+                    ? (nsi.NotaSalida.FechaRecepcion ?? (nsi.NotaSalida.FechaSalida != default ? nsi.NotaSalida.FechaSalida : nsi.NotaSalida.FechaCreacion))
+                    : null;
+
+                resultado.Add(new DetalleInsumoRes
+                {
+                    Registro = "PI" + Alfanumerico.ConvertToBase36(piRef.Id),
+                    Lote = nsi.Lote ?? piRef.Lote ?? "",
+                    CantidadIngresada = cantRecibida,
+                    Salidas = salidas,
+                    Ajuste = tieneAjusteNS ? totalAjusteNS : (decimal?)null,
+                    TieneAjuste = tieneAjusteNS,
+                    Saldo = saldo,
+                    StockDisponible = saldo,
+                    FechaCompra = fechaNS ?? piRef.FechaCreacion,
+                    FechaFabricacion = piRef.FechaEmision ?? piRef.FechaCreacion,
+                    FechaVencimiento = piRef.FechaVencimiento,
+                    Observacion = nsi.Observacion ?? stockNS?.AjusteInsumos?.FirstOrDefault()?.Observacion ?? "",
+                    IdCompra = piRef.Id,
+                    CUO = nsi.NotaSalida != null ? $"NT{nsi.NotaSalida.Id}" : null,
+                    TipoOrigen = "Nota de Salida",
+                    SedeOrigen = nsi.NotaSalida?.SedeOrigen?.Nombre ?? "CENTRAL"
                 });
             }
 
@@ -1139,32 +1206,145 @@ namespace proy_back_Qbd.Services
 
         private async Task<List<StockRes>> ObtenerProductosIntermedios(int idSede)
         {
-            return await _context.Insumos.AsNoTracking()
-            .Where(i => i.Clasificacion == "PI")
-            .GroupBy(g => new { g.Id })
-            .Select(s => new StockRes()
+            var insumos = await _context.Insumos.AsNoTracking()
+                .Where(i => i.Clasificacion == "PI")
+                .ToListAsync();
+
+            var elaboraciones = await _context.ProductosIntermedios.AsNoTracking()
+                .Where(w => w.IdSede == idSede)
+                .ToListAsync();
+
+            var allPIs = await _context.ProductosIntermedios.AsNoTracking()
+                .Select(p => new { p.Id, p.IdInsumo, p.Lote, p.FechaEmision, p.FechaVencimiento, p.FechaCreacion })
+                .ToListAsync();
+
+            var piByLote = allPIs
+                .Where(p => !string.IsNullOrEmpty(p.Lote))
+                .GroupBy(p => p.Lote!.Trim().ToUpper())
+                .ToDictionary(g => g.Key, g => g.First());
+
+            var notasSalidaDestino = await _context.NotaSalidaInsumos.AsNoTracking()
+                .Include(nsi => nsi.NotaSalida)
+                .Where(nsi => !nsi.IdCompraInsumo.HasValue &&
+                              nsi.NotaSalida != null &&
+                              nsi.NotaSalida.IdSedeDestino == idSede &&
+                              (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
+                .ToListAsync();
+
+            var notasSalidaOrigen = await _context.NotaSalidaInsumos.AsNoTracking()
+                .Include(nsi => nsi.NotaSalida)
+                .Where(nsi => !nsi.IdCompraInsumo.HasValue &&
+                              nsi.NotaSalida != null &&
+                              nsi.NotaSalida.IdSedeOrigen == idSede)
+                .ToListAsync();
+
+            var salidasConsumoPI = await _context.InsumoProductoIntermedios.AsNoTracking()
+                .Include(ipi => ipi.ProductoIntermedio)
+                .Where(ipi => ipi.ProductoIntermedio != null && ipi.ProductoIntermedio.IdSede == idSede)
+                .GroupBy(ipi => ipi.IdInsumo)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(s3 => (s3.Practica.HasValue && s3.Practica.Value > 0) ? s3.Practica.Value : s3.CantidadLote)
+                })
+                .ToListAsync();
+
+            var salidasConsumoFormula = await _context.FormulasCC.AsNoTracking()
+                .Where(f => f.SedeId == idSede)
+                .GroupBy(f => f.InsumoId)
+                .Select(g => new
+                {
+                    IdInsumo = g.Key,
+                    Total = g.Sum(s => s.CantidadL)
+                })
+                .ToListAsync();
+
+            var ubicaciones = await _context.SiteSupplies.AsNoTracking()
+                .Where(w => w.IdSite == idSede)
+                .ToListAsync();
+
+            var resultado = new List<StockRes>();
+
+            foreach (var insumo in insumos)
             {
-                Codigo = UtilFamilia.CodigoInsumo(s.Key.Id),
-                Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
-                Um = s.Select(x => x.UnidadMedida).FirstOrDefault() ?? string.Empty,
-                Entradas = s.Sum(s => s!.ProductoIntermedio!
-                    .Where(w => w.IdSede == idSede)
+                decimal entradasElab = elaboraciones
+                    .Where(w => w.IdInsumo == insumo.Id)
                     .Sum(s2 => (s2.TipoUso == "PI-FMG" || s2.Um == "UND")
                         ? (s2.LoteEstandar ?? 0)
                         : ((s2.LoteEstTotal.HasValue && s2.LoteEstTotal.Value > 0)
                             ? s2.LoteEstTotal.Value
-                            : (s2.LoteEstandar ?? 0)))),
-                Salidas =
-                    s.Sum(s => s.InsumoProductoIntermedio.Where(w => w.ProductoIntermedio.IdSede == idSede).Sum(s3 => (s3.Practica.HasValue && s3.Practica.Value > 0) ? s3.Practica.Value : s3.CantidadLote)) +
-                    s.Sum(s => s.FormulasCC.Where(w => w.Formula.SedeId == idSede).Sum(s2 => s2.CantidadL)),
-                Ajustes = 0,
-                Baja = s.Sum(x => x.ProductoIntermedio!
-                    .Where(ci => ci.FechaVencimiento < DateTime.UtcNow && ci.IdSede == idSede)
-                    .Sum(s2 => s2.StockInsumo != null ? s2.StockInsumo.StockDisponible : 0)),
-                Tipo = s.Select(x => x.Tipo).FirstOrDefault(),
-                CodigoUbicacion = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault(),
-                Limite = s.Select(s => s.SiteSupply.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
-            }).ToListAsync();
+                            : (s2.LoteEstandar ?? 0)));
+
+                decimal entradasNS = 0m;
+                foreach (var nsi in notasSalidaDestino)
+                {
+                    int idInsumoItem = 0;
+                    if (!string.IsNullOrEmpty(nsi.Lote))
+                    {
+                        var key = nsi.Lote.Trim().ToUpper();
+                        if (piByLote.TryGetValue(key, out var foundPi))
+                        {
+                            idInsumoItem = foundPi.IdInsumo;
+                        }
+                    }
+                    if (idInsumoItem == insumo.Id)
+                    {
+                        decimal cant = (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad;
+                        string um = (nsi.Um ?? "G").Trim().ToUpper();
+                        if (um == "KG" || um == "KILOGRAMOS" || um == "Kg") cant *= 1000m;
+                        entradasNS += cant;
+                    }
+                }
+
+                decimal salidasNS = 0m;
+                foreach (var nsi in notasSalidaOrigen)
+                {
+                    int idInsumoItem = 0;
+                    if (!string.IsNullOrEmpty(nsi.Lote))
+                    {
+                        var key = nsi.Lote.Trim().ToUpper();
+                        if (piByLote.TryGetValue(key, out var foundPi))
+                        {
+                            idInsumoItem = foundPi.IdInsumo;
+                        }
+                    }
+                    if (idInsumoItem == insumo.Id)
+                    {
+                        decimal cant = nsi.Cantidad;
+                        string um = (nsi.Um ?? "G").Trim().ToUpper();
+                        if (um == "KG" || um == "KILOGRAMOS" || um == "Kg") cant *= 1000m;
+                        salidasNS += cant;
+                    }
+                }
+
+                decimal salidasConsumo = (salidasConsumoPI.FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m)
+                                       + (salidasConsumoFormula.FirstOrDefault(x => x.IdInsumo == insumo.Id)?.Total ?? 0m);
+
+                decimal entradasTotal = entradasElab + entradasNS;
+                decimal salidasTotal = salidasConsumo + salidasNS;
+                decimal saldo = entradasTotal - salidasTotal;
+                if (saldo < 0) saldo = 0;
+
+                var siteSupply = ubicaciones.FirstOrDefault(w => w.IdSupply == insumo.Id);
+
+                resultado.Add(new StockRes
+                {
+                    Codigo = UtilFamilia.CodigoInsumo(insumo.Id),
+                    Descripcion = insumo.Descripcion,
+                    Um = insumo.UnidadMedida ?? "G",
+                    Entradas = entradasTotal,
+                    Salidas = salidasTotal,
+                    Ajustes = 0,
+                    Baja = 0,
+                    Stock = saldo,
+                    Saldo = saldo,
+                    Tipo = insumo.Tipo,
+                    CodigoUbicacion = siteSupply?.Location,
+                    Limite = siteSupply?.Limite
+                });
+            }
+
+            return resultado;
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
         {
