@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
@@ -279,6 +279,36 @@ namespace proy_back_Qbd.Services
                 {
                     throw new BadRequestException(
                         $"Tipo de uso no válido: {request.TipoUso}. Los valores permitidos son PI-FMG y PI-F%.");
+                }
+
+                if (string.Equals(request.TipoUso, "PI-FMG", StringComparison.OrdinalIgnoreCase))
+                {
+                    var insumosValidos = request.Insumos?
+                        .Where(i => !string.IsNullOrWhiteSpace(i.CodigoInsumo) || !string.IsNullOrWhiteSpace(i.Descripcion))
+                        .ToList() ?? new List<InsumoProductoIntermedioReq>();
+
+                    int conteoCsp = insumosValidos.Count(i => i.Csp);
+
+                    if (conteoCsp == 0)
+                    {
+                        throw new BadRequestException("En preparaciones de Cápsulas (PI-FMG) es obligatorio seleccionar un insumo como CSP (Cantidad Suficiente Para) para evitar sobredosificación y asegurar las cantidades correctas.");
+                    }
+
+                    if (conteoCsp > 1)
+                    {
+                        throw new BadRequestException("Solo se permite un único insumo como CSP (Cantidad Suficiente Para).");
+                    }
+                }
+                else
+                {
+                    var insumosValidos = request.Insumos?
+                        .Where(i => !string.IsNullOrWhiteSpace(i.CodigoInsumo) || !string.IsNullOrWhiteSpace(i.Descripcion))
+                        .ToList() ?? new List<InsumoProductoIntermedioReq>();
+
+                    if (insumosValidos.Count(i => i.Csp) > 1)
+                    {
+                        throw new BadRequestException("Solo se permite un único insumo como CSP (Cantidad Suficiente Para).");
+                    }
                 }
 
                 ProductoIntermedio productoIntermedio =
@@ -581,6 +611,36 @@ namespace proy_back_Qbd.Services
                 {
                     throw new BadRequestException(
                         $"Tipo de uso no válido: {request.TipoUso}");
+                }
+
+                if (string.Equals(request.TipoUso, "PI-FMG", StringComparison.OrdinalIgnoreCase))
+                {
+                    var insumosValidos = request.Insumos?
+                        .Where(i => !string.IsNullOrWhiteSpace(i.CodigoInsumo) || !string.IsNullOrWhiteSpace(i.Descripcion))
+                        .ToList() ?? new List<InsumoProductoIntermedioReq>();
+
+                    int conteoCsp = insumosValidos.Count(i => i.Csp);
+
+                    if (conteoCsp == 0)
+                    {
+                        throw new BadRequestException("En preparaciones de Cápsulas (PI-FMG) es obligatorio seleccionar un insumo como CSP (Cantidad Suficiente Para) para evitar sobredosificación y asegurar las cantidades correctas.");
+                    }
+
+                    if (conteoCsp > 1)
+                    {
+                        throw new BadRequestException("Solo se permite un único insumo como CSP (Cantidad Suficiente Para).");
+                    }
+                }
+                else
+                {
+                    var insumosValidos = request.Insumos?
+                        .Where(i => !string.IsNullOrWhiteSpace(i.CodigoInsumo) || !string.IsNullOrWhiteSpace(i.Descripcion))
+                        .ToList() ?? new List<InsumoProductoIntermedioReq>();
+
+                    if (insumosValidos.Count(i => i.Csp) > 1)
+                    {
+                        throw new BadRequestException("Solo se permite un único insumo como CSP (Cantidad Suficiente Para).");
+                    }
                 }
 
                 var productoIntermedio = await _context.ProductosIntermedios
