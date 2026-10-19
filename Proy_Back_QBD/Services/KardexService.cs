@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -184,9 +184,9 @@ namespace proy_back_Qbd.Services
                 decimal totalAjuste = ajustesDeCompra.Sum(a => a.Ajuste);
 
                 string umDefecto = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G"));
-                string? numeroFacturaCompra = !string.IsNullOrEmpty(compraInsumo.Compra?.SerieComprobante) && !string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante)
-                    ? $"{compraInsumo.Compra.SerieComprobante}-{compraInsumo.Compra.NumeroComprobante}"
-                    : (!string.IsNullOrEmpty(compraInsumo.Compra?.NumeroComprobante) ? compraInsumo.Compra.NumeroComprobante : compraInsumo.Compra?.CodFacQBD);
+                string? numeroFacturaCompra = ExtraerNumeroFactura(compraInsumo.Compra?.SerieComprobante, compraInsumo.Compra?.NumeroComprobante, compraInsumo.Compra?.CodFacQBD);
+
+
                 // 1. DISTRIBUCION FIFO DE SALIDAS ENTRE ENTRADAS DE ESTE REGISTRO
                 decimal salidasRestantes = salidasReales;
 
@@ -2376,6 +2376,22 @@ namespace proy_back_Qbd.Services
             }
 
             return resultado;
+        }
+        private static string? ExtraerNumeroFactura(string? serie, string? numero, string? codFac)
+        {
+            serie = serie?.Trim();
+            numero = numero?.Trim();
+            codFac = codFac?.Trim();
+
+            if (!string.IsNullOrEmpty(serie) && !string.IsNullOrEmpty(numero))
+                return "$serie-$numero";
+            if (!string.IsNullOrEmpty(serie))
+                return serie;
+            if (!string.IsNullOrEmpty(numero))
+                return numero;
+            if (!string.IsNullOrEmpty(codFac))
+                return codFac;
+            return null;
         }
     }
 }
