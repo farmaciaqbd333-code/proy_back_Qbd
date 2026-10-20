@@ -1,3 +1,4 @@
+using proy_back_Qbd.Models.ProductoIntermedio;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
@@ -24,10 +25,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             bool isPI = (item.Familia ?? "").Trim().ToUpper() == "PI";
             int sedeOrigen = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
 
+            ProductoIntermedio? pi = null;
+            if (isPI)
+            {
+                pi = await _context.ProductosIntermedios.AsNoTracking()
+                    .FirstOrDefaultAsync(p => p.Id == item.Registro);
+            }
+
             var stocksOrigen = await _context.StockInsumos
                 .Include(s => s.ProductoIntermedio)
+                .Include(s => s.NotaSalidaInsumo)
                 .Where(x =>
-                    (isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro) &&
+                    (isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro) || (x.Tipo == "PI" && pi != null && x.NotaSalidaInsumo != null && x.NotaSalidaInsumo.Lote == pi.Lote)) : x.IdCompraInsumo == item.Registro) &&
                     x.IdSede == sedeOrigen)
                 .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
                 .ThenByDescending(x => x.StockDisponible)
@@ -37,7 +46,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 stocksOrigen = await _context.StockInsumos
                     .Include(s => s.ProductoIntermedio)
-                    .Where(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro)) : x.IdCompraInsumo == item.Registro)
+                    .Include(s => s.NotaSalidaInsumo)
+                    .Where(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro) || (x.Tipo == "PI" && pi != null && x.NotaSalidaInsumo != null && x.NotaSalidaInsumo.Lote == pi.Lote)) : x.IdCompraInsumo == item.Registro)
                     .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
                     .ThenByDescending(x => x.StockDisponible)
                     .ToListAsync();
@@ -166,7 +176,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 IdCompraInsumo = isPI ? null : item.Registro,
                 Cantidad = cantidadAGuardar,
                 Um = umAGuardar,
-                Lote = isPI ? (stockOrigen.ProductoIntermedio?.Lote ?? stockOrigen.IdProductoIntermedio?.ToString()) : null,
+                Lote = isPI ? (stockOrigen.ProductoIntermedio?.Lote ?? stockOrigen.IdProductoIntermedio?.ToString() ?? stockOrigen.NotaSalidaInsumo?.Lote ?? pi?.Lote) : null,
                 IdCreador = request.IdCreador,
                 PaqueteNotaSalidaInsumos = item.Paquetes?.Select(p =>
                 {

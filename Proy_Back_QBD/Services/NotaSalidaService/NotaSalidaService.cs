@@ -434,7 +434,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                         Lote = x.Lote,
                         Um = x.Um,
-                        StockDisponible = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
+                        StockDisponible = _context.StockInsumos
+                            .Where(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == x.Id || (s.NotaSalidaInsumo != null && s.NotaSalidaInsumo.Lote == x.Lote)))
+                            .Sum(s => (decimal?)s.StockDisponible)
                     })
                     .ToListAsync(),
 
@@ -590,7 +592,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     var pis = await _context.ProductosIntermedios
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumo)
-                        .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede))
+                        .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede)
+                                    || _context.StockInsumos.Any(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == w.Id || (s.NotaSalidaInsumo != null && s.NotaSalidaInsumo.Lote == w.Lote)) && s.StockDisponible > 0))
                         .Select(x => new
                         {
                             x.Id,
@@ -600,7 +603,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             x.Um,
                             x.FechaVencimiento,
                             FechaCompra = x.FechaCreacion,
-                            Stock = (x.StockInsumo != null && x.StockInsumo.IdSede == targetSede) ? (decimal?)x.StockInsumo.StockDisponible : null
+                            Stock = _context.StockInsumos
+                                .Where(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == x.Id || (s.NotaSalidaInsumo != null && s.NotaSalidaInsumo.Lote == x.Lote)))
+                                .Sum(s => (decimal?)s.StockDisponible)
                         })
                         .ToListAsync();
 
