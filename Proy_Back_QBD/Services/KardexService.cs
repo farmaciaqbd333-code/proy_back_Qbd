@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -1438,10 +1438,18 @@ namespace proy_back_Qbd.Services
             {
                 return await ObtenerSalidasEconomato(idInsumo, idSede);
             }
+            if (fam == "PI")
+            {
+                return await ObtenerSalidasPI(idInsumo, idSede);
+            }
 
             var resultado = await ObtenerSalidasInsumoBase(idInsumo, idSede);
             if (!resultado.Any() && string.IsNullOrEmpty(fam))
             {
+                if (await _context.Insumos.AnyAsync(i => i.Id == idInsumo && i.Clasificacion == "PI"))
+                {
+                    return await ObtenerSalidasPI(idInsumo, idSede);
+                }
                 if (await _context.Empaques.AnyAsync(e => e.Id == idInsumo))
                 {
                     return await ObtenerSalidasEmpaque(idInsumo, idSede);
@@ -1939,6 +1947,233 @@ namespace proy_back_Qbd.Services
             catch (Exception ex)
             {
                 Console.WriteLine($"Error en ObtenerSalidasEconomato: {ex.Message}");
+            }
+
+            return resultado.OrderByDescending(x => x.Fecha).ToList();
+        }
+
+        public async Task<List<SalidaInsumoRes>> ObtenerSalidasPI(int idInsumo, int idSede)
+        {
+            var resultado = new List<SalidaInsumoRes>();
+            try
+            {
+                // 1. Obtener lotes y referencias del producto intermedio
+                var lotesDelInsumo = await _context.ProductosIntermedios.AsNoTracking()
+                    .Where(p => p.IdInsumo == idInsumo && !string.IsNullOrEmpty(p.Lote))
+                    .ToListAsync();
+
+                var loteDict = lotesDelInsumo
+                    .GroupBy(p => p.Lote!.Trim().ToUpper())
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                // 2. Lotes disponibles en esta sede para rastreo FIFO
+                var elaboraciones = await _context.ProductosIntermedios
+                    .Where(w => w.IdInsumo == idInsumo && w.IdSede == idSede)
+                    .OrderBy(w => w.FechaCreacion)
+                    .ToListAsync();
+
+                var batchTrackers = elaboraciones.Select(s => new
+                {
+                    Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
+                    Lote = s.Lote ?? "",
+                    Capacidad = (s.TipoUso == "PI-FMG" || s.Um == "UND")
+                        ? (s.LoteEstandar ?? 0)
+                        : (s.LoteEstTotal ?? s.LoteEstandar ?? 0)
+                }).Select(b => new { b.Registro, b.Lote, SaldoRestante = b.Capacidad }).ToList();
+
+                var notasSalidaRecibidas = await _context.NotaSalidaInsumos.AsNoTracking()
+                    .Include(nsi => nsi.NotaSalida)
+                    .Where(nsi => !nsi.IdCompraInsumo.HasValue &&
+                                  nsi.NotaSalida != null &&
+                                  nsi.NotaSalida.IdSedeDestino == idSede &&
+                                  (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
+                    .OrderBy(nsi => nsi.NotaSalida!.FechaRecepcion ?? nsi.NotaSalida!.FechaSalida)
+                    .ToListAsync();
+
+                foreach (var nsi in notasSalidaRecibidas)
+                {
+                    if (string.IsNullOrEmpty(nsi.Lote)) continue;
+                    var key = nsi.Lote.Trim().ToUpper();
+                    if (!loteDict.TryGetValue(key, out var piRef)) continue;
+
+                    decimal cant = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
+                        ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
+
+                    batchTrackers.Add(new
+                    {
+                        Registro = "PI" + Alfanumerico.ConvertToBase36(piRef.Id),
+                        Lote = nsi.Lote,
+                        SaldoRestante = cant
+                    });
+                }
+
+                // 3. Salidas por Notas de Salida (Transferencias/Retornos desde esta sede)
+                var notasSalida = await _context.NotaSalidaInsumos
+                    .Include(x => x.NotaSalida)
+                        .ThenInclude(ns => ns!.SedeDestino)
+                    .Include(x => x.NotaSalida)
+                        .ThenInclude(ns => ns!.Creador)
+                    .Where(x => !x.IdCompraInsumo.HasValue &&
+                                x.NotaSalida != null &&
+                                x.NotaSalida.IdSedeOrigen == idSede)
+                    .OrderByDescending(x => x.NotaSalida!.FechaCreacion)
+                    .ToListAsync();
+
+                foreach (var s in notasSalida)
+                {
+                    if (string.IsNullOrEmpty(s.Lote)) continue;
+                    var key = s.Lote.Trim().ToUpper();
+                    if (!loteDict.TryGetValue(key, out var piRef)) continue;
+
+                    decimal cant = s.Cantidad;
+                    string um = (s.Um ?? "G").Trim().ToUpper();
+                    if (um == "KG" || um == "KILOGRAMOS" || um == "Kg") cant *= 1000m;
+
+                    resultado.Add(new SalidaInsumoRes
+                    {
+                        TipoSalida = "NOTA DE SALIDA",
+                        RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
+                        DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
+                            ? $"Envio a {s.NotaSalida.SedeDestino.Nombre}"
+                            : "Nota de Salida",
+                        LoteInsumo = s.Lote ?? piRef.Lote ?? "",
+                        RegistroLoteInsumo = "PI" + Alfanumerico.ConvertToBase36(piRef.Id),
+                        Cantidad = cant,
+                        Um = "G",
+                        Fecha = s.NotaSalida != null ? s.NotaSalida.FechaCreacion.DateTime : null,
+                        Usuario = s.NotaSalida != null && s.NotaSalida.Creador != null ? s.NotaSalida.Creador.Codigo : "ADMIN"
+                    });
+                }
+
+                // 4. Salidas por Consumo en Elaboracion de otros PI
+                var consumosStockPI = await _context.StockInsumoProductoIntermedios
+                    .Include(x => x.InsumoProductoIntermedio)
+                        .ThenInclude(ipi => ipi.ProductoIntermedio)
+                            .ThenInclude(pi => pi.Insumo)
+                    .Include(x => x.InsumoProductoIntermedio)
+                        .ThenInclude(ipi => ipi.ProductoIntermedio)
+                            .ThenInclude(pi => pi.Elaborador)
+                    .Include(x => x.StockInsumo)
+                        .ThenInclude(si => si.ProductoIntermedio)
+                    .Where(x => x.InsumoProductoIntermedio.IdInsumo == idInsumo &&
+                                x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede)
+                    .OrderBy(x => x.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion)
+                    .Select(s => new SalidaInsumoRes
+                    {
+                        TipoSalida = "ELABORACION PI",
+                        RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.InsumoProductoIntermedio.ProductoIntermedio.Id),
+                        DescripcionDestino = s.InsumoProductoIntermedio.ProductoIntermedio.Insumo != null
+                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Insumo.Descripcion
+                            : (s.InsumoProductoIntermedio.ProductoIntermedio.Lote ?? "Producto Intermedio"),
+                        LoteInsumo = s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null ? (s.StockInsumo.ProductoIntermedio.Lote ?? "") : "",
+                        RegistroLoteInsumo = s.StockInsumo != null && s.StockInsumo.ProductoIntermedio != null ? "PI" + Alfanumerico.ConvertToBase36(s.StockInsumo.ProductoIntermedio.Id) : "",
+                        Cantidad = s.Cantidad,
+                        Um = s.UnidadMedida ?? s.InsumoProductoIntermedio.UnidadMedida ?? "G",
+                        Fecha = s.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion,
+                        Usuario = s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador != null
+                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador.Codigo
+                            : "ADMIN"
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                if (consumosStockPI != null && consumosStockPI.Any())
+                {
+                    resultado.AddRange(consumosStockPI);
+                }
+                else
+                {
+                    var consumosDirectosPI = await _context.InsumoProductoIntermedios
+                        .Include(x => x.ProductoIntermedio)
+                            .ThenInclude(pi => pi.Insumo)
+                        .Include(x => x.ProductoIntermedio)
+                            .ThenInclude(pi => pi.Elaborador)
+                        .Where(x => x.IdInsumo == idInsumo && x.ProductoIntermedio.IdSede == idSede)
+                        .OrderBy(x => x.ProductoIntermedio.FechaCreacion)
+                        .Select(s => new SalidaInsumoRes
+                        {
+                            TipoSalida = "ELABORACION PI",
+                            RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.ProductoIntermedio.Id),
+                            DescripcionDestino = s.ProductoIntermedio.Insumo != null
+                                ? s.ProductoIntermedio.Insumo.Descripcion
+                                : (s.ProductoIntermedio.Lote ?? "Producto Intermedio"),
+                            LoteInsumo = "",
+                            RegistroLoteInsumo = "",
+                            Cantidad = (s.Practica.HasValue && s.Practica.Value > 0) ? s.Practica.Value : s.CantidadLote,
+                            Um = s.UnidadMedida ?? "G",
+                            Fecha = s.ProductoIntermedio.FechaCreacion,
+                            Usuario = s.ProductoIntermedio.Elaborador != null ? s.ProductoIntermedio.Elaborador.Codigo : "ADMIN"
+                        })
+                        .AsNoTracking()
+                        .ToListAsync();
+
+                    if (consumosDirectosPI != null)
+                    {
+                        resultado.AddRange(consumosDirectosPI);
+                    }
+                }
+
+                // 5. Salidas por Formulas Magistrales
+                var formulas = await _context.FormulasCC
+                    .Include(x => x.Formula)
+                        .ThenInclude(f => f.Creador)
+                    .Include(x => x.Insumo)
+                    .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
+                    .OrderBy(x => x.FechaCreacion)
+                    .Select(s => new SalidaInsumoRes
+                    {
+                        TipoSalida = "FORMULA MAGISTRAL",
+                        RegistroDestino = s.Formula != null ? ("FM-" + s.Formula.Id) : "FM",
+                        DescripcionDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("Formula #" + s.Formula.Id)) : "Formula",
+                        LoteInsumo = s.Formula != null ? (s.Formula.Lote ?? "") : "",
+                        RegistroLoteInsumo = "",
+                        Cantidad = s.CantidadL,
+                        Um = s.Insumo != null ? s.Insumo.UnidadMedida : "G",
+                        Fecha = s.Formula != null ? s.Formula.FechaCreacion : s.FechaCreacion,
+                        Usuario = s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN"
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                if (formulas != null && formulas.Any())
+                {
+                    resultado.AddRange(formulas);
+                }
+
+                // 6. Asignar RegistroLoteInsumo y LoteInsumo por FIFO para las salidas locales
+                if (batchTrackers.Any())
+                {
+                    int currentBatchIdx = 0;
+                    decimal currentBatchRemaining = batchTrackers[0].SaldoRestante;
+
+                    var salidasLocales = resultado
+                        .Where(r => string.IsNullOrEmpty(r.RegistroLoteInsumo))
+                        .OrderBy(r => r.Fecha)
+                        .ToList();
+
+                    foreach (var s in salidasLocales)
+                    {
+                        decimal cant = s.Cantidad;
+                        while (currentBatchRemaining <= 0 && currentBatchIdx < batchTrackers.Count - 1)
+                        {
+                            currentBatchIdx++;
+                            currentBatchRemaining = batchTrackers[currentBatchIdx].SaldoRestante;
+                        }
+
+                        var activeBatch = batchTrackers[currentBatchIdx];
+                        s.RegistroLoteInsumo = activeBatch.Registro;
+                        if (string.IsNullOrEmpty(s.LoteInsumo))
+                        {
+                            s.LoteInsumo = activeBatch.Lote;
+                        }
+
+                        currentBatchRemaining -= cant;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error en ObtenerSalidasPI: {ex.Message}");
             }
 
             return resultado.OrderByDescending(x => x.Fecha).ToList();

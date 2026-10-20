@@ -18,6 +18,7 @@ namespace proy_back_Qbd.Services.Interfaces
         public Task<List<SalidaInsumoRes>> ObtenerSalidasEmpaque(int empaqueId, int idSede);
         public Task<List<SalidaInsumoRes>> ObtenerSalidasPT(int productoId, int idSede);
         public Task<List<SalidaInsumoRes>> ObtenerSalidasEconomato(int economatoId, int idSede);
+        public Task<List<SalidaInsumoRes>> ObtenerSalidasPI(int insumoId, int idSede);
         public Task<List<BajaInsumoRes>> ObtenerBajasInsumo(int insumoId, int idSede, string? familia = null);
         public Task<object> AssignLocation(AssignLocationReq request);
         public Task<object> AssignLimite(AssignLimiteReq request);
