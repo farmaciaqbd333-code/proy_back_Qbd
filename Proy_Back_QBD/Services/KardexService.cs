@@ -2040,7 +2040,7 @@ namespace proy_back_Qbd.Services
                         RegistroLoteInsumo = "PI" + Alfanumerico.ConvertToBase36(piRef.Id),
                         Cantidad = cant,
                         Um = "G",
-                        Fecha = s.NotaSalida != null ? s.NotaSalida.FechaCreacion.DateTime : null,
+                        Fecha = s.NotaSalida != null ? s.NotaSalida.FechaCreacion : null,
                         Usuario = s.NotaSalida != null && s.NotaSalida.Creador != null ? s.NotaSalida.Creador.Codigo : "ADMIN"
                     });
                 }
@@ -2799,7 +2799,7 @@ namespace proy_back_Qbd.Services
             codFac = codFac?.Trim();
 
             if (!string.IsNullOrEmpty(serie) && !string.IsNullOrEmpty(numero))
-                return "$serie-$numero";
+                return $"{serie}-{numero}";
             if (!string.IsNullOrEmpty(serie))
                 return serie;
             if (!string.IsNullOrEmpty(numero))
