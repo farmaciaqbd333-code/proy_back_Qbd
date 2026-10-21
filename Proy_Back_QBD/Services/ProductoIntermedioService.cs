@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
@@ -314,16 +314,29 @@ namespace proy_back_Qbd.Services
                 ProductoIntermedio productoIntermedio =
                     new ProductoIntermedioMapper().CrearProductoIntermedio(request);
 
-                if (productoIntermedio.FechaEmision.Value.Kind == DateTimeKind.Unspecified)
+                if (!productoIntermedio.FechaVencimiento.HasValue && productoIntermedio.FechaEmision.HasValue)
                 {
-                    productoIntermedio.FechaEmision =
-                        DateTime.SpecifyKind(productoIntermedio.FechaEmision.Value, DateTimeKind.Utc);
+                    productoIntermedio.FechaVencimiento = productoIntermedio.FechaEmision.Value.AddMonths(10);
                 }
 
-                if (productoIntermedio.FechaVencimiento.Value.Kind == DateTimeKind.Unspecified)
+                if (productoIntermedio.FechaEmision.HasValue)
                 {
-                    productoIntermedio.FechaVencimiento =
-                        DateTime.SpecifyKind(productoIntermedio.FechaVencimiento.Value, DateTimeKind.Utc);
+                    productoIntermedio.FechaEmision = productoIntermedio.FechaEmision.Value.Kind switch
+                    {
+                        DateTimeKind.Unspecified => DateTime.SpecifyKind(productoIntermedio.FechaEmision.Value, DateTimeKind.Utc),
+                        DateTimeKind.Local => productoIntermedio.FechaEmision.Value.ToUniversalTime(),
+                        _ => productoIntermedio.FechaEmision.Value
+                    };
+                }
+
+                if (productoIntermedio.FechaVencimiento.HasValue)
+                {
+                    productoIntermedio.FechaVencimiento = productoIntermedio.FechaVencimiento.Value.Kind switch
+                    {
+                        DateTimeKind.Unspecified => DateTime.SpecifyKind(productoIntermedio.FechaVencimiento.Value, DateTimeKind.Utc),
+                        DateTimeKind.Local => productoIntermedio.FechaVencimiento.Value.ToUniversalTime(),
+                        _ => productoIntermedio.FechaVencimiento.Value
+                    };
                 }
 
                 _context.ProductosIntermedios.Add(productoIntermedio);
@@ -754,24 +767,29 @@ namespace proy_back_Qbd.Services
                 productoIntermedio.IdModificador = request.IdModificador;
                 productoIntermedio.FechaModificacion = ahora;
 
-                if (productoIntermedio.FechaEmision.HasValue &&
-                    productoIntermedio.FechaEmision.Value.Kind ==
-                    DateTimeKind.Unspecified)
+                if (!productoIntermedio.FechaVencimiento.HasValue && productoIntermedio.FechaEmision.HasValue)
                 {
-                    productoIntermedio.FechaEmision =
-                        DateTime.SpecifyKind(
-                            productoIntermedio.FechaEmision.Value,
-                            DateTimeKind.Utc);
+                    productoIntermedio.FechaVencimiento = productoIntermedio.FechaEmision.Value.AddMonths(10);
                 }
 
-                if (productoIntermedio.FechaVencimiento.HasValue &&
-                    productoIntermedio.FechaVencimiento.Value.Kind ==
-                    DateTimeKind.Unspecified)
+                if (productoIntermedio.FechaEmision.HasValue)
                 {
-                    productoIntermedio.FechaVencimiento =
-                        DateTime.SpecifyKind(
-                            productoIntermedio.FechaVencimiento.Value,
-                            DateTimeKind.Utc);
+                    productoIntermedio.FechaEmision = productoIntermedio.FechaEmision.Value.Kind switch
+                    {
+                        DateTimeKind.Unspecified => DateTime.SpecifyKind(productoIntermedio.FechaEmision.Value, DateTimeKind.Utc),
+                        DateTimeKind.Local => productoIntermedio.FechaEmision.Value.ToUniversalTime(),
+                        _ => productoIntermedio.FechaEmision.Value
+                    };
+                }
+
+                if (productoIntermedio.FechaVencimiento.HasValue)
+                {
+                    productoIntermedio.FechaVencimiento = productoIntermedio.FechaVencimiento.Value.Kind switch
+                    {
+                        DateTimeKind.Unspecified => DateTime.SpecifyKind(productoIntermedio.FechaVencimiento.Value, DateTimeKind.Utc),
+                        DateTimeKind.Local => productoIntermedio.FechaVencimiento.Value.ToUniversalTime(),
+                        _ => productoIntermedio.FechaVencimiento.Value
+                    };
                 }
 
                 // ============================================================
