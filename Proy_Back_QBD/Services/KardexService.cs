@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -427,6 +427,19 @@ namespace proy_back_Qbd.Services
                 .GroupBy(a => (a.StockEmpaque != null && a.StockEmpaque.IdCompraEmpaque > 0) ? a.StockEmpaque.IdCompraEmpaque : a.IdStockEmpaque)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
+            var salidasList = await ObtenerSalidasEmpaque(empaqueId, idSede);
+            var salidasPorReg = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            foreach (var sItem in salidasList)
+            {
+                if (!string.IsNullOrEmpty(sItem.RegistroLoteInsumo))
+                {
+                    var key = sItem.RegistroLoteInsumo.Trim();
+                    var cant = sItem.Cantidad;
+                    if (!salidasPorReg.ContainsKey(key)) salidasPorReg[key] = 0m;
+                    salidasPorReg[key] += cant;
+                }
+            }
+
             var resultado = new List<DetalleEmpaqueRes>();
 
             foreach (var s in compras)
@@ -439,6 +452,10 @@ namespace proy_back_Qbd.Services
                 decimal salidasNS = s.NotaSalidaEmpaques
                     .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeOrigen == idSede)
                     .Sum(nse => nse.Cantidad);
+
+                var registro = "ME" + Alfanumerico.ConvertToBase36(s.Id);
+                decimal salidasReales = salidasPorReg.TryGetValue(registro, out var sVal) ? sVal : salidasNS;
+                decimal salidasRestantes = salidasReales;
 
                 // Auto-corrección si Compra 159 en CENTRAL sufrió doble deducción por confirmación
                 if (s.Id == 159 && idSede == 15)
@@ -458,6 +475,9 @@ namespace proy_back_Qbd.Services
                 if (esCompraEstaSede && cantCompra > 0)
                 {
                     var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaEmpaque == null);
+                    decimal salidasCompra = Math.Min(cantCompra, salidasRestantes);
+                    salidasRestantes -= salidasCompra;
+
                     decimal saldoCompra = 0m;
                     if (stockPrincipal != null)
                     {
@@ -469,15 +489,15 @@ namespace proy_back_Qbd.Services
                     }
                     else
                     {
-                        saldoCompra = Math.Max(0m, cantCompra - salidasNS);
+                        saldoCompra = Math.Max(0m, cantCompra - salidasCompra);
                     }
 
                     resultado.Add(new DetalleEmpaqueRes
                     {
-                        Registro = "ME" + Alfanumerico.ConvertToBase36(s.Id),
+                        Registro = registro,
                         Lote = s.Lote ?? "",
                         CantidadIngresada = cantCompra,
-                        Salidas = salidasNS,
+                        Salidas = salidasCompra,
                         Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
                         TieneAjuste = tieneAjuste,
                         Saldo = saldoCompra,
@@ -502,6 +522,9 @@ namespace proy_back_Qbd.Services
                 foreach (var nse in notasSalidaDestino)
                 {
                     decimal cantRecibida = nse.CantidadRecibida > 0 ? nse.CantidadRecibida : nse.Cantidad;
+                    decimal salidasNSItem = Math.Min(cantRecibida, salidasRestantes);
+                    salidasRestantes -= salidasNSItem;
+
                     var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaEmpaque == nse.Id);
 
                     decimal saldoNS = 0m;
@@ -515,17 +538,15 @@ namespace proy_back_Qbd.Services
                     }
                     else
                     {
-                        saldoNS = cantRecibida;
+                        saldoNS = Math.Max(0m, cantRecibida - salidasNSItem);
                     }
-
-                    decimal salidasDeEsteItem = !esCompraEstaSede ? salidasNS : 0m;
 
                     resultado.Add(new DetalleEmpaqueRes
                     {
-                        Registro = "ME" + Alfanumerico.ConvertToBase36(s.Id),
+                        Registro = registro,
                         Lote = s.Lote ?? "",
                         CantidadIngresada = cantRecibida,
-                        Salidas = salidasDeEsteItem,
+                        Salidas = salidasNSItem,
                         Ajuste = null,
                         TieneAjuste = false,
                         Saldo = saldoNS,
@@ -1454,7 +1475,14 @@ namespace proy_back_Qbd.Services
         }
         private async Task<List<StockRes>> ObtenerMateriaEmpaque(int idSede)
         {
-            return await _context.Empaques.AsNoTracking()
+            var salidasLaboratorioPorEmpaque = await _context.Laboratorios
+                .AsNoTracking()
+                .Where(l => l.SedeId == idSede && l.EmpaqueId != null)
+                .GroupBy(l => l.EmpaqueId!.Value)
+                .Select(g => new { EmpaqueId = g.Key, Total = (decimal)g.Count() })
+                .ToDictionaryAsync(g => g.EmpaqueId, g => g.Total);
+
+            var lista = await _context.Empaques.AsNoTracking()
                         .GroupBy(g => new { g.Id })
                         .Select(s => new StockRes()
                         {
@@ -1483,6 +1511,18 @@ namespace proy_back_Qbd.Services
                             CodigoUbicacion = s.Select(s => s.EmpaqueSedes.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault() ?? s.Select(x => x.CodigoUbicacion).FirstOrDefault(),
                             Limite = s.Select(s => s.EmpaqueSedes.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
                         }).ToListAsync();
+
+            foreach (var item in lista)
+            {
+                if (int.TryParse(item.Codigo, out int empId) && salidasLaboratorioPorEmpaque.TryGetValue(empId, out decimal cantFM))
+                {
+                    item.Salidas = (item.Salidas ?? 0m) + cantFM;
+                    item.Stock = (item.Entradas ?? 0m) - (item.Salidas ?? 0m) + (item.Ajustes ?? 0m) - (item.Baja ?? 0m);
+                    item.Saldo = item.Stock;
+                }
+            }
+
+            return lista;
         }
         private async Task<List<StockRes>> ObtenerEconomato(int idSede)
         {
