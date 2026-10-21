@@ -68,10 +68,10 @@ public class FormulaController : ControllerBase
         Formula? response = await _formulaService.ActualizarLab(formulaId, sedeId, request);
         if (response == null)
         {
-            return NotFound();
+            return NotFound($"No se encontró la fórmula {formulaId} en la sede {sedeId}.");
         }
 
-        return Ok(response);
+        return Ok("Datos generales actualizados correctamente");
     }
 
     [HttpPatch("formulaM/{id}/{sedeId}")]

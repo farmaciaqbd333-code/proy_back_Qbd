@@ -263,28 +263,41 @@ namespace Proy_back_QBD.Services
             .Include(i => i.Pedido)
             .FirstOrDefaultAsync(foda => foda.Id == formulaId && foda.SedeId == sedeId);
 
-            if (formula == null || formula.Pedido == null || formula.Laboratorio == null) return null;
+            if (formula == null) return null;
 
-            Pedido pedido = formula.Pedido;
-            pedido.Total -= formula.Costo * formula.Cantidad;
-            pedido.Saldo -= formula.Costo * formula.Cantidad;
+            // El pedido se ajusta solo si existe (antes devolvía 404 si faltaba)
+            Pedido? pedido = formula.Pedido;
+            if (pedido != null)
+            {
+                pedido.Total -= formula.Costo * formula.Cantidad;
+                pedido.Saldo -= formula.Costo * formula.Cantidad;
+            }
 
             formula.Costo = request.Costo;
             formula.Cantidad = request.Cantidad;
             formula.FormulaMagistral = request.FormulaMagistral;
             formula.FormaFarmaceutica = request.FormaFarmaceutica;
             formula.GPorMl = request.GPorMl;
-            formula.Laboratorio.FechaEmision = request.FechaEmision;
-            formula.Laboratorio.FechaVcto = request.FechaVcto;
             formula.UnidadMedida = request.UnidadMedida;
-            formula.Laboratorio.Autorizado = request.Autorizado;
-            formula.Laboratorio.Elaborado = request.Elaborado;
             formula.Diagnostico = request.Diagnostico;
             formula.ZonaAplicacion = request.ZonaAplicacion;
             formula.ModificadorId = request.ModificadorId;
 
-            pedido.Total += formula.Costo * formula.Cantidad;
-            pedido.Saldo += formula.Costo * formula.Cantidad;
+            // Los datos de laboratorio (fechas, autorizado, elaborado) solo se actualizan
+            // si la fórmula ya tiene su registro de laboratorio (se crea al GUARDAR).
+            if (formula.Laboratorio != null)
+            {
+                formula.Laboratorio.FechaEmision = request.FechaEmision;
+                formula.Laboratorio.FechaVcto = request.FechaVcto;
+                formula.Laboratorio.Autorizado = request.Autorizado;
+                formula.Laboratorio.Elaborado = request.Elaborado;
+            }
+
+            if (pedido != null)
+            {
+                pedido.Total += formula.Costo * formula.Cantidad;
+                pedido.Saldo += formula.Costo * formula.Cantidad;
+            }
             await _context.SaveChangesAsync();
 
             return formula;
