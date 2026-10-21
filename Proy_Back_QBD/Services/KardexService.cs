@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mail;
@@ -1684,7 +1684,7 @@ namespace proy_back_Qbd.Services
                     .Select(s => new SalidaInsumoRes
                     {
                         TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
+                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
                             ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
@@ -1913,7 +1913,7 @@ namespace proy_back_Qbd.Services
                     .Select(s => new SalidaInsumoRes
                     {
                         TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
+                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
                             ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
@@ -1987,7 +1987,7 @@ namespace proy_back_Qbd.Services
                     .Select(s => new SalidaInsumoRes
                     {
                         TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
+                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
                             ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
@@ -2031,7 +2031,7 @@ namespace proy_back_Qbd.Services
                     .Select(s => new SalidaInsumoRes
                     {
                         TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
+                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
                             ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
@@ -2138,7 +2138,7 @@ namespace proy_back_Qbd.Services
                     resultado.Add(new SalidaInsumoRes
                     {
                         TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NS-" + Alfanumerico.ConvertToBase36(s.NotaSalida.Id)) : "NS",
+                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
                         DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
                             ? $"Envio a {s.NotaSalida.SedeDestino.Nombre}"
                             : "Nota de Salida",
