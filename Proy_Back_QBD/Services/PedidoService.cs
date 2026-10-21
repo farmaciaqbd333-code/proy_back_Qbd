@@ -158,7 +158,7 @@ namespace Proy_back_QBD.Services
 
         public async Task<PedidoCreateRes?> Crear(PedidoCreateReq request)
         {
-            bool validacion = await _context.Pedidos.AnyAsync(aa => aa.Recibo == request.Recibo);
+            bool validacion = await _context.Pedidos.AnyAsync(aa => aa.Recibo == request.Recibo && aa.SedeId == request.SedeId);
             if (validacion)
             {
                 return null;
