@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
