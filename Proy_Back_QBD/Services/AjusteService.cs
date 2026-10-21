@@ -21,6 +21,25 @@ namespace Proy_back_QBD.Service.AjusteService
             _context = context;
         }
 
+        /// <summary>
+        /// Convierte "MPNX:100;MPPH:185" en [(MPNX,100),(MPPH,185)].
+        /// </summary>
+        private static List<(string Registro, decimal Cantidad)> ParsearRegistrosLote(string? valor)
+        {
+            var lista = new List<(string Registro, decimal Cantidad)>();
+            if (string.IsNullOrWhiteSpace(valor)) return lista;
+            foreach (var parte in valor.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var kv = parte.Split(':', 2, StringSplitOptions.TrimEntries);
+                if (kv.Length != 2 || string.IsNullOrWhiteSpace(kv[0])) continue;
+                if (decimal.TryParse(kv[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var cant) && cant > 0)
+                {
+                    lista.Add((kv[0].Trim().ToUpper(), cant));
+                }
+            }
+            return lista;
+        }
+
         public async Task<List<TablaAjustesRes>> ListaAjustes(string familia, int idSede)
         {
             if (idSede <= 0)
@@ -400,11 +419,29 @@ namespace Proy_back_QBD.Service.AjusteService
                 .GroupBy(a => (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && a.StockInsumo.IdCompraInsumo.Value > 0) ? a.StockInsumo.IdCompraInsumo.Value : a.IdStockInsumo)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            var salidasFM = await _context.FormulasCC
+            // Salidas por fórmula magistral:
+            //  - las que guardaron su reparto por registro se descuentan de ESE registro
+            //  - las antiguas (sin reparto) quedan pendientes y se reparten FIFO como antes
+            var formulasSede = await _context.FormulasCC
                 .Where(f => f.Formula != null && f.Formula.SedeId == idSede)
-                .GroupBy(f => f.InsumoId)
-                .Select(g => new { IdInsumo = g.Key, Total = g.Sum(f => f.CantidadL) })
-                .ToDictionaryAsync(x => x.IdInsumo, x => x.Total);
+                .Select(f => new { f.InsumoId, f.CantidadL, f.RegistrosLote })
+                .ToListAsync();
+
+            var salidasFM = new Dictionary<int, decimal>();
+            var salidasFMPorRegistro = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
+            foreach (var f in formulasSede)
+            {
+                var reparto = ParsearRegistrosLote(f.RegistrosLote);
+                if (reparto.Count == 0)
+                {
+                    salidasFM[f.InsumoId] = (salidasFM.TryGetValue(f.InsumoId, out var acum) ? acum : 0m) + f.CantidadL;
+                    continue;
+                }
+                foreach (var (registro, cantidad) in reparto)
+                {
+                    salidasFMPorRegistro[registro] = (salidasFMPorRegistro.TryGetValue(registro, out var acumReg) ? acumReg : 0m) + cantidad;
+                }
+            }
 
             var salidasPI = await _context.InsumoProductoIntermedios
                 .Where(ipi => ipi.ProductoIntermedio != null && ipi.ProductoIntermedio.IdSede == idSede)
@@ -503,7 +540,9 @@ namespace Proy_back_QBD.Service.AjusteService
                         .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
 
                     decimal salidasPIDirectas = consumosPIDirectos.ContainsKey(compraInsumo.Id) ? consumosPIDirectos[compraInsumo.Id] : 0m;
-                    decimal salidasLote = salidasNS + salidasPIDirectas;
+                    string registroCompra = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
+                    decimal salidasFMRegistro = salidasFMPorRegistro.TryGetValue(registroCompra, out var fmReg) ? fmReg : 0m;
+                    decimal salidasLote = salidasNS + salidasPIDirectas + salidasFMRegistro;
 
                     var stockInsumosSede = compraInsumo.StockInsumos
                         .Where(si => si.IdSede == idSede)
