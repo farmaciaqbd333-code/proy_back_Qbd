@@ -31,6 +31,9 @@ namespace Proy_back_QBD.Models
         public decimal? Practica { get; set; }
         [Column("csp")]
         public bool? CSP { get; set; }
+        // Reparto del insumo por registro de lote, ej: "MPNX:100;MPPH:185"
+        [Column("registros_lote")]
+        public string? RegistrosLote { get; set; }
         [Column("fecha_creacion")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime FechaCreacion { get; set; }           // Fecha de creación del pedido

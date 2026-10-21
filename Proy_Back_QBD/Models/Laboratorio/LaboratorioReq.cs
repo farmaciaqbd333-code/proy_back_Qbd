@@ -43,5 +43,7 @@ namespace Proy_back_QBD.Dto.Productos
         public string? Practica { get; set; }
         public bool? CSP { get; set; }
         public int CreadorId { get; set; }
+        // Reparto por registro de lote, ej: "MPNX:100;MPPH:185"
+        public string? RegistrosLote { get; set; }
     }
 }

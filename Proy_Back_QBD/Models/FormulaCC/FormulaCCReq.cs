@@ -24,6 +24,8 @@ namespace Proy_back_QBD.Models
         public bool? CSP { get; set; }
         public int CreadorId { get; set; }
         public int ModificadorId { get; set; }
+        // Reparto por registro de lote, ej: "MPNX:100;MPPH:185"
+        public string? RegistrosLote { get; set; }
     }
 
 }

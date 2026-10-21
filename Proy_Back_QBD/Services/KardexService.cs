@@ -1569,6 +1569,81 @@ namespace proy_back_Qbd.Services
                 }).ToListAsync();
         }
 
+        /// <summary>
+        /// Convierte "MPNX:100;MPPH:185" en [(MPNX,100),(MPPH,185)].
+        /// </summary>
+        private static List<(string Registro, decimal Cantidad)> ParsearRegistrosLote(string? valor)
+        {
+            var lista = new List<(string Registro, decimal Cantidad)>();
+            if (string.IsNullOrWhiteSpace(valor)) return lista;
+            foreach (var parte in valor.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                var kv = parte.Split(':', 2, StringSplitOptions.TrimEntries);
+                if (kv.Length != 2 || string.IsNullOrWhiteSpace(kv[0])) continue;
+                if (decimal.TryParse(kv[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out var cant) && cant > 0)
+                {
+                    lista.Add((kv[0].Trim().ToUpper(), cant));
+                }
+            }
+            return lista;
+        }
+
+        /// <summary>
+        /// Salidas por fórmula magistral: si la fórmula guardó su reparto por registro,
+        /// se genera una salida por cada registro usado; si no, queda sin registro (FIFO).
+        /// </summary>
+        private static List<SalidaInsumoRes> ExpandirSalidasFormula(
+            List<FormulaCC> formulasCC,
+            string tipoSalida,
+            Func<string, string?> loteDeRegistro)
+        {
+            var salidas = new List<SalidaInsumoRes>();
+            foreach (var s in formulasCC)
+            {
+                var regDestino = s.Formula != null ? ("FM-" + s.Formula.Id) : "FM";
+                var descDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("Fórmula #" + s.Formula.Id)) : "Fórmula";
+                var loteFormula = s.Formula != null ? (s.Formula.Lote ?? "") : "";
+                var um = s.Insumo != null ? s.Insumo.UnidadMedida : "G";
+                var fecha = s.Formula != null ? s.Formula.FechaCreacion : s.FechaCreacion;
+                var usuario = s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN";
+
+                var reparto = ParsearRegistrosLote(s.RegistrosLote);
+                if (reparto.Count == 0)
+                {
+                    salidas.Add(new SalidaInsumoRes
+                    {
+                        TipoSalida = tipoSalida,
+                        RegistroDestino = regDestino,
+                        DescripcionDestino = descDestino,
+                        LoteInsumo = loteFormula,
+                        RegistroLoteInsumo = "",
+                        Cantidad = s.CantidadL,
+                        Um = um,
+                        Fecha = fecha,
+                        Usuario = usuario
+                    });
+                    continue;
+                }
+
+                foreach (var (registro, cantidad) in reparto)
+                {
+                    salidas.Add(new SalidaInsumoRes
+                    {
+                        TipoSalida = tipoSalida,
+                        RegistroDestino = regDestino,
+                        DescripcionDestino = descDestino,
+                        LoteInsumo = loteDeRegistro(registro) ?? loteFormula,
+                        RegistroLoteInsumo = registro,
+                        Cantidad = cantidad,
+                        Um = um,
+                        Fecha = fecha,
+                        Usuario = usuario
+                    });
+                }
+            }
+            return salidas;
+        }
+
         public async Task<List<SalidaInsumoRes>> ObtenerSalidasInsumo(int idInsumo, int idSede, string? familia = null)
         {
             var fam = (familia ?? "").ToUpper().Trim();
@@ -1743,27 +1818,19 @@ namespace proy_back_Qbd.Services
                     resultado.AddRange(notasSalida);
                 }
 
-                // 3. Salidas por Fórmulas Magistrales
-                var formulas = await _context.FormulasCC
+                // 3. Salidas por Fórmulas Magistrales (respetando el registro elegido si se guardó)
+                var formulasCCMp = await _context.FormulasCC
                     .Include(x => x.Formula)
                         .ThenInclude(f => f.Creador)
                     .Include(x => x.Insumo)
                     .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
                     .OrderBy(x => x.FechaCreacion)
-                    .Select(s => new SalidaInsumoRes
-                    {
-                        TipoSalida = "FÓRMULA MAGISTRAL",
-                        RegistroDestino = s.Formula != null ? ("FM-" + s.Formula.Id) : "FM",
-                        DescripcionDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("Fórmula #" + s.Formula.Id)) : "Fórmula",
-                        LoteInsumo = s.Formula != null ? (s.Formula.Lote ?? "") : "",
-                        RegistroLoteInsumo = "",
-                        Cantidad = s.CantidadL,
-                        Um = s.Insumo != null ? s.Insumo.UnidadMedida : "G",
-                        Fecha = s.Formula != null ? s.Formula.FechaCreacion : s.FechaCreacion,
-                        Usuario = s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN"
-                    })
                     .AsNoTracking()
                     .ToListAsync();
+                var formulas = ExpandirSalidasFormula(
+                    formulasCCMp,
+                    "FÓRMULA MAGISTRAL",
+                    reg => batchTrackers.FirstOrDefault(b => string.Equals(b.Registro, reg, StringComparison.OrdinalIgnoreCase))?.Lote);
 
                 if (formulas != null && formulas.Any())
                 {
@@ -1773,8 +1840,17 @@ namespace proy_back_Qbd.Services
                 // Asignar RegistroLoteInsumo y LoteInsumo a las salidas locales (FM o PI directos) en orden FIFO
                 if (batchTrackers.Any())
                 {
+                    // Lo que ya salió con registro explícito no está disponible para el FIFO
+                    var usadoExplicito = resultado
+                        .Where(r => !string.IsNullOrEmpty(r.RegistroLoteInsumo))
+                        .GroupBy(r => r.RegistroLoteInsumo.Trim().ToUpper())
+                        .ToDictionary(g => g.Key, g => g.Sum(r => r.Cantidad));
+                    decimal SaldoFifo(int idx) =>
+                        batchTrackers[idx].SaldoRestante -
+                        (usadoExplicito.TryGetValue(batchTrackers[idx].Registro.ToUpper(), out var u) ? u : 0m);
+
                     int currentBatchIdx = 0;
-                    decimal currentBatchRemaining = batchTrackers[0].SaldoRestante;
+                    decimal currentBatchRemaining = SaldoFifo(0);
 
                     var salidasLocales = resultado
                         .Where(r => string.IsNullOrEmpty(r.RegistroLoteInsumo))
@@ -1787,7 +1863,7 @@ namespace proy_back_Qbd.Services
                         while (currentBatchRemaining <= 0 && currentBatchIdx < batchTrackers.Count - 1)
                         {
                             currentBatchIdx++;
-                            currentBatchRemaining = batchTrackers[currentBatchIdx].SaldoRestante;
+                            currentBatchRemaining = SaldoFifo(currentBatchIdx);
                         }
 
                         var activeBatch = batchTrackers[currentBatchIdx];
@@ -2259,27 +2335,19 @@ namespace proy_back_Qbd.Services
                     }
                 }
 
-                // 5. Salidas por Formulas Magistrales
-                var formulas = await _context.FormulasCC
+                // 5. Salidas por Formulas Magistrales (respetando el registro elegido si se guardó)
+                var formulasCCPi = await _context.FormulasCC
                     .Include(x => x.Formula)
                         .ThenInclude(f => f.Creador)
                     .Include(x => x.Insumo)
                     .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
                     .OrderBy(x => x.FechaCreacion)
-                    .Select(s => new SalidaInsumoRes
-                    {
-                        TipoSalida = "FORMULA MAGISTRAL",
-                        RegistroDestino = s.Formula != null ? ("FM-" + s.Formula.Id) : "FM",
-                        DescripcionDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("Formula #" + s.Formula.Id)) : "Formula",
-                        LoteInsumo = s.Formula != null ? (s.Formula.Lote ?? "") : "",
-                        RegistroLoteInsumo = "",
-                        Cantidad = s.CantidadL,
-                        Um = s.Insumo != null ? s.Insumo.UnidadMedida : "G",
-                        Fecha = s.Formula != null ? s.Formula.FechaCreacion : s.FechaCreacion,
-                        Usuario = s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN"
-                    })
                     .AsNoTracking()
                     .ToListAsync();
+                var formulas = ExpandirSalidasFormula(
+                    formulasCCPi,
+                    "FORMULA MAGISTRAL",
+                    reg => batchTrackers.FirstOrDefault(b => string.Equals(b.Registro, reg, StringComparison.OrdinalIgnoreCase))?.Lote);
 
                 if (formulas != null && formulas.Any())
                 {
@@ -2289,8 +2357,17 @@ namespace proy_back_Qbd.Services
                 // 6. Asignar RegistroLoteInsumo y LoteInsumo por FIFO para las salidas locales
                 if (batchTrackers.Any())
                 {
+                    // Lo que ya salió con registro explícito no está disponible para el FIFO
+                    var usadoExplicito = resultado
+                        .Where(r => !string.IsNullOrEmpty(r.RegistroLoteInsumo))
+                        .GroupBy(r => r.RegistroLoteInsumo.Trim().ToUpper())
+                        .ToDictionary(g => g.Key, g => g.Sum(r => r.Cantidad));
+                    decimal SaldoFifo(int idx) =>
+                        batchTrackers[idx].SaldoRestante -
+                        (usadoExplicito.TryGetValue(batchTrackers[idx].Registro.ToUpper(), out var u) ? u : 0m);
+
                     int currentBatchIdx = 0;
-                    decimal currentBatchRemaining = batchTrackers[0].SaldoRestante;
+                    decimal currentBatchRemaining = SaldoFifo(0);
 
                     var salidasLocales = resultado
                         .Where(r => string.IsNullOrEmpty(r.RegistroLoteInsumo))
@@ -2303,7 +2380,7 @@ namespace proy_back_Qbd.Services
                         while (currentBatchRemaining <= 0 && currentBatchIdx < batchTrackers.Count - 1)
                         {
                             currentBatchIdx++;
-                            currentBatchRemaining = batchTrackers[currentBatchIdx].SaldoRestante;
+                            currentBatchRemaining = SaldoFifo(currentBatchIdx);
                         }
 
                         var activeBatch = batchTrackers[currentBatchIdx];

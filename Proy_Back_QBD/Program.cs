@@ -172,6 +172,16 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<ApiContext>();
+        try
+        {
+            // Reparto de cada insumo de fórmula magistral por registro de lote
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS ""formulasCC"" ADD COLUMN IF NOT EXISTS registros_lote text;");
+            Console.WriteLine("--> Base de datos: columna formulasCC.registros_lote verificada/creada.");
+        }
+        catch (Exception exReg)
+        {
+            Console.WriteLine($"DB Auto-migration error (registros_lote): {exReg.Message}");
+        }
         db.Database.ExecuteSqlRaw(@"
             ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
             ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;
