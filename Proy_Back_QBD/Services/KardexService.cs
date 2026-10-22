@@ -1604,8 +1604,13 @@ namespace proy_back_Qbd.Services
                 var descDestino = s.Formula != null ? (s.Formula.FormulaMagistral ?? ("Fórmula #" + s.Formula.Id)) : "Fórmula";
                 var loteFormula = s.Formula != null ? (s.Formula.Lote ?? "") : "";
                 var um = s.Insumo != null ? s.Insumo.UnidadMedida : "G";
-                var fecha = s.Formula != null ? s.Formula.FechaCreacion : s.FechaCreacion;
-                var usuario = s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN";
+                // La salida ocurre cuando se REGISTRA en laboratorio (no cuando se creó la fórmula en el pedido)
+                var lab = s.Formula?.Laboratorio;
+                var fecha = lab != null
+                    ? lab.FechaCreacion
+                    : (s.Formula != null ? s.Formula.FechaCreacion : s.FechaCreacion);
+                var usuario = lab?.Creador?.Codigo
+                    ?? (s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN");
 
                 var reparto = ParsearRegistrosLote(s.RegistrosLote);
                 if (reparto.Count == 0)
@@ -1822,6 +1827,9 @@ namespace proy_back_Qbd.Services
                 var formulasCCMp = await _context.FormulasCC
                     .Include(x => x.Formula)
                         .ThenInclude(f => f.Creador)
+                    .Include(x => x.Formula)
+                        .ThenInclude(f => f!.Laboratorio)
+                            .ThenInclude(l => l!.Creador)
                     .Include(x => x.Insumo)
                     .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
                     .OrderBy(x => x.FechaCreacion)
@@ -2339,6 +2347,9 @@ namespace proy_back_Qbd.Services
                 var formulasCCPi = await _context.FormulasCC
                     .Include(x => x.Formula)
                         .ThenInclude(f => f.Creador)
+                    .Include(x => x.Formula)
+                        .ThenInclude(f => f!.Laboratorio)
+                            .ThenInclude(l => l!.Creador)
                     .Include(x => x.Insumo)
                     .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
                     .OrderBy(x => x.FechaCreacion)
