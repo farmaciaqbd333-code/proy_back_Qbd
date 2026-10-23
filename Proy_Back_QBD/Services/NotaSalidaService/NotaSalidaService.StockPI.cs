@@ -78,7 +78,36 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         private async Task<decimal> ObtenerStockPI(int idProductoIntermedio, int idSede)
         {
             var filas = await ObtenerFilasStockPI(idProductoIntermedio, idSede);
-            return filas.Sum(s => s.StockDisponible);
+            var total = filas.Sum(s => s.StockDisponible);
+
+            // Diagnóstico temporal: muestra en la consola de la API de dónde sale el stock de cada registro PI
+            _logger.LogWarning("[STOCK-PI v2] Registro PI{Reg} (id {Id}) sede {Sede}: total {Total} en {N} fila(s): {Detalle}",
+                Alfanumerico.ConvertToBase36(idProductoIntermedio), idProductoIntermedio, idSede, total, filas.Count,
+                string.Join(" | ", filas.Select(f =>
+                    $"stock_insumo#{f.Id} stock={f.StockDisponible} um={f.UnidadMedida} tipo={f.Tipo} idPI={f.IdProductoIntermedio} idNSI={f.IdNotaSalidaInsumo} lote={f.NotaSalidaInsumo?.Lote}")));
+
+            // Otras filas con el mismo registro PI en la sede que NO se cuentan (para comparar)
+            var otras = await _context.StockInsumos.AsNoTracking()
+                .Where(s => s.IdSede == idSede && s.IdProductoIntermedio == idProductoIntermedio)
+                .Select(s => new { s.Id, s.StockDisponible, s.IdNotaSalidaInsumo, s.Tipo })
+                .ToListAsync();
+            _logger.LogWarning("[STOCK-PI v2] Registro PI{Reg}: todas las filas con idPI en la sede: {Otras}",
+                Alfanumerico.ConvertToBase36(idProductoIntermedio),
+                string.Join(" | ", otras.Select(o => $"#{o.Id} stock={o.StockDisponible} idNSI={o.IdNotaSalidaInsumo} tipo={o.Tipo}")));
+
+            // También a un archivo en la carpeta del proyecto (diagnóstico temporal)
+            try
+            {
+                var linea = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} PI{Alfanumerico.ConvertToBase36(idProductoIntermedio)} (id {idProductoIntermedio}) sede {idSede} TOTAL={total} | CONTADAS: " +
+                    string.Join(" ; ", filas.Select(f => $"#{f.Id} stock={f.StockDisponible} um={f.UnidadMedida} idPI={f.IdProductoIntermedio} idNSI={f.IdNotaSalidaInsumo} lote={f.NotaSalidaInsumo?.Lote}")) +
+                    " | TODAS_CON_IDPI: " +
+                    string.Join(" ; ", otras.Select(o => $"#{o.Id} stock={o.StockDisponible} idNSI={o.IdNotaSalidaInsumo} tipo={o.Tipo}")) +
+                    Environment.NewLine;
+                File.AppendAllText(Path.Combine(Directory.GetCurrentDirectory(), "diagnostico-stock-pi.txt"), linea);
+            }
+            catch { /* solo diagnóstico */ }
+
+            return total;
         }
 
         /// <summary>Datos de un registro PI para la Nota de Salida, con el stock del kardex.</summary>
