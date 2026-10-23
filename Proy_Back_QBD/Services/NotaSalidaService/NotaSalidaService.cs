@@ -585,6 +585,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         .Select(x => new
                         {
                             x.Id,
+                            x.IdInsumo,
                             Descripcion = x.Insumo != null ? x.Insumo.Descripcion : "",
                             Codigo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
                             x.Lote,
@@ -595,9 +596,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         .ToListAsync();
 
                     // Stock por registro calculado igual que el kardex (ver NotaSalidaService.StockPI.cs)
-                    var stockPorPI = new Dictionary<int, decimal>();
-                    foreach (var idPi in pis.Select(x => x.Id).Distinct())
-                        stockPorPI[idPi] = await ObtenerStockPI(idPi, targetSede);
+                    var stockPorPI = await ObtenerStockPIMasivo(pis.Select(x => (x.Id, x.IdInsumo, x.Lote)).ToList(), targetSede);
 
                     return pis
                         .GroupBy(x => x.Id).Select(g => g.First())

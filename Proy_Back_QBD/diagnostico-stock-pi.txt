@@ -35,3 +35,176 @@
 2026-10-23 13:50:07 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
 2026-10-23 13:50:08 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
 2026-10-23 13:50:08 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:54:12 PIPA (id 910) sede 15 TOTAL=500 | CONTADAS: #585 stock=500 um=G idPI=910 idNSI= lote= | TODAS_CON_IDPI: #585 stock=500 idNSI= tipo=PI
+2026-10-23 13:54:12 PIP4 (id 904) sede 15 TOTAL=100 | CONTADAS: #578 stock=100 um=G idPI=904 idNSI= lote= | TODAS_CON_IDPI: #578 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:13 PIPD (id 913) sede 15 TOTAL=500 | CONTADAS: #588 stock=500 um=G idPI=913 idNSI= lote= | TODAS_CON_IDPI: #588 stock=500 idNSI= tipo=PI
+2026-10-23 13:54:13 PIOX (id 897) sede 15 TOTAL=100 | CONTADAS: #569 stock=100 um=G idPI=897 idNSI= lote= | TODAS_CON_IDPI: #569 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:14 PIP7 (id 907) sede 15 TOTAL=500 | CONTADAS: #582 stock=500 um=G idPI=907 idNSI= lote= | TODAS_CON_IDPI: #582 stock=500 idNSI= tipo=PI
+2026-10-23 13:54:14 PIOV (id 895) sede 15 TOTAL=0 | CONTADAS: #560 stock=0 um=G idPI=895 idNSI= lote= | TODAS_CON_IDPI: #560 stock=0 idNSI= tipo=PI
+2026-10-23 13:54:15 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:54:15 PIPB (id 911) sede 15 TOTAL=50 | CONTADAS: #586 stock=50 um=G idPI=911 idNSI= lote= | TODAS_CON_IDPI: #586 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:16 PIOY (id 898) sede 15 TOTAL=50 | CONTADAS: #570 stock=50 um=G idPI=898 idNSI= lote= | TODAS_CON_IDPI: #570 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:16 PIOZ (id 899) sede 15 TOTAL=100 | CONTADAS: #571 stock=100 um=G idPI=899 idNSI= lote= | TODAS_CON_IDPI: #571 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:17 PIOQ (id 890) sede 15 TOTAL=173.30 | CONTADAS: #555 stock=173.30 um=G idPI=890 idNSI= lote= | TODAS_CON_IDPI: #555 stock=173.30 idNSI= tipo=PI
+2026-10-23 13:54:18 PIP0 (id 900) sede 15 TOTAL=100 | CONTADAS: #572 stock=100 um=G idPI=900 idNSI= lote= | TODAS_CON_IDPI: #572 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:18 PIP1 (id 901) sede 15 TOTAL=5 | CONTADAS: #573 stock=5 um=G idPI=901 idNSI= lote= | TODAS_CON_IDPI: #573 stock=5 idNSI= tipo=PI
+2026-10-23 13:54:19 PIOR (id 891) sede 15 TOTAL=50 | CONTADAS: #556 stock=50 um=G idPI=891 idNSI= lote= | TODAS_CON_IDPI: #556 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:19 PIPL (id 921) sede 15 TOTAL=100 | CONTADAS: #621 stock=100 um=G idPI=921 idNSI= lote= | TODAS_CON_IDPI: #621 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:20 PIP8 (id 908) sede 15 TOTAL=1000 | CONTADAS: #583 stock=1000 um=G idPI=908 idNSI= lote= | TODAS_CON_IDPI: #583 stock=1000 idNSI= tipo=PI
+2026-10-23 13:54:20 PIPC (id 912) sede 15 TOTAL=1000 | CONTADAS: #587 stock=1000 um=G idPI=912 idNSI= lote= | TODAS_CON_IDPI: #587 stock=1000 idNSI= tipo=PI
+2026-10-23 13:54:21 PIOS (id 892) sede 15 TOTAL=200 | CONTADAS: #557 stock=200 um=G idPI=892 idNSI= lote= | TODAS_CON_IDPI: #557 stock=200 idNSI= tipo=PI
+2026-10-23 13:54:21 PIP3 (id 903) sede 15 TOTAL=100 | CONTADAS: #575 stock=100 um=G idPI=903 idNSI= lote= | TODAS_CON_IDPI: #575 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:22 PIP9 (id 909) sede 15 TOTAL=201 | CONTADAS: #584 stock=201 um=G idPI=909 idNSI= lote= | TODAS_CON_IDPI: #584 stock=201 idNSI= tipo=PI
+2026-10-23 13:54:22 PIOP (id 889) sede 15 TOTAL=285.081 | CONTADAS: #554 stock=285.081 um=G idPI=889 idNSI= lote= | TODAS_CON_IDPI: #554 stock=285.081 idNSI= tipo=PI
+2026-10-23 13:54:23 PIP2 (id 902) sede 15 TOTAL=5 | CONTADAS: #574 stock=5 um=G idPI=902 idNSI= lote= | TODAS_CON_IDPI: #574 stock=5 idNSI= tipo=PI
+2026-10-23 13:54:23 PIP5 (id 905) sede 15 TOTAL=100 | CONTADAS: #580 stock=100 um=G idPI=905 idNSI= lote= | TODAS_CON_IDPI: #580 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:24 PIP6 (id 906) sede 15 TOTAL=50 | CONTADAS: #581 stock=50 um=G idPI=906 idNSI= lote= | TODAS_CON_IDPI: #581 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:24 PIPA (id 910) sede 15 TOTAL=500 | CONTADAS: #585 stock=500 um=G idPI=910 idNSI= lote= | TODAS_CON_IDPI: #585 stock=500 idNSI= tipo=PI
+2026-10-23 13:54:24 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
+2026-10-23 13:54:24 PIP4 (id 904) sede 15 TOTAL=100 | CONTADAS: #578 stock=100 um=G idPI=904 idNSI= lote= | TODAS_CON_IDPI: #578 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:25 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
+2026-10-23 13:54:25 PIPD (id 913) sede 15 TOTAL=500 | CONTADAS: #588 stock=500 um=G idPI=913 idNSI= lote= | TODAS_CON_IDPI: #588 stock=500 idNSI= tipo=PI
+2026-10-23 13:54:25 PIOX (id 897) sede 15 TOTAL=100 | CONTADAS: #569 stock=100 um=G idPI=897 idNSI= lote= | TODAS_CON_IDPI: #569 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:25 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:54:26 PIP7 (id 907) sede 15 TOTAL=500 | CONTADAS: #582 stock=500 um=G idPI=907 idNSI= lote= | TODAS_CON_IDPI: #582 stock=500 idNSI= tipo=PI
+2026-10-23 13:54:26 PIOV (id 895) sede 15 TOTAL=0 | CONTADAS: #560 stock=0 um=G idPI=895 idNSI= lote= | TODAS_CON_IDPI: #560 stock=0 idNSI= tipo=PI
+2026-10-23 13:54:27 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:54:27 PIPB (id 911) sede 15 TOTAL=50 | CONTADAS: #586 stock=50 um=G idPI=911 idNSI= lote= | TODAS_CON_IDPI: #586 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:28 PIOY (id 898) sede 15 TOTAL=50 | CONTADAS: #570 stock=50 um=G idPI=898 idNSI= lote= | TODAS_CON_IDPI: #570 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:29 PIOZ (id 899) sede 15 TOTAL=100 | CONTADAS: #571 stock=100 um=G idPI=899 idNSI= lote= | TODAS_CON_IDPI: #571 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:29 PIOQ (id 890) sede 15 TOTAL=173.30 | CONTADAS: #555 stock=173.30 um=G idPI=890 idNSI= lote= | TODAS_CON_IDPI: #555 stock=173.30 idNSI= tipo=PI
+2026-10-23 13:54:30 PIP0 (id 900) sede 15 TOTAL=100 | CONTADAS: #572 stock=100 um=G idPI=900 idNSI= lote= | TODAS_CON_IDPI: #572 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:30 PIP1 (id 901) sede 15 TOTAL=5 | CONTADAS: #573 stock=5 um=G idPI=901 idNSI= lote= | TODAS_CON_IDPI: #573 stock=5 idNSI= tipo=PI
+2026-10-23 13:54:31 PIOR (id 891) sede 15 TOTAL=50 | CONTADAS: #556 stock=50 um=G idPI=891 idNSI= lote= | TODAS_CON_IDPI: #556 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:31 PIPL (id 921) sede 15 TOTAL=100 | CONTADAS: #621 stock=100 um=G idPI=921 idNSI= lote= | TODAS_CON_IDPI: #621 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:32 PIP8 (id 908) sede 15 TOTAL=1000 | CONTADAS: #583 stock=1000 um=G idPI=908 idNSI= lote= | TODAS_CON_IDPI: #583 stock=1000 idNSI= tipo=PI
+2026-10-23 13:54:32 PIPC (id 912) sede 15 TOTAL=1000 | CONTADAS: #587 stock=1000 um=G idPI=912 idNSI= lote= | TODAS_CON_IDPI: #587 stock=1000 idNSI= tipo=PI
+2026-10-23 13:54:33 PIOS (id 892) sede 15 TOTAL=200 | CONTADAS: #557 stock=200 um=G idPI=892 idNSI= lote= | TODAS_CON_IDPI: #557 stock=200 idNSI= tipo=PI
+2026-10-23 13:54:33 PIP3 (id 903) sede 15 TOTAL=100 | CONTADAS: #575 stock=100 um=G idPI=903 idNSI= lote= | TODAS_CON_IDPI: #575 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:34 PIP9 (id 909) sede 15 TOTAL=201 | CONTADAS: #584 stock=201 um=G idPI=909 idNSI= lote= | TODAS_CON_IDPI: #584 stock=201 idNSI= tipo=PI
+2026-10-23 13:54:35 PIOP (id 889) sede 15 TOTAL=285.081 | CONTADAS: #554 stock=285.081 um=G idPI=889 idNSI= lote= | TODAS_CON_IDPI: #554 stock=285.081 idNSI= tipo=PI
+2026-10-23 13:54:35 PIP2 (id 902) sede 15 TOTAL=5 | CONTADAS: #574 stock=5 um=G idPI=902 idNSI= lote= | TODAS_CON_IDPI: #574 stock=5 idNSI= tipo=PI
+2026-10-23 13:54:36 PIP5 (id 905) sede 15 TOTAL=100 | CONTADAS: #580 stock=100 um=G idPI=905 idNSI= lote= | TODAS_CON_IDPI: #580 stock=100 idNSI= tipo=PI
+2026-10-23 13:54:36 PIP6 (id 906) sede 15 TOTAL=50 | CONTADAS: #581 stock=50 um=G idPI=906 idNSI= lote= | TODAS_CON_IDPI: #581 stock=50 idNSI= tipo=PI
+2026-10-23 13:54:37 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
+2026-10-23 13:54:37 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
+2026-10-23 13:54:38 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:54:42 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:55:40 PIOW (id 896) sede 1 TOTAL=11 | CONTADAS: #579 stock=6 um=G idPI=896 idNSI= lote= ; #568 stock=5 um=G idPI= idNSI=53 lote=PI-202610191 | TODAS_CON_IDPI: #579 stock=6 idNSI= tipo=PI
+2026-10-23 13:55:44 PIOW (id 896) sede 1 TOTAL=11 | CONTADAS: #579 stock=6 um=G idPI=896 idNSI= lote= ; #568 stock=5 um=G idPI= idNSI=53 lote=PI-202610191 | TODAS_CON_IDPI: #579 stock=6 idNSI= tipo=PI
+2026-10-23 13:55:51 PIPA (id 910) sede 15 TOTAL=500 | CONTADAS: #585 stock=500 um=G idPI=910 idNSI= lote= | TODAS_CON_IDPI: #585 stock=500 idNSI= tipo=PI
+2026-10-23 13:55:51 PIP4 (id 904) sede 15 TOTAL=100 | CONTADAS: #578 stock=100 um=G idPI=904 idNSI= lote= | TODAS_CON_IDPI: #578 stock=100 idNSI= tipo=PI
+2026-10-23 13:55:52 PIPD (id 913) sede 15 TOTAL=500 | CONTADAS: #588 stock=500 um=G idPI=913 idNSI= lote= | TODAS_CON_IDPI: #588 stock=500 idNSI= tipo=PI
+2026-10-23 13:55:53 PIOX (id 897) sede 15 TOTAL=100 | CONTADAS: #569 stock=100 um=G idPI=897 idNSI= lote= | TODAS_CON_IDPI: #569 stock=100 idNSI= tipo=PI
+2026-10-23 13:55:53 PIP7 (id 907) sede 15 TOTAL=500 | CONTADAS: #582 stock=500 um=G idPI=907 idNSI= lote= | TODAS_CON_IDPI: #582 stock=500 idNSI= tipo=PI
+2026-10-23 13:55:54 PIOV (id 895) sede 15 TOTAL=0 | CONTADAS: #560 stock=0 um=G idPI=895 idNSI= lote= | TODAS_CON_IDPI: #560 stock=0 idNSI= tipo=PI
+2026-10-23 13:55:54 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:55:55 PIPB (id 911) sede 15 TOTAL=50 | CONTADAS: #586 stock=50 um=G idPI=911 idNSI= lote= | TODAS_CON_IDPI: #586 stock=50 idNSI= tipo=PI
+2026-10-23 13:55:55 PIOY (id 898) sede 15 TOTAL=50 | CONTADAS: #570 stock=50 um=G idPI=898 idNSI= lote= | TODAS_CON_IDPI: #570 stock=50 idNSI= tipo=PI
+2026-10-23 13:55:56 PIOZ (id 899) sede 15 TOTAL=100 | CONTADAS: #571 stock=100 um=G idPI=899 idNSI= lote= | TODAS_CON_IDPI: #571 stock=100 idNSI= tipo=PI
+2026-10-23 13:55:56 PIOQ (id 890) sede 15 TOTAL=173.30 | CONTADAS: #555 stock=173.30 um=G idPI=890 idNSI= lote= | TODAS_CON_IDPI: #555 stock=173.30 idNSI= tipo=PI
+2026-10-23 13:55:57 PIP0 (id 900) sede 15 TOTAL=100 | CONTADAS: #572 stock=100 um=G idPI=900 idNSI= lote= | TODAS_CON_IDPI: #572 stock=100 idNSI= tipo=PI
+2026-10-23 13:55:57 PIP1 (id 901) sede 15 TOTAL=5 | CONTADAS: #573 stock=5 um=G idPI=901 idNSI= lote= | TODAS_CON_IDPI: #573 stock=5 idNSI= tipo=PI
+2026-10-23 13:55:58 PIOR (id 891) sede 15 TOTAL=50 | CONTADAS: #556 stock=50 um=G idPI=891 idNSI= lote= | TODAS_CON_IDPI: #556 stock=50 idNSI= tipo=PI
+2026-10-23 13:55:58 PIPL (id 921) sede 15 TOTAL=100 | CONTADAS: #621 stock=100 um=G idPI=921 idNSI= lote= | TODAS_CON_IDPI: #621 stock=100 idNSI= tipo=PI
+2026-10-23 13:55:59 PIP8 (id 908) sede 15 TOTAL=1000 | CONTADAS: #583 stock=1000 um=G idPI=908 idNSI= lote= | TODAS_CON_IDPI: #583 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:00 PIPC (id 912) sede 15 TOTAL=1000 | CONTADAS: #587 stock=1000 um=G idPI=912 idNSI= lote= | TODAS_CON_IDPI: #587 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:00 PIOS (id 892) sede 15 TOTAL=200 | CONTADAS: #557 stock=200 um=G idPI=892 idNSI= lote= | TODAS_CON_IDPI: #557 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:01 PIP3 (id 903) sede 15 TOTAL=100 | CONTADAS: #575 stock=100 um=G idPI=903 idNSI= lote= | TODAS_CON_IDPI: #575 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:01 PIP9 (id 909) sede 15 TOTAL=201 | CONTADAS: #584 stock=201 um=G idPI=909 idNSI= lote= | TODAS_CON_IDPI: #584 stock=201 idNSI= tipo=PI
+2026-10-23 13:56:02 PIOP (id 889) sede 15 TOTAL=285.081 | CONTADAS: #554 stock=285.081 um=G idPI=889 idNSI= lote= | TODAS_CON_IDPI: #554 stock=285.081 idNSI= tipo=PI
+2026-10-23 13:56:02 PIP2 (id 902) sede 15 TOTAL=5 | CONTADAS: #574 stock=5 um=G idPI=902 idNSI= lote= | TODAS_CON_IDPI: #574 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:03 PIP5 (id 905) sede 15 TOTAL=100 | CONTADAS: #580 stock=100 um=G idPI=905 idNSI= lote= | TODAS_CON_IDPI: #580 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:03 PIP6 (id 906) sede 15 TOTAL=50 | CONTADAS: #581 stock=50 um=G idPI=906 idNSI= lote= | TODAS_CON_IDPI: #581 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:04 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
+2026-10-23 13:56:04 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
+2026-10-23 13:56:05 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:06 PIPA (id 910) sede 15 TOTAL=500 | CONTADAS: #585 stock=500 um=G idPI=910 idNSI= lote= | TODAS_CON_IDPI: #585 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:07 PIP4 (id 904) sede 15 TOTAL=100 | CONTADAS: #578 stock=100 um=G idPI=904 idNSI= lote= | TODAS_CON_IDPI: #578 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:07 PIPD (id 913) sede 15 TOTAL=500 | CONTADAS: #588 stock=500 um=G idPI=913 idNSI= lote= | TODAS_CON_IDPI: #588 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:08 PIOX (id 897) sede 15 TOTAL=100 | CONTADAS: #569 stock=100 um=G idPI=897 idNSI= lote= | TODAS_CON_IDPI: #569 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:08 PIP7 (id 907) sede 15 TOTAL=500 | CONTADAS: #582 stock=500 um=G idPI=907 idNSI= lote= | TODAS_CON_IDPI: #582 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:09 PIOV (id 895) sede 15 TOTAL=0 | CONTADAS: #560 stock=0 um=G idPI=895 idNSI= lote= | TODAS_CON_IDPI: #560 stock=0 idNSI= tipo=PI
+2026-10-23 13:56:09 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:10 PIPB (id 911) sede 15 TOTAL=50 | CONTADAS: #586 stock=50 um=G idPI=911 idNSI= lote= | TODAS_CON_IDPI: #586 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:10 PIOY (id 898) sede 15 TOTAL=50 | CONTADAS: #570 stock=50 um=G idPI=898 idNSI= lote= | TODAS_CON_IDPI: #570 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:10 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:11 PIOZ (id 899) sede 15 TOTAL=100 | CONTADAS: #571 stock=100 um=G idPI=899 idNSI= lote= | TODAS_CON_IDPI: #571 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:11 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:11 PIOQ (id 890) sede 15 TOTAL=173.30 | CONTADAS: #555 stock=173.30 um=G idPI=890 idNSI= lote= | TODAS_CON_IDPI: #555 stock=173.30 idNSI= tipo=PI
+2026-10-23 13:56:12 PIP0 (id 900) sede 15 TOTAL=100 | CONTADAS: #572 stock=100 um=G idPI=900 idNSI= lote= | TODAS_CON_IDPI: #572 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:12 PIP1 (id 901) sede 15 TOTAL=5 | CONTADAS: #573 stock=5 um=G idPI=901 idNSI= lote= | TODAS_CON_IDPI: #573 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:13 PIOR (id 891) sede 15 TOTAL=50 | CONTADAS: #556 stock=50 um=G idPI=891 idNSI= lote= | TODAS_CON_IDPI: #556 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:14 PIPL (id 921) sede 15 TOTAL=100 | CONTADAS: #621 stock=100 um=G idPI=921 idNSI= lote= | TODAS_CON_IDPI: #621 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:14 PIP8 (id 908) sede 15 TOTAL=1000 | CONTADAS: #583 stock=1000 um=G idPI=908 idNSI= lote= | TODAS_CON_IDPI: #583 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:15 PIPC (id 912) sede 15 TOTAL=1000 | CONTADAS: #587 stock=1000 um=G idPI=912 idNSI= lote= | TODAS_CON_IDPI: #587 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:15 PIOS (id 892) sede 15 TOTAL=200 | CONTADAS: #557 stock=200 um=G idPI=892 idNSI= lote= | TODAS_CON_IDPI: #557 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:16 PIP3 (id 903) sede 15 TOTAL=100 | CONTADAS: #575 stock=100 um=G idPI=903 idNSI= lote= | TODAS_CON_IDPI: #575 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:16 PIP9 (id 909) sede 15 TOTAL=201 | CONTADAS: #584 stock=201 um=G idPI=909 idNSI= lote= | TODAS_CON_IDPI: #584 stock=201 idNSI= tipo=PI
+2026-10-23 13:56:17 PIOP (id 889) sede 15 TOTAL=285.081 | CONTADAS: #554 stock=285.081 um=G idPI=889 idNSI= lote= | TODAS_CON_IDPI: #554 stock=285.081 idNSI= tipo=PI
+2026-10-23 13:56:17 PIP2 (id 902) sede 15 TOTAL=5 | CONTADAS: #574 stock=5 um=G idPI=902 idNSI= lote= | TODAS_CON_IDPI: #574 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:18 PIP5 (id 905) sede 15 TOTAL=100 | CONTADAS: #580 stock=100 um=G idPI=905 idNSI= lote= | TODAS_CON_IDPI: #580 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:19 PIP6 (id 906) sede 15 TOTAL=50 | CONTADAS: #581 stock=50 um=G idPI=906 idNSI= lote= | TODAS_CON_IDPI: #581 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:19 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
+2026-10-23 13:56:20 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
+2026-10-23 13:56:20 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:21 PIPD (id 913) sede 15 TOTAL=500 | CONTADAS: #588 stock=500 um=G idPI=913 idNSI= lote= | TODAS_CON_IDPI: #588 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:21 PIOX (id 897) sede 15 TOTAL=100 | CONTADAS: #569 stock=100 um=G idPI=897 idNSI= lote= | TODAS_CON_IDPI: #569 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:22 PIP7 (id 907) sede 15 TOTAL=500 | CONTADAS: #582 stock=500 um=G idPI=907 idNSI= lote= | TODAS_CON_IDPI: #582 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:23 PIOV (id 895) sede 15 TOTAL=0 | CONTADAS: #560 stock=0 um=G idPI=895 idNSI= lote= | TODAS_CON_IDPI: #560 stock=0 idNSI= tipo=PI
+2026-10-23 13:56:23 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:24 PIPB (id 911) sede 15 TOTAL=50 | CONTADAS: #586 stock=50 um=G idPI=911 idNSI= lote= | TODAS_CON_IDPI: #586 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:24 PIOY (id 898) sede 15 TOTAL=50 | CONTADAS: #570 stock=50 um=G idPI=898 idNSI= lote= | TODAS_CON_IDPI: #570 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:24 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:25 PIOZ (id 899) sede 15 TOTAL=100 | CONTADAS: #571 stock=100 um=G idPI=899 idNSI= lote= | TODAS_CON_IDPI: #571 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:25 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:25 PIOQ (id 890) sede 15 TOTAL=173.30 | CONTADAS: #555 stock=173.30 um=G idPI=890 idNSI= lote= | TODAS_CON_IDPI: #555 stock=173.30 idNSI= tipo=PI
+2026-10-23 13:56:26 PIP0 (id 900) sede 15 TOTAL=100 | CONTADAS: #572 stock=100 um=G idPI=900 idNSI= lote= | TODAS_CON_IDPI: #572 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:26 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:26 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:26 PIP1 (id 901) sede 15 TOTAL=5 | CONTADAS: #573 stock=5 um=G idPI=901 idNSI= lote= | TODAS_CON_IDPI: #573 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:27 PIOR (id 891) sede 15 TOTAL=50 | CONTADAS: #556 stock=50 um=G idPI=891 idNSI= lote= | TODAS_CON_IDPI: #556 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:27 PIPL (id 921) sede 15 TOTAL=100 | CONTADAS: #621 stock=100 um=G idPI=921 idNSI= lote= | TODAS_CON_IDPI: #621 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:28 PIP8 (id 908) sede 15 TOTAL=1000 | CONTADAS: #583 stock=1000 um=G idPI=908 idNSI= lote= | TODAS_CON_IDPI: #583 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:28 PIPC (id 912) sede 15 TOTAL=1000 | CONTADAS: #587 stock=1000 um=G idPI=912 idNSI= lote= | TODAS_CON_IDPI: #587 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:29 PIOS (id 892) sede 15 TOTAL=200 | CONTADAS: #557 stock=200 um=G idPI=892 idNSI= lote= | TODAS_CON_IDPI: #557 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:29 PIP3 (id 903) sede 15 TOTAL=100 | CONTADAS: #575 stock=100 um=G idPI=903 idNSI= lote= | TODAS_CON_IDPI: #575 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:30 PIP9 (id 909) sede 15 TOTAL=201 | CONTADAS: #584 stock=201 um=G idPI=909 idNSI= lote= | TODAS_CON_IDPI: #584 stock=201 idNSI= tipo=PI
+2026-10-23 13:56:30 PIOP (id 889) sede 15 TOTAL=285.081 | CONTADAS: #554 stock=285.081 um=G idPI=889 idNSI= lote= | TODAS_CON_IDPI: #554 stock=285.081 idNSI= tipo=PI
+2026-10-23 13:56:31 PIP2 (id 902) sede 15 TOTAL=5 | CONTADAS: #574 stock=5 um=G idPI=902 idNSI= lote= | TODAS_CON_IDPI: #574 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:31 PIP5 (id 905) sede 15 TOTAL=100 | CONTADAS: #580 stock=100 um=G idPI=905 idNSI= lote= | TODAS_CON_IDPI: #580 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:32 PIP6 (id 906) sede 15 TOTAL=50 | CONTADAS: #581 stock=50 um=G idPI=906 idNSI= lote= | TODAS_CON_IDPI: #581 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:33 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
+2026-10-23 13:56:33 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
+2026-10-23 13:56:34 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:35 PIPA (id 910) sede 15 TOTAL=500 | CONTADAS: #585 stock=500 um=G idPI=910 idNSI= lote= | TODAS_CON_IDPI: #585 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:36 PIP4 (id 904) sede 15 TOTAL=100 | CONTADAS: #578 stock=100 um=G idPI=904 idNSI= lote= | TODAS_CON_IDPI: #578 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:36 PIPD (id 913) sede 15 TOTAL=500 | CONTADAS: #588 stock=500 um=G idPI=913 idNSI= lote= | TODAS_CON_IDPI: #588 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:37 PIOX (id 897) sede 15 TOTAL=100 | CONTADAS: #569 stock=100 um=G idPI=897 idNSI= lote= | TODAS_CON_IDPI: #569 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:37 PIP7 (id 907) sede 15 TOTAL=500 | CONTADAS: #582 stock=500 um=G idPI=907 idNSI= lote= | TODAS_CON_IDPI: #582 stock=500 idNSI= tipo=PI
+2026-10-23 13:56:38 PIOV (id 895) sede 15 TOTAL=0 | CONTADAS: #560 stock=0 um=G idPI=895 idNSI= lote= | TODAS_CON_IDPI: #560 stock=0 idNSI= tipo=PI
+2026-10-23 13:56:38 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:39 PIPB (id 911) sede 15 TOTAL=50 | CONTADAS: #586 stock=50 um=G idPI=911 idNSI= lote= | TODAS_CON_IDPI: #586 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:39 PIOY (id 898) sede 15 TOTAL=50 | CONTADAS: #570 stock=50 um=G idPI=898 idNSI= lote= | TODAS_CON_IDPI: #570 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:40 PIOZ (id 899) sede 15 TOTAL=100 | CONTADAS: #571 stock=100 um=G idPI=899 idNSI= lote= | TODAS_CON_IDPI: #571 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:40 PIOQ (id 890) sede 15 TOTAL=173.30 | CONTADAS: #555 stock=173.30 um=G idPI=890 idNSI= lote= | TODAS_CON_IDPI: #555 stock=173.30 idNSI= tipo=PI
+2026-10-23 13:56:41 PIP0 (id 900) sede 15 TOTAL=100 | CONTADAS: #572 stock=100 um=G idPI=900 idNSI= lote= | TODAS_CON_IDPI: #572 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:41 PIP1 (id 901) sede 15 TOTAL=5 | CONTADAS: #573 stock=5 um=G idPI=901 idNSI= lote= | TODAS_CON_IDPI: #573 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:42 PIOR (id 891) sede 15 TOTAL=50 | CONTADAS: #556 stock=50 um=G idPI=891 idNSI= lote= | TODAS_CON_IDPI: #556 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:42 PIPL (id 921) sede 15 TOTAL=100 | CONTADAS: #621 stock=100 um=G idPI=921 idNSI= lote= | TODAS_CON_IDPI: #621 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:43 PIP8 (id 908) sede 15 TOTAL=1000 | CONTADAS: #583 stock=1000 um=G idPI=908 idNSI= lote= | TODAS_CON_IDPI: #583 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:44 PIPC (id 912) sede 15 TOTAL=1000 | CONTADAS: #587 stock=1000 um=G idPI=912 idNSI= lote= | TODAS_CON_IDPI: #587 stock=1000 idNSI= tipo=PI
+2026-10-23 13:56:44 PIOS (id 892) sede 15 TOTAL=200 | CONTADAS: #557 stock=200 um=G idPI=892 idNSI= lote= | TODAS_CON_IDPI: #557 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:45 PIP3 (id 903) sede 15 TOTAL=100 | CONTADAS: #575 stock=100 um=G idPI=903 idNSI= lote= | TODAS_CON_IDPI: #575 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:45 PIP9 (id 909) sede 15 TOTAL=201 | CONTADAS: #584 stock=201 um=G idPI=909 idNSI= lote= | TODAS_CON_IDPI: #584 stock=201 idNSI= tipo=PI
+2026-10-23 13:56:46 PIOP (id 889) sede 15 TOTAL=285.081 | CONTADAS: #554 stock=285.081 um=G idPI=889 idNSI= lote= | TODAS_CON_IDPI: #554 stock=285.081 idNSI= tipo=PI
+2026-10-23 13:56:46 PIP2 (id 902) sede 15 TOTAL=5 | CONTADAS: #574 stock=5 um=G idPI=902 idNSI= lote= | TODAS_CON_IDPI: #574 stock=5 idNSI= tipo=PI
+2026-10-23 13:56:47 PIP5 (id 905) sede 15 TOTAL=100 | CONTADAS: #580 stock=100 um=G idPI=905 idNSI= lote= | TODAS_CON_IDPI: #580 stock=100 idNSI= tipo=PI
+2026-10-23 13:56:47 PIP6 (id 906) sede 15 TOTAL=50 | CONTADAS: #581 stock=50 um=G idPI=906 idNSI= lote= | TODAS_CON_IDPI: #581 stock=50 idNSI= tipo=PI
+2026-10-23 13:56:48 PIQ0 (id 936) sede 15 TOTAL=400 | CONTADAS: #639 stock=400 um=G idPI=936 idNSI= lote= | TODAS_CON_IDPI: #639 stock=400 idNSI= tipo=PI
+2026-10-23 13:56:48 PIQ1 (id 937) sede 15 TOTAL=600 | CONTADAS: #640 stock=600 um=G idPI=937 idNSI= lote= | TODAS_CON_IDPI: #640 stock=600 idNSI= tipo=PI
+2026-10-23 13:56:49 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:56:49 PIPZ (id 935) sede 15 TOTAL=200 | CONTADAS: #638 stock=200 um=G idPI=935 idNSI= lote= | TODAS_CON_IDPI: #638 stock=200 idNSI= tipo=PI
+2026-10-23 13:56:49 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:57:29 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI
+2026-10-23 13:58:08 PIOW (id 896) sede 15 TOTAL=194 | CONTADAS: #566 stock=189 um=G idPI=896 idNSI= lote= ; #576 stock=5 um=G idPI= idNSI=54 lote=PI-202610191 | TODAS_CON_IDPI: #566 stock=189 idNSI= tipo=PI

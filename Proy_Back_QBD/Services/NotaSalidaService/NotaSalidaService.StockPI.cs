@@ -78,36 +78,62 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         private async Task<decimal> ObtenerStockPI(int idProductoIntermedio, int idSede)
         {
             var filas = await ObtenerFilasStockPI(idProductoIntermedio, idSede);
-            var total = filas.Sum(s => s.StockDisponible);
+            return filas.Sum(s => s.StockDisponible);
+        }
 
-            // Diagnóstico temporal: muestra en la consola de la API de dónde sale el stock de cada registro PI
-            _logger.LogWarning("[STOCK-PI v2] Registro PI{Reg} (id {Id}) sede {Sede}: total {Total} en {N} fila(s): {Detalle}",
-                Alfanumerico.ConvertToBase36(idProductoIntermedio), idProductoIntermedio, idSede, total, filas.Count,
-                string.Join(" | ", filas.Select(f =>
-                    $"stock_insumo#{f.Id} stock={f.StockDisponible} um={f.UnidadMedida} tipo={f.Tipo} idPI={f.IdProductoIntermedio} idNSI={f.IdNotaSalidaInsumo} lote={f.NotaSalidaInsumo?.Lote}")));
+        /// <summary>
+        /// Mismo cálculo que ObtenerStockPI, pero para muchos registros a la vez con solo 3 consultas
+        /// (la lista de registros de la Nota de Salida tiene cientos de PI).
+        /// </summary>
+        private async Task<Dictionary<int, decimal>> ObtenerStockPIMasivo(List<(int Id, int IdInsumo, string? Lote)> pis, int idSede)
+        {
+            var resultado = pis.Select(p => p.Id).Distinct().ToDictionary(id => id, _ => 0m);
+            if (resultado.Count == 0) return resultado;
+            var ids = resultado.Keys.ToList();
 
-            // Otras filas con el mismo registro PI en la sede que NO se cuentan (para comparar)
-            var otras = await _context.StockInsumos.AsNoTracking()
-                .Where(s => s.IdSede == idSede && s.IdProductoIntermedio == idProductoIntermedio)
-                .Select(s => new { s.Id, s.StockDisponible, s.IdNotaSalidaInsumo, s.Tipo })
+            // 1) Stock propio de cada registro
+            var propios = await _context.StockInsumos.AsNoTracking()
+                .Where(s => s.IdSede == idSede && s.IdProductoIntermedio != null && ids.Contains(s.IdProductoIntermedio.Value) && s.IdNotaSalidaInsumo == null)
+                .GroupBy(s => s.IdProductoIntermedio!.Value)
+                .Select(g => new { Id = g.Key, Total = g.Sum(s => s.StockDisponible) })
                 .ToListAsync();
-            _logger.LogWarning("[STOCK-PI v2] Registro PI{Reg}: todas las filas con idPI en la sede: {Otras}",
-                Alfanumerico.ConvertToBase36(idProductoIntermedio),
-                string.Join(" | ", otras.Select(o => $"#{o.Id} stock={o.StockDisponible} idNSI={o.IdNotaSalidaInsumo} tipo={o.Tipo}")));
+            foreach (var p in propios) resultado[p.Id] += p.Total;
 
-            // También a un archivo en la carpeta del proyecto (diagnóstico temporal)
-            try
+            // 2) Recibido por Nota de Salida en esta sede, por lote
+            var recibidas = await _context.StockInsumos.AsNoTracking()
+                .Where(s => s.IdSede == idSede
+                            && s.IdNotaSalidaInsumo != null
+                            && s.NotaSalidaInsumo != null
+                            && s.NotaSalidaInsumo.IdCompraInsumo == null
+                            && s.NotaSalidaInsumo.Lote != null
+                            && s.NotaSalidaInsumo.NotaSalida != null
+                            && s.NotaSalidaInsumo.NotaSalida.IdSedeDestino == idSede
+                            && (EstadosRecibidos.Contains(s.NotaSalidaInsumo.NotaSalida.Estado)
+                                || s.NotaSalidaInsumo.NotaSalida.FechaRecepcion != null
+                                || (s.NotaSalidaInsumo.CantidadRecibida.HasValue && s.NotaSalidaInsumo.CantidadRecibida.Value > 0)))
+                .Select(s => new { s.Id, s.StockDisponible, Lote = s.NotaSalidaInsumo!.Lote! })
+                .ToListAsync();
+            if (recibidas.Count == 0) return resultado;
+
+            var lotes = recibidas.Select(r => r.Lote.Trim().ToUpper()).Distinct().ToList();
+
+            // Dueño de cada (producto, lote) = registro PI de menor Id, como el kardex
+            var pisConLote = await _context.ProductosIntermedios.AsNoTracking()
+                .Where(p => p.Lote != null && lotes.Contains(p.Lote.Trim().ToUpper()))
+                .Select(p => new { p.Id, p.IdInsumo, Lote = p.Lote! })
+                .ToListAsync();
+            var duenos = pisConLote
+                .GroupBy(p => (p.IdInsumo, Lote: p.Lote.Trim().ToUpper()))
+                .Select(g => g.Min(p => p.Id))
+                .Where(resultado.ContainsKey)
+                .ToList();
+
+            foreach (var idDueno in duenos)
             {
-                var linea = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} PI{Alfanumerico.ConvertToBase36(idProductoIntermedio)} (id {idProductoIntermedio}) sede {idSede} TOTAL={total} | CONTADAS: " +
-                    string.Join(" ; ", filas.Select(f => $"#{f.Id} stock={f.StockDisponible} um={f.UnidadMedida} idPI={f.IdProductoIntermedio} idNSI={f.IdNotaSalidaInsumo} lote={f.NotaSalidaInsumo?.Lote}")) +
-                    " | TODAS_CON_IDPI: " +
-                    string.Join(" ; ", otras.Select(o => $"#{o.Id} stock={o.StockDisponible} idNSI={o.IdNotaSalidaInsumo} tipo={o.Tipo}")) +
-                    Environment.NewLine;
-                File.AppendAllText(Path.Combine(Directory.GetCurrentDirectory(), "diagnostico-stock-pi.txt"), linea);
+                var lote = pisConLote.First(p => p.Id == idDueno).Lote.Trim().ToUpper();
+                resultado[idDueno] += recibidas.Where(r => r.Lote.Trim().ToUpper() == lote).Sum(r => r.StockDisponible);
             }
-            catch { /* solo diagnóstico */ }
-
-            return total;
+            return resultado;
         }
 
         /// <summary>Datos de un registro PI para la Nota de Salida, con el stock del kardex.</summary>
