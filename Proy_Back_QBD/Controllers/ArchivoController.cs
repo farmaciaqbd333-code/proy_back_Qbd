@@ -1,13 +1,10 @@
-using Amazon;
-using Amazon.Runtime;
-using Amazon.S3;
-using Amazon.S3.Model;
 using Microsoft.AspNetCore.Mvc;
+using Proy_back_QBD.Integraciones;
 
 namespace Proy_back_QBD.Controllers;
 
 /// <summary>
-/// Datos para subir un archivo (imagen de pedido o factura) a S3.
+/// Datos para subir un archivo (imagen de pedido o factura).
 /// </summary>
 public class SubirArchivoReq
 {
@@ -19,9 +16,8 @@ public class SubirArchivoReq
 }
 
 /// <summary>
-/// Sube archivos a S3 desde el servidor. Las credenciales de AWS viven solo en las
-/// variables de entorno del backend (nunca en el frontend):
-/// AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET.
+/// Recibe archivos y los guarda en el almacenamiento configurado (S3).
+/// El controlador solo valida la petición; el guardado lo hace <see cref="IAlmacenamientoArchivos"/>.
 /// </summary>
 [ApiController]
 [Route("api/archivo")]
@@ -35,22 +31,22 @@ public class ArchivoController : ControllerBase
     private static readonly HashSet<string> ExtensionesPermitidas =
         new(StringComparer.OrdinalIgnoreCase) { ".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif", ".bmp", ".tif", ".tiff", ".pdf" };
 
-    private readonly IConfiguration _configuration;
+    private readonly IAlmacenamientoArchivos _almacenamiento;
     private readonly ILogger<ArchivoController> _logger;
 
-    public ArchivoController(IConfiguration configuration, ILogger<ArchivoController> logger)
+    public ArchivoController(IAlmacenamientoArchivos almacenamiento, ILogger<ArchivoController> logger)
     {
-        _configuration = configuration;
+        _almacenamiento = almacenamiento;
         _logger = logger;
     }
 
     /// <summary>
-    /// Sube un archivo a S3 y devuelve su URL pública.
+    /// Sube un archivo y devuelve su URL pública.
     /// </summary>
     [HttpPost("subir")]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(20 * 1024 * 1024)]
-    public async Task<IActionResult> Subir([FromForm] SubirArchivoReq request)
+    public async Task<IActionResult> Subir([FromForm] SubirArchivoReq request, CancellationToken ct)
     {
         var archivo = request.Archivo;
         if (archivo == null || archivo.Length == 0)
@@ -74,46 +70,32 @@ public class ArchivoController : ControllerBase
             return BadRequest(new { message = "Tipo de archivo no permitido. Use imágenes (JPG, PNG, WEBP, GIF, HEIC) o PDF." });
         }
 
-        var accessKey = _configuration["AWS_ACCESS_KEY_ID"];
-        var secretKey = _configuration["AWS_SECRET_ACCESS_KEY"];
-        var region = _configuration["AWS_REGION"] ?? "us-east-1";
-        var bucket = _configuration["AWS_S3_BUCKET"];
-
-        if (string.IsNullOrWhiteSpace(accessKey) || string.IsNullOrWhiteSpace(secretKey) || string.IsNullOrWhiteSpace(bucket))
+        if (!_almacenamiento.EstaConfigurado)
         {
-            _logger.LogError("Almacenamiento S3 no configurado: faltan variables AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_S3_BUCKET.");
+            _logger.LogError("Almacenamiento no configurado: faltan AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_S3_BUCKET.");
             return StatusCode(503, new { message = "El almacenamiento de archivos no está configurado en el servidor." });
         }
 
-        // Nombre seguro: solo letras, números, punto y guion (igual que hacía el frontend)
-        var nombreBase = Path.GetFileNameWithoutExtension(archivo.FileName ?? "archivo");
-        var nombreLimpio = new string(nombreBase.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '.' ? c : '_').ToArray());
-        if (nombreLimpio.Length > 80) nombreLimpio = nombreLimpio.Substring(0, 80);
-        var key = $"{carpeta}/{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{nombreLimpio}{extension.ToLowerInvariant()}";
+        var key = $"{carpeta}/{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}-{NombreSeguro(archivo.FileName)}{extension.ToLowerInvariant()}";
 
         try
         {
-            var credenciales = new BasicAWSCredentials(accessKey, secretKey);
-            using var cliente = new AmazonS3Client(credenciales, RegionEndpoint.GetBySystemName(region));
             await using var stream = archivo.OpenReadStream();
-
-            var put = new PutObjectRequest
-            {
-                BucketName = bucket,
-                Key = key,
-                InputStream = stream,
-                ContentType = string.IsNullOrWhiteSpace(archivo.ContentType) ? "application/octet-stream" : archivo.ContentType,
-            };
-
-            await cliente.PutObjectAsync(put);
-
-            var url = $"https://{bucket}.s3.{region}.amazonaws.com/{key}";
-            return Ok(new { url, key });
+            var subido = await _almacenamiento.SubirAsync(stream, key, archivo.ContentType, ct);
+            return Ok(new { url = subido.Url, key = subido.Key });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error subiendo archivo a S3 ({Key})", key);
+            _logger.LogError(ex, "Error subiendo archivo ({Key})", key);
             return StatusCode(500, new { message = "No se pudo subir el archivo. Intente nuevamente." });
         }
+    }
+
+    /// <summary>Solo letras, números, punto y guion; máximo 80 caracteres.</summary>
+    private static string NombreSeguro(string? nombreArchivo)
+    {
+        var nombreBase = Path.GetFileNameWithoutExtension(nombreArchivo ?? "archivo");
+        var limpio = new string(nombreBase.Select(c => char.IsLetterOrDigit(c) || c == '-' || c == '.' ? c : '_').ToArray());
+        return limpio.Length > 80 ? limpio.Substring(0, 80) : limpio;
     }
 }

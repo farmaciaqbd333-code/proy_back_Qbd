@@ -1,3 +1,4 @@
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models.ProductoIntermedio;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
@@ -99,7 +100,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     request.IdSedeOrigen,
                     item.Familia);
 
-                throw new Exception($"No existe stock registrado para el registro {item.Registro} de {item.Familia}.");
+                throw new BadRequestException($"No existe stock registrado para el registro {item.Registro} de {item.Familia}.");
             }
 
             string stockUm = (stockOrigen.UnidadMedida ?? "G").Trim().ToUpper();
@@ -157,7 +158,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     itemUm,
                     cantDescontar);
 
-                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {dispFriendly} {dispUm}, Solicitado: {item.Cantidad} {itemUm}. No se puede realizar una salida mayor al stock existente.");
+                throw new BadRequestException($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {dispFriendly} {dispUm}, Solicitado: {item.Cantidad} {itemUm}. No se puede realizar una salida mayor al stock existente.");
             }
 
             // Si la unidad enviada es KG, convertir a Gramos para guardarlo siempre en G en la base de datos
@@ -236,11 +237,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             }
 
             if (!stocksOrigen.Any())
-                throw new Exception($"No existe stock registrado para el economato {item.Registro}.");
+                throw new BadRequestException($"No existe stock registrado para el economato {item.Registro}.");
 
             decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
             if (totalDisponible < item.Cantidad || totalDisponible <= 0)
-                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
+                throw new BadRequestException($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaEconomato
             {
@@ -295,11 +296,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             }
 
             if (!stocksOrigen.Any())
-                throw new Exception($"No existe stock registrado para el empaque {item.Registro}.");
+                throw new BadRequestException($"No existe stock registrado para el empaque {item.Registro}.");
 
             decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
             if (totalDisponible < item.Cantidad || totalDisponible <= 0)
-                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
+                throw new BadRequestException($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaEmpaque
             {
@@ -354,11 +355,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             }
 
             if (!stocksOrigen.Any())
-                throw new Exception($"No existe stock registrado para el producto {item.Registro}.");
+                throw new BadRequestException($"No existe stock registrado para el producto {item.Registro}.");
 
             decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
             if (totalDisponible < item.Cantidad || totalDisponible <= 0)
-                throw new Exception($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
+                throw new BadRequestException($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaProducto
             {

@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using proy_back_Qbd.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
@@ -59,7 +60,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             break;
 
                         default:
-                            throw new Exception($"Familia '{item.Familia}' no válida.");
+                            throw new BadRequestException($"Familia '{item.Familia}' no válida.");
                     }
                 }
 
@@ -207,7 +208,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (notaSalida == null)
-                    throw new Exception("Nota salida no encontrada.");
+                    throw new NotFoundException("Nota salida no encontrada.");
 
                 // 1. Revertir stock anterior devolviéndolo a la sede origen
                 await RevertirStockDeNotaSalida(notaSalida);
@@ -291,7 +292,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (notaSalida == null)
-                    throw new Exception("Nota salida no encontrada.");
+                    throw new NotFoundException("Nota salida no encontrada.");
 
                 // 1. Revertir movimientos de stock
                 await RevertirStockDeNotaSalida(notaSalida);
@@ -1095,7 +1096,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 _logger.LogWarning("Confirmación rechazada: sede origen inválida {SedeOrigen}",
                     request.IdSedeOrigen);
 
-                throw new Exception("Debe indicar la sede origen.");
+                throw new BadRequestException("Debe indicar la sede origen.");
             }
 
             if (request.IdSedeDestino <= 0)
@@ -1103,7 +1104,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 _logger.LogWarning("Confirmación rechazada: sede destino inválida {SedeDestino}",
                     request.IdSedeDestino);
 
-                throw new Exception("Debe indicar la sede destino.");
+                throw new BadRequestException("Debe indicar la sede destino.");
             }
 
             if (request.IdSedeOrigen == request.IdSedeDestino)
@@ -1112,7 +1113,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     "Confirmación rechazada: sede origen y destino iguales. Sede: {Sede}",
                     request.IdSedeOrigen);
 
-                throw new Exception("La sede origen y destino no pueden ser iguales.");
+                throw new BadRequestException("La sede origen y destino no pueden ser iguales.");
             }
 
             if (!(request.Insumos?.Any() == true ||
@@ -1122,7 +1123,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 _logger.LogWarning("Confirmación rechazada: no se enviaron artículos.");
 
-                throw new Exception("Debe enviar al menos una familia de artículos.");
+                throw new BadRequestException("Debe enviar al menos una familia de artículos.");
             }
 
 
@@ -1151,7 +1152,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         "Artículo inválido. IdNotaSalidaArticulo: {IdNotaSalidaArticulo}",
                         item.IdNotaSalidaArticulo);
 
-                    throw new Exception("Existe un artículo con IdNotaSalidaArticulo inválido.");
+                    throw new BadRequestException("Existe un artículo con IdNotaSalidaArticulo inválido.");
                 }
 
                 if (item.IdCompraArticulo <= 0 && item.IdNotaSalidaArticulo <= 0)
@@ -1160,7 +1161,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         "Artículo inválido. IdCompraArticulo: {IdCompraArticulo}",
                         item.IdCompraArticulo);
 
-                    throw new Exception("Existe un artículo con IdCompraArticulo inválido.");
+                    throw new BadRequestException("Existe un artículo con IdCompraArticulo inválido.");
                 }
 
                 if (item.CantidadRecibida <= 0)
@@ -1170,7 +1171,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         item.IdCompraArticulo,
                         item.CantidadRecibida);
 
-                    throw new Exception(
+                    throw new BadRequestException(
                         $"La cantidad recibida debe ser mayor a cero.");
                 }
             }
@@ -1279,7 +1280,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             public async Task ActualizarObservacion(int idNotaSalida, string observacion)
         {
             var nota = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == idNotaSalida);
-            if (nota == null) throw new Exception("Nota de salida no encontrada.");
+            if (nota == null) throw new NotFoundException("Nota de salida no encontrada.");
             nota.Observacion = observacion;
             await _context.SaveChangesAsync();
         }

@@ -1,9 +1,6 @@
-using System.Collections.Concurrent;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Mvc;
+using Proy_back_QBD.Integraciones;
+using Proy_back_QBD.Security;
 
 namespace Proy_back_QBD.Controllers;
 
@@ -31,107 +28,84 @@ public class AsistenteChatReq
 }
 
 /// <summary>
-/// Asistente de IA (OpenAI) llamado desde el servidor. La clave vive solo en la
-/// variable de entorno OPENAI_API_KEY del backend (nunca en el frontend).
+/// Asistente de IA. El controlador valida y limita; la llamada al proveedor la hace <see cref="IAsistenteIA"/>.
 /// </summary>
 [ApiController]
 [Route("api/asistente")]
 public class AsistenteController : ControllerBase
 {
-    private const string Modelo = "gpt-4o-mini";
     private const int MaxMensajes = 40;
     private const int MaxCaracteresPorMensaje = 20000;
     private const int MaxTokens = 2000;
-    private const int LimitePorMinuto = 20;
-
-    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(90) };
-    private static readonly ConcurrentDictionary<string, (DateTime Inicio, int Cuenta)> Uso = new();
     private static readonly HashSet<string> RolesValidos = new() { "system", "user", "assistant" };
 
-    private readonly IConfiguration _configuration;
+    private readonly IAsistenteIA _asistente;
+    private readonly ILimiteConsultas _limite;
     private readonly ILogger<AsistenteController> _logger;
 
-    public AsistenteController(IConfiguration configuration, ILogger<AsistenteController> logger)
+    public AsistenteController(IAsistenteIA asistente, ILimiteConsultas limite, ILogger<AsistenteController> logger)
     {
-        _configuration = configuration;
+        _asistente = asistente;
+        _limite = limite;
         _logger = logger;
     }
 
     /// <summary>
-    /// Envía la conversación al asistente y devuelve la respuesta en el mismo formato de OpenAI
+    /// Envía la conversación al asistente y devuelve la respuesta en formato OpenAI
     /// (choices[0].message.content).
     /// </summary>
     [HttpPost("chat")]
-    public async Task<IActionResult> Chat([FromBody] AsistenteChatReq request)
+    public async Task<IActionResult> Chat([FromBody] AsistenteChatReq request, CancellationToken ct)
     {
-        var apiKey = _configuration["OPENAI_API_KEY"];
-        if (string.IsNullOrWhiteSpace(apiKey))
+        if (!_asistente.EstaConfigurado)
         {
             _logger.LogError("Asistente IA no configurado: falta la variable OPENAI_API_KEY.");
-            return StatusCode(503, new { error = new { message = "El asistente no está configurado en el servidor." } });
+            return StatusCode(503, Error("El asistente no está configurado en el servidor."));
         }
 
-        if (!PermitirSolicitud())
+        // Límite por usuario (token) o, si no hay, por IP
+        var clave = JwtTokens.UsuarioId(User) is var id && id > 0
+            ? $"u:{id}"
+            : $"ip:{HttpContext.Connection.RemoteIpAddress}";
+        if (!_limite.Permitir(clave))
         {
-            return StatusCode(429, new { error = new { message = "Demasiadas consultas seguidas. Espere un minuto e intente nuevamente." } });
+            return StatusCode(429, Error("Demasiadas consultas seguidas. Espere un minuto e intente nuevamente."));
         }
 
         var mensajes = (request?.Messages ?? new List<AsistenteMensaje>())
             .Where(m => m != null && !string.IsNullOrWhiteSpace(m.Content) && RolesValidos.Contains((m.Role ?? "").ToLowerInvariant()))
             .TakeLast(MaxMensajes)
-            .Select(m => new JsonObject
-            {
-                ["role"] = (m.Role ?? "user").ToLowerInvariant(),
-                ["content"] = m.Content!.Length > MaxCaracteresPorMensaje ? m.Content.Substring(0, MaxCaracteresPorMensaje) : m.Content,
-            })
+            .Select(m => new MensajeChat(
+                (m.Role ?? "user").ToLowerInvariant(),
+                m.Content!.Length > MaxCaracteresPorMensaje ? m.Content.Substring(0, MaxCaracteresPorMensaje) : m.Content))
             .ToList();
 
         if (mensajes.Count == 0)
         {
-            return BadRequest(new { error = new { message = "Debe enviar al menos un mensaje." } });
+            return BadRequest(Error("Debe enviar al menos un mensaje."));
         }
-
-        var cuerpo = new JsonObject
-        {
-            ["model"] = Modelo,
-            ["messages"] = new JsonArray(mensajes.Cast<JsonNode>().ToArray()),
-            ["max_tokens"] = Math.Clamp(request?.Max_tokens ?? MaxTokens, 1, MaxTokens),
-            ["temperature"] = Math.Clamp(request?.Temperature ?? 0.7, 0, 1),
-        };
 
         try
         {
-            using var mensajeHttp = new HttpRequestMessage(HttpMethod.Post, "https://api.openai.com/v1/chat/completions");
-            mensajeHttp.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-            mensajeHttp.Content = new StringContent(cuerpo.ToJsonString(), Encoding.UTF8, "application/json");
+            var respuesta = await _asistente.ChatAsync(
+                mensajes,
+                Math.Clamp(request?.Max_tokens ?? MaxTokens, 1, MaxTokens),
+                Math.Clamp(request?.Temperature ?? 0.7, 0, 1),
+                ct);
 
-            using var respuesta = await Http.SendAsync(mensajeHttp);
-            var json = await respuesta.Content.ReadAsStringAsync();
-
-            if (!respuesta.IsSuccessStatusCode)
+            if (!respuesta.Exito || respuesta.Json == null)
             {
-                _logger.LogWarning("OpenAI respondió {Status}: {Cuerpo}", (int)respuesta.StatusCode, json);
-                return StatusCode(502, new { error = new { message = "El asistente no está disponible en este momento. Intente nuevamente." } });
+                return StatusCode(502, Error("El asistente no está disponible en este momento. Intente nuevamente."));
             }
-
-            return Content(json, "application/json");
+            return Content(respuesta.Json, "application/json");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error llamando a OpenAI");
-            return StatusCode(502, new { error = new { message = "No se pudo conectar con el asistente. Intente nuevamente." } });
+            _logger.LogError(ex, "Error llamando al asistente IA");
+            return StatusCode(502, Error("No se pudo conectar con el asistente. Intente nuevamente."));
         }
     }
 
-    /// <summary>Límite simple: N consultas por minuto por IP.</summary>
-    private bool PermitirSolicitud()
-    {
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
-        var ahora = DateTime.UtcNow;
-        var estado = Uso.AddOrUpdate(
-            ip,
-            _ => (ahora, 1),
-            (_, previo) => (ahora - previo.Inicio).TotalSeconds >= 60 ? (ahora, 1) : (previo.Inicio, previo.Cuenta + 1));
-        return estado.Cuenta <= LimitePorMinuto;
-    }
+    /// <summary>Formato de error que el frontend ya lee (error.error.message).</summary>
+    private static object Error(string mensaje) => new { error = new { message = mensaje } };
 }

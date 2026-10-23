@@ -1,3 +1,4 @@
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Dto.Recepcion;
 using proy_back_Qbd.Repositories.Interfaces;
 using proy_back_Qbd.Services.Interfaces;
@@ -20,7 +21,7 @@ namespace proy_back_Qbd.Services
         {
             var notaSalida = await _repository.GetNotaSalidaByIdAsync(idNotaSalida);
             if (notaSalida == null)
-                throw new Exception("Nota de salida no encontrada.");
+                throw new NotFoundException("Nota de salida no encontrada.");
 
             notaSalida.Estado = request.Estado ?? notaSalida.Estado;
             notaSalida.FechaRecepcion = request.FechaRecepcion;

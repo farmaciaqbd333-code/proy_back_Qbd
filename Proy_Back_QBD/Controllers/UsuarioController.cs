@@ -16,18 +16,18 @@ namespace Proy_back_QBD.Controllers;
 [Route("api/usuario")]
 public class UsuarioController : ControllerBase
 {
-    /// <summary>Roles que pueden gestionar usuarios: 1 Admin, 8 Supervisor, 9 S1.</summary>
-    private const string RolesGestionUsuarios = "1,8,9";
+    /// <summary>Roles que pueden gestionar usuarios: Admin, Supervisor y S1.</summary>
+    private const string RolesGestionUsuarios = Roles.GestionUsuarios;
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
     private readonly IUserService _userService;
-    private readonly IConfiguration _configuration;
+    private readonly ITokenService _tokenService;
 
-    public UsuarioController(IUserService userService, IConfiguration configuration)
+    public UsuarioController(IUserService userService, ITokenService tokenService)
     {
         _userService = userService;
-        _configuration = configuration;
+        _tokenService = tokenService;
     }
 
     /// <summary>Inicia sesión y devuelve los datos del usuario con su token JWT.</summary>
@@ -47,7 +47,7 @@ public class UsuarioController : ControllerBase
             return Unauthorized(new { message = "Código o contraseña incorrectos." });
         }
 
-        var (token, expira) = JwtTokens.Generar(usuario, _configuration["JWT_SECRET"]!);
+        var (token, expira) = _tokenService.Generar(usuario);
 
         // Mismos campos de siempre + token (el frontend existente sigue funcionando)
         var respuesta = JsonSerializer.SerializeToNode(usuario, Json)!.AsObject();
@@ -110,12 +110,16 @@ public class UsuarioController : ControllerBase
     public async Task<IActionResult> ObtenerUsuariosPorId(int id)
     {
         var esPropio = JwtTokens.UsuarioId(User) == id;
-        var puedeGestionar = RolesGestionUsuarios.Split(',').Contains(JwtTokens.Rol(User).ToString());
+        var puedeGestionar = Roles.PuedeGestionarUsuarios(JwtTokens.Rol(User));
         if (!esPropio && !puedeGestionar)
         {
             return Forbid();
         }
         UsuarioByIdRes? usuario = await _userService.ObtenerById(id);
+        if (usuario != null && !puedeGestionar)
+        {
+            usuario.Contrasena = string.Empty; // solo Admin, Supervisor y S1 ven contraseñas
+        }
         return Ok(usuario);
     }
 

@@ -1,3 +1,4 @@
+using proy_back_Qbd.Exceptions;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Proy_back_QBD.Data;
@@ -37,10 +38,11 @@ namespace Proy_back_QBD.Services
                 return null;
             }
 
-            // Migración: si la contraseña seguía en texto plano, se guarda ya cifrada (BCrypt)
-            if (!Contrasenas.EsHash(usuario.Contrasena))
+            // Contraseñas sin cifrar (decisión del negocio): si alguna quedó cifrada,
+            // se vuelve a guardar en texto para que el administrador pueda verla.
+            if (Contrasenas.EsHash(usuario.Contrasena))
             {
-                usuario.Contrasena = Contrasenas.Hashear(contrasena);
+                usuario.Contrasena = contrasena.Trim();
                 await _context.SaveChangesAsync();
             }
 
@@ -67,9 +69,9 @@ namespace Proy_back_QBD.Services
             Usuario usuario = _mapper.Map<Usuario>(request);
             if (string.IsNullOrWhiteSpace(usuario.Contrasena))
             {
-                throw new ArgumentException("La contraseña es obligatoria.");
+                throw new BadRequestException("La contraseña es obligatoria.");
             }
-            usuario.Contrasena = Contrasenas.Hashear(usuario.Contrasena);
+            usuario.Contrasena = usuario.Contrasena.Trim();
             usuario.PersonaId = persona.Id;
             usuario.Modificador = persona.Creador;
             usuario.Codigo = $"{ObtenerIniciales(persona.NombreCompleto)}{persona.FechaNacimiento:ddMM}";
@@ -100,19 +102,10 @@ namespace Proy_back_QBD.Services
             }
             var contrasenaAnterior = usuario.Contrasena;
             _mapper.Map(request, usuario);
-            // Contraseña vacía = no se cambia; una nueva se guarda cifrada
-            if (string.IsNullOrWhiteSpace(request.Contrasena))
-            {
-                usuario.Contrasena = contrasenaAnterior;
-            }
-            else if (!Contrasenas.EsHash(request.Contrasena))
-            {
-                usuario.Contrasena = Contrasenas.Hashear(request.Contrasena);
-            }
-            else
-            {
-                usuario.Contrasena = contrasenaAnterior; // nunca aceptar un hash enviado por el cliente
-            }
+            // Contraseña vacía = no se cambia; una nueva se guarda tal cual
+            usuario.Contrasena = string.IsNullOrWhiteSpace(request.Contrasena)
+                ? contrasenaAnterior
+                : request.Contrasena.Trim();
             usuario.Codigo = $"{ObtenerIniciales(usuario.Persona.NombreCompleto)}{usuario.Persona.FechaNacimiento:ddMM}";
             _mapper.Map(request.Persona, usuario.Persona);
             await _context.SaveChangesAsync();
@@ -129,7 +122,7 @@ namespace Proy_back_QBD.Services
             {
                 Id = a.Id,
                 IdGeneral = a.IdGeneral,
-                Contrasena = string.Empty, // nunca se devuelve la contraseña
+                Contrasena = a.Contrasena, // visible para quien gestiona usuarios (el controlador la oculta a los demás)
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
                 HorarioRegreso = a.HorarioRegreso,
@@ -163,7 +156,7 @@ namespace Proy_back_QBD.Services
             {
                 Id = a.Id,
                 IdGeneral = a.IdGeneral,
-                Contrasena = string.Empty, // nunca se devuelve la contraseña
+                Contrasena = a.Contrasena, // visible para quien gestiona usuarios (el controlador la oculta a los demás)
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
                 HorarioRegreso = a.HorarioRegreso,

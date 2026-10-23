@@ -3,24 +3,24 @@ using DotNetEnv;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Profiles;
 using Proy_back_QBD.Services;
-using System.Reflection;
 using Proy_back_QBD.Services.Interfaces;
-using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using proy_back_Qbd.Services;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Models;
-using Microsoft.AspNetCore.Diagnostics;
-using proy_back_Qbd.Exceptions;
 using Proy_back_QBD.Service.AjusteService;
 using Proy_back_QBD.Interface;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
 using Proy_back_QBD.Services.NotaSalidaService;
 using Proy_back_QBD.DependencyInjection;
-using Proy_back_QBD.Security;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
+using Proy_back_QBD.Middleware;
+
+// Program.cs solo arma la aplicación. Cada parte de la configuración vive en su propia clase:
+//   DependencyInjection/ServiceCollectionExtensions.cs → base de datos y servicios del negocio
+//   DependencyInjection/WebApiExtensions.cs            → JWT, Swagger, CORS e integraciones (S3, OpenAI)
+//   Middleware/ExceptionHandlingMiddleware.cs          → manejo de errores
+//   Data/DatabaseStartupMigrator.cs                    → ajustes de base de datos al arrancar
+
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
@@ -62,216 +62,35 @@ builder.Configuration
     .AddEnvironmentVariables();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
+
+// ===================== Servicios =====================
 builder.Services.AddApplicationServices();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
-
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "Token JWT obtenido en POST /api/usuario/login (pegue solo el token)",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT"
-    });
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new List<string>()
-        }
-    });
-});
-
+builder.Services.AddSwaggerDocumentation();
 builder.Services.AddPersistence(builder.Configuration, builder.Environment);
+builder.Services.AddCorsPolicy();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddIntegraciones(builder.Configuration);
 
-// Configurar CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigins", builder =>
-    {
-        builder.AllowAnyOrigin() // Especifica orígenes permitidos en producción
-               .AllowAnyMethod()
-               .AllowAnyHeader();
-    });
-});
-
-// ===== Autenticación JWT =====
-// La clave de firma viene de la variable de entorno JWT_SECRET (mínimo 32 caracteres).
-var jwtSecret = builder.Configuration["JWT_SECRET"];
-if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
-{
-    jwtSecret = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
-    builder.Configuration["JWT_SECRET"] = jwtSecret;
-    Console.WriteLine("ADVERTENCIA: JWT_SECRET no está configurado (o tiene menos de 32 caracteres). " +
-                      "Se usa una clave temporal: las sesiones se cerrarán cada vez que se reinicie el servidor.");
-}
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.MapInboundClaims = false;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = JwtTokens.Issuer,
-            ValidateAudience = true,
-            ValidAudience = JwtTokens.Audience,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = JwtTokens.CrearClave(jwtSecret),
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromMinutes(1),
-            NameClaimType = "sub",
-            RoleClaimType = JwtTokens.ClaimRol,
-        };
-    });
-
-// Todas las rutas exigen sesión salvo las marcadas con [AllowAnonymous] (login)
-builder.Services.AddAuthorization(options =>
-{
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
-});
-
+// ===================== Pipeline =====================
 var app = builder.Build();
-app.UseExceptionHandler(appError =>
-{
-    appError.Run(async context =>
-    {
-        var error = context.Features
-            .Get<IExceptionHandlerFeature>()?.Error;
 
-        context.Response.ContentType = "application/json";
-
-        switch (error)
-        {
-            case BadRequestException:
-                context.Response.StatusCode = 400;
-                break;
-
-            case NotFoundException:
-                context.Response.StatusCode = 404;
-                break;
-            case ServerException:
-                context.Response.StatusCode = 500;
-                break;
-
-            default:
-                context.Response.StatusCode = 500;
-                break;
-        }
-
-        await context.Response.WriteAsJsonAsync(new
-        {
-            message = error?.Message
-        });
-    });
-});
-// if (app.Environment.IsDevelopment())
-// {
-//     app.UseDeveloperExceptionPage();
-// }
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1");
-    options.ConfigObject.AdditionalItems["persistAuthorization"] = true;
-});
+app.UseManejoDeErrores();
+app.UseSwaggerDocumentation();
 app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigins");
+app.UseCors(WebApiExtensions.CorsPolicy);
 app.UseRouting();
-// La clave fija (X-Api-Key) se reemplazó por el token JWT de cada usuario
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 logger.LogInformation("API started. Swagger is available at /swagger.");
-// using (var scope = app.Services.CreateScope())
-// {
-//     var db = scope.ServiceProvider.GetRequiredService<ApiContext>();
-//     var users = await db.CompraInsumos.FindAsync(53);
-//     Console.WriteLine(users.FechaVencimiento);
-// }
-using (var scope = app.Services.CreateScope())
-{
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<ApiContext>();
-        try
-        {
-            // Las contraseñas cifradas (BCrypt, 60 caracteres) requieren columna text
-            db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS usuarios ALTER COLUMN contrasena TYPE text;");
-        }
-        catch (Exception exPwd)
-        {
-            Console.WriteLine($"DB Auto-migration error (usuarios.contrasena): {exPwd.Message}");
-        }
-        try
-        {
-            // Reparto de cada insumo de fórmula magistral por registro de lote
-            db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS ""formulasCC"" ADD COLUMN IF NOT EXISTS registros_lote text;");
-            Console.WriteLine("--> Base de datos: columna formulasCC.registros_lote verificada/creada.");
-        }
-        catch (Exception exReg)
-        {
-            Console.WriteLine($"DB Auto-migration error (registros_lote): {exReg.Message}");
-        }
-        db.Database.ExecuteSqlRaw(@"
-            ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
-            ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;
-            ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS lote text;
-            ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS registro text;
-            ALTER TABLE IF EXISTS insumo_producto_intermedio ADD COLUMN IF NOT EXISTS practica numeric;
 
-            UPDATE nota_salida_insumo
-            SET cantidad = cantidad * 1000,
-                um = 'G',
-                cantidad_recibida = CASE WHEN cantidad_recibida IS NOT NULL AND cantidad_recibida > 0 AND cantidad_recibida < 100 THEN cantidad_recibida * 1000 ELSE cantidad_recibida END
-            WHERE UPPER(um) IN ('KG', 'KILOGRAMOS', 'KGS');
+app.AplicarCambiosDeEsquemaAlIniciar();
 
-            UPDATE paquete_nota_salida_insumo
-            SET peso = peso * 1000,
-                tara = tara * 1000,
-                peso_neto = peso_neto * 1000,
-                peso_bruto = peso_bruto * 1000,
-                um = 'G'
-            WHERE UPPER(um) IN ('KG', 'KILOGRAMOS', 'KGS');
-
-            UPDATE stock_insumo si
-            SET stock_disponible = si.stock_disponible - (ci.cantidad_recibida * 999)
-            FROM compra_insumo ci
-            WHERE ci.id = si.id_compra_insumo
-              AND UPPER(ci.um) IN ('KG', 'KGS', 'KILOGRAMO', 'KILOGRAMOS')
-              AND si.stock_disponible >= 10000
-              AND ci.cantidad_recibida IS NOT NULL
-              AND ci.cantidad_recibida > 0
-              AND si.stock_disponible >= (ci.cantidad_recibida * 999);
-        ");
-        Console.WriteLine("--> Base de datos: Columnas lote y registro verificadas/creadas correctamente.");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"DB Auto-migration error: {ex.Message}");
-    }
-}
 app.Run();
