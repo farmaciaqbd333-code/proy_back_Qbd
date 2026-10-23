@@ -5,6 +5,7 @@ using Proy_back_QBD.Dto.Request;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
+using Proy_back_QBD.Security;
 
 namespace Proy_back_QBD.Services
 {
@@ -19,34 +20,43 @@ namespace Proy_back_QBD.Services
         }
         public async Task<UsuarioLoginDataRes?> ValidarLogin(string codigo, string contrasena)
         {
-
-
-            UsuarioLoginDataRes? response = await _context.Usuarios
-            .Include(a => a.Persona)
-            .Include(a => a.Sede)
-            .Include(a => a.Tipo)
-            .Where(a => a.Codigo.Trim() == codigo && a.Contrasena.Trim() == contrasena && a.Estado == true)
-            .Select(a => new UsuarioLoginDataRes
-            {
-                NombreCompleto = $"{a.Persona.NombreCompleto}",
-                TipoUsuario = a.Tipo.Nombre,
-                TipoId = a.Tipo.Id,
-                Sede = a.Sede.Nombre,
-                Dni = a.Persona.Dni,
-                SedeId = a.Sede.Id,
-                Id = a.Id,
-                IdGeneral = a.IdGeneral,
-                Estado = a.Estado,
-                HorarioSalida = a.HorarioSalida,
-            })
-            .FirstOrDefaultAsync();
-
-            if (response == null)
+            var codigoLimpio = (codigo ?? string.Empty).Trim();
+            if (codigoLimpio.Length == 0 || string.IsNullOrEmpty(contrasena))
             {
                 return null;
             }
 
-            return response;
+            Usuario? usuario = await _context.Usuarios
+                .Include(a => a.Persona)
+                .Include(a => a.Sede)
+                .Include(a => a.Tipo)
+                .FirstOrDefaultAsync(a => a.Codigo != null && a.Codigo.Trim() == codigoLimpio && a.Estado == true);
+
+            if (usuario == null || !Contrasenas.Verificar(contrasena, usuario.Contrasena))
+            {
+                return null;
+            }
+
+            // Migración: si la contraseña seguía en texto plano, se guarda ya cifrada (BCrypt)
+            if (!Contrasenas.EsHash(usuario.Contrasena))
+            {
+                usuario.Contrasena = Contrasenas.Hashear(contrasena);
+                await _context.SaveChangesAsync();
+            }
+
+            return new UsuarioLoginDataRes
+            {
+                NombreCompleto = usuario.Persona?.NombreCompleto,
+                TipoUsuario = usuario.Tipo?.Nombre,
+                TipoId = usuario.Tipo?.Id ?? usuario.TipoId,
+                Sede = usuario.Sede?.Nombre,
+                Dni = usuario.Persona?.Dni,
+                SedeId = usuario.Sede?.Id ?? usuario.SedeId,
+                Id = usuario.Id,
+                IdGeneral = usuario.IdGeneral,
+                Estado = usuario.Estado,
+                HorarioSalida = usuario.HorarioSalida,
+            };
         }
         public async Task<Usuario?> Crear(UsuarioCreateReq request)
         {
@@ -55,6 +65,11 @@ namespace Proy_back_QBD.Services
             await _context.Personas.AddAsync(persona);
             await _context.SaveChangesAsync();
             Usuario usuario = _mapper.Map<Usuario>(request);
+            if (string.IsNullOrWhiteSpace(usuario.Contrasena))
+            {
+                throw new ArgumentException("La contraseña es obligatoria.");
+            }
+            usuario.Contrasena = Contrasenas.Hashear(usuario.Contrasena);
             usuario.PersonaId = persona.Id;
             usuario.Modificador = persona.Creador;
             usuario.Codigo = $"{ObtenerIniciales(persona.NombreCompleto)}{persona.FechaNacimiento:ddMM}";
@@ -79,7 +94,25 @@ namespace Proy_back_QBD.Services
             Usuario? usuario = await _context.Usuarios
             .Include(a => a.Persona)
             .FirstOrDefaultAsync(a => a.Id == id);
+            if (usuario == null)
+            {
+                return null;
+            }
+            var contrasenaAnterior = usuario.Contrasena;
             _mapper.Map(request, usuario);
+            // Contraseña vacía = no se cambia; una nueva se guarda cifrada
+            if (string.IsNullOrWhiteSpace(request.Contrasena))
+            {
+                usuario.Contrasena = contrasenaAnterior;
+            }
+            else if (!Contrasenas.EsHash(request.Contrasena))
+            {
+                usuario.Contrasena = Contrasenas.Hashear(request.Contrasena);
+            }
+            else
+            {
+                usuario.Contrasena = contrasenaAnterior; // nunca aceptar un hash enviado por el cliente
+            }
             usuario.Codigo = $"{ObtenerIniciales(usuario.Persona.NombreCompleto)}{usuario.Persona.FechaNacimiento:ddMM}";
             _mapper.Map(request.Persona, usuario.Persona);
             await _context.SaveChangesAsync();
@@ -96,7 +129,7 @@ namespace Proy_back_QBD.Services
             {
                 Id = a.Id,
                 IdGeneral = a.IdGeneral,
-                Contrasena = a.Contrasena,
+                Contrasena = string.Empty, // nunca se devuelve la contraseña
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
                 HorarioRegreso = a.HorarioRegreso,
@@ -130,7 +163,7 @@ namespace Proy_back_QBD.Services
             {
                 Id = a.Id,
                 IdGeneral = a.IdGeneral,
-                Contrasena = a.Contrasena,
+                Contrasena = string.Empty, // nunca se devuelve la contraseña
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
                 HorarioRegreso = a.HorarioRegreso,

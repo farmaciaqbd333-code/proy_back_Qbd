@@ -17,6 +17,10 @@ using Proy_back_QBD.Interface;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
 using Proy_back_QBD.Services.NotaSalidaService;
 using Proy_back_QBD.DependencyInjection;
+using Proy_back_QBD.Security;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.IdentityModel.Tokens;
 Env.Load(); // Cargar variables de entorno desde el archivo .env
 AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 Environment.SetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "1");
@@ -71,13 +75,14 @@ builder.Services.AddSwaggerGen(c =>
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
     c.IncludeXmlComments(xmlPath);
 
-    c.AddSecurityDefinition("ApiKey", new OpenApiSecurityScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Ingrese su API Key en el campo",
-        Name = "X-Api-Key",
+        Description = "Token JWT obtenido en POST /api/usuario/login (pegue solo el token)",
+        Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "ApiKeyScheme"
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
@@ -87,7 +92,7 @@ builder.Services.AddSwaggerGen(c =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "ApiKey"
+                    Id = "Bearer"
                 }
             },
             new List<string>()
@@ -106,6 +111,45 @@ builder.Services.AddCors(options =>
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
+});
+
+// ===== Autenticación JWT =====
+// La clave de firma viene de la variable de entorno JWT_SECRET (mínimo 32 caracteres).
+var jwtSecret = builder.Configuration["JWT_SECRET"];
+if (string.IsNullOrWhiteSpace(jwtSecret) || jwtSecret.Length < 32)
+{
+    jwtSecret = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+    builder.Configuration["JWT_SECRET"] = jwtSecret;
+    Console.WriteLine("ADVERTENCIA: JWT_SECRET no está configurado (o tiene menos de 32 caracteres). " +
+                      "Se usa una clave temporal: las sesiones se cerrarán cada vez que se reinicie el servidor.");
+}
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.MapInboundClaims = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = JwtTokens.Issuer,
+            ValidateAudience = true,
+            ValidAudience = JwtTokens.Audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = JwtTokens.CrearClave(jwtSecret),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromMinutes(1),
+            NameClaimType = "sub",
+            RoleClaimType = JwtTokens.ClaimRol,
+        };
+    });
+
+// Todas las rutas exigen sesión salvo las marcadas con [AllowAnonymous] (login)
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 var app = builder.Build();
@@ -155,7 +199,8 @@ app.UseSwaggerUI(options =>
 app.UseHttpsRedirection();
 app.UseCors("AllowSpecificOrigins");
 app.UseRouting();
-app.UseMiddleware<ApiKeyMiddleware>();
+// La clave fija (X-Api-Key) se reemplazó por el token JWT de cada usuario
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
@@ -172,6 +217,15 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var db = scope.ServiceProvider.GetRequiredService<ApiContext>();
+        try
+        {
+            // Las contraseñas cifradas (BCrypt, 60 caracteres) requieren columna text
+            db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS usuarios ALTER COLUMN contrasena TYPE text;");
+        }
+        catch (Exception exPwd)
+        {
+            Console.WriteLine($"DB Auto-migration error (usuarios.contrasena): {exPwd.Message}");
+        }
         try
         {
             // Reparto de cada insumo de fórmula magistral por registro de lote
