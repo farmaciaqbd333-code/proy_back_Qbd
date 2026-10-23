@@ -426,20 +426,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     })
                     .ToListAsync(),
 
-                "PI" => await _context.ProductosIntermedios
-                    .Where(x => x.Id == idRegistro)
-                    .Select(x => new RegistrosListaRes
-                    {
-                        IdArticulo = x.IdInsumo,
-                        DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
-                        CodigoArticulo = UtilFamilia.CodigoProductoIntermedio(x.IdInsumo),
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = _context.StockInsumos
-                            .Where(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == x.Id || (s.NotaSalidaInsumo != null && s.NotaSalidaInsumo.Lote == x.Lote)))
-                            .Sum(s => (decimal?)s.StockDisponible)
-                    })
-                    .ToListAsync(),
+                "PI" => await ObtenerDatosRegistroPI(idRegistro, targetSede),
 
                 _ => new List<RegistrosListaRes>()
             };
@@ -603,14 +590,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             x.Lote,
                             x.Um,
                             x.FechaVencimiento,
-                            FechaCompra = x.FechaCreacion,
-                            Stock = _context.StockInsumos
-                                .Where(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == x.Id || (s.NotaSalidaInsumo != null && s.NotaSalidaInsumo.Lote == x.Lote)))
-                                .Sum(s => (decimal?)s.StockDisponible)
+                            FechaCompra = x.FechaCreacion
                         })
                         .ToListAsync();
 
+                    // Stock por registro calculado igual que el kardex (ver NotaSalidaService.StockPI.cs)
+                    var stockPorPI = new Dictionary<int, decimal>();
+                    foreach (var idPi in pis.Select(x => x.Id).Distinct())
+                        stockPorPI[idPi] = await ObtenerStockPI(idPi, targetSede);
+
                     return pis
+                        .GroupBy(x => x.Id).Select(g => g.First())
+                        .Select(x => new { x.Id, x.Descripcion, x.Codigo, x.Lote, x.Um, x.FechaVencimiento, x.FechaCompra, Stock = (decimal?)stockPorPI[x.Id] })
                         .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
                         .ThenBy(x => x.FechaVencimiento ?? DateTime.MaxValue)
                         .ThenBy(x => x.FechaCompra)

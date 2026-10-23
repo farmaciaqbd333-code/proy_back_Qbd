@@ -33,7 +33,12 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     .FirstOrDefaultAsync(p => p.Id == item.Registro);
             }
 
-            var stocksOrigen = await _context.StockInsumos
+            // PI: las mismas filas que muestra el kardex (no cualquier fila con el mismo lote)
+            var stocksOrigen = isPI
+                ? await ObtenerFilasStockPI(item.Registro, sedeOrigen)
+                : new List<StockInsumo>();
+
+            if (!isPI) stocksOrigen = await _context.StockInsumos
                 .Include(s => s.ProductoIntermedio)
                 .Include(s => s.NotaSalidaInsumo)
                 .Where(x =>
@@ -43,7 +48,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .ThenByDescending(x => x.StockDisponible)
                 .ToListAsync();
 
-            if (!stocksOrigen.Any())
+            if (!isPI && !stocksOrigen.Any())
             {
                 stocksOrigen = await _context.StockInsumos
                     .Include(s => s.ProductoIntermedio)
