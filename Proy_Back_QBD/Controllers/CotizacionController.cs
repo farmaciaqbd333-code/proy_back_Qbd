@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Proy_back_QBD.Security;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -10,6 +12,7 @@ namespace Proy_back_QBD.Controllers
 {
     [ApiController]
     [Route("api/cotizacion")]
+    [Authorize(Roles = Roles.SoloAdmin)] // Igual que en la web: solo ADMIN
     public class CotizacionController : ControllerBase
     {
         private readonly ICotizacionService _cotizacionService;
@@ -63,7 +66,7 @@ namespace Proy_back_QBD.Controllers
                 return BadRequest("El cuerpo de la solicitud no puede estar vacío");
             }
 
-            int usuarioId = headerUserId ?? 1;
+            int usuarioId = UsuarioActual(headerUserId);
             var nuevaCotizacion = await _cotizacionService.Crear(request, usuarioId);
 
             if (nuevaCotizacion == null)
@@ -86,7 +89,7 @@ namespace Proy_back_QBD.Controllers
                 return BadRequest("El cuerpo de la solicitud no puede estar vacío");
             }
 
-            int usuarioId = headerUserId ?? 1;
+            int usuarioId = UsuarioActual(headerUserId);
             var actualizada = await _cotizacionService.Actualizar(id, request, usuarioId);
 
             if (actualizada == null)
@@ -109,7 +112,7 @@ namespace Proy_back_QBD.Controllers
                 return BadRequest("Debe especificar un estado válido");
             }
 
-            int usuarioId = headerUserId ?? 1;
+            int usuarioId = UsuarioActual(headerUserId);
             var success = await _cotizacionService.CambiarEstado(id, request.Estado, usuarioId);
 
             if (!success)
@@ -132,7 +135,7 @@ namespace Proy_back_QBD.Controllers
                 return BadRequest("Debe especificar el CPE relacionado");
             }
 
-            int usuarioId = headerUserId ?? 1;
+            int usuarioId = UsuarioActual(headerUserId);
             var success = await _cotizacionService.AsignarCpe(id, request.CpeRelacionado, usuarioId);
 
             if (!success)
@@ -150,7 +153,7 @@ namespace Proy_back_QBD.Controllers
             [FromQuery] bool enviado,
             [FromHeader(Name = "x-user-id")] int? headerUserId)
         {
-            int usuarioId = headerUserId ?? 1;
+            int usuarioId = UsuarioActual(headerUserId);
             var success = await _cotizacionService.MarcarEnviado(id, enviado, usuarioId);
 
             if (!success)
@@ -172,6 +175,13 @@ namespace Proy_back_QBD.Controllers
             }
 
             return Ok(new { message = "Cotización eliminada correctamente" });
+        }
+
+        /// <summary>Usuario del token; el encabezado x-user-id solo se usa si no hay token.</summary>
+        private int UsuarioActual(int? headerUserId)
+        {
+            var id = JwtTokens.UsuarioId(User);
+            return id > 0 ? id : (headerUserId ?? 1);
         }
     }
 }
