@@ -1,6 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Proy_back_QBD.Data;
+using Proy_back_QBD.Models;
+using Proy_back_QBD.Security;
 
 namespace Proy_back_QBD.Controllers
 {
@@ -71,5 +74,82 @@ namespace Proy_back_QBD.Controllers
                 .ToListAsync();
             return Ok(cats);
         }
+
+        /// <summary>Crea un precio nuevo (solo ADMIN).</summary>
+        [HttpPost]
+        [Authorize(Roles = Roles.SoloAdmin)]
+        public async Task<IActionResult> Crear([FromBody] ListaPrecioReq request)
+        {
+            var error = Validar(request);
+            if (error != null) return BadRequest(new { message = error });
+
+            var nuevo = new ListaPrecio
+            {
+                Codigo = Limpiar(request.Codigo),
+                Nombre = request.Nombre!.Trim().ToUpper(),
+                Categoria = Limpiar(request.Categoria) ?? "FORMULA MAGISTRAL",
+                Precio = request.Precio,
+                PrecioFraccion = request.PrecioFraccion ?? 0,
+                Clase = "FORMULA MAGISTRAL",
+                Origen = "MANUAL",
+                Activo = true
+            };
+            _context.ListaPrecios.Add(nuevo);
+            await _context.SaveChangesAsync();
+            return Ok(nuevo);
+        }
+
+        /// <summary>Modifica un precio (solo ADMIN).</summary>
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = Roles.SoloAdmin)]
+        public async Task<IActionResult> Actualizar(int id, [FromBody] ListaPrecioReq request)
+        {
+            var error = Validar(request);
+            if (error != null) return BadRequest(new { message = error });
+
+            var item = await _context.ListaPrecios.FirstOrDefaultAsync(p => p.Id == id && p.Activo);
+            if (item == null) return NotFound(new { message = "Precio no encontrado." });
+
+            item.Codigo = Limpiar(request.Codigo);
+            item.Nombre = request.Nombre!.Trim().ToUpper();
+            item.Categoria = Limpiar(request.Categoria) ?? item.Categoria;
+            item.Precio = request.Precio;
+            if (request.PrecioFraccion.HasValue) item.PrecioFraccion = request.PrecioFraccion.Value;
+            await _context.SaveChangesAsync();
+            return Ok(item);
+        }
+
+        /// <summary>Quita un precio de la lista (se desactiva, no se borra). Solo ADMIN.</summary>
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = Roles.SoloAdmin)]
+        public async Task<IActionResult> Eliminar(int id)
+        {
+            var item = await _context.ListaPrecios.FirstOrDefaultAsync(p => p.Id == id && p.Activo);
+            if (item == null) return NotFound(new { message = "Precio no encontrado." });
+            item.Activo = false;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Precio eliminado." });
+        }
+
+        private static string? Validar(ListaPrecioReq? r)
+        {
+            if (r == null) return "Datos incompletos.";
+            if (string.IsNullOrWhiteSpace(r.Nombre)) return "Ingrese la descripción.";
+            if (r.Precio < 0) return "El precio no puede ser negativo.";
+            return null;
+        }
+
+        private static string? Limpiar(string? valor) =>
+            string.IsNullOrWhiteSpace(valor) ? null : valor.Trim().ToUpper() == "CATALOGO QBD" ? "CATALOGO QbD" : valor.Trim().ToUpper();
+    }
+
+    /// <summary>Datos para crear o modificar un precio.</summary>
+    public class ListaPrecioReq
+    {
+        public string? Codigo { get; set; }
+        public string? Nombre { get; set; }
+        public string? Categoria { get; set; }
+        public decimal Precio { get; set; }
+        public decimal? PrecioFraccion { get; set; }
     }
 }
