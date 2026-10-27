@@ -99,6 +99,44 @@ namespace Proy_back_QBD.Data
                 {
                     Console.WriteLine($"DB Auto-migration error (cotizaciones): {exCot.Message}");
                 }
+                try
+                {
+                    // Lista de precios (Excel QbD_PRECIOS_2025): tabla + carga inicial si está vacía
+                    db.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS lista_precios (
+                            id SERIAL PRIMARY KEY,
+                            codigo VARCHAR(50) NULL,
+                            nombre TEXT NOT NULL DEFAULT '',
+                            categoria VARCHAR(100) NULL,
+                            precio NUMERIC(10,2) NOT NULL DEFAULT 0,
+                            precio_fraccion NUMERIC(10,2) NOT NULL DEFAULT 0,
+                            clase VARCHAR(100) NULL,
+                            origen VARCHAR(100) NULL,
+                            activo BOOLEAN NOT NULL DEFAULT TRUE
+                        );
+                        CREATE INDEX IF NOT EXISTS idx_lista_precios_categoria ON lista_precios(categoria);
+                        CREATE INDEX IF NOT EXISTS idx_lista_precios_codigo ON lista_precios(codigo);
+                    ");
+
+                    if (!db.ListaPrecios.Any())
+                    {
+                        using var recurso = typeof(DatabaseStartupMigrator).Assembly.GetManifestResourceStream("lista_precios_2025.sql");
+                        if (recurso != null)
+                        {
+                            using var lector = new StreamReader(recurso);
+                            db.Database.ExecuteSqlRaw(lector.ReadToEnd());
+                            Console.WriteLine($"--> Base de datos: lista de precios cargada ({db.ListaPrecios.Count()} registros).");
+                        }
+                        else
+                        {
+                            Console.WriteLine("DB Auto-migration: no se encontró el recurso lista_precios_2025.sql");
+                        }
+                    }
+                }
+                catch (Exception exLp)
+                {
+                    Console.WriteLine($"DB Auto-migration error (lista_precios): {exLp.Message}");
+                }
                 db.Database.ExecuteSqlRaw(@"
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;

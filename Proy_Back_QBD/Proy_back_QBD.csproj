@@ -28,4 +28,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="9.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Datos iniciales de la lista de precios (se cargan solos al arrancar si la tabla está vacía) -->
+    <EmbeddedResource Include="SQL\lista_precios_2025.sql" LogicalName="lista_precios_2025.sql" />
+  </ItemGroup>
+
 </Project>
