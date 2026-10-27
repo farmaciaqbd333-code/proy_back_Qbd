@@ -116,17 +116,27 @@ namespace Proy_back_QBD.Data
                         );
                         CREATE INDEX IF NOT EXISTS idx_lista_precios_categoria ON lista_precios(categoria);
                         CREATE INDEX IF NOT EXISTS idx_lista_precios_codigo ON lista_precios(codigo);
-
-                        CREATE TABLE IF NOT EXISTS lista_precios_sede (
-                            id SERIAL PRIMARY KEY,
-                            id_lista_precio INT NOT NULL REFERENCES lista_precios(id) ON DELETE CASCADE,
-                            id_sede INT NOT NULL,
-                            precio NUMERIC(10,2) NOT NULL DEFAULT 0,
-                            fecha_modificacion TIMESTAMP NOT NULL DEFAULT NOW(),
-                            CONSTRAINT uq_lista_precios_sede UNIQUE (id_lista_precio, id_sede)
-                        );
-                        CREATE INDEX IF NOT EXISTS idx_lista_precios_sede_sede ON lista_precios_sede(id_sede);
                     ");
+
+                    // Precio propio por sede (tabla aparte; ya existía otra "lista_precios_sede" con otra estructura)
+                    try
+                    {
+                        db.Database.ExecuteSqlRaw(@"
+                            CREATE TABLE IF NOT EXISTS lista_precios_por_sede (
+                                id SERIAL PRIMARY KEY,
+                                id_lista_precio INT NOT NULL REFERENCES lista_precios(id) ON DELETE CASCADE,
+                                id_sede INT NOT NULL,
+                                precio NUMERIC(10,2) NOT NULL DEFAULT 0,
+                                fecha_modificacion TIMESTAMP NOT NULL DEFAULT NOW(),
+                                CONSTRAINT uq_lista_precios_por_sede UNIQUE (id_lista_precio, id_sede)
+                            );
+                            CREATE INDEX IF NOT EXISTS idx_lista_precios_por_sede_sede ON lista_precios_por_sede(id_sede);
+                        ");
+                    }
+                    catch (Exception exLps)
+                    {
+                        Console.WriteLine($"DB Auto-migration error (lista_precios_por_sede): {exLps.Message}");
+                    }
 
                     if (!db.ListaPrecios.Any())
                     {

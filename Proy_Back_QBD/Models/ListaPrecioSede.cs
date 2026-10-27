@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Proy_back_QBD.Models
 {
     /// <summary>Precio propio de una sede para un producto de la lista de precios (si no existe, se usa el precio general).</summary>
-    [Table("lista_precios_sede")]
+    [Table("lista_precios_por_sede")]
     public class ListaPrecioSede
     {
         [Key]
