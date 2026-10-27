@@ -18,5 +18,6 @@ namespace Proy_back_QBD.Services
         Task<DetallesRes?> ObtenerDetalles(int formulaId, int sedeId);
         Task<InsertoRes?> ObtenerInserto(int formulaId, int sedeId);
         Task<string?> CambiarTipo(FormulaCambiarTipo request);
+        Task<int> ActualizarPractica(int formulaId, List<FormulaPracticaItem> items);
     }
 }

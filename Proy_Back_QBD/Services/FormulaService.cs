@@ -360,6 +360,7 @@ namespace Proy_back_QBD.Services
                 CostoTotal = s.Cantidad * s.Costo,
                 Insumos = s.FormulaCC.Select(s => new DetallesRes2
                 {
+                    InsumoId = s.InsumoId,
                     CODQBD = "MP-QBD-" + s.InsumoId,
                     Porcentaje = s.Porcentaje,
                     Descripcion = s.Insumo.Descripcion,
@@ -428,6 +429,40 @@ namespace Proy_back_QBD.Services
                 return null;
             }
             return Inserto;
+        }
+
+        /// <summary>
+        /// Guarda la cantidad práctica (Práct.) de los insumos de una fórmula magistral.
+        /// Práct. vacío o 0 = se usa la Cant/Lote teórica (igual que en Productos Intermedios).
+        /// </summary>
+        public async Task<int> ActualizarPractica(int formulaId, List<FormulaPracticaItem> items)
+        {
+            if (items == null || items.Count == 0) return 0;
+
+            var filas = await _context.FormulasCC
+                .Where(f => f.FormulaId == formulaId)
+                .ToListAsync();
+
+            int actualizados = 0;
+            foreach (var item in items)
+            {
+                var fila = filas.FirstOrDefault(f => f.InsumoId == item.InsumoId
+                    && (string.IsNullOrEmpty(item.Variable) || f.Variable == item.Variable));
+                if (fila == null) continue;
+
+                decimal? nuevo = (item.Practica.HasValue && item.Practica.Value > 0) ? item.Practica.Value : null;
+                if (fila.Practica != nuevo)
+                {
+                    fila.Practica = nuevo;
+                    actualizados++;
+                }
+            }
+
+            if (actualizados > 0)
+            {
+                await _context.SaveChangesAsync();
+            }
+            return actualizados;
         }
     }
 }

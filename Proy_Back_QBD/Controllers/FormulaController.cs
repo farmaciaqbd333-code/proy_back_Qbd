@@ -51,6 +51,18 @@ public class FormulaController : ControllerBase
         return Ok(response);
     }
     
+    /// <summary>Guarda la cantidad práctica (Práct.) de los insumos de la fórmula.</summary>
+    [HttpPatch("practica/{formulaId}")]
+    public async Task<IActionResult> ActualizarPractica(int formulaId, [FromBody] List<FormulaPracticaItem> items)
+    {
+        if (items == null || items.Count == 0)
+        {
+            return BadRequest(new { message = "Debe enviar al menos un insumo." });
+        }
+        int actualizados = await _formulaService.ActualizarPractica(formulaId, items);
+        return Ok(new { message = "Cantidades prácticas guardadas", actualizados });
+    }
+
     [HttpGet("detalles/{formulaId}/{sedeId}")]
     [SwaggerResponse(200, "Actualizacion exitosa", typeof(DetallesRes))]
     public async Task<IActionResult> ObtenerDetalles(int formulaId, int sedeId)

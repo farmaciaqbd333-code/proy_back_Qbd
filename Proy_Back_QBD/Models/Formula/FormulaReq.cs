@@ -70,4 +70,12 @@ namespace Proy_back_QBD.Dto.Request
        public required List<int> Lista { get; set; }
 
     }
+
+    /// <summary>Cantidad práctica de un insumo de la fórmula (fila de FormulaCC).</summary>
+    public class FormulaPracticaItem
+    {
+        public int InsumoId { get; set; }
+        public string? Variable { get; set; }
+        public decimal? Practica { get; set; }
+    }
 }

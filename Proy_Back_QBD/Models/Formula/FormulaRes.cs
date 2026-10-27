@@ -132,6 +132,7 @@ namespace Proy_back_QBD.Dto.Response
     }
     public class DetallesRes2
     {
+        public int InsumoId { get; set; }
         public string? CODQBD { get; set; }
         public decimal Porcentaje { get; set; }
         public string? Descripcion { get; set; }
