@@ -116,6 +116,7 @@ namespace Proy_back_QBD.Data
                         );
                         CREATE INDEX IF NOT EXISTS idx_lista_precios_categoria ON lista_precios(categoria);
                         CREATE INDEX IF NOT EXISTS idx_lista_precios_codigo ON lista_precios(codigo);
+                        ALTER TABLE lista_precios ADD COLUMN IF NOT EXISTS enfermedad TEXT NULL;
                     ");
 
                     // Precio propio por sede (tabla aparte; ya existía otra "lista_precios_sede" con otra estructura)

@@ -27,6 +27,10 @@ namespace Proy_back_QBD.Models
         [Column("precio_fraccion")]
         public decimal PrecioFraccion { get; set; }
 
+        /// <summary>Enfermedad o indicación para la que sirve la fórmula (ej: ACNÉ, PSORIASIS).</summary>
+        [Column("enfermedad")]
+        public string? Enfermedad { get; set; }
+
         [Column("clase")]
         public string? Clase { get; set; }
 

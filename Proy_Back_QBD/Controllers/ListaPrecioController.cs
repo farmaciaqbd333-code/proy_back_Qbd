@@ -41,7 +41,9 @@ namespace Proy_back_QBD.Controllers
             if (!string.IsNullOrWhiteSpace(search))
             {
                 var term = search.Trim().ToUpper();
-                query = query.Where(p => p.Nombre.ToUpper().Contains(term) || (p.Codigo != null && p.Codigo.ToUpper().Contains(term)));
+                query = query.Where(p => p.Nombre.ToUpper().Contains(term)
+                    || (p.Codigo != null && p.Codigo.ToUpper().Contains(term))
+                    || (p.Enfermedad != null && p.Enfermedad.ToUpper().Contains(term)));
             }
 
             query = query.OrderBy(p => p.Nombre);
@@ -51,7 +53,7 @@ namespace Proy_back_QBD.Controllers
             }
 
             var lista = await query
-                .Select(p => new { p.Id, p.Codigo, p.Nombre, p.Categoria, p.Precio, p.PrecioFraccion, p.Clase })
+                .Select(p => new { p.Id, p.Codigo, p.Nombre, p.Categoria, p.Enfermedad, p.Precio, p.PrecioFraccion, p.Clase })
                 .ToListAsync();
 
             // Precios propios de la sede
@@ -72,6 +74,7 @@ namespace Proy_back_QBD.Controllers
                     p.Codigo,
                     p.Nombre,
                     p.Categoria,
+                    p.Enfermedad,
                     Precio = tienePropio ? precioSede : p.Precio,
                     PrecioGeneral = p.Precio,
                     PrecioSede = tienePropio,
@@ -109,6 +112,7 @@ namespace Proy_back_QBD.Controllers
                 Codigo = Limpiar(request.Codigo),
                 Nombre = request.Nombre!.Trim().ToUpper(),
                 Categoria = Limpiar(request.Categoria) ?? "FORMULA MAGISTRAL",
+                Enfermedad = Limpiar(request.Enfermedad),
                 Precio = request.Precio,
                 PrecioFraccion = request.PrecioFraccion ?? 0,
                 Clase = "FORMULA MAGISTRAL",
@@ -139,6 +143,7 @@ namespace Proy_back_QBD.Controllers
             item.Codigo = Limpiar(request.Codigo);
             item.Nombre = request.Nombre!.Trim().ToUpper();
             item.Categoria = Limpiar(request.Categoria) ?? item.Categoria;
+            item.Enfermedad = Limpiar(request.Enfermedad);
             if (request.PrecioFraccion.HasValue) item.PrecioFraccion = request.PrecioFraccion.Value;
 
             bool soloSede = request.IdSede.HasValue && request.IdSede.Value > 0 && !request.AplicarATodas;
@@ -230,6 +235,7 @@ namespace Proy_back_QBD.Controllers
                         Codigo = codigo,
                         Nombre = nombre,
                         Categoria = Limpiar(f.Categoria) ?? "FORMULA MAGISTRAL",
+                        Enfermedad = Limpiar(f.Enfermedad),
                         Precio = f.Precio.Value,
                         Clase = "FORMULA MAGISTRAL",
                         Origen = "EXCEL",
@@ -246,6 +252,11 @@ namespace Proy_back_QBD.Controllers
                 if (codigo != null && item.Codigo != codigo) { item.Codigo = codigo; cambio = true; }
                 var cat = Limpiar(f.Categoria);
                 if (cat != null && item.Categoria != cat) { item.Categoria = cat; cambio = true; }
+                if (f.Enfermedad != null)
+                {
+                    var enf = Limpiar(f.Enfermedad);
+                    if (item.Enfermedad != enf) { item.Enfermedad = enf; cambio = true; }
+                }
 
                 var precio = f.Precio.Value;
                 if (soloSede)
@@ -338,6 +349,9 @@ namespace Proy_back_QBD.Controllers
         public string? Codigo { get; set; }
         public string? Nombre { get; set; }
         public string? Categoria { get; set; }
+
+        /// <summary>null = la columna no vino en el Excel (no se toca); "" = se borra.</summary>
+        public string? Enfermedad { get; set; }
         public decimal? Precio { get; set; }
     }
 
@@ -355,6 +369,7 @@ namespace Proy_back_QBD.Controllers
         public string? Codigo { get; set; }
         public string? Nombre { get; set; }
         public string? Categoria { get; set; }
+        public string? Enfermedad { get; set; }
         public decimal Precio { get; set; }
         public decimal? PrecioFraccion { get; set; }
 
