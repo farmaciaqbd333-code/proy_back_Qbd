@@ -74,7 +74,6 @@ namespace Proy_back_QBD.Data
         public DbSet<Cotizacion> Cotizaciones { get; set; }
         public DbSet<CotizacionDetalle> CotizacionesDetalles { get; set; }
         public DbSet<ListaPrecio> ListaPrecios { get; set; }
-        public DbSet<ListaPrecioSede> ListaPreciosSede { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApiContext).Assembly);

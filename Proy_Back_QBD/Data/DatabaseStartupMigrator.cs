@@ -101,56 +101,65 @@ namespace Proy_back_QBD.Data
                 }
                 try
                 {
-                    // Lista de precios (Excel QbD_PRECIOS_2025): tabla + carga inicial si está vacía
+                    // Lista de precios (Excel PREC. AV): UNA SOLA TABLA con las listas S, A, B y C.
+                    // Si existe la tabla anterior (QbD_PRECIOS_2025, con precio por sede), se guarda como respaldo.
                     db.Database.ExecuteSqlRaw(@"
+                        DO $$
+                        BEGIN
+                            IF EXISTS (SELECT 1 FROM information_schema.tables
+                                       WHERE table_schema = current_schema() AND table_name = 'lista_precios')
+                               AND NOT EXISTS (SELECT 1 FROM information_schema.columns
+                                       WHERE table_schema = current_schema() AND table_name = 'lista_precios' AND column_name = 'codigo_a') THEN
+                                IF EXISTS (SELECT 1 FROM information_schema.tables
+                                           WHERE table_schema = current_schema() AND table_name = 'lista_precios_por_sede') THEN
+                                    ALTER TABLE lista_precios_por_sede RENAME TO lista_precios_por_sede_respaldo;
+                                END IF;
+                                ALTER TABLE lista_precios RENAME TO lista_precios_respaldo_2025;
+                                IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'lista_precios_pkey') THEN
+                                    ALTER TABLE lista_precios_respaldo_2025 RENAME CONSTRAINT lista_precios_pkey TO lista_precios_respaldo_2025_pkey;
+                                END IF;
+                                ALTER SEQUENCE IF EXISTS lista_precios_id_seq RENAME TO lista_precios_respaldo_2025_id_seq;
+                            END IF;
+                        END $$;
+
                         CREATE TABLE IF NOT EXISTS lista_precios (
                             id SERIAL PRIMARY KEY,
-                            codigo VARCHAR(50) NULL,
-                            nombre TEXT NOT NULL DEFAULT '',
-                            categoria VARCHAR(100) NULL,
-                            precio NUMERIC(10,2) NOT NULL DEFAULT 0,
-                            precio_fraccion NUMERIC(10,2) NOT NULL DEFAULT 0,
-                            clase VARCHAR(100) NULL,
-                            origen VARCHAR(100) NULL,
+                            codigo_s VARCHAR(30) NULL,
+                            codigo_a VARCHAR(30) NULL,
+                            codigo_b VARCHAR(30) NULL,
+                            codigo_c VARCHAR(30) NULL,
+                            producto TEXT NOT NULL DEFAULT '',
+                            ifas TEXT NULL,
+                            precio_s NUMERIC(10,2) NULL,
+                            precio_a NUMERIC(10,2) NULL,
+                            precio_b NUMERIC(10,2) NULL,
+                            precio_c NUMERIC(10,2) NULL,
+                            especialidad1 VARCHAR(100) NULL,
+                            especialidad2 VARCHAR(100) NULL,
+                            especialidad3 VARCHAR(100) NULL,
+                            indicaciones TEXT NULL,
+                            presentacion VARCHAR(200) NULL,
+                            fecha_ingreso TIMESTAMP NOT NULL DEFAULT NOW(),
+                            fecha_modificacion TIMESTAMP NULL,
                             activo BOOLEAN NOT NULL DEFAULT TRUE
                         );
-                        CREATE INDEX IF NOT EXISTS idx_lista_precios_categoria ON lista_precios(categoria);
-                        CREATE INDEX IF NOT EXISTS idx_lista_precios_codigo ON lista_precios(codigo);
-                        ALTER TABLE lista_precios ADD COLUMN IF NOT EXISTS enfermedad TEXT NULL;
+                        CREATE INDEX IF NOT EXISTS idx_lp_producto ON lista_precios(producto);
+                        CREATE INDEX IF NOT EXISTS idx_lp_codigo_a ON lista_precios(codigo_a);
+                        CREATE INDEX IF NOT EXISTS idx_lp_especialidad1 ON lista_precios(especialidad1);
                     ");
-
-                    // Precio propio por sede (tabla aparte; ya existía otra "lista_precios_sede" con otra estructura)
-                    try
-                    {
-                        db.Database.ExecuteSqlRaw(@"
-                            CREATE TABLE IF NOT EXISTS lista_precios_por_sede (
-                                id SERIAL PRIMARY KEY,
-                                id_lista_precio INT NOT NULL REFERENCES lista_precios(id) ON DELETE CASCADE,
-                                id_sede INT NOT NULL,
-                                precio NUMERIC(10,2) NOT NULL DEFAULT 0,
-                                fecha_modificacion TIMESTAMP NOT NULL DEFAULT NOW(),
-                                CONSTRAINT uq_lista_precios_por_sede UNIQUE (id_lista_precio, id_sede)
-                            );
-                            CREATE INDEX IF NOT EXISTS idx_lista_precios_por_sede_sede ON lista_precios_por_sede(id_sede);
-                        ");
-                    }
-                    catch (Exception exLps)
-                    {
-                        Console.WriteLine($"DB Auto-migration error (lista_precios_por_sede): {exLps.Message}");
-                    }
 
                     if (!db.ListaPrecios.Any())
                     {
-                        using var recurso = typeof(DatabaseStartupMigrator).Assembly.GetManifestResourceStream("lista_precios_2025.sql");
+                        using var recurso = typeof(DatabaseStartupMigrator).Assembly.GetManifestResourceStream("lista_precios_av.sql");
                         if (recurso != null)
                         {
                             using var lector = new StreamReader(recurso);
                             db.Database.ExecuteSqlRaw(lector.ReadToEnd());
-                            Console.WriteLine($"--> Base de datos: lista de precios cargada ({db.ListaPrecios.Count()} registros).");
+                            Console.WriteLine($"--> Base de datos: lista de precios PREC. AV cargada ({db.ListaPrecios.Count()} productos).");
                         }
                         else
                         {
-                            Console.WriteLine("DB Auto-migration: no se encontró el recurso lista_precios_2025.sql");
+                            Console.WriteLine("DB Auto-migration: no se encontró el recurso lista_precios_av.sql");
                         }
                     }
                 }
