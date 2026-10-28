@@ -66,6 +66,10 @@ namespace Proy_back_QBD.Models
         [Column("indicaciones")]
         public string? Indicaciones { get; set; }
 
+        /// <summary>Forma farmacéutica (crema, gel, jarabe, cápsulas...).</summary>
+        [Column("forma_farmaceutica")]
+        public string? FormaFarmaceutica { get; set; }
+
         [Column("presentacion")]
         public string? Presentacion { get; set; }
 

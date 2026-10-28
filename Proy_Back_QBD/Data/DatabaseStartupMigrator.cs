@@ -128,6 +128,7 @@ namespace Proy_back_QBD.Data
                         CREATE INDEX IF NOT EXISTS idx_lpav_producto ON lista_precios_av(producto);
                         CREATE INDEX IF NOT EXISTS idx_lpav_codigo_a ON lista_precios_av(codigo_a);
                         CREATE INDEX IF NOT EXISTS idx_lpav_especialidad1 ON lista_precios_av(especialidad1);
+                        ALTER TABLE lista_precios_av ADD COLUMN IF NOT EXISTS forma_farmaceutica VARCHAR(100) NULL;
                     ");
 
                     if (!db.ListaPrecios.Any())
