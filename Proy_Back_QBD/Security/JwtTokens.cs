@@ -57,6 +57,41 @@ namespace Proy_back_QBD.Security
             return (new JwtSecurityTokenHandler().WriteToken(token), expira);
         }
 
+        /// <summary>
+        /// Emite un token nuevo (con 12 horas más) con los mismos datos del token actual.
+        /// Se usa para que la sesión no se corte mientras el usuario sigue trabajando.
+        /// </summary>
+        public static (string Token, DateTime Expira) Renovar(ClaimsPrincipal user, string secreto)
+        {
+            var expira = DateTime.UtcNow.Add(Duracion);
+            string Valor(string tipo) => user.FindFirst(tipo)?.Value ?? "0";
+
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, Valor(JwtRegisteredClaimNames.Sub)),
+                new(ClaimRol, Valor(ClaimRol)),
+                new(ClaimSede, Valor(ClaimSede)),
+                new(ClaimIdGeneral, Valor(ClaimIdGeneral)),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString("N")),
+            };
+            var nombre = user.FindFirst("nombre")?.Value;
+            if (!string.IsNullOrWhiteSpace(nombre))
+            {
+                claims.Add(new Claim("nombre", nombre));
+            }
+
+            var credenciales = new SigningCredentials(CrearClave(secreto), SecurityAlgorithms.HmacSha256);
+            var token = new JwtSecurityToken(
+                issuer: Issuer,
+                audience: Audience,
+                claims: claims,
+                notBefore: DateTime.UtcNow.AddSeconds(-5),
+                expires: expira,
+                signingCredentials: credenciales);
+
+            return (new JwtSecurityTokenHandler().WriteToken(token), expira);
+        }
+
         /// <summary>Id del usuario del token (0 si no hay).</summary>
         public static int UsuarioId(ClaimsPrincipal user) =>
             int.TryParse(user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : 0;

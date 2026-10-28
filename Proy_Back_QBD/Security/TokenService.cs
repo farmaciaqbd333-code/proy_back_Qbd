@@ -14,6 +14,9 @@ namespace Proy_back_QBD.Security
     public interface ITokenService
     {
         (string Token, DateTime Expira) Generar(UsuarioLoginDataRes usuario);
+
+        /// <summary>Token nuevo con los mismos datos del usuario autenticado.</summary>
+        (string Token, DateTime Expira) Renovar(System.Security.Claims.ClaimsPrincipal usuario);
     }
 
     /// <summary>Implementación con JWT firmado (HMAC-SHA256).</summary>
@@ -28,5 +31,8 @@ namespace Proy_back_QBD.Security
 
         public (string Token, DateTime Expira) Generar(UsuarioLoginDataRes usuario) =>
             JwtTokens.Generar(usuario, _options.Secret);
+
+        public (string Token, DateTime Expira) Renovar(System.Security.Claims.ClaimsPrincipal usuario) =>
+            JwtTokens.Renovar(usuario, _options.Secret);
     }
 }

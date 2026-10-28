@@ -56,6 +56,21 @@ public class UsuarioController : ControllerBase
         return Ok(respuesta);
     }
 
+    /// <summary>
+    /// Renueva el token de la sesión actual (12 horas más). El frontend lo llama mientras
+    /// el usuario trabaja, para que la sesión no se corte de golpe.
+    /// </summary>
+    [HttpPost("renovar-token")]
+    public IActionResult RenovarToken()
+    {
+        if (JwtTokens.UsuarioId(User) <= 0)
+        {
+            return Unauthorized(new { message = "Sesión no válida." });
+        }
+        var (token, expira) = _tokenService.Renovar(User);
+        return Ok(new { token, expira = expira.ToString("o") });
+    }
+
     [Authorize(Roles = RolesGestionUsuarios)]
     [HttpPost]
     [SwaggerResponse(200, "Operación exitosa")]

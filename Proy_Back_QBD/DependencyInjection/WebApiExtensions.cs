@@ -27,10 +27,31 @@ namespace Proy_back_QBD.DependencyInjection
             var secret = configuration["JWT_SECRET"];
             if (string.IsNullOrWhiteSpace(secret) || secret.Length < 32)
             {
-                secret = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+                // Sin JWT_SECRET: se deriva una clave ESTABLE de la configuración privada del servidor
+                // (datos de la base de datos). Antes se generaba una clave al azar en cada arranque y
+                // TODOS los usuarios eran expulsados cada vez que la API se reiniciaba (o Render la despertaba).
+                var semilla = string.Join("|",
+                    "qbd-jwt-v1",
+                    configuration["POSTGRES_PASSWORD"],
+                    configuration["POSTGRES_HOST"],
+                    configuration["POSTGRES_DB"],
+                    configuration["POSTGRES_USERNAME"],
+                    configuration["API-KEY"]);
+
+                if (semilla.Replace("|", "").Length > "qbd-jwt-v1".Length)
+                {
+                    var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(semilla));
+                    secret = Convert.ToBase64String(hash) + "-qbd";
+                    Console.WriteLine("AVISO: JWT_SECRET no está configurado. Se usa una clave estable derivada de la configuración " +
+                                      "del servidor (las sesiones se mantienen al reiniciar). Recomendado: definir JWT_SECRET.");
+                }
+                else
+                {
+                    secret = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(48));
+                    Console.WriteLine("ADVERTENCIA: JWT_SECRET no está configurado. Se usa una clave temporal: " +
+                                      "las sesiones se cerrarán cada vez que se reinicie el servidor.");
+                }
                 configuration["JWT_SECRET"] = secret;
-                Console.WriteLine("ADVERTENCIA: JWT_SECRET no está configurado (o tiene menos de 32 caracteres). " +
-                                  "Se usa una clave temporal: las sesiones se cerrarán cada vez que se reinicie el servidor.");
             }
 
             services.Configure<JwtOptions>(o => o.Secret = secret);
