@@ -46,6 +46,7 @@ namespace Proy_back_QBD.Controllers
                     (p.Ifas != null && p.Ifas.ToUpper().Contains(term)) ||
                     (p.Indicaciones != null && p.Indicaciones.ToUpper().Contains(term)) ||
                     (p.FormaFarmaceutica != null && p.FormaFarmaceutica.ToUpper().Contains(term)) ||
+                    (p.Enfermedades != null && p.Enfermedades.ToUpper().Contains(term)) ||
                     (p.CodigoS != null && p.CodigoS.Contains(term)) ||
                     (p.CodigoA != null && p.CodigoA.Contains(term)) ||
                     (p.CodigoB != null && p.CodigoB.Contains(term)) ||
@@ -231,13 +232,14 @@ namespace Proy_back_QBD.Controllers
             item.Indicaciones = Texto(r.Indicaciones);
             item.Presentacion = Mayus(r.Presentacion);
             item.FormaFarmaceutica = Mayus(r.FormaFarmaceutica);
+            item.Enfermedades = Mayus(r.Enfermedades);
         }
 
         private static string Firma(ListaPrecio p) => string.Join("|", new object?[]
         {
             p.CodigoS, p.CodigoA, p.CodigoB, p.CodigoC, p.Producto, p.Ifas,
             N(p.PrecioS), N(p.PrecioA), N(p.PrecioB), N(p.PrecioC),
-            p.Especialidad1, p.Especialidad2, p.Especialidad3, p.Indicaciones, p.Presentacion, p.FormaFarmaceutica
+            p.Especialidad1, p.Especialidad2, p.Especialidad3, p.Indicaciones, p.Presentacion, p.FormaFarmaceutica, p.Enfermedades
         });
 
         private static string? N(decimal? v) => v?.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
@@ -275,6 +277,7 @@ namespace Proy_back_QBD.Controllers
         public string? Indicaciones { get; set; }
         public string? Presentacion { get; set; }
         public string? FormaFarmaceutica { get; set; }
+        public string? Enfermedades { get; set; }
     }
 
     /// <summary>Fila del Excel de importación.</summary>

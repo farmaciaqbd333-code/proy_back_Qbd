@@ -63,6 +63,10 @@ namespace Proy_back_QBD.Models
         [Column("especialidad3")]
         public string? Especialidad3 { get; set; }
 
+        /// <summary>Enfermedades para las que se usa (ej: ACNÉ, PSORIASIS, HERPES), separadas por coma.</summary>
+        [Column("enfermedades")]
+        public string? Enfermedades { get; set; }
+
         [Column("indicaciones")]
         public string? Indicaciones { get; set; }
 
