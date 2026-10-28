@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace Proy_back_QBD.Models
 {
     /// <summary>
-    /// Lista de precios (Excel PREC. AV). UNA SOLA TABLA: cada producto tiene 4 listas,
+    /// Lista de precios (Excel PREC. AV). UNA SOLA TABLA (lista_precios_av): cada producto tiene 4 listas,
     /// cada una con su propio código y su propio precio:
     ///  - Lista S → código S / precio P
     ///  - Lista A → código A / precio MED (médico)
     ///  - Lista B → código B / precio TERC (tercero)
     ///  - Lista C → código C / precio PUB (público)
     /// </summary>
-    [Table("lista_precios")]
+    [Table("lista_precios_av")]
     public class ListaPrecio
     {
         [Key]

@@ -57,7 +57,16 @@ namespace Proy_back_QBD.Controllers
                 query = query.Take(take.Value);
             }
 
-            return Ok(await query.ToListAsync());
+            try
+            {
+                return Ok(await query.ToListAsync());
+            }
+            catch (Exception ex)
+            {
+                var detalle = ex.InnerException?.Message ?? ex.Message;
+                Console.WriteLine($"[LISTA-PRECIOS] Error al listar: {detalle}");
+                return StatusCode(500, new { message = $"No se pudo leer la lista de precios: {detalle}" });
+            }
         }
 
         /// <summary>Especialidades usadas en la lista, con su cantidad de productos.</summary>

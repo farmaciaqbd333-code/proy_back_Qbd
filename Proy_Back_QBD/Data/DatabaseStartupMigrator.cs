@@ -101,28 +101,10 @@ namespace Proy_back_QBD.Data
                 }
                 try
                 {
-                    // Lista de precios (Excel PREC. AV): UNA SOLA TABLA con las listas S, A, B y C.
-                    // Si existe la tabla anterior (QbD_PRECIOS_2025, con precio por sede), se guarda como respaldo.
+                    // Lista de precios (Excel PREC. AV): UNA SOLA TABLA (lista_precios_av) con las listas S, A, B y C.
+                    // Las tablas anteriores (lista_precios y lista_precios_por_sede) ya no se usan; no se tocan.
                     db.Database.ExecuteSqlRaw(@"
-                        DO $$
-                        BEGIN
-                            IF EXISTS (SELECT 1 FROM information_schema.tables
-                                       WHERE table_schema = current_schema() AND table_name = 'lista_precios')
-                               AND NOT EXISTS (SELECT 1 FROM information_schema.columns
-                                       WHERE table_schema = current_schema() AND table_name = 'lista_precios' AND column_name = 'codigo_a') THEN
-                                IF EXISTS (SELECT 1 FROM information_schema.tables
-                                           WHERE table_schema = current_schema() AND table_name = 'lista_precios_por_sede') THEN
-                                    ALTER TABLE lista_precios_por_sede RENAME TO lista_precios_por_sede_respaldo;
-                                END IF;
-                                ALTER TABLE lista_precios RENAME TO lista_precios_respaldo_2025;
-                                IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'lista_precios_pkey') THEN
-                                    ALTER TABLE lista_precios_respaldo_2025 RENAME CONSTRAINT lista_precios_pkey TO lista_precios_respaldo_2025_pkey;
-                                END IF;
-                                ALTER SEQUENCE IF EXISTS lista_precios_id_seq RENAME TO lista_precios_respaldo_2025_id_seq;
-                            END IF;
-                        END $$;
-
-                        CREATE TABLE IF NOT EXISTS lista_precios (
+                        CREATE TABLE IF NOT EXISTS lista_precios_av (
                             id SERIAL PRIMARY KEY,
                             codigo_s VARCHAR(30) NULL,
                             codigo_a VARCHAR(30) NULL,
@@ -143,9 +125,9 @@ namespace Proy_back_QBD.Data
                             fecha_modificacion TIMESTAMP NULL,
                             activo BOOLEAN NOT NULL DEFAULT TRUE
                         );
-                        CREATE INDEX IF NOT EXISTS idx_lp_producto ON lista_precios(producto);
-                        CREATE INDEX IF NOT EXISTS idx_lp_codigo_a ON lista_precios(codigo_a);
-                        CREATE INDEX IF NOT EXISTS idx_lp_especialidad1 ON lista_precios(especialidad1);
+                        CREATE INDEX IF NOT EXISTS idx_lpav_producto ON lista_precios_av(producto);
+                        CREATE INDEX IF NOT EXISTS idx_lpav_codigo_a ON lista_precios_av(codigo_a);
+                        CREATE INDEX IF NOT EXISTS idx_lpav_especialidad1 ON lista_precios_av(especialidad1);
                     ");
 
                     if (!db.ListaPrecios.Any())
@@ -165,7 +147,7 @@ namespace Proy_back_QBD.Data
                 }
                 catch (Exception exLp)
                 {
-                    Console.WriteLine($"DB Auto-migration error (lista_precios): {exLp.Message}");
+                    Console.WriteLine($"DB Auto-migration error (lista_precios_av): {exLp.Message}");
                 }
                 db.Database.ExecuteSqlRaw(@"
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
