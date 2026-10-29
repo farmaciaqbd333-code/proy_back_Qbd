@@ -233,13 +233,17 @@ namespace Proy_back_QBD.Controllers
             item.Presentacion = Mayus(r.Presentacion);
             item.FormaFarmaceutica = Mayus(r.FormaFarmaceutica);
             item.Enfermedades = Mayus(r.Enfermedades);
+            item.ModoUso = Texto(r.ModoUso);
+            item.Precauciones = Texto(r.Precauciones);
+            item.Observaciones = Texto(r.Observaciones);
         }
 
         private static string Firma(ListaPrecio p) => string.Join("|", new object?[]
         {
             p.CodigoS, p.CodigoA, p.CodigoB, p.CodigoC, p.Producto, p.Ifas,
             N(p.PrecioS), N(p.PrecioA), N(p.PrecioB), N(p.PrecioC),
-            p.Especialidad1, p.Especialidad2, p.Especialidad3, p.Indicaciones, p.Presentacion, p.FormaFarmaceutica, p.Enfermedades
+            p.Especialidad1, p.Especialidad2, p.Especialidad3, p.Indicaciones, p.Presentacion, p.FormaFarmaceutica, p.Enfermedades,
+            p.ModoUso, p.Precauciones, p.Observaciones
         });
 
         private static string? N(decimal? v) => v?.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
@@ -278,6 +282,9 @@ namespace Proy_back_QBD.Controllers
         public string? Presentacion { get; set; }
         public string? FormaFarmaceutica { get; set; }
         public string? Enfermedades { get; set; }
+        public string? ModoUso { get; set; }
+        public string? Precauciones { get; set; }
+        public string? Observaciones { get; set; }
     }
 
     /// <summary>Fila del Excel de importación.</summary>

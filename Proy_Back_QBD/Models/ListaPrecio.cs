@@ -74,6 +74,18 @@ namespace Proy_back_QBD.Models
         [Column("forma_farmaceutica")]
         public string? FormaFarmaceutica { get; set; }
 
+        /// <summary>Modo de uso / posología (ej: 2 VECES POR SEMANA...).</summary>
+        [Column("modo_uso")]
+        public string? ModoUso { get; set; }
+
+        /// <summary>Precauciones o contraindicaciones.</summary>
+        [Column("precauciones")]
+        public string? Precauciones { get; set; }
+
+        /// <summary>Observaciones adicionales.</summary>
+        [Column("observaciones")]
+        public string? Observaciones { get; set; }
+
         [Column("presentacion")]
         public string? Presentacion { get; set; }
 
