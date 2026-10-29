@@ -28,9 +28,15 @@ namespace Proy_back_QBD.Controllers
         /// IFAS o indicaciones) y especialidad.
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> Listar([FromQuery] string? search, [FromQuery] string? especialidad, [FromQuery] int? take)
+        public async Task<IActionResult> Listar([FromQuery] string? search, [FromQuery] string? especialidad, [FromQuery] int? take, [FromQuery] string? categoria)
         {
             var query = _context.ListaPrecios.AsNoTracking().Where(p => p.Activo);
+
+            if (!string.IsNullOrWhiteSpace(categoria))
+            {
+                var cat = categoria.Trim().ToUpper();
+                query = query.Where(p => p.Categoria == cat);
+            }
 
             if (!string.IsNullOrWhiteSpace(especialidad))
             {
@@ -233,6 +239,7 @@ namespace Proy_back_QBD.Controllers
             item.Presentacion = Mayus(r.Presentacion);
             item.FormaFarmaceutica = Mayus(r.FormaFarmaceutica);
             item.Enfermedades = Mayus(r.Enfermedades);
+            item.Categoria = Mayus(r.Categoria) ?? (string.IsNullOrWhiteSpace(item.Categoria) ? "FM" : item.Categoria);
             item.ModoUso = Texto(r.ModoUso);
             item.Precauciones = Texto(r.Precauciones);
             item.Observaciones = Texto(r.Observaciones);
@@ -243,7 +250,7 @@ namespace Proy_back_QBD.Controllers
             p.CodigoS, p.CodigoA, p.CodigoB, p.CodigoC, p.Producto, p.Ifas,
             N(p.PrecioS), N(p.PrecioA), N(p.PrecioB), N(p.PrecioC),
             p.Especialidad1, p.Especialidad2, p.Especialidad3, p.Indicaciones, p.Presentacion, p.FormaFarmaceutica, p.Enfermedades,
-            p.ModoUso, p.Precauciones, p.Observaciones
+            p.ModoUso, p.Precauciones, p.Observaciones, p.Categoria
         });
 
         private static string? N(decimal? v) => v?.ToString("0.####", System.Globalization.CultureInfo.InvariantCulture);
@@ -282,6 +289,7 @@ namespace Proy_back_QBD.Controllers
         public string? Presentacion { get; set; }
         public string? FormaFarmaceutica { get; set; }
         public string? Enfermedades { get; set; }
+        public string? Categoria { get; set; }
         public string? ModoUso { get; set; }
         public string? Precauciones { get; set; }
         public string? Observaciones { get; set; }

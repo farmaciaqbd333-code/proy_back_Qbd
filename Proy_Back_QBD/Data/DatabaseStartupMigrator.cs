@@ -133,6 +133,8 @@ namespace Proy_back_QBD.Data
                         ALTER TABLE lista_precios_av ADD COLUMN IF NOT EXISTS modo_uso TEXT NULL;
                         ALTER TABLE lista_precios_av ADD COLUMN IF NOT EXISTS precauciones TEXT NULL;
                         ALTER TABLE lista_precios_av ADD COLUMN IF NOT EXISTS observaciones TEXT NULL;
+                        ALTER TABLE lista_precios_av ADD COLUMN IF NOT EXISTS categoria VARCHAR(50) NOT NULL DEFAULT 'FM';
+                        CREATE INDEX IF NOT EXISTS idx_lpav_categoria ON lista_precios_av(categoria);
                     ");
 
                     if (!db.ListaPrecios.Any())

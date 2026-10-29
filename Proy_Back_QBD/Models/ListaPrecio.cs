@@ -54,6 +54,10 @@ namespace Proy_back_QBD.Models
         [Column("precio_c")]
         public decimal? PrecioC { get; set; }
 
+        /// <summary>Categoría: FM (fórmula magistral), FMVET (fórmula veterinaria), OFI (oficinal) u otra.</summary>
+        [Column("categoria")]
+        public string Categoria { get; set; } = "FM";
+
         [Column("especialidad1")]
         public string? Especialidad1 { get; set; }
 
