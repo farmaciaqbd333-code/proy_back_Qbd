@@ -41,6 +41,10 @@ public class UsuarioController : ControllerBase
     [SwaggerResponse(200, "Operación exitosa", typeof(Pedido))]
     public async Task<IActionResult> CrearUsuario([FromBody] UsuarioCreateReq request)
     {
+        if (string.IsNullOrWhiteSpace(request.Contrasena))
+        {
+            return BadRequest("La contraseña es obligatoria");
+        }
         Usuario? usuario = await _userService.Crear(request);
 
         return Ok(usuario);

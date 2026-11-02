@@ -32,7 +32,6 @@ namespace Proy_back_QBD.Dto.Response
     {
         public int? Id { get; set; }
         public int? IdGeneral { get; set; }
-        public string? Contrasena { get; set; }
         public TimeOnly? HorarioEntrada { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
         public TimeOnly? HorarioAlmuerzo { get; set; }
@@ -48,7 +47,6 @@ namespace Proy_back_QBD.Dto.Response
     {
         public int? Id { get; set; }
         public int? IdGeneral { get; set; }
-        public string? Contrasena { get; set; }
         public TimeOnly? HorarioEntrada { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
         public TimeOnly? HorarioAlmuerzo { get; set; }

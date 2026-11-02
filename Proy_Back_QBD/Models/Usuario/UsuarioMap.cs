@@ -12,6 +12,7 @@ namespace Proy_back_QBD.Profiles
         {
             // Mapeo entre ApoderadoCreate y Apoderado
             CreateMap<UsuarioUpdateReq, Usuario>()
+            .ForMember(a => a.Contrasena, options => options.Ignore())
             .ForMember(a => a.Id, options => options.Ignore())
             .ForMember(a => a.FechaCreacion, options => options.Ignore())
             .ForMember(a => a.CreadorId, options => options.Ignore())
@@ -20,6 +21,7 @@ namespace Proy_back_QBD.Profiles
             .ForMember(a => a.PersonaId, options => options.Ignore())
             ;
              CreateMap<UsuarioCreateReq, Usuario>()
+            .ForMember(a => a.Contrasena, options => options.Ignore())
             .ForMember(a => a.Id, options => options.Ignore())
             .ForMember(a => a.FechaCreacion, options => options.Ignore())
             ;

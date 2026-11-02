@@ -12,20 +12,35 @@ namespace Proy_back_QBD.Services
     {
         private readonly ApiContext _context;
         private readonly IMapper _mapper;
-        public UserService(ApiContext context, IMapper mapper)
+        private readonly ILogger<UserService> _logger;
+        public UserService(ApiContext context, IMapper mapper, ILogger<UserService> logger)
         {
             _context = context;
             _mapper = mapper;
+            _logger = logger;
         }
         public async Task<UsuarioLoginDataRes?> ValidarLogin(string codigo, string contrasena)
         {
 
+            // Codigo no es único (iniciales + ddMM): se prueba la contraseña con cada coincidencia
+            List<Usuario> candidatos = await _context.Usuarios
+            .Where(a => a.Codigo.Trim() == codigo && a.Estado == true)
+            .ToListAsync();
+
+            Usuario? usuario = candidatos.FirstOrDefault(a => PasswordHasher.Verificar(contrasena, a.Contrasena));
+
+            if (usuario == null)
+            {
+                return null;
+            }
+
+            await MigrarContrasenaLegada(usuario, contrasena);
 
             UsuarioLoginDataRes? response = await _context.Usuarios
             .Include(a => a.Persona)
             .Include(a => a.Sede)
             .Include(a => a.Tipo)
-            .Where(a => a.Codigo.Trim() == codigo && a.Contrasena.Trim() == contrasena && a.Estado == true)
+            .Where(a => a.Id == usuario.Id)
             .Select(a => new UsuarioLoginDataRes
             {
                 NombreCompleto = $"{a.Persona.NombreCompleto}",
@@ -48,6 +63,27 @@ namespace Proy_back_QBD.Services
 
             return response;
         }
+        // Migración perezosa: un fallo al guardar el hash no debe impedir el login
+        private async Task MigrarContrasenaLegada(Usuario usuario, string contrasena)
+        {
+            if (PasswordHasher.EsHash(usuario.Contrasena))
+            {
+                return;
+            }
+
+            string contrasenaLegada = usuario.Contrasena;
+            try
+            {
+                usuario.Contrasena = PasswordHasher.Hashear(contrasena);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, "No se pudo migrar a hash la contraseña del usuario {UsuarioId}", usuario.Id);
+                usuario.Contrasena = contrasenaLegada;
+                _context.Entry(usuario).State = EntityState.Unchanged;
+            }
+        }
         public async Task<Usuario?> Crear(UsuarioCreateReq request)
         {
             Persona persona = _mapper.Map<Persona>(request.Persona);
@@ -55,6 +91,7 @@ namespace Proy_back_QBD.Services
             await _context.Personas.AddAsync(persona);
             await _context.SaveChangesAsync();
             Usuario usuario = _mapper.Map<Usuario>(request);
+            usuario.Contrasena = PasswordHasher.Hashear(request.Contrasena);
             usuario.PersonaId = persona.Id;
             usuario.Modificador = persona.Creador;
             usuario.Codigo = $"{ObtenerIniciales(persona.NombreCompleto)}{persona.FechaNacimiento:ddMM}";
@@ -80,6 +117,11 @@ namespace Proy_back_QBD.Services
             .Include(a => a.Persona)
             .FirstOrDefaultAsync(a => a.Id == id);
             _mapper.Map(request, usuario);
+            // Contraseña vacía o ausente = no cambiarla
+            if (!string.IsNullOrWhiteSpace(request.Contrasena))
+            {
+                usuario.Contrasena = PasswordHasher.Hashear(request.Contrasena);
+            }
             usuario.Codigo = $"{ObtenerIniciales(usuario.Persona.NombreCompleto)}{usuario.Persona.FechaNacimiento:ddMM}";
             _mapper.Map(request.Persona, usuario.Persona);
             await _context.SaveChangesAsync();
@@ -96,7 +138,6 @@ namespace Proy_back_QBD.Services
             {
                 Id = a.Id,
                 IdGeneral = a.IdGeneral,
-                Contrasena = a.Contrasena,
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
                 HorarioRegreso = a.HorarioRegreso,
@@ -130,7 +171,6 @@ namespace Proy_back_QBD.Services
             {
                 Id = a.Id,
                 IdGeneral = a.IdGeneral,
-                Contrasena = a.Contrasena,
                 HorarioEntrada = a.HorarioEntrada,
                 HorarioAlmuerzo = a.HorarioAlmuerzo,
                 HorarioRegreso = a.HorarioRegreso,

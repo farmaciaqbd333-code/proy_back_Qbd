@@ -15,8 +15,9 @@ namespace Proy_back_QBD.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("id")]
         public int Id { get; set; }  // Puede ser nulo 
+        [JsonIgnore]
         [Column("contrasena")]
-        public required string Contrasena { get; set; }  // Puede ser nulo        
+        public string Contrasena { get; set; } = string.Empty;
         [JsonIgnore]
         public TipoUsuario? Tipo { get; set; }  // Puede ser nulo
         [Column("tipo_id")]
