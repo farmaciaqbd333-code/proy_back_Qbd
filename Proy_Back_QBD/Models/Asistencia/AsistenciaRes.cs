@@ -16,6 +16,13 @@ namespace Proy_back_QBD.Dto.Response
         public string? HoraAlmuerzo { get; set; }
         public string? HoraRegreso { get; set; }
     }
+    public class CalculoPagoRes
+    {
+        public string Datos { get; set; } = "{}";
+        public decimal? PagoFinal { get; set; }
+        public string? ModificadoPor { get; set; }
+        public DateTime FechaModificacion { get; set; }
+    }
     public class AsistenciaByIdRes
     {
         public string? NombreCompleto { get; set; }

@@ -40,6 +40,7 @@ namespace Proy_back_QBD.Data
         public DbSet<CompraProducto> CompraProductos { get; set; }
         public DbSet<Compra> Compras { get; set; }
         public DbSet<Asistencia> Asistencias { get; set; }
+        public DbSet<CalculoPago> CalculosPago { get; set; }
         public DbSet<Sede> Sedes { get; set; }  // Para la tabla de secciones
         public DbSet<Persona> Personas { get; set; }  // Para la tabla de secciones
         public DbSet<Usuario> Usuarios { get; set; }  // Para la tabla de secciones

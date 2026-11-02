@@ -84,6 +84,57 @@ namespace Proy_back_QBD.Services
         }
 
 
+        public async Task<CalculoPagoRes?> ObtenerCalculoPago(int usuarioId, int anio, int mes)
+        {
+            CalculoPago? calculo = await _context.CalculosPago
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.Anio == anio && c.Mes == mes);
+
+            return calculo == null ? null : await ArmarCalculoPagoRes(calculo);
+        }
+
+        /// <summary>Crea o reemplaza el cálculo del mes. Devuelve null si el colaborador no existe.</summary>
+        public async Task<CalculoPagoRes?> GuardarCalculoPago(int usuarioId, int anio, int mes, CalculoPagoReq request, int modificadorId)
+        {
+            if (!await _context.Usuarios.AnyAsync(u => u.Id == usuarioId))
+            {
+                return null;
+            }
+
+            CalculoPago? calculo = await _context.CalculosPago
+                .FirstOrDefaultAsync(c => c.UsuarioId == usuarioId && c.Anio == anio && c.Mes == mes);
+
+            if (calculo == null)
+            {
+                calculo = new CalculoPago { UsuarioId = usuarioId, Anio = anio, Mes = mes };
+                _context.CalculosPago.Add(calculo);
+            }
+
+            calculo.Datos = request.Datos;
+            calculo.PagoFinal = request.PagoFinal;
+            calculo.ModificadorId = modificadorId;
+            calculo.FechaModificacion = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            return await ArmarCalculoPagoRes(calculo);
+        }
+
+        private async Task<CalculoPagoRes> ArmarCalculoPagoRes(CalculoPago calculo)
+        {
+            string? modificadoPor = await _context.Usuarios
+                .Where(u => u.Id == calculo.ModificadorId)
+                .Select(u => u.Persona!.NombreCompleto)
+                .FirstOrDefaultAsync();
+
+            return new CalculoPagoRes
+            {
+                Datos = calculo.Datos,
+                PagoFinal = calculo.PagoFinal,
+                ModificadoPor = modificadoPor,
+                FechaModificacion = calculo.FechaModificacion,
+            };
+        }
+
         public async Task<Asistencia?> Crear(AsistenciaCreateReq request)
         {
             string? tipoAsistencia = request.Tipo;

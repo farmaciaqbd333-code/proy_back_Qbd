@@ -28,6 +28,26 @@ namespace Proy_back_QBD.Data
                 }
                 try
                 {
+                    // Cálculo de pago por colaborador y mes (solo se crea si no existe)
+                    db.Database.ExecuteSqlRaw(@"
+                        CREATE TABLE IF NOT EXISTS calculos_pago (
+                            id SERIAL PRIMARY KEY,
+                            usuario_id INT NOT NULL REFERENCES usuarios(id),
+                            anio INT NOT NULL,
+                            mes INT NOT NULL,
+                            datos TEXT NOT NULL,
+                            pago_final NUMERIC(12,2) NULL,
+                            modificador_id INT NOT NULL REFERENCES usuarios(id),
+                            fecha_modificacion TIMESTAMP NOT NULL,
+                            UNIQUE (usuario_id, anio, mes)
+                        );");
+                }
+                catch (Exception exCalculo)
+                {
+                    Console.WriteLine($"DB Auto-migration error (calculos_pago): {exCalculo.Message}");
+                }
+                try
+                {
                     // Reparto de cada insumo de fórmula magistral por registro de lote
                     db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS ""formulasCC"" ADD COLUMN IF NOT EXISTS registros_lote text;");
                     Console.WriteLine("--> Base de datos: columna formulasCC.registros_lote verificada/creada.");

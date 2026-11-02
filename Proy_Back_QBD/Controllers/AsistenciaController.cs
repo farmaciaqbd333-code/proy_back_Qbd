@@ -8,12 +8,17 @@ using Swashbuckle.AspNetCore.Annotations;
 using AutoMapper;
 using System.Diagnostics;
 using Proy_back_QBD.Models;
+using Microsoft.AspNetCore.Authorization;
+using Proy_back_QBD.Security;
+using System.Text.Json;
 namespace Proy_back_QBD.Controllers;
 
 [ApiController]
 [Route("api/asistencia")]
 public class AsistenciaController : ControllerBase
 {
+
+    private const int TamanoMaximoCalculo = 64 * 1024;
 
     private readonly IAsistenciaService _asistenciaService;
 
@@ -54,5 +59,63 @@ public class AsistenciaController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>Cálculo de pago guardado de un colaborador en un mes. Contiene el sueldo: solo Admin.</summary>
+    [Authorize(Roles = Roles.SoloAdmin)]
+    [HttpGet("calculo-pago/{usuarioId}/{anio}/{mes}")]
+    [SwaggerResponse(200, "Operación exitosa", typeof(CalculoPagoRes))]
+    public async Task<IActionResult> ObtenerCalculoPago(int usuarioId, int anio, int mes)
+    {
+        if (!PeriodoValido(anio, mes))
+        {
+            return BadRequest("Período inválido");
+        }
+        return Ok(await _asistenciaService.ObtenerCalculoPago(usuarioId, anio, mes));
+    }
 
+    /// <summary>Crea o reemplaza el cálculo de pago de un colaborador en un mes. Solo Admin.</summary>
+    [Authorize(Roles = Roles.SoloAdmin)]
+    [HttpPut("calculo-pago/{usuarioId}/{anio}/{mes}")]
+    [SwaggerResponse(200, "Operación exitosa", typeof(CalculoPagoRes))]
+    public async Task<IActionResult> GuardarCalculoPago(int usuarioId, int anio, int mes, [FromBody] CalculoPagoReq request)
+    {
+        if (!PeriodoValido(anio, mes))
+        {
+            return BadRequest("Período inválido");
+        }
+        if (request.PagoFinal < 0)
+        {
+            return BadRequest("El pago final no puede ser negativo");
+        }
+        if (!DatosCalculoValidos(request.Datos))
+        {
+            return BadRequest("Datos del cálculo inválidos");
+        }
+
+        CalculoPagoRes? response = await _asistenciaService.GuardarCalculoPago(
+            usuarioId, anio, mes, request, JwtTokens.UsuarioId(User));
+        if (response == null)
+        {
+            return NotFound("Colaborador no encontrado");
+        }
+        return Ok(response);
+    }
+
+    public static bool PeriodoValido(int anio, int mes) => anio is >= 2000 and <= 2100 && mes is >= 1 and <= 12;
+
+    public static bool DatosCalculoValidos(string? datos)
+    {
+        if (string.IsNullOrWhiteSpace(datos) || datos.Length > TamanoMaximoCalculo)
+        {
+            return false;
+        }
+        try
+        {
+            using JsonDocument documento = JsonDocument.Parse(datos);
+            return documento.RootElement.ValueKind == JsonValueKind.Object;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+    }
 }

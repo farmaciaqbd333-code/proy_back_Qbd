@@ -11,6 +11,12 @@ namespace Proy_back_QBD.Request
         public int? CreadorId { get; set; }  // Puede ser nulo
         public int? SedeId { get; set; }  // Puede ser nulo
     }
+    public class CalculoPagoReq
+    {
+        [Required]
+        public string Datos { get; set; } = string.Empty;
+        public decimal? PagoFinal { get; set; }
+    }
     public class AsistenciaByIdReq
     {
         [Required]
