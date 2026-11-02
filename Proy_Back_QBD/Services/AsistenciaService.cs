@@ -47,7 +47,7 @@ namespace Proy_back_QBD.Services
                       .Select(x => x.HoraMarcada.ToString())
                       .FirstOrDefault(),
                     HoraAlmuerzo = g.Where(x => x.Tipo.Equals("almuerzo"))
-                      .OrderByDescending(x => x.HoraMarcada)
+                      .OrderBy(x => x.HoraMarcada)
                       .Select(x => x.HoraMarcada.ToString())
                       .FirstOrDefault(),
                     HoraRegreso = g.Where(x => x.Tipo.Equals("regreso"))
