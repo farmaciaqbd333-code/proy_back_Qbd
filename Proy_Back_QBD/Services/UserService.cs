@@ -112,10 +112,10 @@ namespace Proy_back_QBD.Services
             return usuario;
         }
 
-        public async Task<List<UsuarioParaMarcarRes>> ListarParaMarcar()
+        public async Task<List<UsuarioParaMarcarRes>> ListarParaMarcar(int sedeId)
         {
             return await _context.Usuarios
-                .Where(a => a.TipoId != Roles.Admin && a.Estado)
+                .Where(a => a.TipoId != Roles.Admin && a.Estado && a.SedeId == sedeId)
                 .OrderBy(a => a.Persona!.NombreCompleto)
                 .Select(a => new UsuarioParaMarcarRes
                 {

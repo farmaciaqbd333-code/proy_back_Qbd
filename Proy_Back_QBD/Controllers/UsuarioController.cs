@@ -119,12 +119,12 @@ public class UsuarioController : ControllerBase
         return Ok(usuario);
     }
 
-    /// <summary>Colaboradores activos para marcar asistencia por otra persona: cualquier usuario con sesión.</summary>
+    /// <summary>Colaboradores activos de la sede del usuario con sesión, para marcar por otra persona.</summary>
     [HttpGet("para-marcar")]
     [SwaggerResponse(200, "Operación exitosa", typeof(List<UsuarioParaMarcarRes>))]
     public async Task<IActionResult> ObtenerUsuariosParaMarcar()
     {
-        return Ok(await _userService.ListarParaMarcar());
+        return Ok(await _userService.ListarParaMarcar(JwtTokens.Sede(User)));
     }
 
     /// <summary>Datos de un usuario: el propio usuario o quien gestiona usuarios.</summary>

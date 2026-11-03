@@ -12,7 +12,7 @@ namespace Proy_back_QBD.Services
         Task<Usuario?> Eliminar(int id); 
         Task<Usuario?> Actualizar(int id, UsuarioUpdateReq request);
         Task<List<UsuarioListaRes>?> Listar();
-        Task<List<UsuarioParaMarcarRes>> ListarParaMarcar();
+        Task<List<UsuarioParaMarcarRes>> ListarParaMarcar(int sedeId);
         Task<List<AutorizadoEla>?> Lista2(int sedeId);
         Task<UsuarioByIdRes?> ObtenerById(int id);
         Task<Usuario?> CambiarEstado(int id, bool estado);

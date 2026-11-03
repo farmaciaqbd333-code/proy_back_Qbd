@@ -20,7 +20,7 @@ public class AsistenciaPermisosTests
         public AsistenciaCreateReq? Creada;
         public int? SedeConsultada;
         public int? IdConsultado;
-        public Dictionary<int, int> SedesActivas = new() { [5] = 7, [6] = 8 };
+        public Dictionary<int, int> SedesActivas = new() { [5] = 7, [6] = 7, [8] = 8 };
 
         public Task<int?> ObtenerSedeParaMarcar(int? usuarioId) =>
             Task.FromResult<int?>(usuarioId is int id && SedesActivas.TryGetValue(id, out var sede) ? sede : null);
@@ -63,7 +63,7 @@ public class AsistenciaPermisosTests
     }
 
     [Fact]
-    public async Task Trabajador_PuedeMarcarPorOtroEnLaSedeDeEsaPersona()
+    public async Task Trabajador_PuedeMarcarPorOtroDeSuMismaSede()
     {
         var servicio = new ServicioFalso();
 
@@ -72,7 +72,7 @@ public class AsistenciaPermisosTests
 
         Assert.IsType<OkObjectResult>(resultado);
         Assert.Equal(6, servicio.Creada!.CreadorId);
-        Assert.Equal(8, servicio.Creada.SedeId);
+        Assert.Equal(7, servicio.Creada.SedeId);
     }
 
     [Fact]
@@ -119,24 +119,25 @@ public class AsistenciaPermisosTests
     }
 
     [Fact]
-    public async Task ListaParaMarcar_SoloTraeActivosYNoAdmins()
+    public async Task ListaParaMarcar_SoloTraeActivosDeLaSedeYNoAdmins()
     {
         var opciones = new DbContextOptionsBuilder<ApiContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
         await using var contexto = new ApiContext(opciones);
         contexto.Usuarios.AddRange(
-            new Usuario { Id = 1, Contrasena = "a", Codigo = "ADM", TipoId = Roles.Admin, Estado = true, Persona = new Persona { Id = 1, NombreCompleto = "ADMIN" } },
-            new Usuario { Id = 2, Contrasena = "b", Codigo = "ACT", TipoId = Roles.AsesorVentas, Estado = true, Persona = new Persona { Id = 2, NombreCompleto = "ACTIVA" } },
-            new Usuario { Id = 3, Contrasena = "c", Codigo = "INA", TipoId = Roles.AsesorVentas, Estado = false, Persona = new Persona { Id = 3, NombreCompleto = "INACTIVA" } });
+            new Usuario { Id = 1, Contrasena = "a", Codigo = "ADM", TipoId = Roles.Admin, Estado = true, SedeId = 7, Persona = new Persona { Id = 1, NombreCompleto = "ADMIN" } },
+            new Usuario { Id = 2, Contrasena = "b", Codigo = "ACT", TipoId = Roles.AsesorVentas, Estado = true, SedeId = 7, Persona = new Persona { Id = 2, NombreCompleto = "ACTIVA" } },
+            new Usuario { Id = 3, Contrasena = "c", Codigo = "INA", TipoId = Roles.AsesorVentas, Estado = false, SedeId = 7, Persona = new Persona { Id = 3, NombreCompleto = "INACTIVA" } },
+            new Usuario { Id = 4, Contrasena = "d", Codigo = "OTR", TipoId = Roles.AsesorVentas, Estado = true, SedeId = 8, Persona = new Persona { Id = 4, NombreCompleto = "OTRA SEDE" } });
         await contexto.SaveChangesAsync();
 
-        var lista = await new UserService(contexto, null!).ListarParaMarcar();
+        var lista = await new UserService(contexto, null!).ListarParaMarcar(7);
 
         var unico = Assert.Single(lista);
         Assert.Equal(2, unico.Id);
     }
 
     [Fact]
-    public async Task Trabajador_ConsultaAOtroEnLaSedeDeEsaPersona()
+    public async Task Trabajador_ConsultaAOtroDeSuMismaSede()
     {
         var servicio = new ServicioFalso();
 
@@ -145,7 +146,36 @@ public class AsistenciaPermisosTests
 
         Assert.IsType<OkObjectResult>(resultado);
         Assert.Equal(6, servicio.IdConsultado);
-        Assert.Equal(8, servicio.SedeConsultada);
+        Assert.Equal(7, servicio.SedeConsultada);
+    }
+
+    [Fact]
+    public async Task Trabajador_NoPuedeMarcarNiConsultarOtraSede()
+    {
+        var servicio = new ServicioFalso();
+        var controlador = Controlador(servicio, 5, Roles.AsesorVentas);
+
+        var marca = await controlador.CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 8 });
+        var consulta = await controlador.ObtenerAsistenciaByCodigo(8, new AsistenciaByIdReq { Año = 2026, Mes = 9 }, 8);
+
+        Assert.IsType<ForbidResult>(marca);
+        Assert.IsType<ForbidResult>(consulta);
+        Assert.Null(servicio.Creada);
+        Assert.Null(servicio.IdConsultado);
+    }
+
+    [Fact]
+    public async Task Trabajador_SiempreAccedeALoSuyo_AunqueSuTokenTengaOtraSede()
+    {
+        var servicio = new ServicioFalso();
+        var controlador = Controlador(servicio, 5, Roles.AsesorVentas, sede: 3);
+
+        var marca = await controlador.CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 5 });
+        var consulta = await controlador.ObtenerAsistenciaByCodigo(5, new AsistenciaByIdReq { Año = 2026, Mes = 9 }, 3);
+
+        Assert.IsType<OkObjectResult>(marca);
+        Assert.IsType<OkObjectResult>(consulta);
+        Assert.Equal(7, servicio.SedeConsultada);
     }
 
     [Fact]

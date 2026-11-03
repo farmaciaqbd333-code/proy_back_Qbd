@@ -38,11 +38,15 @@ public class AsistenciaController : ControllerBase
         request.RegistradoPorId = JwtTokens.UsuarioId(User);
         if (!PuedeVerTodos())
         {
-            // Un trabajador puede marcar por otra persona, pero siempre en la sede de esa persona
+            // Un trabajador puede marcar por otra persona de su misma sede
             int? sede = await _asistenciaService.ObtenerSedeParaMarcar(request.CreadorId);
             if (sede == null)
             {
                 return BadRequest("Colaborador no disponible para marcar");
+            }
+            if (!EsPropioOMismaSede(request.CreadorId, sede.Value))
+            {
+                return Forbid();
             }
             request.SedeId = sede;
         }
@@ -67,11 +71,15 @@ public class AsistenciaController : ControllerBase
         }
         if (!PuedeVerTodos())
         {
-            // Un trabajador consulta a un colaborador activo, siempre en la sede de esa persona
+            // Un trabajador consulta a un colaborador activo de su misma sede
             int? sede = await _asistenciaService.ObtenerSedeParaMarcar(id);
             if (sede == null)
             {
                 return BadRequest("Colaborador no disponible");
+            }
+            if (!EsPropioOMismaSede(id, sede.Value))
+            {
+                return Forbid();
             }
             sedeId = sede.Value;
         }
@@ -122,6 +130,9 @@ public class AsistenciaController : ControllerBase
     }
 
     private bool PuedeVerTodos() => Roles.PuedeGestionarUsuarios(JwtTokens.Rol(User));
+
+    private bool EsPropioOMismaSede(int? usuarioId, int sedeUsuario) =>
+        usuarioId == JwtTokens.UsuarioId(User) || sedeUsuario == JwtTokens.Sede(User);
 
     public static bool PeriodoValido(int anio, int mes) => anio is >= 2000 and <= 2100 && mes is >= 1 and <= 12;
 
