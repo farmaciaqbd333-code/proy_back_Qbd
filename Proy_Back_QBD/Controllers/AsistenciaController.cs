@@ -67,12 +67,13 @@ public class AsistenciaController : ControllerBase
         }
         if (!PuedeVerTodos())
         {
-            // Un trabajador solo consulta sus propios registros
-            if (id != JwtTokens.UsuarioId(User))
+            // Un trabajador consulta a un colaborador activo, siempre en la sede de esa persona
+            int? sede = await _asistenciaService.ObtenerSedeParaMarcar(id);
+            if (sede == null)
             {
-                return Forbid();
+                return BadRequest("Colaborador no disponible");
             }
-            sedeId = SedePropia(sedeId) ?? sedeId;
+            sedeId = sede.Value;
         }
 
         AsistenciaByIdRes? response = await _asistenciaService.ObtenerPorId(id, request.Año, request.Mes, sedeId);
@@ -121,12 +122,6 @@ public class AsistenciaController : ControllerBase
     }
 
     private bool PuedeVerTodos() => Roles.PuedeGestionarUsuarios(JwtTokens.Rol(User));
-
-    private int? SedePropia(int? sedeEnviada)
-    {
-        int sede = JwtTokens.Sede(User);
-        return sede > 0 ? sede : sedeEnviada;
-    }
 
     public static bool PeriodoValido(int anio, int mes) => anio is >= 2000 and <= 2100 && mes is >= 1 and <= 12;
 

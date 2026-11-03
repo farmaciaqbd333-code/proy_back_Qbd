@@ -136,15 +136,41 @@ public class AsistenciaPermisosTests
     }
 
     [Fact]
-    public async Task Trabajador_NoPuedeConsultarAOtro()
+    public async Task Trabajador_ConsultaAOtroEnLaSedeDeEsaPersona()
     {
         var servicio = new ServicioFalso();
 
         var resultado = await Controlador(servicio, 5, Roles.DirectorTecnico)
-            .ObtenerAsistenciaByCodigo(6, new AsistenciaByIdReq { Año = 2026, Mes = 9 }, 7);
+            .ObtenerAsistenciaByCodigo(6, new AsistenciaByIdReq { Año = 2026, Mes = 9 }, 99);
 
-        Assert.IsType<ForbidResult>(resultado);
+        Assert.IsType<OkObjectResult>(resultado);
+        Assert.Equal(6, servicio.IdConsultado);
+        Assert.Equal(8, servicio.SedeConsultada);
+    }
+
+    [Fact]
+    public async Task Trabajador_NoConsultaUsuarioInactivoOInexistente()
+    {
+        var servicio = new ServicioFalso();
+
+        var resultado = await Controlador(servicio, 5, Roles.AsesorVentas)
+            .ObtenerAsistenciaByCodigo(99, new AsistenciaByIdReq { Año = 2026, Mes = 9 }, 7);
+
+        Assert.IsType<BadRequestObjectResult>(resultado);
         Assert.Null(servicio.IdConsultado);
+    }
+
+    [Fact]
+    public void CalculoDePago_SigueSiendoSoloParaAdmin()
+    {
+        foreach (var metodo in new[] { nameof(AsistenciaController.ObtenerCalculoPago), nameof(AsistenciaController.GuardarCalculoPago) })
+        {
+            var atributo = typeof(AsistenciaController).GetMethod(metodo)!
+                .GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), false)
+                .Cast<Microsoft.AspNetCore.Authorization.AuthorizeAttribute>()
+                .Single();
+            Assert.Equal(Roles.SoloAdmin, atributo.Roles);
+        }
     }
 
     [Fact]

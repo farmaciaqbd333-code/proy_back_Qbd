@@ -96,10 +96,6 @@ namespace Proy_back_QBD.Security
         public static int UsuarioId(ClaimsPrincipal user) =>
             int.TryParse(user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : 0;
 
-        /// <summary>Sede del usuario del token (0 si no hay).</summary>
-        public static int Sede(ClaimsPrincipal user) =>
-            int.TryParse(user.FindFirst(ClaimSede)?.Value, out var sede) ? sede : 0;
-
         /// <summary>Tipo de usuario del token (0 si no hay).</summary>
         public static int Rol(ClaimsPrincipal user) =>
             int.TryParse(user.FindFirst(ClaimRol)?.Value, out var rol) ? rol : 0;
