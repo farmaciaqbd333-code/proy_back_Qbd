@@ -19,7 +19,7 @@ namespace Proy_back_QBD.Models
         [Column("fecha_creacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaCreacion { get; set; }
         [Column("fecha_modificacion"), DatabaseGenerated(DatabaseGeneratedOption.Computed)] public DateTime FechaModificacion { get; set; }
         [Column("creador_id")] public int CreadorId { get; set; }
-        [Column("modificador_id")] public int ModificadorId { get; set; }
+        [Column("modificador_id")] public int? ModificadorId { get; set; }
         [Column("id_familia")] public int? IdFamilia { get; set; }
         [Column("costo")] public decimal? Costo { get; set; }
         [Column("forma_f")] public string? FormaFarmaceutica { get; set; } = "";
