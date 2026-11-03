@@ -28,6 +28,13 @@ namespace Proy_back_QBD.Dto.Response
         public bool? Estado { get; set; }
         public TimeOnly? HorarioSalida { get; set; }
     }
+    /// <summary>Lista para marcar por otra persona: sin contraseñas ni datos personales.</summary>
+    public class UsuarioParaMarcarRes
+    {
+        public int Id { get; set; }
+        public string? Codigo { get; set; }
+        public string? NombreCompleto { get; set; }
+    }
     public class UsuarioListaRes
     {
         public int? Id { get; set; }

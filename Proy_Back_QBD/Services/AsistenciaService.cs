@@ -135,6 +135,14 @@ namespace Proy_back_QBD.Services
             };
         }
 
+        public async Task<int?> ObtenerSedeParaMarcar(int? usuarioId)
+        {
+            return await _context.Usuarios
+                .Where(u => u.Id == usuarioId && u.Estado)
+                .Select(u => u.SedeId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<Asistencia?> Crear(AsistenciaCreateReq request)
         {
             string? tipoAsistencia = request.Tipo;
@@ -186,7 +194,8 @@ namespace Proy_back_QBD.Services
             }
             asistencia.HoraMarcada = TimeOnly.FromDateTime(horaMarcada);
             asistencia.HoraAsignada = horaAsignada;
-            asistencia.ModificadorId = asistencia.CreadorId;
+            // creador_id es quien recibe la marca; modificador_id, quien la hizo
+            asistencia.ModificadorId = request.RegistradoPorId ?? asistencia.CreadorId;
             _context.Asistencias.Add(asistencia);
             await _context.SaveChangesAsync();
             return asistencia;

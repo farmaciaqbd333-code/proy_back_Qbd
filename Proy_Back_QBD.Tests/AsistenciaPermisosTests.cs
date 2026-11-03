@@ -1,6 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Proy_back_QBD.Data;
 using Proy_back_QBD.Controllers;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
@@ -18,6 +20,10 @@ public class AsistenciaPermisosTests
         public AsistenciaCreateReq? Creada;
         public int? SedeConsultada;
         public int? IdConsultado;
+        public Dictionary<int, int> SedesActivas = new() { [5] = 7, [6] = 8 };
+
+        public Task<int?> ObtenerSedeParaMarcar(int? usuarioId) =>
+            Task.FromResult<int?>(usuarioId is int id && SedesActivas.TryGetValue(id, out var sede) ? sede : null);
 
         public Task<Asistencia?> Crear(AsistenciaCreateReq asistencia)
         {
@@ -57,14 +63,38 @@ public class AsistenciaPermisosTests
     }
 
     [Fact]
-    public async Task Trabajador_NoPuedeMarcarPorOtro()
+    public async Task Trabajador_PuedeMarcarPorOtroEnLaSedeDeEsaPersona()
     {
         var servicio = new ServicioFalso();
 
         var resultado = await Controlador(servicio, 5, Roles.AsesorVentas)
-            .CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 6, SedeId = 7 });
+            .CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 6, SedeId = 99 });
 
-        Assert.IsType<ForbidResult>(resultado);
+        Assert.IsType<OkObjectResult>(resultado);
+        Assert.Equal(6, servicio.Creada!.CreadorId);
+        Assert.Equal(8, servicio.Creada.SedeId);
+    }
+
+    [Fact]
+    public async Task Marca_RegistraQuienTieneLaSesion_AunqueElClienteEnvieOtroDato()
+    {
+        var servicio = new ServicioFalso();
+
+        await Controlador(servicio, 5, Roles.AsesorVentas)
+            .CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 6, RegistradoPorId = 6 });
+
+        Assert.Equal(5, servicio.Creada!.RegistradoPorId);
+    }
+
+    [Fact]
+    public async Task Trabajador_NoPuedeMarcarPorUsuarioInactivoOInexistente()
+    {
+        var servicio = new ServicioFalso();
+
+        var resultado = await Controlador(servicio, 5, Roles.AsesorVentas)
+            .CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 99 });
+
+        Assert.IsType<BadRequestObjectResult>(resultado);
         Assert.Null(servicio.Creada);
     }
 
@@ -78,6 +108,31 @@ public class AsistenciaPermisosTests
 
         Assert.IsType<OkObjectResult>(resultado);
         Assert.Equal(7, servicio.Creada!.SedeId);
+    }
+
+    [Fact]
+    public void ListaParaMarcar_NoExponeContrasenasNiDatosPersonales()
+    {
+        var propiedades = typeof(UsuarioParaMarcarRes).GetProperties().Select(x => x.Name).OrderBy(x => x);
+
+        Assert.Equal(new[] { "Codigo", "Id", "NombreCompleto" }, propiedades);
+    }
+
+    [Fact]
+    public async Task ListaParaMarcar_SoloTraeActivosYNoAdmins()
+    {
+        var opciones = new DbContextOptionsBuilder<ApiContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options;
+        await using var contexto = new ApiContext(opciones);
+        contexto.Usuarios.AddRange(
+            new Usuario { Id = 1, Contrasena = "a", Codigo = "ADM", TipoId = Roles.Admin, Estado = true, Persona = new Persona { Id = 1, NombreCompleto = "ADMIN" } },
+            new Usuario { Id = 2, Contrasena = "b", Codigo = "ACT", TipoId = Roles.AsesorVentas, Estado = true, Persona = new Persona { Id = 2, NombreCompleto = "ACTIVA" } },
+            new Usuario { Id = 3, Contrasena = "c", Codigo = "INA", TipoId = Roles.AsesorVentas, Estado = false, Persona = new Persona { Id = 3, NombreCompleto = "INACTIVA" } });
+        await contexto.SaveChangesAsync();
+
+        var lista = await new UserService(contexto, null!).ListarParaMarcar();
+
+        var unico = Assert.Single(lista);
+        Assert.Equal(2, unico.Id);
     }
 
     [Fact]

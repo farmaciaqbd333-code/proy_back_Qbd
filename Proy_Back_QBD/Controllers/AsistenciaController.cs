@@ -35,14 +35,16 @@ public class AsistenciaController : ControllerBase
         {
             return BadRequest("Datos de asistencia no proporcionados");
         }
+        request.RegistradoPorId = JwtTokens.UsuarioId(User);
         if (!PuedeVerTodos())
         {
-            // Un trabajador solo marca por sí mismo y en su sede
-            if (request.CreadorId != JwtTokens.UsuarioId(User))
+            // Un trabajador puede marcar por otra persona, pero siempre en la sede de esa persona
+            int? sede = await _asistenciaService.ObtenerSedeParaMarcar(request.CreadorId);
+            if (sede == null)
             {
-                return Forbid();
+                return BadRequest("Colaborador no disponible para marcar");
             }
-            request.SedeId = SedePropia(request.SedeId);
+            request.SedeId = sede;
         }
         Asistencia? response = await _asistenciaService.Crear(request);
         if (response == null)

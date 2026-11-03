@@ -10,6 +10,9 @@ namespace Proy_back_QBD.Request
         public string? Observacion { get; set; }  // Puede ser nulo
         public int? CreadorId { get; set; }  // Puede ser nulo
         public int? SedeId { get; set; }  // Puede ser nulo
+        // Quien tiene la sesión; lo asigna el controlador, nunca se toma del cliente
+        [System.Text.Json.Serialization.JsonIgnore]
+        public int? RegistradoPorId { get; set; }
     }
     public class CalculoPagoReq
     {

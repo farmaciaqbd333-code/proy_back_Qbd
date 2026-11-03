@@ -119,6 +119,14 @@ public class UsuarioController : ControllerBase
         return Ok(usuario);
     }
 
+    /// <summary>Colaboradores activos para marcar asistencia por otra persona: cualquier usuario con sesión.</summary>
+    [HttpGet("para-marcar")]
+    [SwaggerResponse(200, "Operación exitosa", typeof(List<UsuarioParaMarcarRes>))]
+    public async Task<IActionResult> ObtenerUsuariosParaMarcar()
+    {
+        return Ok(await _userService.ListarParaMarcar());
+    }
+
     /// <summary>Datos de un usuario: el propio usuario o quien gestiona usuarios.</summary>
     [HttpGet("{id}")]
     [SwaggerResponse(200, "Operación exitosa", typeof(UsuarioByIdRes))]
