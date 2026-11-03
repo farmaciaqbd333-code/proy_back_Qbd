@@ -1413,12 +1413,32 @@ namespace proy_back_Qbd.Services
                 query = query.Where(w => w.IdSede == idSede.Value);
             }
 
+            // Solo las columnas de la tabla: son más de mil productos con su fórmula
             var items = await query
                 .OrderByDescending(ob => ob.Id)
-                .Include(i => i.Insumo)
-                .Include(i => i.Elaborador)
-                .Include(i => i.InsumoProductoIntermedio)
-                .AsNoTracking()
+                .Select(s => new
+                {
+                    s.Id,
+                    s.Lote,
+                    s.LoteEstandar,
+                    s.PesoUnidad,
+                    s.LoteEstTotal,
+                    s.TipoUso,
+                    s.Um,
+                    s.FechaEmision,
+                    s.FechaVencimiento,
+                    s.CondicionAlmacenamiento,
+                    InsumoId = s.Insumo!.Id,
+                    InsumoDescripcion = s.Insumo.Descripcion,
+                    InsumoForma = s.Insumo.FormaFarmaceutica,
+                    InsumoTipo = s.Insumo.Tipo,
+                    InsumoUm = s.Insumo.UnidadMedida,
+                    Elaborado = s.Elaborador != null ? s.Elaborador.Codigo : "",
+                    Formula = s.InsumoProductoIntermedio
+                        .Select(i => new { i.Porcentaje, i.CantidadUnidad, i.CantidadLote, i.Practica })
+                        .ToList()
+                })
+                .AsSplitQuery()
                 .ToListAsync();
 
             return items.Select(s =>
@@ -1430,7 +1450,7 @@ namespace proy_back_Qbd.Services
                         : (s.LoteEstandar ?? 0m));
 
 
-                bool tienePractModificado = s.InsumoProductoIntermedio != null && s.InsumoProductoIntermedio.Any(i =>
+                bool tienePractModificado = s.Formula.Any(i =>
                 {
                     decimal cantTeorica = (loteTotal * i.Porcentaje) / 100m;
                     if (cantTeorica <= 0 && i.CantidadUnidad > 0 && loteTotal > 0 && (s.TipoUso == "PI-FMG" || s.Um == "UND"))
@@ -1448,18 +1468,18 @@ namespace proy_back_Qbd.Services
                     Id = s.Id,
                     Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
                     Lote = s.Lote,
-                    Codigo = s.Insumo != null ? UtilFamilia.CodigoInsumo(s.Insumo.Id) : "",
-                    Descripcion = s.Insumo != null ? s.Insumo.Descripcion : "",
+                    Codigo = UtilFamilia.CodigoInsumo(s.InsumoId),
+                    Descripcion = s.InsumoDescripcion,
                     LoteEstandar = s.LoteEstandar ?? 0m,
                     PesoUnidad = s.PesoUnidad,
                     LoteEstTotal = s.LoteEstTotal,
                     Cantidad = loteTotal,
-                    Tipo = s.Insumo != null ? (!string.IsNullOrEmpty(s.Insumo.FormaFarmaceutica) ? s.Insumo.FormaFarmaceutica : s.Insumo.Tipo) : null,
-                    TipoUso = s.Insumo != null ? s.Insumo.Tipo : s.TipoUso,
-                    Um = (s.Insumo != null && !string.IsNullOrEmpty(s.Insumo.UnidadMedida)) ? s.Insumo.UnidadMedida : (s.Um ?? "G"),
+                    Tipo = !string.IsNullOrEmpty(s.InsumoForma) ? s.InsumoForma : s.InsumoTipo,
+                    TipoUso = s.InsumoTipo,
+                    Um = !string.IsNullOrEmpty(s.InsumoUm) ? s.InsumoUm : (s.Um ?? "G"),
                     FechaEmision = s.FechaEmision.HasValue ? s.FechaEmision.Value : DateTime.Now,
                     FechaVencimiento = s.FechaVencimiento,
-                    Elaborado = s.Elaborador != null ? s.Elaborador.Codigo : "",
+                    Elaborado = s.Elaborado,
                     CondicionAlmacenamiento = s.CondicionAlmacenamiento,
                     Descargado = tienePractModificado
                 };
