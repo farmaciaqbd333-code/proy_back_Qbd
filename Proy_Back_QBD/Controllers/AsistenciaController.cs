@@ -35,6 +35,15 @@ public class AsistenciaController : ControllerBase
         {
             return BadRequest("Datos de asistencia no proporcionados");
         }
+        if (!PuedeVerTodos())
+        {
+            // Un trabajador solo marca por sí mismo y en su sede
+            if (request.CreadorId != JwtTokens.UsuarioId(User))
+            {
+                return Forbid();
+            }
+            request.SedeId = SedePropia(request.SedeId);
+        }
         Asistencia? response = await _asistenciaService.Crear(request);
         if (response == null)
         {
@@ -53,6 +62,15 @@ public class AsistenciaController : ControllerBase
         if (request == null || id == null)
         {
             return BadRequest("Código de asistencia o id no proporcionado");
+        }
+        if (!PuedeVerTodos())
+        {
+            // Un trabajador solo consulta sus propios registros
+            if (id != JwtTokens.UsuarioId(User))
+            {
+                return Forbid();
+            }
+            sedeId = SedePropia(sedeId) ?? sedeId;
         }
 
         AsistenciaByIdRes? response = await _asistenciaService.ObtenerPorId(id, request.Año, request.Mes, sedeId);
@@ -98,6 +116,14 @@ public class AsistenciaController : ControllerBase
             return NotFound("Colaborador no encontrado");
         }
         return Ok(response);
+    }
+
+    private bool PuedeVerTodos() => Roles.PuedeGestionarUsuarios(JwtTokens.Rol(User));
+
+    private int? SedePropia(int? sedeEnviada)
+    {
+        int sede = JwtTokens.Sede(User);
+        return sede > 0 ? sede : sedeEnviada;
     }
 
     public static bool PeriodoValido(int anio, int mes) => anio is >= 2000 and <= 2100 && mes is >= 1 and <= 12;
