@@ -159,8 +159,8 @@ namespace Proy_back_QBD.DependencyInjection
         // ===================== Integraciones externas =====================
 
         /// <summary>
-        /// Servicios externos detrás de interfaces (S3 y OpenAI). Las credenciales vienen de
-        /// variables de entorno: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET, OPENAI_API_KEY.
+        /// Servicios externos detrás de interfaces (S3, OpenAI y PeruDevs). Las credenciales vienen de
+        /// variables de entorno: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION, AWS_S3_BUCKET, OPENAI_API_KEY, PERUDEVS_API_KEY.
         /// </summary>
         public static IServiceCollection AddIntegraciones(this IServiceCollection services, IConfiguration configuration)
         {
@@ -178,6 +178,15 @@ namespace Proy_back_QBD.DependencyInjection
                 o.ApiKey = configuration["OPENAI_API_KEY"];
             });
             services.AddHttpClient<IAsistenteIA, OpenAIAsistente>(c => c.Timeout = TimeSpan.FromSeconds(90));
+
+            services.Configure<PeruDevsOptions>(o =>
+            {
+                o.ApiKey = configuration["PERUDEVS_API_KEY"];
+            });
+            services.AddHttpClient<IConsultaDocumentos, PeruDevsConsultaDocumentos>(c => c.Timeout = TimeSpan.FromSeconds(20));
+            // PeruDevs exige la clave en la URL: se silencia el log de HttpClient de este cliente
+            // (registra la URL completa) para que la clave no quede en los logs.
+            services.AddLogging(b => b.AddFilter("System.Net.Http.HttpClient.IConsultaDocumentos", LogLevel.Warning));
 
             services.AddSingleton<ILimiteConsultas>(_ => new LimiteConsultasPorMinuto(20));
 
