@@ -7,6 +7,7 @@ using Proy_back_QBD.Services.Interfaces;
 using proy_back_Qbd.Services;
 using proy_back_Qbd.Services.Interfaces;
 using Proy_back_QBD.Service.AjusteService;
+using Proy_back_QBD.Service.AjusteService.Familias;
 using Proy_back_QBD.Interface;
 using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
 using Proy_back_QBD.Services.NotaSalidaService;
@@ -172,6 +173,12 @@ namespace Proy_back_QBD.DependencyInjection
             services.AddScoped<IPaqueteService, PaqueteService>();
             services.AddScoped<IMesonService, MesonService>();
             services.AddScoped<IAjusteService, AjusteService>();
+            // Ajustes: una estrategia por familia
+            services.AddScoped<IAjusteFamiliaStrategy, MateriaPrimaAjusteStrategy>();
+            services.AddScoped<IAjusteFamiliaStrategy, ProductoIntermedioAjusteStrategy>();
+            services.AddScoped<IAjusteFamiliaStrategy, MaterialEmpaqueAjusteStrategy>();
+            services.AddScoped<IAjusteFamiliaStrategy, ProductoTerminadoAjusteStrategy>();
+            services.AddScoped<IAjusteFamiliaStrategy, EconomatoAjusteStrategy>();
             services.AddScoped<IProductoIntermedioService, ProductoIntermedioService>();
             services.AddScoped<INotaSalidaService, NotaSalidaService>();
             services.AddScoped<IRecepcionRepository, RecepcionRepository>();

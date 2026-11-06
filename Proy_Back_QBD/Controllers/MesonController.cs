@@ -35,15 +35,8 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{id}")]
         public async Task<ActionResult<MesonDetalleRes>> ObtenerOrdenCompra(int id)
         {
-            try
-            {
-                MesonDetalleRes response = await _serviceMeson.ObtenerDetalleOrdenOCompra(id);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
-            }
+            MesonDetalleRes response = await _serviceMeson.ObtenerDetalleOrdenOCompra(id);
+            return Ok(response);
         }
 
         /// <summary>
@@ -52,15 +45,8 @@ namespace proy_back_Qbd.Controllers
         [HttpPatch("{ordenCompraId}")]
         public async Task<ActionResult<MesonListaRes>> CompletarDatos(int ordenCompraId, [FromBody] MesonConvertirReq request)
         {
-            try
-            {
-                string response = await _serviceMeson.CompletarDatos(ordenCompraId, request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
-            }
+            string response = await _serviceMeson.CompletarDatos(ordenCompraId, request);
+            return Ok(response);
         }
 
         /// <summary>
@@ -69,19 +55,12 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("{ordenId}")]
         public async Task<ActionResult<MesonModalRes>> ObtenerDatosModalMeson(int ordenId)
         {
-            try
-            {
-                MesonModalRes? response = await _serviceMeson.ObtenerDatosModal(ordenId);
+            MesonModalRes? response = await _serviceMeson.ObtenerDatosModal(ordenId);
 
-                if (response == null)
-                    return NotFound(new { message = "No se encontro alguna descripcion" });
+            if (response == null)
+                return NotFound(new { message = "No se encontro alguna descripcion" });
 
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
-            }
+            return Ok(response);
         }
 
     }

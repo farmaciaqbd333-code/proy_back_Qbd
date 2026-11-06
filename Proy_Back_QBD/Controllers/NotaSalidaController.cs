@@ -25,31 +25,15 @@ namespace proy_back_Qbd.Controllers
         [HttpPost]
         public async Task<ActionResult<int>> CrearNotaSalida([FromBody] CreateReq request)
         {
-            try
-            {
-                int num = await _serviceNotaSalida.Crear(request);
-                return Ok(num);
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
-                return BadRequest(new { message = msg, detail = ex.InnerException?.Message });
-            }
+            int num = await _serviceNotaSalida.Crear(request);
+            return Ok(num);
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult<int>> ActualizarNotaSalida(int id, [FromBody] CreateReq request)
         {
-            try
-            {
-                await _serviceNotaSalida.Actualizar(id, request);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
-                return BadRequest(new { message = msg, detail = ex.InnerException?.Message });
-            }
+            await _serviceNotaSalida.Actualizar(id, request);
+            return Ok();
         }
         /// <summary>
         /// Listar Nota Salida por sede
@@ -87,16 +71,8 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{id}")]
         public async Task<ActionResult<List<NotaSalidaDetalleRes>>> GetDetalle(int id)
         {
-            try
-            {
-                var detalles = await _serviceNotaSalida.ObtenerDetalles(id);
-                return Ok(detalles);
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.InnerException != null ? $"{ex.Message} -> {ex.InnerException.Message}" : ex.Message;
-                return BadRequest(new { message = msg, detail = ex.InnerException?.Message });
-            }
+            var detalles = await _serviceNotaSalida.ObtenerDetalles(id);
+            return Ok(detalles);
         }
 
         /// <summary>
@@ -121,55 +97,28 @@ namespace proy_back_Qbd.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<List<RegistrosRes>>> ListarRegistrosPorFamilia([FromBody] ObtenerRegistroReq request)
         {
-            try
-            {
-                var resultado = await _serviceNotaSalida.ObtenerRegistrosXFamilia(request);
-                return Ok(resultado);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var resultado = await _serviceNotaSalida.ObtenerRegistrosXFamilia(request);
+            return Ok(resultado);
         }
         [HttpPost("confirmar")]
         public async Task<IActionResult> Confirmar([FromBody] ConfirmarReq request)
         {
-            try
-            {
-                await _serviceNotaSalida.Confirmar(request);
+            await _serviceNotaSalida.Confirmar(request);
 
-                return Ok(new
-                {
-                    mensaje = "Nota de salida confirmada correctamente."
-                });
-            }
-            catch (Exception ex)
+            return Ok(new
             {
-                return BadRequest(new
-                {
-                    mensaje = ex.InnerException != null ? $"{ex.Message} --> {ex.InnerException.Message}" : ex.Message
-                });
-            }
+                mensaje = "Nota de salida confirmada correctamente."
+            });
         }
 
             [HttpPut("{id}/observacion")]
         public async Task<IActionResult> ActualizarObservacion(int id, [FromBody] ActualizarObservacionReq request)
         {
-            try
+            await _serviceNotaSalida.ActualizarObservacion(id, request.Observacion ?? "");
+            return Ok(new
             {
-                await _serviceNotaSalida.ActualizarObservacion(id, request.Observacion ?? "");
-                return Ok(new
-                {
-                    mensaje = "Observación actualizada correctamente."
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    mensaje = ex.Message
-                });
-            }
+                mensaje = "Observación actualizada correctamente."
+            });
         }
     }
 }

@@ -26,23 +26,12 @@ public class InsumoController : ControllerBase
     [SwaggerResponse(200, "Operación exitosa", typeof(Insumo))]
     public async Task<IActionResult> CrearInsumo([FromBody] InsumoCreateReq request)
     {
-        try
+        Insumo? insumo = await _insumoService.Crear(request);
+        if (insumo == null)
         {
-            Insumo? insumo = await _insumoService.Crear(request);
-            if (insumo == null)
-            {
-                return NotFound("No existe");
-            }
-            return Ok(insumo);
+            return NotFound("No existe");
         }
-        catch (Exception ex)
-        {
-            var innerMsg = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-            return StatusCode(500, new { 
-                mensaje = "Error al guardar en BD", 
-                detalle = innerMsg 
-            });
-        }
+        return Ok(insumo);
     }
 
     [HttpDelete("{id}")]

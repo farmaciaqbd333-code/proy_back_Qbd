@@ -32,21 +32,13 @@ namespace Proy_back_QBD.Controllers
                 return BadRequest("La solicitud no es válida.");
             }
 
-            try
+            var result = await _especialidadService.Crear(request);
+            if (result == null)
             {
-                var result = await _especialidadService.Crear(request);
-                if (result == null)
-                {
-                    return BadRequest("Error al crear la especialidad.");
-                }
+                return BadRequest("Error al crear la especialidad.");
+            }
 
-                return CreatedAtAction(nameof(ObtenerById), new { id = result.Id }, result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al crear la especialidad.");
-                return StatusCode(500, "Error interno del servidor.");
-            }
+            return CreatedAtAction(nameof(ObtenerById), new { id = result.Id }, result);
         }
 
         // Actualizar una especialidad
@@ -58,84 +50,52 @@ namespace Proy_back_QBD.Controllers
                 return BadRequest("La solicitud no es válida.");
             }
 
-            try
+            var result = await _especialidadService.Actualizar(id, request);
+            if (result == null)
             {
-                var result = await _especialidadService.Actualizar(id, request);
-                if (result == null)
-                {
-                    return NotFound($"Especialidad con ID {id} no encontrada.");
-                }
+                return NotFound($"Especialidad con ID {id} no encontrada.");
+            }
 
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al actualizar la especialidad.");
-                return StatusCode(500, "Error interno del servidor.");
-            }
+            return Ok(result);
         }
 
         // Eliminar una especialidad
         [HttpDelete("eliminar/{id}")]
         public async Task<IActionResult> Eliminar(int id)
         {
-            try
+            var especialidadEliminada = await _especialidadService.Eliminar(id);
+            if (especialidadEliminada == null)
             {
-                var especialidadEliminada = await _especialidadService.Eliminar(id);
-                if (especialidadEliminada == null)
-                {
-                    return NotFound($"Especialidad con ID {id} no encontrada.");
-                }
+                return NotFound($"Especialidad con ID {id} no encontrada.");
+            }
 
-                return NoContent();  // 204 No Content
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar la especialidad.");
-                return StatusCode(500, "Error interno del servidor.");
-            }
+            return NoContent();  // 204 No Content
         }
 
         // Obtener todas las especialidades
         [HttpGet("obtener")]
         public async Task<IActionResult> Obtener()
         {
-            try
+            var especialidades = await _especialidadService.Obtener();
+            if (especialidades == null || especialidades.Count == 0)
             {
-                var especialidades = await _especialidadService.Obtener();
-                if (especialidades == null || especialidades.Count == 0)
-                {
-                    return NoContent();  // 204 No Content
-                }
+                return NoContent();  // 204 No Content
+            }
 
-                return Ok(especialidades);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener las especialidades.");
-                return StatusCode(500, "Error interno del servidor.");
-            }
+            return Ok(especialidades);
         }
         
         // Obtener especialidad por ID
         [HttpGet("obtener/{id}")]
         public async Task<IActionResult> ObtenerById(int id)
         {
-            try
+            var especialidad = await _especialidadService.ObtenerById(id);
+            if (especialidad == null)
             {
-                var especialidad = await _especialidadService.ObtenerById(id);
-                if (especialidad == null)
-                {
-                    return NotFound($"Especialidad con ID {id} no encontrada.");
-                }
+                return NotFound($"Especialidad con ID {id} no encontrada.");
+            }
 
-                return Ok(especialidad);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener la especialidad.");
-                return StatusCode(500, "Error interno del servidor.");
-            }
+            return Ok(especialidad);
         }
     }
 }

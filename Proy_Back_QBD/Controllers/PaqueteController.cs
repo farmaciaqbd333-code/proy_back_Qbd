@@ -27,13 +27,8 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle/{IdCompra}")]
         public async Task<IActionResult> ObtenerDetallePaquete(int IdCompra)
         {
-            try
-            {
-                PaqueteInsumoDetalleRes response = await _servicePaquete.GetDetallePaquetes(IdCompra);
-                return Ok(response);
-            }
-            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+            PaqueteInsumoDetalleRes response = await _servicePaquete.GetDetallePaquetes(IdCompra);
+            return Ok(response);
         }
         /// <summary>
         /// Crear Paquete Insumo a Detalle Compra
@@ -41,14 +36,8 @@ namespace proy_back_Qbd.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearPaqueteInsumo([FromBody] PaqueteInsumoCrearReq req)
         {
-            try
-            {
-                int id = await _servicePaquete.CrearPaqueteInsumo(req);
-                return Created("", new { id });
-            }
-            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BadRequestException ex) { return BadRequest(new { message = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+            int id = await _servicePaquete.CrearPaqueteInsumo(req);
+            return Created("", new { id });
         }
         /// <summary>
         /// Crear Paquete Empaque a Detalle Compra
@@ -56,14 +45,8 @@ namespace proy_back_Qbd.Controllers
         [HttpPost("empaque")]
         public async Task<IActionResult> CrearPaqueteEmpaque([FromBody] PaqueteEmpaqueCrearReq req)
         {
-            try
-            {
-                int id = await _servicePaquete.CrearPaqueteEmpaque(req);
-                return Created("", new { id });
-            }
-            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BadRequestException ex) { return BadRequest(new { message = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+            int id = await _servicePaquete.CrearPaqueteEmpaque(req);
+            return Created("", new { id });
         }
         /// <summary>
         /// Modificar Paquete Insumo a Detalle Compra
@@ -71,14 +54,8 @@ namespace proy_back_Qbd.Controllers
         [HttpPut("insumo/{idPaquete}")]
         public async Task<IActionResult> ModificarPaqueteInsumo(int idPaquete, [FromBody] PaqueteInsumoModificarReq req, [FromQuery] int idSede = 1)
         {
-            try
-            {
-                string response = await _servicePaquete.ModificarPaqueteInsumo(idSede, idPaquete, req);
-                return Ok(response);
-            }
-            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BadRequestException ex) { return BadRequest(new { message = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+            string response = await _servicePaquete.ModificarPaqueteInsumo(idSede, idPaquete, req);
+            return Ok(response);
         }
         /// <summary>
         /// Modificar Paquete Empaque a Detalle Compra
@@ -86,14 +63,8 @@ namespace proy_back_Qbd.Controllers
         [HttpPut("empaque/{idPaquete}")]
         public async Task<IActionResult> ModificarPaqueteEmpaque(int idPaquete, [FromBody] PaqueteEmpaqueModificarReq req, [FromQuery] int idSede = 1)
         {
-            try
-            {
-                string response = await _servicePaquete.ModificarPaqueteEmpaque(idSede, idPaquete, req);
-                return Ok(response);
-            }
-            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BadRequestException ex) { return BadRequest(new { message = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+            string response = await _servicePaquete.ModificarPaqueteEmpaque(idSede, idPaquete, req);
+            return Ok(response);
         }
         /// <summary>
         /// Eliminar Paquete
@@ -101,14 +72,8 @@ namespace proy_back_Qbd.Controllers
         [HttpDelete("{idPaquete}/{empaqueInsumo}")]
         public async Task<IActionResult> EliminarPaquete(int idPaquete, int empaqueInsumo, [FromQuery] int idSede = 1)
         {
-            try
-            {
-                string response = await _servicePaquete.EliminarPaquete(idPaquete, empaqueInsumo, idSede);
-                return Ok(response);
-            }
-            catch (NotFoundException ex) { return NotFound(new { message = ex.Message }); }
-            catch (BadRequestException ex) { return BadRequest(new { message = ex.Message }); }
-            catch (Exception ex) { return StatusCode(500, new { message = ex.Message }); }
+            string response = await _servicePaquete.EliminarPaquete(idPaquete, empaqueInsumo, idSede);
+            return Ok(response);
         }
 
     }

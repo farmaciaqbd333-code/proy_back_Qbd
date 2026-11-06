@@ -20,15 +20,8 @@ namespace proy_back_Qbd.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> ActualizarRecepcion(int id, [FromBody] RecepcionNotaSalidaReq request)
         {
-            try
-            {
-                await _recepcionService.ActualizarRecepcionAsync(id, request);
-                return Ok(new { mensaje = "Recepción actualizada correctamente." });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { mensaje = ex.Message, detail = ex.InnerException?.Message });
-            }
+            await _recepcionService.ActualizarRecepcionAsync(id, request);
+            return Ok(new { mensaje = "Recepción actualizada correctamente." });
         }
     }
 }

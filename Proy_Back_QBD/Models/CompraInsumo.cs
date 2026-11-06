@@ -17,7 +17,7 @@ namespace proy_back_Qbd.Models
         [Column("id_insumo")] public required int IdInsumo { get; set; }
         [Column("cantidad_solicitada")] public required decimal CantidadSolicitada { get; set; }        
         [Column("lote")] public string? Lote { get; set; }
-        [Column("potencia")] public decimal Potencia { get; set; }
+        [Column("potencia")] public decimal? Potencia { get; set; } // puede venir NULL en la base de datos
         [Column("fecha_fabricacion")] public DateTime? FechaFabricacion { get; set; }
         [Column("fecha_vencimiento")] public DateTime? FechaVencimiento { get; set; }
         [Column("coa")] public bool Coa { get; set; }
