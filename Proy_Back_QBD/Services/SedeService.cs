@@ -37,13 +37,25 @@ namespace Proy_back_QBD.Services
 
         public async Task<List<SedeFindAllResponse?>> Obtener()
         {
-            var sedes = await _context.Sedes.ToListAsync();
-            var usuarios = await _context.Usuarios.Include(u => u.Persona).ToListAsync();
-            var personas = await _context.Personas.ToListAsync();
+            var sedes = await _context.Sedes.AsNoTracking().ToListAsync();
 
-            var usuarioDict = usuarios.Where(u => u.Persona != null)
-                                      .ToDictionary(u => u.Id.ToString(), u => u.Persona!.NombreCompleto ?? "");
-            var personaDict = personas.ToDictionary(p => p.Id.ToString(), p => p.NombreCompleto ?? "");
+            // Solo los usuarios/personas que figuran como encargados (antes se cargaban las tablas
+            // completas, decenas de miles de personas, para resolver unos pocos nombres).
+            var idsEncargado = sedes
+                .Select(s => int.TryParse(s.Encargado?.Trim(), out var id) ? id : (int?)null)
+                .Where(id => id.HasValue)
+                .Select(id => id!.Value)
+                .Distinct()
+                .ToList();
+
+            var usuarioDict = await _context.Usuarios.AsNoTracking()
+                .Where(u => idsEncargado.Contains(u.Id) && u.Persona != null)
+                .Select(u => new { u.Id, Nombre = u.Persona!.NombreCompleto })
+                .ToDictionaryAsync(u => u.Id.ToString(), u => u.Nombre ?? "");
+            var personaDict = await _context.Personas.AsNoTracking()
+                .Where(p => idsEncargado.Contains(p.Id))
+                .Select(p => new { p.Id, p.NombreCompleto })
+                .ToDictionaryAsync(p => p.Id.ToString(), p => p.NombreCompleto ?? "");
 
             List<SedeFindAllResponse> response = sedes.Select(a => {
                 string encargadoId = a.Encargado ?? "";

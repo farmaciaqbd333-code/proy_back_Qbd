@@ -76,8 +76,19 @@ builder.Services.AddCorsPolicy();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddIntegraciones(builder.Configuration);
 
+// Compresión de respuestas (las listas JSON grandes, p. ej. pedidos, bajan ~10 veces de tamaño)
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProvider>();
+    options.Providers.Add<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProvider>();
+});
+builder.Services.Configure<Microsoft.AspNetCore.ResponseCompression.BrotliCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
+builder.Services.Configure<Microsoft.AspNetCore.ResponseCompression.GzipCompressionProviderOptions>(o => o.Level = System.IO.Compression.CompressionLevel.Fastest);
+
 // ===================== Pipeline =====================
 var app = builder.Build();
+app.UseResponseCompression();
 
 app.UseManejoDeErrores();
 app.UseSwaggerDocumentation();

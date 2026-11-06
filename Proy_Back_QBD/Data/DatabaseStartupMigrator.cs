@@ -122,6 +122,20 @@ namespace Proy_back_QBD.Data
                 {
                     Console.WriteLine($"DB Auto-migration error (cotizaciones): {exCot.Message}");
                 }
+
+                try
+                {
+                    // Índices para listados por sede (Gestión de Pedidos, Pacientes)
+                    db.Database.ExecuteSqlRaw(@"
+                        CREATE INDEX IF NOT EXISTS idx_pedidos_sede_fecha ON pedidos(sede_id, fecha_creacion DESC);
+                        CREATE INDEX IF NOT EXISTS idx_pacientes_sede ON pacientes(sede_id);
+                    ");
+                    Console.WriteLine("--> Base de datos: índices de pedidos y pacientes verificados/creados.");
+                }
+                catch (Exception exIdx)
+                {
+                    Console.WriteLine($"DB Auto-migration error (índices): {exIdx.Message}");
+                }
                 try
                 {
                     // Lista de precios (Excel PREC. AV): UNA SOLA TABLA (lista_precios_av) con las listas S, A, B y C.

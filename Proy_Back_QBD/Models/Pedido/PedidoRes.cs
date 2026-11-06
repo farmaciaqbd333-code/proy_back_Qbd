@@ -25,6 +25,13 @@ namespace Proy_back_QBD.Dto.Response
         public DateTime FechaEntrega { get; set; }
         public string? Usuario { get; set; }
         public string? ComprobanteElectronico { get; set; }
+        // Imágenes de la receta: así la lista no necesita pedir el detalle de cada pedido
+        public string? Img1 { get; set; }
+        public string? Img2 { get; set; }
+        public string? Img3 { get; set; }
+        public string? Img4 { get; set; }
+        public string? Img5 { get; set; }
+        public string? Img6 { get; set; }
     }
     public class PedidoLabFindAllRes
     {

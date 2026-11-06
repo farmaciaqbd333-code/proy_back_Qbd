@@ -313,6 +313,12 @@ namespace Proy_back_QBD.Services
                     FechaEntrega = ZonaHoraria.AjustarZona(a.FechaEntrega),
                     Usuario = a.Creador.Codigo,
                     ComprobanteElectronico = a.ComprobanteElectronico,
+                    Img1 = a.Img1,
+                    Img2 = a.Img2,
+                    Img3 = a.Img3,
+                    Img4 = a.Img4,
+                    Img5 = a.Img5,
+                    Img6 = a.Img6,
                 })
                 .ToListAsync();
 
