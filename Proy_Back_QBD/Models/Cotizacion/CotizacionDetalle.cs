@@ -39,6 +39,9 @@ namespace Proy_back_QBD.Models
         [Column("precio_unitario")]
         public decimal PrecioUnitario { get; set; } = 0;
 
+        /// <summary>Tipo de producto: FM (fórmula magistral), FMVET, OFI, PT (producto terminado)...</summary>
+        [Column("tipo_producto")]
+        public string? TipoProducto { get; set; }
         [Column("descuento")]
         public decimal Descuento { get; set; } = 0;
 

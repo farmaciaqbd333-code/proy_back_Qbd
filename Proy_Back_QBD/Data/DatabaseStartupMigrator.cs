@@ -112,6 +112,9 @@ namespace Proy_back_QBD.Data
                         CREATE INDEX IF NOT EXISTS idx_cotizaciones_sede_fecha ON cotizaciones(sede_id, fecha);
                         CREATE INDEX IF NOT EXISTS idx_cotizaciones_doc ON cotizaciones(ruc_dni, numero);
                         CREATE INDEX IF NOT EXISTS idx_cotizaciones_detalle_cot_id ON cotizaciones_detalle(cotizacion_id);
+
+                        -- Tipo de producto de cada ítem (FM, FMVET, OFI, PT...)
+                        ALTER TABLE cotizaciones_detalle ADD COLUMN IF NOT EXISTS tipo_producto VARCHAR(20) NULL;
                     ");
                     Console.WriteLine("--> Base de datos: tablas de cotizaciones verificadas/creadas.");
                 }

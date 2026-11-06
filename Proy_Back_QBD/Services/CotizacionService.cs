@@ -132,6 +132,7 @@ namespace Proy_back_QBD.Services
                 Cantidad = d.Cantidad,
                 PrecioUnitario = d.PrecioUnitario,
                 Descuento = d.Descuento,
+                TipoProducto = NormalizarTipoProducto(d.TipoProducto),
                 Subtotal = d.Subtotal
             }).ToList();
 
@@ -202,6 +203,7 @@ namespace Proy_back_QBD.Services
                 Cantidad = d.Cantidad,
                 PrecioUnitario = d.PrecioUnitario,
                 Descuento = d.Descuento,
+                TipoProducto = NormalizarTipoProducto(d.TipoProducto),
                 Subtotal = d.Subtotal
             }).ToList();
 
@@ -258,6 +260,14 @@ namespace Proy_back_QBD.Services
             _context.Cotizaciones.Remove(cotizacion);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        /// <summary>Tipo de producto en mayúsculas (máx. 20 caracteres); null si viene vacío.</summary>
+        private static string? NormalizarTipoProducto(string? tipo)
+        {
+            var t = (tipo ?? "").Trim().ToUpperInvariant();
+            if (t.Length == 0) return null;
+            return t.Length > 20 ? t.Substring(0, 20) : t;
         }
     }
 }

@@ -49,6 +49,8 @@ namespace Proy_back_QBD.Models
         public decimal Cantidad { get; set; } = 1;
         public decimal PrecioUnitario { get; set; } = 0;
         public decimal Descuento { get; set; } = 0;
+        /// <summary>Tipo de producto: FM, FMVET, OFI, PT...</summary>
+        public string? TipoProducto { get; set; }
         public decimal Subtotal { get; set; } = 0;
     }
 
