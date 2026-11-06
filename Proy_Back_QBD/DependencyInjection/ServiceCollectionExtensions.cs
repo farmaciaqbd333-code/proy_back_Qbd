@@ -132,6 +132,12 @@ namespace Proy_back_QBD.DependencyInjection
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
+            // Catálogos
+            services.AddScoped<IFamiliaService, FamiliaService>();
+            services.AddScoped<IProveedorService, ProveedorService>();
+            services.AddScoped<IFabricanteService, FabricanteService>();
+            services.AddScoped<IListaPrecioService, ListaPrecioService>();
+
             // Kardex: un servicio por responsabilidad y una estrategia de stock por familia
             services.AddScoped<IKardexStockService, KardexStockService>();
             services.AddScoped<IKardexDetalleService, KardexDetalleService>();

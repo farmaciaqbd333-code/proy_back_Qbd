@@ -1,10 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Models;
-using Proy_back_QBD.Data;
+using proy_back_Qbd.Services.Interfaces;
 
 namespace proy_back_Qbd.Controllers
 {
@@ -13,67 +9,39 @@ namespace proy_back_Qbd.Controllers
     [Produces("application/json")]
     public class FamiliaController : ControllerBase
     {
-        private readonly ApiContext _context;
+        private readonly IFamiliaService _familias;
 
-        public FamiliaController(ApiContext context)
+        public FamiliaController(IFamiliaService familias)
         {
-            _context = context;
+            _familias = familias;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Familia>>> GetFamilias()
-        {
-            return await _context.Familias
-                .OrderBy(f => f.Nombre)
-                .ToListAsync();
-        }
+        public async Task<ActionResult<IEnumerable<Familia>>> GetFamilias() =>
+            await _familias.Listar();
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Familia>> GetFamilia(int id)
-        {
-            var familia = await _context.Familias.FindAsync(id);
-            if (familia == null) return NotFound();
-            return familia;
-        }
+        public async Task<ActionResult<Familia>> GetFamilia(int id) =>
+            await _familias.Obtener(id);
 
         [HttpPost]
         public async Task<ActionResult<Familia>> PostFamilia(Familia familia)
         {
-            familia.FechaCreacion = System.DateTime.Now;
-            _context.Familias.Add(familia);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetFamilia), new { id = familia.Id }, familia);
+            var creada = await _familias.Crear(familia);
+            return CreatedAtAction(nameof(GetFamilia), new { id = creada.Id }, creada);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutFamilia(int id, Familia familia)
         {
-            if (id != familia.Id) return BadRequest();
-            _context.Entry(familia).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Familias.Any(e => e.Id == id)) return NotFound();
-                else throw;
-            }
+            await _familias.Actualizar(id, familia);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteFamilia(int id)
         {
-            var familia = await _context.Familias.FindAsync(id);
-            if (familia == null) return NotFound();
-
-            // Verificar si hay órdenes que usan esta familia antes de borrar
-            // var tieneOrdenes = await _context.Compras.AnyAsync(o => o.IdFamilia == id);
-            // if (tieneOrdenes) return BadRequest("No se puede eliminar la familia porque tiene órdenes de compra asociadas.");
-
-            _context.Familias.Remove(familia);
-            await _context.SaveChangesAsync();
+            await _familias.Eliminar(id);
             return NoContent();
         }
     }

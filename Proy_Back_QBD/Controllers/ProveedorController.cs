@@ -1,13 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using proy_back_Qbd.Models;
-using Proy_back_QBD.Data;
+using proy_back_Qbd.Services.Interfaces;
 
 namespace proy_back_Qbd.Controllers
 {
@@ -15,135 +8,45 @@ namespace proy_back_Qbd.Controllers
     [Route("api/[controller]")]
     public class ProveedorController : Controller
     {
-        private readonly ApiContext _context;
+        private readonly IProveedorService _proveedores;
 
-        public ProveedorController(ApiContext context)
+        public ProveedorController(IProveedorService proveedores)
         {
-            _context = context;
+            _proveedores = proveedores;
         }
 
-        // Obtener un proveedor por ID
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ProveedorDto>>> GetAll()
-        {
-            var proveedores = await _context.Proveedores
-                .Select(p => new ProveedorDto
-                {
-                    IdProveedor = p.Id,
-                    CodigoProv = p.NumeroProv,
-                    Datos = p.Datos,
-                    Direccion = p.Direccion,
-                    Telefono = p.Telefono,
-                    Referencia = p.Referencia,
-                    CodigoProvedor = p.CodigoProvedor,
-                    FechaCreacion = p.FechaCreacion,
-                    IdCreador = p.IdCreador
-                })
-                .ToListAsync();
+        public async Task<ActionResult<IEnumerable<ProveedorDto>>> GetAll() =>
+            Ok(await _proveedores.Listar());
 
-            return Ok(proveedores);
-        }
-
-        // GET: api/proveedores/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<ProveedorDto>> GetById(int id)
-        {
-            var proveedor = await _context.Proveedores.FindAsync(id);
+        public async Task<ActionResult<ProveedorDto>> GetById(int id) =>
+            Ok(await _proveedores.Obtener(id));
 
-            if (proveedor == null)
-                return NotFound($"Proveedor con ID {id} no encontrado.");
-
-            var dto = new ProveedorDto
-            {
-                IdProveedor = proveedor.Id,
-                CodigoProv = proveedor.NumeroProv,
-                Datos = proveedor.Datos,
-                Direccion = proveedor.Direccion,
-                Telefono = proveedor.Telefono,
-                Referencia = proveedor.Referencia,
-                CodigoProvedor = proveedor.CodigoProvedor,
-                FechaCreacion = proveedor.FechaCreacion,
-                IdCreador = proveedor.IdCreador
-            };
-
-            return Ok(dto);
-        }
-
-        // POST: api/proveedores
         [HttpPost]
         public async Task<ActionResult<ProveedorDto>> Create([FromBody] ProveedorCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var proveedor = new Proveedor
-            {
-                NumeroProv = dto.CodigoProv,
-                Datos = dto.Datos,
-                Direccion = dto.Direccion,
-                Telefono = dto.Telefono,
-                Referencia = dto.Referencia,
-                CodigoProvedor = dto.CodigoProvedor,
-                IdCreador = dto.IdCreador
-            };
-
-            _context.Proveedores.Add(proveedor);
-            await _context.SaveChangesAsync();
-
-            var responseDto = new ProveedorDto
-            {
-                IdProveedor = proveedor.Id,
-                CodigoProv = proveedor.NumeroProv,
-                Datos = proveedor.Datos,
-                Direccion = proveedor.Direccion,
-                Telefono = proveedor.Telefono,
-                Referencia = proveedor.Referencia,
-                CodigoProvedor = proveedor.CodigoProvedor,
-                FechaCreacion = proveedor.FechaCreacion,
-                IdCreador = proveedor.IdCreador
-            };
-
-            return CreatedAtAction(nameof(GetById), new { id = proveedor.Id }, responseDto);
+            var creado = await _proveedores.Crear(dto);
+            return CreatedAtAction(nameof(GetById), new { id = creado.IdProveedor }, creado);
         }
 
-        // PUT: api/proveedores/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] ProveedorUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var proveedor = await _context.Proveedores.FindAsync(id);
-
-            if (proveedor == null)
-                return NotFound($"Proveedor con ID {id} no encontrado.");
-
-            // Actualizamos los campos
-            proveedor.NumeroProv = dto.CodigoProv;
-            proveedor.Datos = dto.Datos;
-            proveedor.Direccion = dto.Direccion;
-            proveedor.Telefono = dto.Telefono;
-            proveedor.Referencia = dto.Referencia;
-            proveedor.CodigoProvedor = dto.CodigoProvedor;
-            // NO actualizamos FechaCreacion ni IdCreador
-
-            await _context.SaveChangesAsync();
-
-            return NoContent(); // 204 No Content
+            await _proveedores.Actualizar(id, dto);
+            return NoContent();
         }
 
-        // DELETE: api/proveedores/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var proveedor = await _context.Proveedores.FindAsync(id);
-
-            if (proveedor == null)
-                return NotFound($"Proveedor con ID {id} no encontrado.");
-
-            _context.Proveedores.Remove(proveedor);
-            await _context.SaveChangesAsync();
-
+            await _proveedores.Eliminar(id);
             return NoContent();
         }
     }
