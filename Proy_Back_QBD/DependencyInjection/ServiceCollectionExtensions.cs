@@ -12,6 +12,8 @@ using proy_back_Qbd.Services.Interfaces.INotaSalidaService;
 using Proy_back_QBD.Services.NotaSalidaService;
 using proy_back_Qbd.Repositories.Interfaces;
 using proy_back_Qbd.Repositories;
+using proy_back_Qbd.Services.Kardex;
+using proy_back_Qbd.Services.Kardex.Stock;
 
 namespace Proy_back_QBD.DependencyInjection
 {
@@ -130,7 +132,17 @@ namespace Proy_back_QBD.DependencyInjection
         public static IServiceCollection AddApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IKardexService, KardexService>();
+            // Kardex: un servicio por responsabilidad y una estrategia de stock por familia
+            services.AddScoped<IKardexStockService, KardexStockService>();
+            services.AddScoped<IKardexDetalleService, KardexDetalleService>();
+            services.AddScoped<IKardexMovimientoService, KardexMovimientoService>();
+            services.AddScoped<IKardexUbicacionService, KardexUbicacionService>();
+            services.AddScoped<IKardexLotesService, KardexLotesService>();
+            services.AddScoped<IStockFamiliaStrategy, MateriaPrimaStockStrategy>();
+            services.AddScoped<IStockFamiliaStrategy, ProductoIntermedioStockStrategy>();
+            services.AddScoped<IStockFamiliaStrategy, MaterialEmpaqueStockStrategy>();
+            services.AddScoped<IStockFamiliaStrategy, EconomatoStockStrategy>();
+            services.AddScoped<IStockFamiliaStrategy, ProductoTerminadoStockStrategy>();
             services.AddScoped<ISedeService, SedeService>();
             services.AddScoped<IAsistenciaService, AsistenciaService>();
             services.AddScoped<IPacienteService, PacienteService>();

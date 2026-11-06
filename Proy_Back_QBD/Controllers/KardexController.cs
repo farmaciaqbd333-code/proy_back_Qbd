@@ -14,11 +14,24 @@ namespace proy_back_Qbd.Controllers
     [Route("api/[controller]")]
     public class KardexController : Controller
     {
-        private readonly IKardexService _kardexService;
+        private readonly IKardexStockService _stock;
+        private readonly IKardexDetalleService _detalle;
+        private readonly IKardexMovimientoService _movimientos;
+        private readonly IKardexUbicacionService _ubicacion;
+        private readonly IKardexLotesService _lotes;
 
-        public KardexController(IKardexService _service)
+        public KardexController(
+            IKardexStockService stock,
+            IKardexDetalleService detalle,
+            IKardexMovimientoService movimientos,
+            IKardexUbicacionService ubicacion,
+            IKardexLotesService lotes)
         {
-            this._kardexService = _service;
+            _stock = stock;
+            _detalle = detalle;
+            _movimientos = movimientos;
+            _ubicacion = ubicacion;
+            _lotes = lotes;
         }
 
         /// <summary>
@@ -27,21 +40,21 @@ namespace proy_back_Qbd.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerStock(string familia, int idSede)
         {
-            List<StockRes> response = await _kardexService.StockListaPrincipal(familia, idSede);
+            List<StockRes> response = await _stock.StockListaPrincipal(familia, idSede);
             return Ok(response);
         }
 
         [HttpGet("detalle-insumo/{insumoId}")]
         public async Task<IActionResult> ObtenerDetalleInsumo(int insumoId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerDetalleInsumo(insumoId, idSede);
+            var resultado = await _detalle.ObtenerDetalleInsumo(insumoId, idSede);
 
             return Ok(resultado);
         }
         [HttpGet("detalle-producto-intermedio/{insumoId}")]
         public async Task<IActionResult> ObtenerDetallePI(int insumoId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerDetallePI(insumoId, idSede);
+            var resultado = await _detalle.ObtenerDetallePI(insumoId, idSede);
 
             return Ok(resultado);
         }
@@ -49,21 +62,21 @@ namespace proy_back_Qbd.Controllers
         [HttpGet("detalle-empaque/{empaqueId}")]
         public async Task<IActionResult> ObtenerDetalleEmpaque(int empaqueId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerDetalleEmpaque(empaqueId, idSede);
+            var resultado = await _detalle.ObtenerDetalleEmpaque(empaqueId, idSede);
 
             return Ok(resultado);
         }
         [HttpGet("detalle-producto/{productoId}")]
         public async Task<IActionResult> ObtenerDetallePT(int productoId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerDetallePT(productoId, idSede);
+            var resultado = await _detalle.ObtenerDetallePT(productoId, idSede);
 
             return Ok(resultado);
         }
         [HttpGet("vencidos")]
         public async Task<IActionResult> ObtenerVencidos(string familia, int idSede)
         {
-            var resultado = await _kardexService.ObtenerComprasVencidas(familia, idSede);
+            var resultado = await _stock.ObtenerComprasVencidas(familia, idSede);
 
             return Ok(resultado);
         }
@@ -72,35 +85,35 @@ namespace proy_back_Qbd.Controllers
 
         public async Task<IActionResult> ObtenerSalidasInsumo(int insumoId, [FromQuery] int idSede, [FromQuery] string? familia = null)
         {
-            var resultado = await _kardexService.ObtenerSalidasInsumo(insumoId, idSede, familia);
+            var resultado = await _movimientos.ObtenerSalidasInsumo(insumoId, idSede, familia);
             return Ok(resultado);
         }
 
         [HttpGet("salidas-empaque/{empaqueId}")]
         public async Task<IActionResult> ObtenerSalidasEmpaque(int empaqueId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerSalidasEmpaque(empaqueId, idSede);
+            var resultado = await _movimientos.ObtenerSalidasEmpaque(empaqueId, idSede);
             return Ok(resultado);
         }
 
         [HttpGet("salidas-producto/{productoId}")]
         public async Task<IActionResult> ObtenerSalidasPT(int productoId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerSalidasPT(productoId, idSede);
+            var resultado = await _movimientos.ObtenerSalidasPT(productoId, idSede);
             return Ok(resultado);
         }
 
         [HttpGet("salidas-economato/{economatoId}")]
         public async Task<IActionResult> ObtenerSalidasEconomato(int economatoId, [FromQuery] int idSede)
         {
-            var resultado = await _kardexService.ObtenerSalidasEconomato(economatoId, idSede);
+            var resultado = await _movimientos.ObtenerSalidasEconomato(economatoId, idSede);
             return Ok(resultado);
         }
 
         [HttpGet("bajas-insumo/{insumoId}")]
         public async Task<IActionResult> ObtenerBajasInsumo(int insumoId, [FromQuery] int idSede, [FromQuery] string? familia = null)
         {
-            var resultado = await _kardexService.ObtenerBajasInsumo(insumoId, idSede, familia);
+            var resultado = await _movimientos.ObtenerBajasInsumo(insumoId, idSede, familia);
             return Ok(resultado);
         }
 
@@ -113,7 +126,7 @@ namespace proy_back_Qbd.Controllers
             if (string.IsNullOrEmpty(req.Ubicacion) && !string.IsNullOrEmpty(ubicacion)) req.Ubicacion = ubicacion;
             if (string.IsNullOrEmpty(req.Familia) && !string.IsNullOrEmpty(familia)) req.Familia = familia;
 
-            var resultado = await _kardexService.AssignLocation(req);
+            var resultado = await _ubicacion.AssignLocation(req);
             return Ok(resultado);
         }
 
@@ -127,7 +140,7 @@ namespace proy_back_Qbd.Controllers
             if (!req.CantidadEnviar.HasValue && cantidadEnviar.HasValue) req.CantidadEnviar = cantidadEnviar.Value;
             if (string.IsNullOrEmpty(req.Familia) && !string.IsNullOrEmpty(familia)) req.Familia = familia;
 
-            var resultado = await _kardexService.AssignLimite(req);
+            var resultado = await _ubicacion.AssignLimite(req);
             return Ok(resultado);
         }
 
@@ -135,7 +148,7 @@ namespace proy_back_Qbd.Controllers
         [HttpPost("resolver-lotes-formula")]
         public async Task<IActionResult> ResolverLotesFormula([FromBody] ResolverLotesFormulaReq request)
         {
-            var resultado = await _kardexService.ResolverLotesFormula(request);
+            var resultado = await _lotes.ResolverLotesFormula(request);
             return Ok(resultado);
         }
     }
