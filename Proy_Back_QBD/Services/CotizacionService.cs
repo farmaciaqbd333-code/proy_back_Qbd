@@ -133,6 +133,9 @@ namespace Proy_back_QBD.Services
                 PrecioUnitario = d.PrecioUnitario,
                 Descuento = d.Descuento,
                 TipoProducto = NormalizarTipoProducto(d.TipoProducto),
+                FormaFarmaceutica = d.FormaFarmaceutica,
+                GPorMl = d.GPorMl,
+                UnidadMedida = d.UnidadMedida,
                 Subtotal = d.Subtotal
             }).ToList();
 
@@ -204,6 +207,9 @@ namespace Proy_back_QBD.Services
                 PrecioUnitario = d.PrecioUnitario,
                 Descuento = d.Descuento,
                 TipoProducto = NormalizarTipoProducto(d.TipoProducto),
+                FormaFarmaceutica = d.FormaFarmaceutica,
+                GPorMl = d.GPorMl,
+                UnidadMedida = d.UnidadMedida,
                 Subtotal = d.Subtotal
             }).ToList();
 

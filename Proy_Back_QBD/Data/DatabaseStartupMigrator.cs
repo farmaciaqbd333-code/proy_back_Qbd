@@ -48,6 +48,19 @@ namespace Proy_back_QBD.Data
                 }
                 try
                 {
+                    // Datos de fórmula en las líneas de cotización (se pasan al convertirla en pedido)
+                    db.Database.ExecuteSqlRaw(@"
+                        ALTER TABLE IF EXISTS cotizaciones_detalle ADD COLUMN IF NOT EXISTS forma_farmaceutica text;
+                        ALTER TABLE IF EXISTS cotizaciones_detalle ADD COLUMN IF NOT EXISTS g_por_ml numeric;
+                        ALTER TABLE IF EXISTS cotizaciones_detalle ADD COLUMN IF NOT EXISTS unidad_medida text;");
+                    Console.WriteLine("--> Base de datos: columnas de fórmula en cotizaciones_detalle verificadas/creadas.");
+                }
+                catch (Exception exCotDet)
+                {
+                    Console.WriteLine($"DB Auto-migration error (cotizaciones_detalle): {exCotDet.Message}");
+                }
+                try
+                {
                     // Imagen del comprobante de pago (voucher) de cada orden de compra
                     db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS compra ADD COLUMN IF NOT EXISTS img_pago text;");
                     Console.WriteLine("--> Base de datos: columna compra.img_pago verificada/creada.");

@@ -55,6 +55,9 @@ namespace Proy_back_QBD.Models
         public decimal PrecioUnitario { get; set; }
         public decimal Descuento { get; set; }
         public string? TipoProducto { get; set; }
+        public string? FormaFarmaceutica { get; set; }
+        public decimal? GPorMl { get; set; }
+        public string? UnidadMedida { get; set; }
         public decimal Subtotal { get; set; }
     }
 }

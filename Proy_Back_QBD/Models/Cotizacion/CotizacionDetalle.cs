@@ -45,6 +45,15 @@ namespace Proy_back_QBD.Models
         [Column("descuento")]
         public decimal Descuento { get; set; } = 0;
 
+        [Column("forma_farmaceutica")]
+        public string? FormaFarmaceutica { get; set; }
+
+        [Column("g_por_ml")]
+        public decimal? GPorMl { get; set; }
+
+        [Column("unidad_medida")]
+        public string? UnidadMedida { get; set; }
+
         [Column("subtotal")]
         public decimal Subtotal { get; set; } = 0;
     }
