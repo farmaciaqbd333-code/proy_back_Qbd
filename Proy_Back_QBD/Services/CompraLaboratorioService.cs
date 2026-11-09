@@ -442,14 +442,9 @@ namespace proy_back_Qbd.Services
         }
         public async Task<List<LabListaRes>> Listar(string[] cadena, int idSede)
         {
-            var sede = await _context.Sedes.FirstOrDefaultAsync(s => s.Id == idSede);
-            bool esCentral = idSede == 0 || idSede == 15 || (sede != null && sede.Nombre != null && sede.Nombre.ToUpper().Contains("CENTRAL"));
-
-            var query = _context.Compras.AsQueryable();
-            if (!esCentral)
-            {
-                query = query.Where(w => w.IdSede == idSede);
-            }
+            // Cada sede, incluida Central, ve solo sus órdenes (0 equivale a Central)
+            int sedeConsulta = idSede == 0 ? 15 : idSede;
+            var query = _context.Compras.Where(w => w.IdSede == sedeConsulta);
 
             List<LabListaRes> ordenesEnviadasRes = await query
             .Where(w => cadena.Contains(w.EstadoCompra) && w.CompraInsumos != null && w.CompraEmpaques != null)
