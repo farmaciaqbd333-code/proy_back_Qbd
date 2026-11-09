@@ -441,7 +441,29 @@ namespace proy_back_Qbd.Services
             _context.Remove(compra);
             await _context.SaveChangesAsync();
 
+            await LiberarNumeroSiEraLaUltima(id);
+
             return "Orden compra eliminado exitosamente";
+        }
+
+        /// <summary>
+        /// Si la orden eliminada era la última creada, retrocede el contador para que la
+        /// siguiente reutilice el número. Solo actúa si nadie tomó un número mientras tanto.
+        /// </summary>
+        private async Task LiberarNumeroSiEraLaUltima(int idEliminado)
+        {
+            try
+            {
+                await _context.Database.ExecuteSqlInterpolatedAsync($@"
+                    SELECT setval(s.seq, GREATEST((SELECT COALESCE(MAX(id), 0) FROM compra), 1))
+                    FROM (SELECT pg_get_serial_sequence('compra', 'id')::regclass AS seq) s
+                    WHERE pg_sequence_last_value(s.seq) = {idEliminado}");
+            }
+            catch (Exception ex)
+            {
+                // La orden ya se eliminó; si esto falla, solo queda un salto en la numeración
+                Console.WriteLine($"No se pudo liberar el número de la orden {idEliminado}: {ex.Message}");
+            }
         }
 
         public async Task<OrdenesYComprasRes?> ActualizarOrdenDeCompra(int idOC, OrdenUpdateReq request)
