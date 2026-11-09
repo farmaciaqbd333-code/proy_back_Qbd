@@ -255,6 +255,7 @@ namespace proy_back_Qbd.Services
             Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
             Guia = s.Guia,
             RutaFactura = s.ImgFactura,
+            RutaPago = s.ImgPago,
             EstadoPago = s.Modalidad,
             Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
             EstadoCompra = s.EstadoCompra
@@ -737,6 +738,15 @@ namespace proy_back_Qbd.Services
             Compra? compra = await _context.Compras.FindAsync(id);
             if (compra == null) return false;
             compra.ImgFactura = request.RutaFactura;
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> ActualizarRutaPago(int id, UpdateRutaPagoReq request)
+        {
+            Compra? compra = await _context.Compras.FindAsync(id);
+            if (compra == null) return false;
+            compra.ImgPago = request.RutaPago;
             await _context.SaveChangesAsync();
             return true;
         }

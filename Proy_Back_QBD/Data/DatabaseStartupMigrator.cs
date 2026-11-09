@@ -48,6 +48,16 @@ namespace Proy_back_QBD.Data
                 }
                 try
                 {
+                    // Imagen del comprobante de pago (voucher) de cada orden de compra
+                    db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS compra ADD COLUMN IF NOT EXISTS img_pago text;");
+                    Console.WriteLine("--> Base de datos: columna compra.img_pago verificada/creada.");
+                }
+                catch (Exception exPago)
+                {
+                    Console.WriteLine($"DB Auto-migration error (compra.img_pago): {exPago.Message}");
+                }
+                try
+                {
                     // Reparto de cada insumo de fórmula magistral por registro de lote
                     db.Database.ExecuteSqlRaw(@"ALTER TABLE IF EXISTS ""formulasCC"" ADD COLUMN IF NOT EXISTS registros_lote text;");
                     Console.WriteLine("--> Base de datos: columna formulasCC.registros_lote verificada/creada.");

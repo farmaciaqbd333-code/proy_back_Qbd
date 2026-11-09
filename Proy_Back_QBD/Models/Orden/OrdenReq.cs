@@ -71,4 +71,9 @@ namespace proy_back_Qbd.Models
     {
         public required string RutaFactura { get; set; }
     }
+
+    public class UpdateRutaPagoReq
+    {
+        public required string RutaPago { get; set; }
+    }
 }

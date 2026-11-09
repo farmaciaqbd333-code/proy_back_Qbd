@@ -124,6 +124,18 @@ namespace proy_back_Qbd.Controllers
                 }
 
                 /// <summary>
+                /// Actualizar la imagen del comprobante de pago (voucher)
+                /// </summary>
+                [HttpPatch("ruta-pago/{id}")]
+                public async Task<IActionResult> ActualizarRutaPago(int id, UpdateRutaPagoReq request)
+                {
+                        bool response = await _serviceOC.ActualizarRutaPago(id, request);
+                        if (!response) return NotFound(new { message = "Orden no encontrada" });
+
+                        return Ok(new { message = "Voucher de pago actualizado" });
+                }
+
+                /// <summary>
                 /// Jalar descripciones de los insumos segun el proveedor
                 /// </summary>
                 [HttpGet("descripciones/{proveedorId}")]

@@ -29,6 +29,7 @@ namespace proy_back_Qbd.Models
         [Column("cod_fac_qbd")] public string? CodFacQBD { get; set; }
         [Column("fecha_factura")] public DateTime? FechaFactura { get; set; }
         [Column("img_factura")] public string? ImgFactura { get; set; }
+        [Column("img_pago")] public string? ImgPago { get; set; }
         [Column("tipo_comprobante")] public string? TipoComprobante { get; set; }
         [Column("isc")] public decimal Isc { get; set; }
         [Column("icbp")] public decimal Icbp { get; set; }

@@ -21,6 +21,7 @@ namespace proy_back_Qbd.Models
         public string? Factura { get; set; }
         public string? Guia { get; set; }
         public string? RutaFactura { get; set; }
+        public string? RutaPago { get; set; }
         public required string EstadoPago { get; set; }
         public required string Usuario { get; set; }
     }

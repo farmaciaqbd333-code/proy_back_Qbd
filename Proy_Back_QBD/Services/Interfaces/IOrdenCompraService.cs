@@ -19,6 +19,7 @@ namespace proy_back_Qbd.Services.Interfaces
         Task<bool> ActualizarEstadoCompra(int IdOrdenCompra, CambiarEstadoReq estado);
         Task<bool> ActualizarEstadoPago(int IdOrdenCompra, CambiarEstadoReq request);
         Task<bool> ActualizarRutaFactura(int id, UpdateRutaFacturaReq request);
+        Task<bool> ActualizarRutaPago(int id, UpdateRutaPagoReq request);
         Task<List<OrdenesYComprasRes>> ListaFacturasPorFamilia(string familia, int idSede);
         Task<bool> ActualizarDetallePdf(string familia, int id, string? pdf);
     }
