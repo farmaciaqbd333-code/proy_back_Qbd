@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
@@ -235,6 +236,30 @@ namespace proy_back_Qbd.Services
             return response;
         }
 
+        // El total se calcula desde los ítems, igual que el detalle de la orden y en su propia moneda:
+        // la columna compra.total tiene órdenes guardadas sin IGV y convertidas a soles.
+        private static readonly Expression<Func<Compra, OrdenesYComprasRes>> AResumen = s => new OrdenesYComprasRes
+        {
+            Id = s.Id,
+            CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
+            FechaCotizacion = s.FechaCotizacion,
+            NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
+            NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
+            Valor = s.CompraInsumos!.Sum(d => d.CostoTotal) + s.CompraEmpaques!.Sum(d => d.CostoTotal) + s.CompraProductos!.Sum(d => d.CostoTotal)
+                + s.CompraEconomatos!.Sum(d => d.CostoTotal) + s.CompraOtros!.Sum(d => d.CostoTotal),
+            Total = (s.CompraInsumos!.Sum(d => d.CostoTotal) + s.CompraEmpaques!.Sum(d => d.CostoTotal) + s.CompraProductos!.Sum(d => d.CostoTotal)
+                + s.CompraEconomatos!.Sum(d => d.CostoTotal) + s.CompraOtros!.Sum(d => d.CostoTotal)) * (s.Igv ? 1.18m : 1m) + s.Isc + s.Icbp,
+            Moneda = s.Moneda,
+            CodFacQbd = s.CodFacQBD,
+            Familia = s.Familia,
+            Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
+            Guia = s.Guia,
+            RutaFactura = s.ImgFactura,
+            EstadoPago = s.Modalidad,
+            Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
+            EstadoCompra = s.EstadoCompra
+        };
+
         public async Task<List<OrdenesYComprasRes>> ListaOrdenesDeCompras(int idSede)
         {
             var sede = await _context.Sedes.FirstOrDefaultAsync(s => s.Id == idSede);
@@ -247,25 +272,7 @@ namespace proy_back_Qbd.Services
             }
 
             List<OrdenesYComprasRes> response = await query
-                            .Select(s => new OrdenesYComprasRes
-                            {
-                                Id = s.Id,
-                                CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
-                                FechaCotizacion = s.FechaCotizacion,
-                                NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                                NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
-                                Valor = s.Valor,
-                                Total = s.Total,
-                                Moneda = s.Moneda,
-                                CodFacQbd = s.CodFacQBD,
-                                Familia = s.Familia,
-                                Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
-                                Guia = s.Guia,
-                                RutaFactura = s.ImgFactura,
-                                EstadoPago = s.Modalidad,
-                                Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
-                                EstadoCompra = s.EstadoCompra
-                            })
+                            .Select(AResumen)
                             .OrderByDescending(o => o.Id)
                             .ToListAsync();
 
@@ -275,25 +282,7 @@ namespace proy_back_Qbd.Services
         {
             OrdenesYComprasRes? response = await _context.Compras
                             .Where(w => w.Id == id)
-                            .Select(s => new OrdenesYComprasRes
-                            {
-                                Id = s.Id,
-                                CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
-                                FechaCotizacion = s.FechaCotizacion,
-                                NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                                NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
-                                Valor = s.Valor,
-                                Total = s.Total,
-                                Moneda = s.Moneda,
-                                CodFacQbd = s.CodFacQBD,
-                                Familia = s.Familia,
-                                Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
-                                Guia = s.Guia,
-                                RutaFactura = s.ImgFactura,
-                                EstadoPago = s.Modalidad,
-                                Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
-                                EstadoCompra = s.EstadoCompra
-                            })
+                            .Select(AResumen)
                             .FirstOrDefaultAsync();
 
 
@@ -785,25 +774,7 @@ namespace proy_back_Qbd.Services
                          && !string.IsNullOrEmpty(w.NumeroComprobante)
                          && w.Familia != null
                          && w.Familia.ToUpper().Contains(familiaNorm))
-                .Select(s => new OrdenesYComprasRes
-                {
-                    Id = s.Id,
-                    CUO = (s.IdSede == 1 ? "OCL" : (s.IdSede == 2 ? "OCPJ" : (s.IdSede == 3 ? "OCP" : (s.IdSede == 4 ? "OCT" : (s.IdSede == 12 ? "OCCS" : "OC"))))) + s.Id,
-                    FechaCotizacion = s.FechaCotizacion,
-                    NumProvedor = s.Proveedor != null ? s.Proveedor.NumeroProv : "",
-                    NombreProveedor = s.Proveedor != null ? s.Proveedor.Datos : "",
-                    Valor = s.Valor,
-                    Total = s.Total,
-                    Moneda = s.Moneda,
-                    CodFacQbd = s.CodFacQBD,
-                    Familia = s.Familia,
-                    Factura = (s.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.SerieComprobante) || string.IsNullOrEmpty(s.NumeroComprobante) ? "" : "-") + (s.NumeroComprobante ?? ""),
-                                Guia = s.Guia,
-                    RutaFactura = s.ImgFactura,
-                    EstadoPago = s.Modalidad,
-                    Usuario = s.Creador != null ? (s.Creador.Codigo ?? s.Creador.Id.ToString()) : "N/A",
-                    EstadoCompra = s.EstadoCompra
-                })
+                .Select(AResumen)
                 .OrderByDescending(o => o.Id)
                 .ToListAsync();
             return response;
