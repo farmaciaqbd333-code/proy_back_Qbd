@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
 using Proy_back_QBD.Data;
@@ -10,7 +11,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         private async Task ProcesarInsumos(
             List<ConfirmarArticulosReq> articulos,
             int idSedeOrigen,
-            int idSedeDestino)
+            int idSedeDestino,
+            int? idNotaSalida = null)
         {
             _logger.LogInformation(
                 "Inicio procesamiento de insumos. Cantidad: {Cantidad}, SedeOrigen: {SedeOrigen}, SedeDestino: {SedeDestino}",
@@ -45,13 +47,26 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     cantRecibidaGramosTotal);
 
                 // Actualizar detalle de la nota de salida con cantidad recibida y observacion
-                var nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
-                if (nsInsumo == null && primerItem.IdCompraArticulo > 0)
+                // La línea se busca SOLO dentro de la nota que se confirma
+                var nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x =>
+                    x.Id == primerItem.IdNotaSalidaArticulo && (idNotaSalida == null || x.IdNotaSalida == idNotaSalida));
+                if (nsInsumo == null && primerItem.IdCompraArticulo > 0 && idNotaSalida.HasValue)
                 {
-                    nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x => x.IdCompraInsumo == primerItem.IdCompraArticulo);
+                    nsInsumo = await _context.NotaSalidaInsumos.FirstOrDefaultAsync(x =>
+                        x.IdCompraInsumo == primerItem.IdCompraArticulo && x.IdNotaSalida == idNotaSalida);
+                }
+                if (nsInsumo == null)
+                {
+                    throw new BadRequestException(
+                        $"El artículo {primerItem.IdNotaSalidaArticulo} no pertenece a la nota de salida que se está recibiendo.");
                 }
 
                 bool isPI = nsInsumo != null && !nsInsumo.IdCompraInsumo.HasValue;
+
+                // Lo que ya se había recibido antes (si es una modificación de la recepción), en gramos
+                decimal? recibidaPrevia = (nsInsumo!.CantidadRecibida.HasValue && nsInsumo.CantidadRecibida.Value > 0)
+                    ? nsInsumo.CantidadRecibida.Value
+                    : (decimal?)null;
 
                 decimal cantidadDespachada = cantRecibidaGramosTotal;
                 if (nsInsumo != null)
@@ -64,6 +79,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     }
 
                     cantidadDespachada = nsInsumo.Cantidad;
+
+                    // No se puede recibir más de lo que salió de la sede origen
+                    if (cantRecibidaGramosTotal > cantidadDespachada + 0.001m)
+                    {
+                        throw new BadRequestException(
+                            $"No se puede recibir más de lo enviado: enviado {cantidadDespachada:0.###} G, recibido {cantRecibidaGramosTotal:0.###} G.");
+                    }
+
                     nsInsumo.CantidadRecibida = cantRecibidaGramosTotal;
                     if (!string.IsNullOrWhiteSpace(obs))
                     {
@@ -74,11 +97,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     if (parentNS != null)
                     {
                         parentNS.Estado = "RECIBIDO";
+                        parentNS.FechaRecepcion ??= DateTime.UtcNow;
                     }
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - cantRecibidaGramosTotal;
-                if (diferenciaNoRecibida > 0)
+                // Al crear la nota se descontó lo despachado del origen. Al recibir, lo no recibido vuelve al origen.
+                // Si se modifica una recepción, solo se mueve la diferencia contra lo recibido antes.
+                decimal diferenciaNoRecibida = (recibidaPrevia ?? cantidadDespachada) - cantRecibidaGramosTotal;
+                if (diferenciaNoRecibida != 0)
                 {
                     StockInsumo? stockOrigenReembolso = null;
                     if (isPI)
@@ -128,7 +154,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 if (stockDestino != null)
                 {
-                    stockDestino.StockDisponible = cantDestino;
+                    // Modificación: sumar solo la diferencia, para no borrar lo ya consumido en destino
+                    stockDestino.StockDisponible = recibidaPrevia.HasValue
+                        ? stockDestino.StockDisponible + (cantDestino - recibidaPrevia.Value)
+                        : cantDestino;
                     stockDestino.UnidadMedida = "G";
                 }
                 else
@@ -173,7 +202,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         private async Task ProcesarProductos(
             List<ConfirmarArticulosReq> articulos,
             int idSedeOrigen,
-            int idSedeDestino)
+            int idSedeDestino,
+            int? idNotaSalida = null)
         {
             var grupos = articulos.GroupBy(x => x.IdNotaSalidaArticulo > 0 ? x.IdNotaSalidaArticulo : x.IdCompraArticulo).ToList();
 
@@ -197,7 +227,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     if (esInsumoOPI)
                     {
                         _logger.LogInformation("Item {Id} recibido en productos pero pertenece a NotaSalidaInsumos. Redirigiendo a ProcesarInsumos.", primerItem.IdNotaSalidaArticulo);
-                        await ProcesarInsumos(grupo.ToList(), idSedeOrigen, idSedeDestino);
+                        await ProcesarInsumos(grupo.ToList(), idSedeOrigen, idSedeDestino, idNotaSalida);
                         continue;
                     }
                 }

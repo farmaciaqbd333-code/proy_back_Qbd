@@ -294,6 +294,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 if (notaSalida == null)
                     throw new NotFoundException("Nota salida no encontrada.");
 
+                // Una nota ya recibida no se elimina: el destino pudo haber usado ese stock y se descuadraría
+                // el kardex de las dos sedes. Para corregirla, se hace una nota de salida de devolución.
+                bool yaRecibida = notaSalida.Estado == "RECIBIDO" || notaSalida.Estado == "RECEPCIONADO" ||
+                    notaSalida.FechaRecepcion != null ||
+                    notaSalida.NotaSalidaInsumos.Any(x => x.CantidadRecibida.HasValue && x.CantidadRecibida.Value > 0) ||
+                    notaSalida.NotaSalidaEmpaques.Any(x => x.CantidadRecibida > 0) ||
+                    notaSalida.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
+                    notaSalida.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0);
+                if (yaRecibida)
+                    throw new BadRequestException(
+                        "La nota de salida ya fue recibida en la sede destino y no se puede eliminar. Registre una nota de salida de devolución.");
+
                 // 1. Revertir movimientos de stock
                 await RevertirStockDeNotaSalida(notaSalida);
 
@@ -1103,6 +1115,25 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 throw new ArgumentNullException(nameof(request));
             }
 
+            // Las sedes salen de la nota guardada (el front puede deducirlas mal a partir del nombre)
+            if (request.IdNotaSalida.HasValue && request.IdNotaSalida.Value > 0)
+            {
+                var notaGuardada = await _context.NotaSalidas.AsNoTracking()
+                    .Where(n => n.Id == request.IdNotaSalida.Value)
+                    .Select(n => new { n.IdSedeOrigen, n.IdSedeDestino })
+                    .FirstOrDefaultAsync();
+                if (notaGuardada == null)
+                    throw new BadRequestException("La nota de salida no existe.");
+                if (notaGuardada.IdSedeOrigen != request.IdSedeOrigen || notaGuardada.IdSedeDestino != request.IdSedeDestino)
+                {
+                    _logger.LogWarning(
+                        "Confirmación NS {Id}: sedes del request ({O}->{D}) distintas a las de la nota ({NO}->{ND}); se usan las de la nota.",
+                        request.IdNotaSalida, request.IdSedeOrigen, request.IdSedeDestino, notaGuardada.IdSedeOrigen, notaGuardada.IdSedeDestino);
+                }
+                request.IdSedeOrigen = notaGuardada.IdSedeOrigen;
+                request.IdSedeDestino = notaGuardada.IdSedeDestino;
+            }
+
             if (request.IdSedeOrigen <= 0)
             {
                 _logger.LogWarning("Confirmación rechazada: sede origen inválida {SedeOrigen}",
@@ -1199,8 +1230,10 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     request.IdSedeDestino);
 
 
+                int? idNotaConfirmada = request.IdNotaSalida.HasValue && request.IdNotaSalida.Value > 0 ? request.IdNotaSalida : null;
+
                 if (request.Insumos?.Any() == true)
-                    await ProcesarInsumos(request.Insumos, request.IdSedeOrigen, request.IdSedeDestino);
+                    await ProcesarInsumos(request.Insumos, request.IdSedeOrigen, request.IdSedeDestino, idNotaConfirmada);
 
                 if (request.Economatos?.Any() == true)
                     await ProcesarEconomatos(request.Economatos, request.IdSedeOrigen, request.IdSedeDestino);
@@ -1209,7 +1242,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     await ProcesarEmpaques(request.Empaques, request.IdSedeOrigen, request.IdSedeDestino);
 
                 if (request.Productos?.Any() == true)
-                    await ProcesarProductos(request.Productos, request.IdSedeOrigen, request.IdSedeDestino);
+                    await ProcesarProductos(request.Productos, request.IdSedeOrigen, request.IdSedeDestino, idNotaConfirmada);
 
                 int? idNotaSalida = request.IdNotaSalida;
                 if (!idNotaSalida.HasValue && request.Insumos?.Any() == true && request.Insumos[0].IdNotaSalidaArticulo > 0)
