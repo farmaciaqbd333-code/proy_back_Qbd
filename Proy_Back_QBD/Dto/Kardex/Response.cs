@@ -31,6 +31,8 @@ namespace proy_back_Qbd.Models.Kardex
         public decimal? Salidas { get; set; }
         public decimal? Ajuste { get; set; }
         public bool? TieneAjuste { get; set; }
+        /// <summary>Lo que quedaba en el lote al vencer (baja por vencimiento). Ya está descontado del saldo.</summary>
+        public decimal? Baja { get; set; }
         public decimal? Saldo { get; set; }
         public decimal? StockDisponible { get; set; }
         public string? Um { get; set; }

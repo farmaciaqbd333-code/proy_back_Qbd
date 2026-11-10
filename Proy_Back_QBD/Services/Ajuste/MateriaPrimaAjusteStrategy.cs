@@ -6,6 +6,7 @@ using proy_back_Qbd.Models.Ajuste;
 using proy_back_Qbd.Models.Ajuste.request;
 using proy_back_Qbd.Models.Ajuste.response;
 using proy_back_Qbd.Util;
+using proy_back_Qbd.Services.Kardex.Ledger;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
@@ -59,60 +60,8 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 .GroupBy(a => (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && a.StockInsumo.IdCompraInsumo.Value > 0) ? a.StockInsumo.IdCompraInsumo.Value : a.IdStockInsumo)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            // Salidas por fórmula magistral:
-            //  - las que guardaron su reparto por registro se descuentan de ESE registro
-            //  - las antiguas (sin reparto) quedan pendientes y se reparten FIFO como antes
-            var formulasSede = await _context.FormulasCC
-                .Where(f => f.Formula != null && f.Formula.SedeId == idSede)
-                .Select(f => new { f.InsumoId, f.CantidadL, f.RegistrosLote })
-                .ToListAsync();
-
-            var salidasFM = new Dictionary<int, decimal>();
-            var salidasFMPorRegistro = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            foreach (var f in formulasSede)
-            {
-                var reparto = ParsearRegistrosLote(f.RegistrosLote);
-                if (reparto.Count == 0)
-                {
-                    salidasFM[f.InsumoId] = (salidasFM.TryGetValue(f.InsumoId, out var acum) ? acum : 0m) + f.CantidadL;
-                    continue;
-                }
-                foreach (var (registro, cantidad) in reparto)
-                {
-                    salidasFMPorRegistro[registro] = (salidasFMPorRegistro.TryGetValue(registro, out var acumReg) ? acumReg : 0m) + cantidad;
-                }
-            }
-
-            var salidasPI = await _context.InsumoProductoIntermedios
-                .Where(ipi => ipi.ProductoIntermedio != null && ipi.ProductoIntermedio.IdSede == idSede)
-                .GroupBy(ipi => ipi.IdInsumo)
-                .Select(g => new { IdInsumo = g.Key, Total = g.Sum(ipi => (ipi.Practica.HasValue && ipi.Practica.Value > 0) ? ipi.Practica.Value : ipi.CantidadLote) })
-                .ToDictionaryAsync(x => x.IdInsumo, x => x.Total);
-
-            // Consumos directos por lote desde StockInsumoProductoIntermedio
-            var consumosPIDirectos = await _context.StockInsumoProductoIntermedios
-                .Include(x => x.InsumoProductoIntermedio)
-                    .ThenInclude(ipi => ipi.ProductoIntermedio)
-                .Include(x => x.StockInsumo)
-                .Where(x => x.InsumoProductoIntermedio != null &&
-                            x.InsumoProductoIntermedio.ProductoIntermedio != null &&
-                            x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede &&
-                            x.StockInsumo != null &&
-                            x.StockInsumo.IdCompraInsumo.HasValue &&
-                            compraIds.Contains(x.StockInsumo.IdCompraInsumo.Value))
-                .GroupBy(x => x.StockInsumo!.IdCompraInsumo!.Value)
-                .Select(g => new { IdCompra = g.Key, Total = g.Sum(x => x.Cantidad) })
-                .ToDictionaryAsync(x => x.IdCompra, x => x.Total);
-
-            var totalPIDirectoPorInsumo = await _context.StockInsumoProductoIntermedios
-                .Include(x => x.InsumoProductoIntermedio)
-                    .ThenInclude(ipi => ipi.ProductoIntermedio)
-                .Where(x => x.InsumoProductoIntermedio != null &&
-                            x.InsumoProductoIntermedio.ProductoIntermedio != null &&
-                            x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede)
-                .GroupBy(x => x.InsumoProductoIntermedio!.IdInsumo)
-                .Select(g => new { IdInsumo = g.Key, Total = g.Sum(x => x.Cantidad) })
-                .ToDictionaryAsync(x => x.IdInsumo, x => x.Total);
+            // Saldo por registro = libro mayor por lote (misma regla que la lista de stock y el kardex)
+            var mayor = await new KardexLedgerMpService(_context).CalcularAsync(idSede, null);
 
             var insumoGrupos = compras.GroupBy(c => c.IdInsumo);
             var resultado = new List<TablaAjustesRes>();
@@ -120,123 +69,15 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
             foreach (var grupo in insumoGrupos)
             {
                 int idInsumo = grupo.Key;
-                decimal piDirecto = totalPIDirectoPorInsumo.ContainsKey(idInsumo) ? totalPIDirectoPorInsumo[idInsumo] : 0m;
-                decimal totalPI = salidasPI.ContainsKey(idInsumo) ? salidasPI[idInsumo] : 0m;
-                decimal salidasPIPendientes = Math.Max(0m, totalPI - piDirecto);
-
-                decimal salidasPendientes = (salidasFM.ContainsKey(idInsumo) ? salidasFM[idInsumo] : 0m) + salidasPIPendientes;
+                var partesInsumo = mayor.TryGetValue(idInsumo, out var m) ? m.Partes : new List<LedgerParte>();
 
                 foreach (var compraInsumo in grupo)
                 {
-                    bool esKg = compraInsumo.Um != null && (
-                        string.Equals(compraInsumo.Um.Trim(), "KG", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(compraInsumo.Um.Trim(), "KILOGRAMO", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(compraInsumo.Um.Trim(), "KILOGRAMOS", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(compraInsumo.Um.Trim(), "KGS", StringComparison.OrdinalIgnoreCase)
-                    );
-
-                    decimal entradasCompra = 0m;
-                    if (compraInsumo.Compra != null && compraInsumo.Compra.IdSede == idSede && (idSede == 15 || compraInsumo.Compra.FechaLab != null))
-                    {
-                        if (esKg)
-                        {
-                            if (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0)
-                            {
-                                if (compraInsumo.CantidadRecibida.Value <= compraInsumo.CantidadSolicitada * 2 && compraInsumo.CantidadRecibida.Value < 500)
-                                {
-                                    entradasCompra = compraInsumo.CantidadRecibida.Value * 1000m;
-                                }
-                                else
-                                {
-                                    entradasCompra = compraInsumo.CantidadRecibida.Value;
-                                }
-                            }
-                            else
-                            {
-                                entradasCompra = compraInsumo.CantidadSolicitada * 1000m;
-                            }
-                        }
-                        else
-                        {
-                            entradasCompra = (compraInsumo.CantidadRecibida.HasValue && compraInsumo.CantidadRecibida.Value > 0) ? compraInsumo.CantidadRecibida.Value : compraInsumo.CantidadSolicitada;
-                        }
-                    }
-
-                    var notasSalidaDestino = compraInsumo.NotaSalidaInsumos
-                        .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede &&
-                            (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
-                        .ToList();
-
-                    decimal entradasTraslado = notasSalidaDestino
-                        .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad));
-
-                    decimal entradas = entradasCompra + entradasTraslado;
-
-                    var notasSalidaOrigen = compraInsumo.NotaSalidaInsumos
-                        .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
-                        .ToList();
-
-                    decimal salidasNS = notasSalidaOrigen
-                        .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
-
-                    decimal salidasPIDirectas = consumosPIDirectos.ContainsKey(compraInsumo.Id) ? consumosPIDirectos[compraInsumo.Id] : 0m;
-                    string registroCompra = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
-                    decimal salidasFMRegistro = salidasFMPorRegistro.TryGetValue(registroCompra, out var fmReg) ? fmReg : 0m;
-                    decimal salidasLote = salidasNS + salidasPIDirectas + salidasFMRegistro;
-
-                    var stockInsumosSede = compraInsumo.StockInsumos
-                        .Where(si => si.IdSede == idSede)
-                        .ToList();
-
                     var ajustesDeCompra = ajustesPorCompra.ContainsKey(compraInsumo.Id) ? ajustesPorCompra[compraInsumo.Id] : new List<AjusteInsumo>();
                     var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
-                    decimal saldo = 0m;
-                    string observacionAjuste = "";
-
-                    if (ultimoAjuste != null)
-                    {
-                        bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
-                        if (estaVencido)
-                        {
-                            saldo = 0m;
-                        }
-                        else
-                        {
-                            var stockPrincipal = stockInsumosSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == null || w.IdNotaSalidaInsumo == 0);
-                            saldo = stockPrincipal != null ? stockPrincipal.StockDisponible : (stockInsumosSede.Any() ? stockInsumosSede.Sum(si => si.StockDisponible) : ultimoAjuste.StockNuevo);
-                        }
-                        observacionAjuste = ultimoAjuste.Observacion ?? "";
-                    }
-                    else
-                    {
-                        bool estaVencido = compraInsumo.FechaVencimiento < DateTime.UtcNow;
-                        decimal bajas = 0m;
-                        if (estaVencido)
-                        {
-                            bajas = stockInsumosSede.Sum(si => si.StockDisponible);
-                        }
-
-                        decimal saldoBruto = entradas - salidasLote - bajas;
-                        if (saldoBruto < 0) saldoBruto = 0;
-                        decimal descuentoLocal = 0m;
-                        if (salidasPendientes > 0 && saldoBruto > 0)
-                        {
-                            if (saldoBruto >= salidasPendientes)
-                            {
-                                descuentoLocal = salidasPendientes;
-                                salidasPendientes = 0;
-                            }
-                            else
-                            {
-                                descuentoLocal = saldoBruto;
-                                salidasPendientes -= saldoBruto;
-                            }
-                        }
-
-                        saldo = saldoBruto - descuentoLocal;
-                    }
-                    if (saldo < 0) saldo = 0;
+                    decimal saldo = partesInsumo.Where(pt => pt.IdCompraInsumo == compraInsumo.Id).Sum(pt => pt.Saldo);
+                    string observacionAjuste = ultimoAjuste?.Observacion ?? "";
 
                     resultado.Add(new TablaAjustesRes
                     {
@@ -427,3 +268,4 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
         }
     }
 }
+

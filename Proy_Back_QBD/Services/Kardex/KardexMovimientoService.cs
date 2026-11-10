@@ -8,6 +8,7 @@ using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
+using proy_back_Qbd.Services.Kardex.Ledger;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Models;
@@ -149,207 +150,22 @@ namespace proy_back_Qbd.Services.Kardex
             return resultado;
         }
 
+        /// <summary>
+        /// Salidas de materia prima en la sede, tomadas del libro mayor (<see cref="KardexLedgerMpService"/>):
+        /// cada salida aparece repartida por el lote del que se descontó, igual que en el kardex por lote y la lista.
+        /// </summary>
         private async Task<List<SalidaInsumoRes>> ObtenerSalidasInsumoBase(int idInsumo, int idSede)
         {
-            var resultado = new List<SalidaInsumoRes>();
-
-            try
-            {
-                // Obtener lotes disponibles del insumo en esta sede para asignar origen a las salidas
-                var lotesDisponibles = await _context.CompraInsumos
-                    .Include(ci => ci.Compra)
-                    .Include(ci => ci.NotaSalidaInsumos)
-                        .ThenInclude(nsi => nsi.NotaSalida)
-                    .Where(w => w.IdInsumo == idInsumo &&
-                        (
-                            (w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) ||
-                            w.NotaSalidaInsumos.Any(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede && (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
-                        )
-                    )
-                    .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
-                    .ToListAsync();
-
-                var batchTrackers = lotesDisponibles.Select(ci => new
-                {
-                    Registro = "MP" + Alfanumerico.ConvertToBase36(ci.Id),
-                    Lote = ci.Lote ?? "",
-                    Capacidad = ((ci.Compra != null && ci.Compra.IdSede == idSede && (idSede == 15 || ci.Compra.FechaLab != null))
-                        ? (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0 ? (ci.CantidadRecibida.Value <= ci.CantidadSolicitada * 2 && ci.CantidadRecibida.Value < 500 && (ci.Um == "KG" || ci.Um == "KILOGRAMOS" || ci.Um == "Kg" || ci.Um == "Kgs" || ci.Um == "kg" || ci.Um == "KILOGRAMO") ? ci.CantidadRecibida.Value * 1000m : ci.CantidadRecibida.Value) : (ci.CantidadSolicitada * ((ci.Um == "KG" || ci.Um == "KILOGRAMOS" || ci.Um == "Kg" || ci.Um == "Kgs" || ci.Um == "kg" || ci.Um == "KILOGRAMO") ? 1000m : 1m)))
-                        : 0m) +
-                        ci.NotaSalidaInsumos
-                            .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeDestino == idSede && (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
-                            .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad))
-                }).Select(b => new { b.Registro, b.Lote, SaldoRestante = b.Capacidad }).ToList();
-
-                // 1. Salidas por Productos Intermedios con detalle de stock
-                var consumosStockPI = await _context.StockInsumoProductoIntermedios
-                    .Include(x => x.InsumoProductoIntermedio)
-                        .ThenInclude(ipi => ipi.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Insumo)
-                    .Include(x => x.InsumoProductoIntermedio)
-                        .ThenInclude(ipi => ipi.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Elaborador)
-                    .Include(x => x.StockInsumo)
-                        .ThenInclude(si => si.CompraInsumo)
-                    .Where(x => x.InsumoProductoIntermedio.IdInsumo == idInsumo &&
-                                x.InsumoProductoIntermedio.ProductoIntermedio.IdSede == idSede)
-                    .OrderByDescending(x => x.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion)
-                    .Select(s => new SalidaInsumoRes
-                    {
-                        TipoSalida = "ELABORACIÓN PI",
-                        RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.InsumoProductoIntermedio.ProductoIntermedio.Id),
-                        DescripcionDestino = s.InsumoProductoIntermedio.ProductoIntermedio.Insumo != null
-                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Insumo.Descripcion
-                            : (s.InsumoProductoIntermedio.ProductoIntermedio.Lote ?? "Producto Intermedio"),
-                        LoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? (s.StockInsumo.CompraInsumo.Lote ?? "") : "",
-                        RegistroLoteInsumo = s.StockInsumo != null && s.StockInsumo.CompraInsumo != null ? "MP" + Alfanumerico.ConvertToBase36(s.StockInsumo.CompraInsumo.Id) : "",
-                        Cantidad = s.Cantidad,
-                        Um = s.UnidadMedida ?? s.InsumoProductoIntermedio.UnidadMedida ?? "G",
-                        Fecha = s.InsumoProductoIntermedio.ProductoIntermedio.FechaCreacion,
-                        Usuario = s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador != null
-                            ? s.InsumoProductoIntermedio.ProductoIntermedio.Elaborador.Codigo
-                            : "ADMIN"
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                if (consumosStockPI != null && consumosStockPI.Any())
-                {
-                    resultado.AddRange(consumosStockPI);
-                }
-                else
-                {
-                    var consumosDirectosPI = await _context.InsumoProductoIntermedios
-                        .Include(x => x.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Insumo)
-                        .Include(x => x.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Elaborador)
-                        .Where(x => x.IdInsumo == idInsumo && x.ProductoIntermedio.IdSede == idSede)
-                        .OrderBy(x => x.ProductoIntermedio.FechaCreacion)
-                        .Select(s => new SalidaInsumoRes
-                        {
-                            TipoSalida = "ELABORACIÓN PI",
-                            RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.ProductoIntermedio.Id),
-                            DescripcionDestino = s.ProductoIntermedio.Insumo != null
-                                ? s.ProductoIntermedio.Insumo.Descripcion
-                                : (s.ProductoIntermedio.Lote ?? "Producto Intermedio"),
-                            LoteInsumo = "",
-                            RegistroLoteInsumo = "",
-                            Cantidad = (s.Practica.HasValue && s.Practica.Value > 0) ? s.Practica.Value : s.CantidadLote,
-                            Um = s.UnidadMedida ?? "G",
-                            Fecha = s.ProductoIntermedio.FechaCreacion,
-                            Usuario = s.ProductoIntermedio.Elaborador != null ? s.ProductoIntermedio.Elaborador.Codigo : "ADMIN"
-                        })
-                        .AsNoTracking()
-                        .ToListAsync();
-
-                    if (consumosDirectosPI != null)
-                    {
-                        resultado.AddRange(consumosDirectosPI);
-                    }
-                }
-
-                // 2. Salidas por Notas de Salida
-                var notasSalida = await _context.NotaSalidaInsumos
-                    .Include(x => x.NotaSalida)
-                        .ThenInclude(ns => ns.SedeDestino)
-                    .Include(x => x.NotaSalida)
-                        .ThenInclude(ns => ns.Creador)
-                    .Include(x => x.CompraInsumos)
-                    .Where(x => x.CompraInsumos != null && x.CompraInsumos.IdInsumo == idInsumo && x.NotaSalida != null && x.NotaSalida.IdSedeOrigen == idSede)
-                    .OrderByDescending(x => x.NotaSalida.FechaCreacion)
-                    .Select(s => new SalidaInsumoRes
-                    {
-                        TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
-                        DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
-                            : "Nota de Salida",
-                        LoteInsumo = s.CompraInsumos != null ? (s.CompraInsumos.Lote ?? "") : (s.Lote ?? ""),
-                        RegistroLoteInsumo = s.CompraInsumos != null ? "MP" + Alfanumerico.ConvertToBase36(s.CompraInsumos.Id) : "",
-                        Cantidad = s.Cantidad,
-                        Um = s.Um ?? (s.CompraInsumos != null ? s.CompraInsumos.Um : "G"),
-                        Fecha = s.NotaSalida != null ? s.NotaSalida.FechaCreacion : null,
-                        Usuario = s.NotaSalida != null && s.NotaSalida.Creador != null ? s.NotaSalida.Creador.Codigo : "ADMIN"
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                if (notasSalida != null && notasSalida.Any())
-                {
-                    resultado.AddRange(notasSalida);
-                }
-
-                // 3. Salidas por Fórmulas Magistrales (respetando el registro elegido si se guardó)
-                var formulasCCMp = await _context.FormulasCC
-                    .Include(x => x.Formula)
-                        .ThenInclude(f => f.Creador)
-                    .Include(x => x.Formula)
-                        .ThenInclude(f => f!.Laboratorio)
-                            .ThenInclude(l => l!.Creador)
-                    .Include(x => x.Insumo)
-                    .Where(x => x.InsumoId == idInsumo && (x.SedeId == idSede || (x.Formula != null && x.Formula.SedeId == idSede)))
-                    .OrderBy(x => x.FechaCreacion)
-                    .AsNoTracking()
-                    .ToListAsync();
-                var formulas = ExpandirSalidasFormula(
-                    formulasCCMp,
-                    "FÓRMULA MAGISTRAL",
-                    reg => batchTrackers.FirstOrDefault(b => string.Equals(b.Registro, reg, StringComparison.OrdinalIgnoreCase))?.Lote);
-
-                if (formulas != null && formulas.Any())
-                {
-                    resultado.AddRange(formulas);
-                }
-
-                // Asignar RegistroLoteInsumo y LoteInsumo a las salidas locales (FM o PI directos) en orden FIFO
-                if (batchTrackers.Any())
-                {
-                    // Lo que ya salió con registro explícito no está disponible para el FIFO
-                    var usadoExplicito = resultado
-                        .Where(r => !string.IsNullOrEmpty(r.RegistroLoteInsumo))
-                        .GroupBy(r => r.RegistroLoteInsumo.Trim().ToUpper())
-                        .ToDictionary(g => g.Key, g => g.Sum(r => r.Cantidad));
-                    decimal SaldoFifo(int idx) =>
-                        batchTrackers[idx].SaldoRestante -
-                        (usadoExplicito.TryGetValue(batchTrackers[idx].Registro.ToUpper(), out var u) ? u : 0m);
-
-                    int currentBatchIdx = 0;
-                    decimal currentBatchRemaining = SaldoFifo(0);
-
-                    var salidasLocales = resultado
-                        .Where(r => string.IsNullOrEmpty(r.RegistroLoteInsumo))
-                        .OrderBy(r => r.Fecha)
-                        .ToList();
-
-                    foreach (var s in salidasLocales)
-                    {
-                        decimal cant = s.Cantidad;
-                        while (currentBatchRemaining <= 0 && currentBatchIdx < batchTrackers.Count - 1)
-                        {
-                            currentBatchIdx++;
-                            currentBatchRemaining = SaldoFifo(currentBatchIdx);
-                        }
-
-                        var activeBatch = batchTrackers[currentBatchIdx];
-                        s.RegistroLoteInsumo = activeBatch.Registro;
-                        if (!string.IsNullOrEmpty(activeBatch.Lote))
-                        {
-                            s.LoteInsumo = activeBatch.Lote;
-                        }
-                        currentBatchRemaining -= cant;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error en ObtenerSalidasInsumo: {ex.Message}");
-            }
-
-            return resultado.OrderByDescending(x => x.Fecha).ToList();
+            var mayor = await new KardexLedgerMpService(_context).CalcularInsumoAsync(idSede, idInsumo);
+            var idsCompra = mayor.Partes.Select(p => p.IdCompraInsumo).Distinct().ToList();
+            var lotes = await _context.CompraInsumos
+                .AsNoTracking()
+                .Where(ci => idsCompra.Contains(ci.Id))
+                .Select(ci => new { ci.Id, ci.Lote })
+                .ToDictionaryAsync(x => x.Id, x => x.Lote);
+            return KardexLedgerMpService.FilasSalida(mayor, id => lotes.TryGetValue(id, out var l) ? l : null);
         }
 
-        
         public async Task<List<SalidaInsumoRes>> ObtenerSalidasEmpaque(int empaqueId, int idSede)
         {
             var resultado = new List<SalidaInsumoRes>();
@@ -1151,68 +967,43 @@ namespace proy_back_Qbd.Services.Kardex
                     return resultado;
                 }
 
-                // Default: MP (Materia Prima)
+                // Default: MP (Materia Prima). La baja es lo que queda (según movimientos) en cada lote vencido.
+                var mayor = await new KardexLedgerMpService(_context).CalcularInsumoAsync(idSede, idInsumo, ahora);
+                var bajasPorCompra = mayor.Partes
+                    .Where(p => p.Baja > 0)
+                    .GroupBy(p => p.IdCompraInsumo)
+                    .ToDictionary(g => g.Key, g => g.Sum(p => p.Baja));
+                var idsVencidos = bajasPorCompra.Keys.ToList();
+
                 var comprasVencidas = await _context.CompraInsumos
                     .Include(ci => ci.Insumo)
                     .Include(ci => ci.Compra)
                         .ThenInclude(c => c!.Proveedor)
                     .Include(ci => ci.Compra)
                         .ThenInclude(c => c!.Sede)
-                    .Include(ci => ci.StockInsumos)
-                    .Where(ci =>
-                        ci.IdInsumo == idInsumo &&
-                        ci.FechaVencimiento < ahora &&
-                        ci.StockInsumos.Any(si => si.IdSede == idSede && si.StockDisponible > 0))
+                    .Where(ci => idsVencidos.Contains(ci.Id))
                     .OrderBy(ci => ci.FechaVencimiento)
                     .AsNoTracking()
                     .ToListAsync();
 
                 foreach (var ci in comprasVencidas)
                 {
-                    var stockSede = ci.StockInsumos
-                        .Where(si => si.IdSede == idSede)
-                        .Sum(si => si.StockDisponible);
-
-                    if (stockSede <= 0) continue;
-
                     int diasVencido = 0;
                     if (ci.FechaVencimiento.HasValue)
                     {
-                        diasVencido = (int)(ahora.Date - ci.FechaVencimiento.Value.Date).TotalDays;
-                        if (diasVencido < 0) diasVencido = 0;
-                    }
-
-                    string reg = "MP" + Alfanumerico.ConvertToBase36(ci.Id);
-
-                    decimal cantidadBajaReal = stockSede;
-                    bool esKgBaja = ci.Um != null && (
-                        string.Equals(ci.Um.Trim(), "KG", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(ci.Um.Trim(), "KILOGRAMO", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(ci.Um.Trim(), "KILOGRAMOS", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(ci.Um.Trim(), "KGS", StringComparison.OrdinalIgnoreCase)
-                    );
-                    decimal entradasCI = (ci.CantidadRecibida.HasValue && ci.CantidadRecibida.Value > 0)
-                        ? (esKgBaja && ci.CantidadRecibida.Value <= ci.CantidadSolicitada * 2 && ci.CantidadRecibida.Value < 500 ? ci.CantidadRecibida.Value * 1000m : ci.CantidadRecibida.Value)
-                        : (esKgBaja ? ci.CantidadSolicitada * 1000m : ci.CantidadSolicitada);
-
-                    if (entradasCI > 0 && cantidadBajaReal > entradasCI * 1.5m && cantidadBajaReal >= 1000m)
-                    {
-                        if (cantidadBajaReal / 1000m <= entradasCI * 1.1m)
-                        {
-                            cantidadBajaReal /= 1000m;
-                        }
+                        diasVencido = Math.Max(0, (int)(ahora.Date - ci.FechaVencimiento.Value.Date).TotalDays);
                     }
 
                     resultado.Add(new BajaInsumoRes
                     {
                         IdCompraInsumo = ci.Id,
-                        Registro = reg,
+                        Registro = "MP" + Alfanumerico.ConvertToBase36(ci.Id),
                         IdInsumo = ci.IdInsumo,
                         Codigo = $"MP-QbD-{ci.IdInsumo}",
                         Descripcion = ci.Insumo?.Descripcion ?? "",
                         Lote = ci.Lote ?? "-",
-                        CantidadBaja = cantidadBajaReal,
-                        Um = ci.Insumo?.UnidadMedida ?? (ci.StockInsumos.FirstOrDefault(si => si.IdSede == idSede)?.UnidadMedida ?? "G"),
+                        CantidadBaja = bajasPorCompra[ci.Id],
+                        Um = "G",
                         FechaFabricacion = ci.FechaFabricacion,
                         FechaVencimiento = ci.FechaVencimiento,
                         DiasVencido = diasVencido,

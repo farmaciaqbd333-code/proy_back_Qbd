@@ -8,6 +8,7 @@ using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
+using proy_back_Qbd.Services.Kardex.Ledger;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Models;
@@ -80,22 +81,11 @@ namespace proy_back_Qbd.Services.Kardex
                 .GroupBy(a => (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && a.StockInsumo.IdCompraInsumo.Value > 0) ? a.StockInsumo.IdCompraInsumo.Value : a.IdStockInsumo)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
-            var salidasList = await _movimientos.ObtenerSalidasInsumo(idInsumo, idSede);
-            var salidasPorReg = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            foreach (var s in salidasList)
-            {
-                if (!string.IsNullOrEmpty(s.RegistroLoteInsumo))
-                {
-                    var key = s.RegistroLoteInsumo.Trim().ToUpper();
-                    decimal cant = s.Cantidad;
-                    if (s.Um == "KG" || s.Um == "KILOGRAMOS" || s.Um == "Kg" || s.Um == "Kgs")
-                    {
-                        cant *= 1000m;
-                    }
-                    if (!salidasPorReg.ContainsKey(key)) salidasPorReg[key] = 0m;
-                    salidasPorReg[key] += cant;
-                }
-            }
+            // Salidas, ajustes, bajas y saldo de cada lote salen del libro mayor (fuente única de stock)
+            var mayor = await new KardexLedgerMpService(_context).CalcularInsumoAsync(idSede, idInsumo);
+            LedgerParte? ParteDe(int idCompra, int? idNsi) => mayor.Partes.FirstOrDefault(p =>
+                p.IdCompraInsumo == idCompra && (idNsi.HasValue ? p.IdNotaSalidaInsumo == idNsi : p.IdNotaSalidaInsumo == null));
+            var partesMostradas = new HashSet<LedgerParte>();
 
             foreach (var compraInsumo in compraInsumos)
             {
@@ -157,43 +147,26 @@ namespace proy_back_Qbd.Services.Kardex
 
                 var registro = "MP" + Alfanumerico.ConvertToBase36(compraInsumo.Id);
 
-                decimal salidasReales = 0m;
-                if (salidasPorReg.TryGetValue(registro, out var sVal))
-                {
-                    salidasReales = sVal;
-                }
-                else
-                {
-                    salidasReales = compraInsumo.NotaSalidaInsumos
-                        .Where(nsi => nsi.NotaSalida != null && nsi.NotaSalida.IdSedeOrigen == idSede)
-                        .Sum(nsi => ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) * nsi.Cantidad);
-                }
-
                 var stockSede = compraInsumo.StockInsumos
                     .Where(si => si.IdSede == idSede)
                     .ToList();
 
                 var ajustesDeCompra = ajustesPorCompra.ContainsKey(compraInsumo.Id) ? ajustesPorCompra[compraInsumo.Id] : new List<AjusteInsumo>();
-                bool tieneAjuste = ajustesDeCompra.Any();
-                decimal totalAjuste = ajustesDeCompra.Sum(a => a.Ajuste);
 
                 string umDefecto = stockSede.FirstOrDefault()?.UnidadMedida ?? (compraInsumo.Insumo != null ? compraInsumo.Insumo.UnidadMedida : (compraInsumo.Um ?? "G"));
                 string? numeroFacturaCompra = ExtraerNumeroFactura(compraInsumo.Compra?.SerieComprobante, compraInsumo.Compra?.NumeroComprobante, compraInsumo.Compra?.CodFacQBD);
 
 
-                // 1. DISTRIBUCION FIFO DE SALIDAS ENTRE ENTRADAS DE ESTE REGISTRO
-                decimal salidasRestantes = salidasReales;
-
                 // 1. ENTRADA POR COMPRA (si corresponde a esta sede)
                 if (esCompraEstaSede && entradasCompra > 0)
                 {
                     var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == null || w.IdNotaSalidaInsumo == 0);
-                    decimal salidasCompra = Math.Min(entradasCompra, salidasRestantes);
-                    salidasRestantes -= salidasCompra;
-
-                    decimal saldoCompra = tieneAjuste
-                        ? (ajustesDeCompra.FirstOrDefault()?.StockNuevo ?? Math.Max(0m, entradasCompra - salidasCompra + totalAjuste))
-                        : Math.Max(0m, entradasCompra - salidasCompra);
+                    var parteCompra = ParteDe(compraInsumo.Id, null);
+                    if (parteCompra != null) partesMostradas.Add(parteCompra);
+                    decimal salidasCompra = parteCompra?.Salidas ?? 0m;
+                    decimal totalAjuste = parteCompra?.Ajustes ?? 0m;
+                    bool tieneAjuste = ajustesDeCompra.Any(a => a.StockInsumo == null || a.StockInsumo.IdNotaSalidaInsumo == null || a.StockInsumo.IdNotaSalidaInsumo == 0);
+                    decimal saldoCompra = parteCompra?.Saldo ?? (entradasCompra - salidasCompra);
 
                     string sedeOrigenCompra = compraInsumo.Compra?.Proveedor?.Datos ?? compraInsumo.Compra?.Sede?.Nombre ?? "COMPRA";
                     string cuoCompra = compraInsumo.Compra != null ? ((compraInsumo.Compra.IdSede == 1 ? "OCL" : (compraInsumo.Compra.IdSede == 2 ? "OCPJ" : (compraInsumo.Compra.IdSede == 3 ? "OCP" : (compraInsumo.Compra.IdSede == 4 ? "OCT" : (compraInsumo.Compra.IdSede == 12 ? "OCCS" : "OC"))))) + compraInsumo.Compra.Id) : "";
@@ -210,6 +183,7 @@ namespace proy_back_Qbd.Services.Kardex
                         Salidas = salidasCompra,
                         Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
                         TieneAjuste = tieneAjuste,
+                        Baja = parteCompra?.Baja ?? 0m,
                         Saldo = saldoCompra,
                         StockDisponible = saldoCompra,
                         Um = esKg ? "G" : (stockPrincipal?.UnidadMedida ?? umDefecto),
@@ -232,17 +206,16 @@ namespace proy_back_Qbd.Services.Kardex
                     decimal cantRecibida = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
                         ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
 
-                    decimal salidasNS = Math.Min(cantRecibida, salidasRestantes);
-                    salidasRestantes -= salidasNS;
+                    var parteNS = ParteDe(compraInsumo.Id, nsi.Id);
+                    if (parteNS != null) partesMostradas.Add(parteNS);
+                    decimal salidasNS = parteNS?.Salidas ?? 0m;
 
                     var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaInsumo == nsi.Id);
                     var ajustesNS = stockNS?.AjusteInsumos?.ToList();
                     bool tieneAjusteNS = ajustesNS != null && ajustesNS.Any();
-                    decimal totalAjusteNS = tieneAjusteNS ? ajustesNS!.Sum(a => a.Ajuste) : 0m;
+                    decimal totalAjusteNS = parteNS?.Ajustes ?? 0m;
 
-                    decimal saldoNS = tieneAjusteNS
-                        ? (ajustesNS!.OrderByDescending(a => a.FechaCreacion).FirstOrDefault()?.StockNuevo ?? Math.Max(0m, cantRecibida - salidasNS + totalAjusteNS))
-                        : Math.Max(0m, cantRecibida - salidasNS);
+                    decimal saldoNS = parteNS?.Saldo ?? (cantRecibida - salidasNS);
 
                     DateTime? fechaNS = nsi.NotaSalida != null
                         ? (nsi.NotaSalida.FechaSalida != default ? nsi.NotaSalida.FechaSalida : nsi.NotaSalida.FechaCreacion)
@@ -262,6 +235,7 @@ namespace proy_back_Qbd.Services.Kardex
                         Salidas = salidasNS,
                         Ajuste = tieneAjusteNS ? totalAjusteNS : (decimal?)null,
                         TieneAjuste = tieneAjusteNS,
+                        Baja = parteNS?.Baja ?? 0m,
                         Saldo = saldoNS,
                         StockDisponible = saldoNS,
                         Um = stockNS?.UnidadMedida ?? umDefecto,
@@ -277,6 +251,46 @@ namespace proy_back_Qbd.Services.Kardex
                         CUO = docOrigenNS
                     });
                 }
+            }
+
+            // Partes del libro mayor sin fila propia (p. ej. ajuste sobre un lote sin ingreso en esta sede)
+            foreach (var parte in mayor.Partes.Where(p => !partesMostradas.Contains(p)))
+            {
+                var ci = compraInsumos.FirstOrDefault(c => c.Id == parte.IdCompraInsumo);
+                resultado.Add(new DetalleInsumoRes
+                {
+                    Registro = "MP" + Alfanumerico.ConvertToBase36(parte.IdCompraInsumo),
+                    Lote = ci?.Lote ?? "",
+                    CantidadIngresada = parte.Entradas,
+                    Salidas = parte.Salidas,
+                    Ajuste = parte.Ajustes != 0 ? parte.Ajustes : (decimal?)null,
+                    TieneAjuste = parte.Ajustes != 0,
+                    Baja = parte.Baja,
+                    Saldo = parte.Saldo,
+                    StockDisponible = parte.Saldo,
+                    Um = "G",
+                    FechaVencimiento = ci?.FechaVencimiento,
+                    TipoOrigen = "Ajuste",
+                    IdCompra = parte.IdCompraInsumo
+                });
+            }
+
+            // Salidas registradas sin ningún lote del insumo en esta sede: se muestran para que el total cuadre
+            if (mayor.SalidasSinLote > 0)
+            {
+                resultado.Add(new DetalleInsumoRes
+                {
+                    Registro = "-",
+                    Lote = "SIN LOTE",
+                    CantidadIngresada = 0m,
+                    Salidas = mayor.SalidasSinLote,
+                    Baja = 0m,
+                    Saldo = -mayor.SalidasSinLote,
+                    StockDisponible = -mayor.SalidasSinLote,
+                    Um = "G",
+                    TipoOrigen = "Sin lote",
+                    Observacion = "Salidas sin lote de ingreso en esta sede"
+                });
             }
 
             return resultado;

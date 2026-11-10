@@ -15,6 +15,7 @@ using proy_back_Qbd.Repositories.Interfaces;
 using proy_back_Qbd.Repositories;
 using proy_back_Qbd.Services.Kardex;
 using proy_back_Qbd.Services.Kardex.Stock;
+using proy_back_Qbd.Services.Kardex.Ledger;
 
 namespace Proy_back_QBD.DependencyInjection
 {
@@ -140,6 +141,7 @@ namespace Proy_back_QBD.DependencyInjection
             services.AddScoped<IListaPrecioService, ListaPrecioService>();
 
             // Kardex: un servicio por responsabilidad y una estrategia de stock por familia
+            services.AddScoped<KardexLedgerMpService>();
             services.AddScoped<IKardexStockService, KardexStockService>();
             services.AddScoped<IKardexDetalleService, KardexDetalleService>();
             services.AddScoped<IKardexMovimientoService, KardexMovimientoService>();
