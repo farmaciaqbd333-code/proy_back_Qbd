@@ -1,4 +1,4 @@
-﻿using proy_back_Qbd.Exceptions;
+using proy_back_Qbd.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Dto.NotaSalida;
 using proy_back_Qbd.Models;
