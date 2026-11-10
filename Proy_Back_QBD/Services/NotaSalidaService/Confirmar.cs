@@ -375,7 +375,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
         private async Task ProcesarEmpaques(
             List<ConfirmarArticulosReq> articulos,
             int idSedeOrigen,
-            int idSedeDestino)
+            int idSedeDestino,
+            int? idNotaSalida = null)
         {
             var grupos = articulos.GroupBy(x => x.IdNotaSalidaArticulo > 0 ? x.IdNotaSalidaArticulo : x.IdCompraArticulo).ToList();
 
@@ -386,31 +387,46 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 var observaciones = grupo.Select(g => g.Observacion).Where(o => !string.IsNullOrWhiteSpace(o)).Distinct().ToList();
                 string obs = string.Join("; ", observaciones);
 
-                var nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.Id == primerItem.IdNotaSalidaArticulo);
-                if (nsEmp == null && primerItem.IdCompraArticulo > 0)
+                // La línea se busca SOLO dentro de la nota que se confirma
+                var nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x =>
+                    x.Id == primerItem.IdNotaSalidaArticulo && (idNotaSalida == null || x.IdNotaSalida == idNotaSalida));
+                if (nsEmp == null && primerItem.IdCompraArticulo > 0 && idNotaSalida.HasValue)
                 {
-                    nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x => x.IdCompraEmpaque == primerItem.IdCompraArticulo);
+                    nsEmp = await _context.NotaSalidaEmpaques.FirstOrDefaultAsync(x =>
+                        x.IdCompraEmpaque == primerItem.IdCompraArticulo && x.IdNotaSalida == idNotaSalida);
+                }
+                if (nsEmp == null)
+                {
+                    throw new BadRequestException(
+                        $"El artículo {primerItem.IdNotaSalidaArticulo} no pertenece a la nota de salida que se está recibiendo.");
                 }
 
-                decimal cantidadDespachada = totalRecibido;
-                if (nsEmp != null)
+                decimal? recibidaPrevia = nsEmp.CantidadRecibida > 0 ? nsEmp.CantidadRecibida : (decimal?)null;
+                decimal cantidadDespachada = nsEmp.Cantidad;
+                if (totalRecibido > cantidadDespachada + 0.001m)
                 {
-                    cantidadDespachada = nsEmp.Cantidad;
-                    nsEmp.CantidadRecibida = totalRecibido;
-                    if (!string.IsNullOrWhiteSpace(obs)) nsEmp.Observacion = obs;
-
-                    var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEmp.IdNotaSalida);
-                    if (parentNS != null)
-                    {
-                        parentNS.Estado = "RECIBIDO";
-                    }
+                    throw new BadRequestException(
+                        $"No se puede recibir más de lo enviado: enviado {cantidadDespachada:0.###}, recibido {totalRecibido:0.###}.");
                 }
 
-                decimal diferenciaNoRecibida = cantidadDespachada - totalRecibido;
-                if (diferenciaNoRecibida > 0)
+                nsEmp.CantidadRecibida = totalRecibido;
+                if (!string.IsNullOrWhiteSpace(obs)) nsEmp.Observacion = obs;
+
+                var parentNS = await _context.NotaSalidas.FirstOrDefaultAsync(x => x.Id == nsEmp.IdNotaSalida);
+                if (parentNS != null)
+                {
+                    parentNS.Estado = "RECIBIDO";
+                    parentNS.FechaRecepcion ??= DateTime.UtcNow;
+                }
+
+                int idCompraEmpaque = nsEmp.IdCompraEmpaque ?? primerItem.IdCompraArticulo;
+
+                // Lo no recibido vuelve al origen; si se modifica la recepción, solo la diferencia contra lo recibido antes
+                decimal diferenciaNoRecibida = (recibidaPrevia ?? cantidadDespachada) - totalRecibido;
+                if (diferenciaNoRecibida != 0)
                 {
                     var stockOrigenReembolso = await _context.StockEmpaques
-                        .FirstOrDefaultAsync(x => x.IdCompraEmpaque == primerItem.IdCompraArticulo && x.IdSede == idSedeOrigen);
+                        .FirstOrDefaultAsync(x => x.IdCompraEmpaque == idCompraEmpaque && x.IdSede == idSedeOrigen);
                     if (stockOrigenReembolso != null)
                     {
                         stockOrigenReembolso.StockDisponible += diferenciaNoRecibida;
@@ -419,24 +435,27 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 var stockDestino = await _context.StockEmpaques
                     .FirstOrDefaultAsync(x =>
-                        x.IdCompraEmpaque == primerItem.IdCompraArticulo &&
+                        x.IdCompraEmpaque == idCompraEmpaque &&
                         x.IdSede == idSedeDestino &&
-                        x.IdNotaSalidaEmpaque == primerItem.IdNotaSalidaArticulo);
+                        x.IdNotaSalidaEmpaque == nsEmp.Id);
 
                 if (stockDestino != null)
                 {
-                    stockDestino.StockDisponible = totalRecibido;
+                    // Modificación: sumar solo la diferencia para no borrar lo ya consumido en destino
+                    stockDestino.StockDisponible = recibidaPrevia.HasValue
+                        ? stockDestino.StockDisponible + (totalRecibido - recibidaPrevia.Value)
+                        : totalRecibido;
                     stockDestino.UnidadMedida = primerItem.UnidadMedida ?? stockDestino.UnidadMedida;
                 }
                 else
                 {
                     stockDestino = new StockEmpaque
                     {
-                        IdCompraEmpaque = primerItem.IdCompraArticulo,
+                        IdCompraEmpaque = idCompraEmpaque,
                         StockDisponible = totalRecibido,
                         UnidadMedida = primerItem.UnidadMedida ?? "UND",
                         IdSede = idSedeDestino,
-                        IdNotaSalidaEmpaque = primerItem.IdNotaSalidaArticulo
+                        IdNotaSalidaEmpaque = nsEmp.Id
                     };
 
                     _context.StockEmpaques.Add(stockDestino);

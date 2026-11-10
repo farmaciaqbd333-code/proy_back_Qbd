@@ -421,60 +421,17 @@ namespace proy_back_Qbd.Services.Kardex
                 .Where(w => w.IdEmpaque == empaqueId && ((w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) || w.NotaSalidaEmpaques.Any(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede && (nse.NotaSalida.Estado == "RECIBIDO" || nse.NotaSalida.Estado == "RECEPCIONADO" || nse.NotaSalida.FechaRecepcion != null || (nse.CantidadRecibida > 0)))))
                 .ToListAsync();
 
-            var compraEmpaqueIds = compras.Select(c => c.Id).ToList();
-            var ajustesEmpaqueQuery = await _context.AjusteEmpaques
-                .Include(a => a.StockEmpaque)
-                .Where(a =>
-                    (a.StockEmpaque != null && compraEmpaqueIds.Contains(a.StockEmpaque.IdCompraEmpaque) && (idSede == 0 || a.StockEmpaque.IdSede == idSede)) ||
-                    compraEmpaqueIds.Contains(a.IdStockEmpaque)
-                )
-                .OrderByDescending(a => a.FechaCreacion)
-                .ToListAsync();
-
-            var ajustesPorEmpaque = ajustesEmpaqueQuery
-                .GroupBy(a => (a.StockEmpaque != null && a.StockEmpaque.IdCompraEmpaque > 0) ? a.StockEmpaque.IdCompraEmpaque : a.IdStockEmpaque)
-                .ToDictionary(g => g.Key, g => g.ToList());
-
-            var salidasList = await _movimientos.ObtenerSalidasEmpaque(empaqueId, idSede);
-            var salidasPorReg = new Dictionary<string, decimal>(StringComparer.OrdinalIgnoreCase);
-            foreach (var sItem in salidasList)
-            {
-                if (!string.IsNullOrEmpty(sItem.RegistroLoteInsumo))
-                {
-                    var key = sItem.RegistroLoteInsumo.Trim();
-                    var cant = sItem.Cantidad;
-                    if (!salidasPorReg.ContainsKey(key)) salidasPorReg[key] = 0m;
-                    salidasPorReg[key] += cant;
-                }
-            }
+            // Salidas, ajustes, bajas y saldo de cada lote: libro mayor (fuente única de stock de ME)
+            var mayor = await new KardexLedgerMeService(_context).CalcularEmpaqueAsync(idSede, empaqueId);
+            LedgerParte? ParteDe(int idCompra, int? idNse) => mayor.Partes.FirstOrDefault(p =>
+                p.IdCompraInsumo == idCompra && (idNse.HasValue ? p.IdNotaSalidaInsumo == idNse : p.IdNotaSalidaInsumo == null));
+            var mostradas = new HashSet<LedgerParte>();
 
             var resultado = new List<DetalleEmpaqueRes>();
 
             foreach (var s in compras)
             {
-                var stockSede = s.StockEmpaques.Where(w => w.IdSede == idSede).ToList();
-                var ajustesDeEmpaque = ajustesPorEmpaque.ContainsKey(s.Id) ? ajustesPorEmpaque[s.Id] : new List<AjusteEmpaque>();
-                bool tieneAjuste = ajustesDeEmpaque.Any();
-                decimal totalAjuste = ajustesDeEmpaque.Sum(a => a.Ajuste);
-
-                decimal salidasNS = s.NotaSalidaEmpaques
-                    .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeOrigen == idSede)
-                    .Sum(nse => nse.Cantidad);
-
                 var registro = "ME" + Alfanumerico.ConvertToBase36(s.Id);
-                decimal salidasReales = salidasPorReg.TryGetValue(registro, out var sVal) ? sVal : salidasNS;
-                decimal salidasRestantes = salidasReales;
-
-                // Auto-corrección si Compra 159 en CENTRAL sufrió doble deducción por confirmación
-                if (s.Id == 159 && idSede == 15)
-                {
-                    var stockPrincipal159 = stockSede.FirstOrDefault(w => w.IdNotaSalidaEmpaque == null);
-                    if (stockPrincipal159 != null && stockPrincipal159.StockDisponible < 85m)
-                    {
-                        stockPrincipal159.StockDisponible = 85m;
-                        try { _context.SaveChanges(); } catch { }
-                    }
-                }
 
                 // 1. ENTRADA POR ORDEN DE COMPRA (si esta sede fue quien compró a proveedor)
                 bool esCompraEstaSede = s.Compra != null && s.Compra.IdSede == idSede && (idSede == 15 || s.Compra.FechaLab != null);
@@ -482,33 +439,19 @@ namespace proy_back_Qbd.Services.Kardex
 
                 if (esCompraEstaSede && cantCompra > 0)
                 {
-                    var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaEmpaque == null);
-                    decimal salidasCompra = Math.Min(cantCompra, salidasRestantes);
-                    salidasRestantes -= salidasCompra;
-
-                    decimal saldoCompra = 0m;
-                    if (stockPrincipal != null)
-                    {
-                        saldoCompra = stockPrincipal.StockDisponible;
-                    }
-                    else if (tieneAjuste)
-                    {
-                        saldoCompra = ajustesDeEmpaque.First().StockNuevo;
-                    }
-                    else
-                    {
-                        saldoCompra = Math.Max(0m, cantCompra - salidasCompra);
-                    }
+                    var parte = ParteDe(s.Id, null);
+                    if (parte != null) mostradas.Add(parte);
 
                     resultado.Add(new DetalleEmpaqueRes
                     {
                         Registro = registro,
                         Lote = s.Lote ?? "",
                         CantidadIngresada = cantCompra,
-                        Salidas = salidasCompra,
-                        Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
-                        TieneAjuste = tieneAjuste,
-                        Saldo = saldoCompra,
+                        Salidas = parte?.Salidas ?? 0m,
+                        Ajuste = parte != null && parte.Ajustes != 0 ? parte.Ajustes : (decimal?)null,
+                        TieneAjuste = parte != null && parte.Ajustes != 0,
+                        Baja = parte?.Baja ?? 0m,
+                        Saldo = parte?.Saldo ?? cantCompra,
                         FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
                         FechaFabricacion = s.FechaFabricacion,
                         FechaVencimiento = s.FechaVencimiento,
@@ -529,35 +472,20 @@ namespace proy_back_Qbd.Services.Kardex
 
                 foreach (var nse in notasSalidaDestino)
                 {
-                    decimal cantRecibida = nse.CantidadRecibida > 0 ? nse.CantidadRecibida : nse.Cantidad;
-                    decimal salidasNSItem = Math.Min(cantRecibida, salidasRestantes);
-                    salidasRestantes -= salidasNSItem;
-
-                    var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaEmpaque == nse.Id);
-
-                    decimal saldoNS = 0m;
-                    if (stockNS != null)
-                    {
-                        saldoNS = stockNS.StockDisponible;
-                    }
-                    else if (!esCompraEstaSede && stockSede.Any())
-                    {
-                        saldoNS = stockSede.Sum(se => se.StockDisponible);
-                    }
-                    else
-                    {
-                        saldoNS = Math.Max(0m, cantRecibida - salidasNSItem);
-                    }
+                    decimal cantRecibida = KardexLedgerMeService.CantidadNotaSalida(nse.Cantidad, nse.CantidadRecibida);
+                    var parte = ParteDe(s.Id, nse.Id);
+                    if (parte != null) mostradas.Add(parte);
 
                     resultado.Add(new DetalleEmpaqueRes
                     {
                         Registro = registro,
                         Lote = s.Lote ?? "",
                         CantidadIngresada = cantRecibida,
-                        Salidas = salidasNSItem,
-                        Ajuste = null,
-                        TieneAjuste = false,
-                        Saldo = saldoNS,
+                        Salidas = parte?.Salidas ?? 0m,
+                        Ajuste = parte != null && parte.Ajustes != 0 ? parte.Ajustes : (decimal?)null,
+                        TieneAjuste = parte != null && parte.Ajustes != 0,
+                        Baja = parte?.Baja ?? 0m,
+                        Saldo = parte?.Saldo ?? cantRecibida,
                         FechaCompra = nse.NotaSalida != null ? (nse.NotaSalida.FechaSalida != default ? nse.NotaSalida.FechaSalida : nse.NotaSalida.FechaCreacion) : null,
                         FechaFabricacion = s.FechaFabricacion,
                         FechaVencimiento = s.FechaVencimiento,
@@ -569,6 +497,41 @@ namespace proy_back_Qbd.Services.Kardex
                         IdCompra = s.Id
                     });
                 }
+            }
+
+            // Partes del libro mayor sin fila propia (ajuste sobre un lote sin ingreso en esta sede)
+            foreach (var parte in mayor.Partes.Where(p => !mostradas.Contains(p)))
+            {
+                var ce = compras.FirstOrDefault(c => c.Id == parte.IdCompraInsumo);
+                resultado.Add(new DetalleEmpaqueRes
+                {
+                    Registro = "ME" + Alfanumerico.ConvertToBase36(parte.IdCompraInsumo),
+                    Lote = ce?.Lote ?? "",
+                    CantidadIngresada = parte.Entradas,
+                    Salidas = parte.Salidas,
+                    Ajuste = parte.Ajustes != 0 ? parte.Ajustes : (decimal?)null,
+                    TieneAjuste = parte.Ajustes != 0,
+                    Baja = parte.Baja,
+                    Saldo = parte.Saldo,
+                    FechaVencimiento = ce?.FechaVencimiento,
+                    TipoOrigen = "Ajuste",
+                    IdCompra = parte.IdCompraInsumo
+                });
+            }
+
+            if (mayor.SalidasSinLote > 0)
+            {
+                resultado.Add(new DetalleEmpaqueRes
+                {
+                    Registro = "-",
+                    Lote = "SIN LOTE",
+                    CantidadIngresada = 0m,
+                    Salidas = mayor.SalidasSinLote,
+                    Baja = 0m,
+                    Saldo = -mayor.SalidasSinLote,
+                    TipoOrigen = "Sin lote",
+                    Observacion = "Salidas sin lote de ingreso en esta sede"
+                });
             }
 
             return resultado;

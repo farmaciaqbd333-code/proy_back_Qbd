@@ -423,6 +423,29 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             int targetSede = idSede > 0 ? idSede : 15;
 
+            if (familia == "ME")
+            {
+                // Stock del registro = saldo del libro mayor de empaques (lo que muestran Kardex y ajustes)
+                var datosMe = await _context.CompraEmpaques
+                    .Where(x => x.Id == idRegistro)
+                    .Select(x => new RegistrosListaRes
+                    {
+                        IdArticulo = x.IdEmpaque,
+                        DescripcionArticulo = x.Empaque != null ? (x.Empaque.Descripcion ?? "") : "",
+                        CodigoArticulo = UtilFamilia.CodigoEmpaque(x.IdEmpaque),
+                        Lote = x.Lote,
+                        Um = x.Um,
+                        StockDisponible = 0m
+                    })
+                    .ToListAsync();
+                foreach (var d in datosMe)
+                {
+                    var mayorMe = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerMeService(_context).CalcularEmpaqueAsync(targetSede, d.IdArticulo);
+                    d.StockDisponible = mayorMe.Partes.Where(p => p.IdCompraInsumo == idRegistro).Sum(p => p.Saldo);
+                }
+                return datosMe;
+            }
+
             if (familia == "MP")
             {
                 // Stock del registro = saldo del libro mayor (lo mismo que muestran Kardex y lista y lo que se valida al crear)
@@ -630,10 +653,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         }).ToList();
 
                 case "ME":
+                    var mayorMeSede = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerMeService(_context).CalcularAsync(targetSede, null);
+                    var saldoMe = mayorMeSede.Values.SelectMany(r => r.Partes)
+                        .GroupBy(p => p.IdCompraInsumo).ToDictionary(g => g.Key, g => g.Sum(p => p.Saldo));
+                    var idsMe = saldoMe.Keys.ToList();
+
                     var mes = await _context.CompraEmpaques
                         .Include(i => i.Empaque)
                         .Include(i => i.StockEmpaques)
-                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockEmpaques.Any(s => s.IdSede == targetSede))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockEmpaques.Any(s => s.IdSede == targetSede) || idsMe.Contains(w.Id))
                         .Select(x => new
                         {
                             x.Id,
@@ -643,9 +671,15 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             x.Um,
                             x.FechaVencimiento,
                             FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
-                            Stock = x.StockEmpaques.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
+                            Stock = (decimal?)0m
                         })
                         .ToListAsync();
+                    // Stock por registro = libro mayor (no la columna StockDisponible)
+                    mes = mes.Select(x => new
+                    {
+                        x.Id, x.Descripcion, x.Codigo, x.Lote, x.Um, x.FechaVencimiento, x.FechaCompra,
+                        Stock = (decimal?)(saldoMe.TryGetValue(x.Id, out var sv) ? sv : 0m)
+                    }).ToList();
 
                     return mes
                         .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
@@ -1292,7 +1326,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     await ProcesarEconomatos(request.Economatos, request.IdSedeOrigen, request.IdSedeDestino);
 
                 if (request.Empaques?.Any() == true)
-                    await ProcesarEmpaques(request.Empaques, request.IdSedeOrigen, request.IdSedeDestino);
+                    await ProcesarEmpaques(request.Empaques, request.IdSedeOrigen, request.IdSedeDestino, idNotaConfirmada);
 
                 if (request.Productos?.Any() == true)
                     await ProcesarProductos(request.Productos, request.IdSedeOrigen, request.IdSedeDestino, idNotaConfirmada);

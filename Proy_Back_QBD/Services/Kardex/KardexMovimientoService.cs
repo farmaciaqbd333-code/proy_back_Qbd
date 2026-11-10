@@ -166,205 +166,16 @@ namespace proy_back_Qbd.Services.Kardex
             return KardexLedgerMpService.FilasSalida(mayor, id => lotes.TryGetValue(id, out var l) ? l : null);
         }
 
+        /// <summary>Salidas de material de empaque en la sede, del libro mayor (repartidas por lote).</summary>
         public async Task<List<SalidaInsumoRes>> ObtenerSalidasEmpaque(int empaqueId, int idSede)
         {
-            var resultado = new List<SalidaInsumoRes>();
-
-            try
-            {
-                // 1. Obtener lotes disponibles del empaque en esta sede para rastrear origen FIFO
-                var compras = await _context.CompraEmpaques
-                    .Include(w => w.Compra)
-                    .Include(w => w.NotaSalidaEmpaques)
-                        .ThenInclude(nse => nse.NotaSalida)
-                    .Where(w => w.IdEmpaque == empaqueId &&
-                        (
-                            (w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) ||
-                            w.NotaSalidaEmpaques.Any(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede &&
-                                (nse.NotaSalida.Estado == "RECIBIDO" || nse.NotaSalida.Estado == "RECEPCIONADO" || nse.NotaSalida.FechaRecepcion != null || nse.CantidadRecibida > 0))
-                        )
-                    )
-                    .OrderBy(w => w.Compra != null ? w.Compra.FechaCreacion : w.FechaCreacion)
-                    .ToListAsync();
-
-                var batchTrackers = compras.Select(ce => new
-                {
-                    Registro = "ME" + Alfanumerico.ConvertToBase36(ce.Id),
-                    Lote = ce.Lote ?? "",
-                    Capacidad = ((ce.Compra != null && ce.Compra.IdSede == idSede && (idSede == 15 || ce.Compra.FechaLab != null))
-                        ? (ce.CantidadRecibida.HasValue && ce.CantidadRecibida.Value > 0 ? ce.CantidadRecibida.Value : ce.CantidadSolicitada)
-                        : 0m) +
-                        ce.NotaSalidaEmpaques
-                            .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede &&
-                                (nse.NotaSalida.Estado == "RECIBIDO" || nse.NotaSalida.Estado == "RECEPCIONADO" || nse.NotaSalida.FechaRecepcion != null || nse.CantidadRecibida > 0))
-                            .Sum(nse => (nse.CantidadRecibida > 0 ? nse.CantidadRecibida : nse.Cantidad))
-                }).Select(b => new { b.Registro, b.Lote, SaldoRestante = b.Capacidad }).ToList();
-
-                // 2. Salidas por Laboratorios (Fórmulas Magistrales)
-                var laboratorios = await _context.Laboratorios
-                    .Include(l => l.Formula)
-                    .Include(l => l.ElaboradoU)
-                    .Where(l => l.EmpaqueId == empaqueId && l.SedeId == idSede)
-                    .OrderByDescending(l => l.FechaCreacion)
-                    .Select(l => new SalidaInsumoRes
-                    {
-                        TipoSalida = "FÓRMULA MAGISTRAL",
-                        RegistroDestino = l.Formula != null ? ("FM-" + l.Formula.Id) : ("LAB-" + (l.Id ?? 0)),
-                        DescripcionDestino = l.Formula != null
-                            ? (l.Formula.FormulaMagistral ?? ("Fórmula #" + l.Formula.Id))
-                            : (!string.IsNullOrEmpty(l.Procedimiento) ? l.Procedimiento : "Laboratorio"),
-                        LoteInsumo = l.Formula != null ? (l.Formula.Lote ?? "") : "",
-                        RegistroLoteInsumo = "",
-                        Cantidad = 1,
-                        Um = "UND",
-                        Fecha = l.FechaCreacion,
-                        Usuario = l.ElaboradoU != null ? l.ElaboradoU.Codigo : "ADMIN"
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                if (laboratorios != null && laboratorios.Any())
-                {
-                    resultado.AddRange(laboratorios);
-                }
-
-                // 3. Salidas por Consumo en Producto Intermedio (PI)
-                var consumosPI = await _context.StockEmpaqueProductoIntermedios
-                    .Include(x => x.EmpaqueProductoIntermedio)
-                        .ThenInclude(epi => epi.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Insumo)
-                    .Include(x => x.EmpaqueProductoIntermedio)
-                        .ThenInclude(epi => epi.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Elaborador)
-                    .Include(x => x.StockEmpaque)
-                        .ThenInclude(se => se.CompraEmpaque)
-                    .Where(x => x.EmpaqueProductoIntermedio.IdEmpaque == empaqueId &&
-                                x.EmpaqueProductoIntermedio.ProductoIntermedio != null &&
-                                x.EmpaqueProductoIntermedio.ProductoIntermedio.IdSede == idSede)
-                    .OrderByDescending(x => x.EmpaqueProductoIntermedio.ProductoIntermedio.FechaCreacion)
-                    .Select(s => new SalidaInsumoRes
-                    {
-                        TipoSalida = "ELABORACIÓN PI",
-                        RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.EmpaqueProductoIntermedio.ProductoIntermedio.Id),
-                        DescripcionDestino = s.EmpaqueProductoIntermedio.ProductoIntermedio.Insumo != null
-                            ? s.EmpaqueProductoIntermedio.ProductoIntermedio.Insumo.Descripcion
-                            : (s.EmpaqueProductoIntermedio.ProductoIntermedio.Lote ?? "Producto Intermedio"),
-                        LoteInsumo = s.StockEmpaque != null && s.StockEmpaque.CompraEmpaque != null ? (s.StockEmpaque.CompraEmpaque.Lote ?? "") : "",
-                        RegistroLoteInsumo = s.StockEmpaque != null && s.StockEmpaque.CompraEmpaque != null ? "ME" + Alfanumerico.ConvertToBase36(s.StockEmpaque.CompraEmpaque.Id) : "",
-                        Cantidad = s.Cantidad > 0 ? s.Cantidad : 1,
-                        Um = s.UnidadMedida ?? "UND",
-                        Fecha = s.EmpaqueProductoIntermedio.ProductoIntermedio.FechaCreacion,
-                        Usuario = s.EmpaqueProductoIntermedio.ProductoIntermedio.Elaborador != null
-                            ? s.EmpaqueProductoIntermedio.ProductoIntermedio.Elaborador.Codigo
-                            : "ADMIN"
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                if (consumosPI != null && consumosPI.Any())
-                {
-                    resultado.AddRange(consumosPI);
-                }
-                else
-                {
-                    var consumosDirectosPI = await _context.EmpaqueProductoIntermedios
-                        .Include(x => x.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Insumo)
-                        .Include(x => x.ProductoIntermedio)
-                            .ThenInclude(pi => pi.Elaborador)
-                        .Where(x => x.IdEmpaque == empaqueId && x.ProductoIntermedio != null && x.ProductoIntermedio.IdSede == idSede)
-                        .OrderByDescending(x => x.ProductoIntermedio.FechaCreacion)
-                        .Select(s => new SalidaInsumoRes
-                        {
-                            TipoSalida = "ELABORACIÓN PI",
-                            RegistroDestino = "PI" + Alfanumerico.ConvertToBase36(s.ProductoIntermedio.Id),
-                            DescripcionDestino = s.ProductoIntermedio.Insumo != null
-                                ? s.ProductoIntermedio.Insumo.Descripcion
-                                : (s.ProductoIntermedio.Lote ?? "Producto Intermedio"),
-                            LoteInsumo = "",
-                            RegistroLoteInsumo = "",
-                            Cantidad = 1,
-                            Um = "UND",
-                            Fecha = s.ProductoIntermedio.FechaCreacion,
-                            Usuario = s.ProductoIntermedio.Elaborador != null ? s.ProductoIntermedio.Elaborador.Codigo : "ADMIN"
-                        })
-                        .AsNoTracking()
-                        .ToListAsync();
-
-                    if (consumosDirectosPI != null && consumosDirectosPI.Any())
-                    {
-                        resultado.AddRange(consumosDirectosPI);
-                    }
-                }
-
-                // 4. Salidas por Notas de Salida de Empaques
-                var notasSalida = await _context.NotaSalidaEmpaques
-                    .Include(x => x.NotaSalida)
-                        .ThenInclude(ns => ns.SedeDestino)
-                    .Include(x => x.NotaSalida)
-                        .ThenInclude(ns => ns.Creador)
-                    .Include(x => x.CompraEmpaques)
-                    .Where(x => x.CompraEmpaques != null && x.CompraEmpaques.IdEmpaque == empaqueId &&
-                                x.NotaSalida != null && x.NotaSalida.IdSedeOrigen == idSede)
-                    .OrderByDescending(x => x.NotaSalida.FechaCreacion)
-                    .Select(s => new SalidaInsumoRes
-                    {
-                        TipoSalida = "NOTA DE SALIDA",
-                        RegistroDestino = s.NotaSalida != null ? ("NT" + s.NotaSalida.Id) : "NS",
-                        DescripcionDestino = s.NotaSalida != null && s.NotaSalida.SedeDestino != null
-                            ? $"Envío a {s.NotaSalida.SedeDestino.Nombre}"
-                            : "Nota de Salida",
-                        LoteInsumo = s.CompraEmpaques != null ? (s.CompraEmpaques.Lote ?? "") : (s.Lote ?? ""),
-                        RegistroLoteInsumo = s.CompraEmpaques != null ? "ME" + Alfanumerico.ConvertToBase36(s.CompraEmpaques.Id) : "",
-                        Cantidad = s.Cantidad,
-                        Um = s.Um ?? "UND",
-                        Fecha = s.NotaSalida != null ? s.NotaSalida.FechaCreacion : null,
-                        Usuario = s.NotaSalida != null && s.NotaSalida.Creador != null ? s.NotaSalida.Creador.Codigo : "ADMIN"
-                    })
-                    .AsNoTracking()
-                    .ToListAsync();
-
-                if (notasSalida != null && notasSalida.Any())
-                {
-                    resultado.AddRange(notasSalida);
-                }
-
-                // 5. Asignar RegistroLoteInsumo y LoteInsumo por FIFO para las salidas locales sin lote asignado
-                if (batchTrackers.Any())
-                {
-                    int currentBatchIdx = 0;
-                    decimal currentBatchRemaining = batchTrackers[0].SaldoRestante;
-
-                    var salidasLocales = resultado
-                        .Where(r => string.IsNullOrEmpty(r.RegistroLoteInsumo))
-                        .OrderBy(r => r.Fecha)
-                        .ToList();
-
-                    foreach (var s in salidasLocales)
-                    {
-                        decimal cant = s.Cantidad;
-                        while (currentBatchRemaining <= 0 && currentBatchIdx < batchTrackers.Count - 1)
-                        {
-                            currentBatchIdx++;
-                            currentBatchRemaining = batchTrackers[currentBatchIdx].SaldoRestante;
-                        }
-
-                        var activeBatch = batchTrackers[currentBatchIdx];
-                        s.RegistroLoteInsumo = activeBatch.Registro;
-                        if (!string.IsNullOrEmpty(activeBatch.Lote))
-                        {
-                            s.LoteInsumo = activeBatch.Lote;
-                        }
-                        currentBatchRemaining -= cant;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error en ObtenerSalidasEmpaque: {ex.Message}");
-            }
-
-            return resultado.OrderByDescending(x => x.Fecha).ToList();
+            var mayor = await new KardexLedgerMeService(_context).CalcularEmpaqueAsync(idSede, empaqueId);
+            var idsCompra = mayor.Partes.Select(p => p.IdCompraInsumo).Distinct().ToList();
+            var lotes = await _context.CompraEmpaques.AsNoTracking()
+                .Where(ce => idsCompra.Contains(ce.Id))
+                .Select(ce => new { ce.Id, ce.Lote })
+                .ToDictionaryAsync(x => x.Id, x => x.Lote);
+            return KardexLedgerMeService.FilasSalida(mayor, id => lotes.TryGetValue(id, out var l) ? l : null);
         }
 
         public async Task<List<SalidaInsumoRes>> ObtenerSalidasPT(int productoId, int idSede)
@@ -696,47 +507,33 @@ namespace proy_back_Qbd.Services.Kardex
 
                 if (fam == "ME")
                 {
+                    // La baja es lo que queda (según movimientos) en cada lote vencido
+                    var mayorMe = await new KardexLedgerMeService(_context).CalcularEmpaqueAsync(idSede, idInsumo, ahora);
+                    var bajasMe = mayorMe.Partes.Where(p => p.Baja > 0)
+                        .GroupBy(p => p.IdCompraInsumo).ToDictionary(g => g.Key, g => g.Sum(p => p.Baja));
+                    var idsVencidosMe = bajasMe.Keys.ToList();
+
                     var empaquesVencidos = await _context.CompraEmpaques
                         .Include(ce => ce.Empaque)
-                        .Include(ce => ce.Compra)
-                            .ThenInclude(c => c!.Proveedor)
-                        .Include(ce => ce.Compra)
-                            .ThenInclude(c => c!.Sede)
-                        .Include(ce => ce.StockEmpaques)
-                        .Where(ce =>
-                            ce.IdEmpaque == idInsumo &&
-                            ce.FechaVencimiento < ahora &&
-                            ce.StockEmpaques != null &&
-                            ce.StockEmpaques.Any(se => se.IdSede == idSede && se.StockDisponible > 0))
+                        .Include(ce => ce.Compra).ThenInclude(c => c!.Proveedor)
+                        .Include(ce => ce.Compra).ThenInclude(c => c!.Sede)
+                        .Where(ce => idsVencidosMe.Contains(ce.Id))
                         .OrderBy(ce => ce.FechaVencimiento)
                         .AsNoTracking()
                         .ToListAsync();
 
                     foreach (var ce in empaquesVencidos)
                     {
-                        var stockSede = ce.StockEmpaques?
-                            .Where(se => se.IdSede == idSede)
-                            .Sum(se => se.StockDisponible) ?? 0m;
-
-                        if (stockSede <= 0) continue;
-
-                        int diasVencido = 0;
-                        if (ce.FechaVencimiento.HasValue)
-                        {
-                            diasVencido = Math.Max(0, (int)(ahora.Date - ce.FechaVencimiento.Value.Date).TotalDays);
-                        }
-
-                        string reg = "ME" + Alfanumerico.ConvertToBase36(ce.Id);
-
+                        int diasVencido = ce.FechaVencimiento.HasValue ? Math.Max(0, (int)(ahora.Date - ce.FechaVencimiento.Value.Date).TotalDays) : 0;
                         resultado.Add(new BajaInsumoRes
                         {
                             IdCompraInsumo = ce.Id,
-                            Registro = reg,
+                            Registro = "ME" + Alfanumerico.ConvertToBase36(ce.Id),
                             IdInsumo = ce.IdEmpaque,
                             Codigo = ce.IdEmpaque.ToString(),
                             Descripcion = ce.Empaque?.Descripcion ?? "",
                             Lote = ce.Lote ?? "-",
-                            CantidadBaja = stockSede,
+                            CantidadBaja = bajasMe[ce.Id],
                             Um = ce.Um ?? "UND",
                             FechaFabricacion = ce.FechaFabricacion,
                             FechaVencimiento = ce.FechaVencimiento,

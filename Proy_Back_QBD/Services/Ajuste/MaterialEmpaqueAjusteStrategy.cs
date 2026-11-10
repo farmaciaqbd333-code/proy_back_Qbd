@@ -10,6 +10,8 @@ using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
 
+using proy_back_Qbd.Services.Kardex.Ledger;
+
 namespace Proy_back_QBD.Service.AjusteService.Familias
 {
     /// <summary>Ajustes de inventario de la familia ME (material de empaque).</summary>
@@ -59,6 +61,9 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 .GroupBy(a => (a.StockEmpaque != null && a.StockEmpaque.IdCompraEmpaque > 0) ? a.StockEmpaque.IdCompraEmpaque : a.IdStockEmpaque)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
+            // Saldo por registro = libro mayor (misma regla que kardex, lista y nota de salida)
+            var mayor = await new KardexLedgerMeService(_context).CalcularAsync(idSede, null);
+
             var resultado = new List<TablaAjustesRes>();
 
             foreach (var s in compras)
@@ -80,24 +85,12 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 var ajustesDeCompra = ajustesPorCompraEmpaque.ContainsKey(s.Id) ? ajustesPorCompraEmpaque[s.Id] : new List<AjusteEmpaque>();
                 var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
-                decimal saldo = 0m;
-                string observacionAjuste = "";
-
-                if (ultimoAjuste != null)
-                {
-                    saldo = ultimoAjuste.StockNuevo;
-                    observacionAjuste = ultimoAjuste.Observacion ?? "";
-                }
-                else if (stockSede.Any())
-                {
-                    saldo = stockSede.Sum(se => se.StockDisponible);
-                }
-                else
-                {
-                    saldo = entradasLote - salidasNS;
-                }
-
-                if (saldo < 0) saldo = 0;
+                var partesReg = mayor.TryGetValue(s.IdEmpaque, out var mm)
+                    ? mm.Partes.Where(p => p.IdCompraInsumo == s.Id).ToList()
+                    : new List<LedgerParte>();
+                decimal saldo = partesReg.Sum(p => p.Saldo);
+                decimal baja = partesReg.Sum(p => p.Baja);
+                string observacionAjuste = ultimoAjuste?.Observacion ?? "";
 
                 resultado.Add(new TablaAjustesRes
                 {
@@ -107,6 +100,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Descripcion = s.Empaque?.Descripcion ?? "",
                     Lote = s.Lote ?? "",
                     Saldo = saldo,
+                    Baja = baja,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Clasificacion = "ME",
@@ -211,6 +205,25 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Observacion = s.Observacion ?? ""
                 };
             }).ToList();
+            // Stock del sistema y diferencia reales según el libro mayor en la fecha del conteo
+            var ledgerSvc = new KardexLedgerMeService(_context);
+            var grupos = rawList
+                .Select((aj, i) => new { aj, i })
+                .Where(x => x.aj.StockEmpaque != null && x.aj.StockEmpaque.CompraEmpaque != null)
+                .GroupBy(x => new { Sede = x.aj.StockEmpaque!.IdSede, x.aj.StockEmpaque.CompraEmpaque!.IdEmpaque });
+            foreach (var g in grupos)
+            {
+                var mayorG = await ledgerSvc.CalcularEmpaqueAsync(g.Key.Sede, g.Key.IdEmpaque);
+                var conteos = mayorG.Conteos.ToDictionary(c => c.Id);
+                foreach (var x in g)
+                {
+                    if (!conteos.TryGetValue(x.aj.Id, out var c)) continue;
+                    response[x.i].Stock = c.StockSistema;
+                    response[x.i].Diferencia = c.Diferencia;
+                    response[x.i].StockFinal = c.StockContado;
+                }
+            }
+
             return response;
         }
     }

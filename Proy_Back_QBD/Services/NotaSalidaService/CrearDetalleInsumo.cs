@@ -299,27 +299,38 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             NotaSalidaFamiliasCreateReq item)
         {
             int sedeOrigenEmp = request.IdSedeOrigen > 0 ? request.IdSedeOrigen : 15;
+            // Solo filas de stock de la sede origen (antes, si no había, se descontaba de filas de OTRAS sedes)
             var stocksOrigen = await _context.StockEmpaques
                 .Where(x => x.IdCompraEmpaque == item.Registro && x.IdSede == sedeOrigenEmp)
                 .OrderBy(x => x.IdNotaSalidaEmpaque != null ? 1 : 0)
                 .ThenBy(x => x.Id)
                 .ToListAsync();
 
+            // Disponible = saldo del registro en el libro mayor (lo que muestran Kardex y ajustes),
+            // menos lo que ya va en esta misma nota y aún no se guardó
+            var idEmpaqueReg = await _context.CompraEmpaques.AsNoTracking()
+                .Where(c => c.Id == item.Registro).Select(c => (int?)c.IdEmpaque).FirstOrDefaultAsync();
+            if (!idEmpaqueReg.HasValue)
+                throw new BadRequestException($"No existe el registro de empaque {item.Registro}.");
+
+            var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerMeService(_context)
+                .CalcularEmpaqueAsync(sedeOrigenEmp, idEmpaqueReg.Value);
+            decimal saldoRegistro = mayor.Partes.Where(p => p.IdCompraInsumo == item.Registro).Sum(p => p.Saldo);
+            decimal enEstaNota = _context.ChangeTracker.Entries<NotaSalidaEmpaque>()
+                .Where(e => e.State == EntityState.Added && e.Entity.IdCompraEmpaque == item.Registro)
+                .Sum(e => e.Entity.Cantidad);
+            decimal totalDisponible = Math.Max(0m, saldoRegistro - enEstaNota);
+
+            if (totalDisponible + 0.0005m < item.Cantidad || totalDisponible <= 0)
+                throw new BadRequestException($"Stock insuficiente para el registro ME{proy_back_Qbd.Util.Alfanumerico.ConvertToBase36(item.Registro)}. Stock disponible: {totalDisponible:0.###} UND, Solicitado: {item.Cantidad:0.###} UND.");
+
             if (!stocksOrigen.Any())
             {
-                stocksOrigen = await _context.StockEmpaques
-                    .Where(x => x.IdCompraEmpaque == item.Registro)
-                    .OrderBy(x => x.IdNotaSalidaEmpaque != null ? 1 : 0)
-                    .ThenBy(x => x.Id)
-                    .ToListAsync();
+                // Hay saldo según movimientos pero no fila de stock en la sede: se crea para poder descontarla
+                var nuevo = new StockEmpaque { IdCompraEmpaque = item.Registro, IdSede = sedeOrigenEmp, StockDisponible = saldoRegistro, UnidadMedida = item.Um ?? "UND" };
+                _context.StockEmpaques.Add(nuevo);
+                stocksOrigen.Add(nuevo);
             }
-
-            if (!stocksOrigen.Any())
-                throw new BadRequestException($"No existe stock registrado para el empaque {item.Registro}.");
-
-            decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
-            if (totalDisponible < item.Cantidad || totalDisponible <= 0)
-                throw new BadRequestException($"Stock insuficiente para el registro {item.Registro}. Stock disponible: {totalDisponible}, Solicitado: {item.Cantidad}.");
 
             var detalle = new NotaSalidaEmpaque
             {
