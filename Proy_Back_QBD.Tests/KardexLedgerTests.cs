@@ -10,13 +10,21 @@ public class KardexLedgerTests
 {
     private static readonly DateTime Hoy = new(2026, 11, 10);
 
-    private static LedgerParte Lote(int id, string ingreso, string vence, decimal entradas, decimal ajustes = 0m) => new()
+    private static LedgerParte Lote(int id, string ingreso, string vence, decimal entradas) => new()
     {
         IdCompraInsumo = id,
         FechaIngreso = DateTime.Parse(ingreso),
         FechaVencimiento = DateTime.Parse(vence),
-        Entradas = entradas,
-        Ajustes = ajustes
+        Entradas = entradas
+    };
+
+    private static LedgerConteo Conteo(int id, int idCompra, string fecha, decimal contado, decimal registrado = 0m) => new()
+    {
+        Id = id,
+        IdCompraInsumo = idCompra,
+        Fecha = DateTime.Parse(fecha),
+        StockContado = contado,
+        AjusteRegistrado = registrado
     };
 
     private static LedgerSalida Salida(decimal cant, string fecha, int? idCompra = null) => new()
@@ -97,13 +105,56 @@ public class KardexLedgerTests
     }
 
     [Fact]
-    public void Ajustes_suman_y_se_reflejan_en_el_saldo_del_lote()
+    public void Conteo_fisico_fija_el_saldo_en_su_fecha_y_las_salidas_posteriores_lo_descuentan()
     {
-        var a = Lote(1, "2025-01-01", "2028-01-01", 1000m, ajustes: -50m);
-        var r = KardexLedger.Calcular(new[] { a }, new[] { Salida(200m, "2025-03-01", idCompra: 1) }, Hoy);
-        Assert.Equal(750m, a.Saldo);
-        Assert.Equal(-50m, r.TotalAjustes);
+        var a = Lote(1, "2025-01-01", "2028-01-01", 1000m);
+        var conteo = Conteo(10, 1, "2025-04-01", contado: 700m, registrado: 999m); // diferencia guardada errónea
+        var r = KardexLedger.Calcular(new[] { a },
+            new[] { Salida(200m, "2025-03-01", idCompra: 1), Salida(100m, "2025-05-01") },
+            new[] { conteo }, Hoy);
+
+        Assert.Equal(800m, conteo.StockSistema);   // 1000 - 200 antes del conteo
+        Assert.Equal(-100m, conteo.Diferencia);    // se ignora la diferencia guardada (999)
+        Assert.Equal(-100m, r.TotalAjustes);
+        Assert.Equal(600m, a.Saldo);               // 700 contado - 100 posterior
+        Assert.Equal(600m, r.Stock);
+    }
+
+    [Fact]
+    public void Conteo_de_un_registro_con_varias_partes_usa_el_total_del_registro()
+    {
+        var compra = Lote(1, "2025-01-01", "2028-01-01", 500m);
+        var ns = new LedgerParte { IdCompraInsumo = 1, IdNotaSalidaInsumo = 77, FechaIngreso = DateTime.Parse("2025-02-01"), FechaVencimiento = DateTime.Parse("2028-01-01"), Entradas = 300m };
+        var conteo = Conteo(11, 1, "2025-03-01", contado: 750m);
+        var r = KardexLedger.Calcular(new[] { compra, ns }, Array.Empty<LedgerSalida>(), new[] { conteo }, Hoy);
+
+        Assert.Equal(800m, conteo.StockSistema);
+        Assert.Equal(-50m, conteo.Diferencia);
         Assert.Equal(750m, r.Stock);
+    }
+
+    [Fact]
+    public void Conteo_antes_del_ingreso_de_una_parte_no_la_cuenta()
+    {
+        var compra = Lote(1, "2025-01-01", "2028-01-01", 500m);
+        var ns = new LedgerParte { IdCompraInsumo = 1, IdNotaSalidaInsumo = 77, FechaIngreso = DateTime.Parse("2025-06-01"), FechaVencimiento = DateTime.Parse("2028-01-01"), Entradas = 300m };
+        var conteo = Conteo(12, 1, "2025-03-01", contado: 450m);
+        var r = KardexLedger.Calcular(new[] { compra, ns }, Array.Empty<LedgerSalida>(), new[] { conteo }, Hoy);
+
+        Assert.Equal(500m, conteo.StockSistema);
+        Assert.Equal(-50m, conteo.Diferencia);
+        Assert.Equal(750m, r.Stock); // 450 contado + 300 que llegaron después
+    }
+
+    [Fact]
+    public void Conteo_sobre_lote_vencido_pasa_a_baja()
+    {
+        var a = Lote(1, "2024-01-01", "2025-06-01", 1000m);
+        var conteo = Conteo(13, 1, "2025-08-01", contado: 400m);
+        var r = KardexLedger.Calcular(new[] { a }, Array.Empty<LedgerSalida>(), new[] { conteo }, Hoy);
+
+        Assert.Equal(400m, a.Baja);
+        Assert.Equal(0m, r.Stock);
     }
 
     [Fact]

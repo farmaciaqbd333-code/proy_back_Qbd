@@ -10,6 +10,10 @@
         public DateTimeOffset? FechaVencimiento { get; set; }
         public required string Lote { get; set; }
         public decimal Saldo { get; set; }
+        /// <summary>Lo que quedaba en el registro al vencer (baja por vencimiento). Ya descontado del saldo.</summary>
+
+        public decimal Baja { get; set; }
+
         public string? Observacion { get; set; }
         public string? Clasificacion { get; set; }
     }

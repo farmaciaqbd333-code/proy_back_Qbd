@@ -13,7 +13,7 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
     /// <summary>
     /// Arma el libro mayor (<see cref="KardexLedger"/>) de materia prima en una sede a partir de los movimientos:
     /// entradas por compra y por nota de salida recibida; salidas por nota de salida, elaboración de PI y fórmula
-    /// magistral; ajustes (diferencia registrada). Es la fuente única de stock para lista, kardex, salidas y bajas.
+    /// magistral; ajustes (conteos físicos). Es la fuente única de stock para lista, kardex, salidas y bajas.
     /// </summary>
     public class KardexLedgerMpService
     {
@@ -148,33 +148,44 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
                 }
             }
 
-            // ---------- AJUSTES (diferencia registrada, por fila de stock de la sede) ----------
+            // ---------- AJUSTES = conteos físicos por registro (lo que manda es lo contado, en su fecha) ----------
             var ajustes = await _context.AjusteInsumos
                 .AsNoTracking()
                 .Where(a => a.StockInsumo != null && a.StockInsumo.IdSede == idSede &&
                             a.StockInsumo.IdCompraInsumo.HasValue && a.StockInsumo.CompraInsumo != null &&
                             (todos || ids.Contains(a.StockInsumo.CompraInsumo.IdInsumo)))
-                .GroupBy(a => new { IdCompra = a.StockInsumo!.IdCompraInsumo!.Value, a.StockInsumo.IdNotaSalidaInsumo, a.StockInsumo.CompraInsumo!.IdInsumo })
-                .Select(g => new { g.Key.IdCompra, g.Key.IdNotaSalidaInsumo, g.Key.IdInsumo, Total = g.Sum(a => a.Ajuste) })
+                .Select(a => new
+                {
+                    a.Id,
+                    IdCompra = a.StockInsumo!.IdCompraInsumo!.Value,
+                    a.StockInsumo.IdNotaSalidaInsumo,
+                    a.StockInsumo.CompraInsumo!.IdInsumo,
+                    a.FechaCreacion,
+                    a.StockNuevo,
+                    a.Ajuste
+                })
                 .ToListAsync();
 
+            var conteosPorInsumo = new Dictionary<int, List<LedgerConteo>>();
             foreach (var a in ajustes)
             {
                 var lista = PartesDe(a.IdInsumo);
-                var delRegistro = lista.Where(p => p.IdCompraInsumo == a.IdCompra).ToList();
-                var destino =
-                    (a.IdNotaSalidaInsumo.HasValue && a.IdNotaSalidaInsumo.Value > 0
-                        ? delRegistro.FirstOrDefault(p => p.IdNotaSalidaInsumo == a.IdNotaSalidaInsumo)
-                        : delRegistro.FirstOrDefault(p => p.IdNotaSalidaInsumo == null))
-                    ?? delRegistro.FirstOrDefault();
-                if (destino == null)
+                if (!lista.Any(p => p.IdCompraInsumo == a.IdCompra))
                 {
                     // Ajuste sobre un lote sin ingreso registrado en la sede: se conserva como parte propia
-                    destino = new LedgerParte { IdCompraInsumo = a.IdCompra, IdNotaSalidaInsumo = a.IdNotaSalidaInsumo };
-                    lista.Add(destino);
+                    lista.Add(new LedgerParte { IdCompraInsumo = a.IdCompra, IdNotaSalidaInsumo = a.IdNotaSalidaInsumo });
                     insumoDeCompra[a.IdCompra] = a.IdInsumo;
                 }
-                destino.Ajustes += a.Total;
+                if (!conteosPorInsumo.TryGetValue(a.IdInsumo, out var lc)) { lc = new List<LedgerConteo>(); conteosPorInsumo[a.IdInsumo] = lc; }
+                lc.Add(new LedgerConteo
+                {
+                    Id = a.Id,
+                    IdCompraInsumo = a.IdCompra,
+                    IdNotaSalidaInsumo = a.IdNotaSalidaInsumo,
+                    Fecha = a.FechaCreacion.UtcDateTime,
+                    StockContado = a.StockNuevo,
+                    AjusteRegistrado = a.Ajuste
+                });
             }
 
             var salidasPorInsumo = new Dictionary<int, List<LedgerSalida>>();
@@ -325,11 +336,16 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
 
             // ---------- CÁLCULO ----------
             var resultado = new Dictionary<int, LedgerResultado>();
-            foreach (var idInsumo in partesPorInsumo.Keys.Union(salidasPorInsumo.Keys))
+            foreach (var idInsumo in partesPorInsumo.Keys.Union(salidasPorInsumo.Keys).Union(conteosPorInsumo.Keys))
             {
                 partesPorInsumo.TryGetValue(idInsumo, out var partes);
                 salidasPorInsumo.TryGetValue(idInsumo, out var salidas);
-                resultado[idInsumo] = KardexLedger.Calcular(partes ?? new List<LedgerParte>(), salidas ?? new List<LedgerSalida>(), momento);
+                conteosPorInsumo.TryGetValue(idInsumo, out var conteos);
+                resultado[idInsumo] = KardexLedger.Calcular(
+                    partes ?? new List<LedgerParte>(),
+                    salidas ?? new List<LedgerSalida>(),
+                    conteos ?? new List<LedgerConteo>(),
+                    momento);
             }
             return resultado;
         }

@@ -77,6 +77,8 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
                     decimal saldo = partesInsumo.Where(pt => pt.IdCompraInsumo == compraInsumo.Id).Sum(pt => pt.Saldo);
+                    decimal baja = partesInsumo.Where(pt => pt.IdCompraInsumo == compraInsumo.Id).Sum(pt => pt.Baja);
+
                     string observacionAjuste = ultimoAjuste?.Observacion ?? "";
 
                     resultado.Add(new TablaAjustesRes
@@ -87,6 +89,8 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                         Descripcion = compraInsumo.Insumo?.Descripcion ?? "",
                         Lote = compraInsumo.Lote ?? "",
                         Saldo = saldo,
+                        Baja = baja,
+
                         FechaFabricacion = compraInsumo.FechaFabricacion,
                         FechaVencimiento = compraInsumo.FechaVencimiento,
                         Clasificacion = compraInsumo.Insumo?.Clasificacion ?? "MP",
@@ -244,6 +248,46 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Observacion = s.Observacion ?? ""
                 };
             }).ToList();
+
+
+            // Materia prima: el "stock" y la "diferencia" de cada ajuste se toman del libro mayor
+
+            // (saldo según movimientos en la fecha del conteo), no de lo que mostraba la pantalla al registrarlo.
+
+            var ledgerSvc = new KardexLedgerMpService(_context);
+
+            var grupos = rawList
+
+                .Select((a, i) => new { a, i, IdCompra = (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue) ? a.StockInsumo.IdCompraInsumo.Value : 0 })
+
+                .Where(x => x.IdCompra > 0 && x.a.StockInsumo != null && comprasDict.ContainsKey(x.IdCompra))
+
+                .GroupBy(x => new { Sede = x.a.StockInsumo!.IdSede, comprasDict[x.IdCompra].IdInsumo });
+
+            foreach (var g in grupos)
+
+            {
+
+                var mayor = await ledgerSvc.CalcularInsumoAsync(g.Key.Sede, g.Key.IdInsumo);
+
+                var conteos = mayor.Conteos.ToDictionary(c => c.Id);
+
+                foreach (var x in g)
+
+                {
+
+                    if (!conteos.TryGetValue(x.a.Id, out var c)) continue;
+
+                    response[x.i].Stock = c.StockSistema;
+
+                    response[x.i].Diferencia = c.Diferencia;
+
+                    response[x.i].StockFinal = c.StockContado;
+
+                }
+
+            }
+
             return response;
         }
 
