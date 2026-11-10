@@ -497,31 +497,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     })
                     .ToListAsync(),
 
-                "ECO" => await _context.CompraEconomatos
-                    .Where(x => x.Id == idRegistro)
-                    .Select(x => new RegistrosListaRes
-                    {
-                        IdArticulo = x.IdEconomato,
-                        DescripcionArticulo = x.Economato != null ? (x.Economato.Descripcion ?? "") : "",
-                        CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato),
-                        Lote = null,
-                        Um = x.Um,
-                        StockDisponible = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
-                    })
-                    .ToListAsync(),
+                "ECO" => await ObtenerDatosRegistroEco(idRegistro, targetSede),
 
-                "PT" => await _context.CompraProductos
-                    .Where(x => x.Id == idRegistro)
-                    .Select(x => new RegistrosListaRes
-                    {
-                        IdArticulo = x.IdProducto,
-                        DescripcionArticulo = x.Producto != null ? (x.Producto.Descripcion ?? "") : "",
-                        CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto),
-                        Lote = x.Lote,
-                        Um = x.Um,
-                        StockDisponible = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
-                    })
-                    .ToListAsync(),
+                "PT" => await ObtenerDatosRegistroPt(idRegistro, targetSede),
 
                 "PI" => await ObtenerDatosRegistroPI(idRegistro, targetSede),
 
@@ -540,10 +518,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             switch (fam)
             {
                 case "PT":
+                    // Stock por registro = saldo del libro mayor en la sede (KardexLedgerPtService)
+                    var mayorPtSede = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerPtService(_context).CalcularAsync(targetSede, null);
+                    var saldoPorRegistroPt = mayorPtSede.Values
+                        .SelectMany(r => r.Partes)
+                        .GroupBy(p => p.IdCompraInsumo)
+                        .ToDictionary(g => g.Key, g => g.Sum(p => p.Saldo));
+                    var idsConMovimientoPt = saldoPorRegistroPt.Keys.ToList();
+
                     var pts = await _context.CompraProductos
                         .Include(i => i.Producto)
-                        .Include(i => i.StockProductoTerminados)
-                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockProductoTerminados.Any(s => s.IdSede == targetSede))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockProductoTerminados.Any(s => s.IdSede == targetSede) || idsConMovimientoPt.Contains(w.Id))
                         .Select(x => new
                         {
                             x.Id,
@@ -553,9 +538,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             x.Um,
                             x.FechaVencimiento,
                             FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaFabricacion,
-                            Stock = x.StockProductoTerminados.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
+                            Stock = (decimal?)0m
                         })
                         .ToListAsync();
+                    pts = pts.Select(x => new
+                    {
+                        x.Id, x.Descripcion, x.Codigo, x.Lote, x.Um, x.FechaVencimiento, x.FechaCompra,
+                        Stock = (decimal?)(saldoPorRegistroPt.TryGetValue(x.Id, out var svPt) ? svPt : 0m)
+                    }).ToList();
 
                     return pts
                         .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
@@ -570,7 +560,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             CodigoArticulo = x.Codigo,
                             Lote = x.Lote,
                             Um = x.Um,
-                            StockDisponible = x.Stock
+                            StockDisponible = x.Stock ?? 0m
                         }).ToList();
 
                 case "MP":
@@ -621,10 +611,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         }).ToList();
 
                 case "ECO":
+                    // Stock por registro = saldo del libro mayor en la sede (KardexLedgerEcoService)
+                    var mayorEcoSede = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerEcoService(_context).CalcularAsync(targetSede, null);
+                    var saldoPorRegistroEco = mayorEcoSede.Values
+                        .SelectMany(r => r.Partes)
+                        .GroupBy(p => p.IdCompraInsumo)
+                        .ToDictionary(g => g.Key, g => g.Sum(p => p.Saldo));
+                    var idsConMovimientoEco = saldoPorRegistroEco.Keys.ToList();
+
                     var ecos = await _context.CompraEconomatos
                         .Include(i => i.Economato)
-                        .Include(i => i.StockEconomatos)
-                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == targetSede)))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || (w.StockEconomatos != null && w.StockEconomatos.Any(s => s.IdSede == targetSede)) || idsConMovimientoEco.Contains(w.Id))
                         .Select(x => new
                         {
                             x.Id,
@@ -633,9 +630,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             Lote = (string?)null,
                             x.Um,
                             FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
-                            Stock = x.StockEconomatos != null ? x.StockEconomatos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible) : null
+                            Stock = (decimal?)0m
                         })
                         .ToListAsync();
+                    ecos = ecos.Select(x => new
+                    {
+                        x.Id, x.Descripcion, x.Codigo, x.Lote, x.Um, x.FechaCompra,
+                        Stock = (decimal?)(saldoPorRegistroEco.TryGetValue(x.Id, out var svEco) ? svEco : 0m)
+                    }).ToList();
 
                     return ecos
                         .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)
@@ -649,7 +651,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             CodigoArticulo = x.Codigo,
                             Lote = x.Lote,
                             Um = x.Um,
-                            StockDisponible = x.Stock
+                            StockDisponible = x.Stock ?? 0m
                         }).ToList();
 
                 case "ME":
@@ -1415,6 +1417,52 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             if (nota == null) throw new NotFoundException("Nota de salida no encontrada.");
             nota.Observacion = observacion;
             await _context.SaveChangesAsync();
+        }
+
+        /// <summary>Datos de un registro ECO usando el libro mayor (KardexLedgerEcoService).</summary>
+        private async Task<List<RegistrosListaRes>> ObtenerDatosRegistroEco(int idRegistro, int targetSede)
+        {
+            var datos = await _context.CompraEconomatos
+                .Where(x => x.Id == idRegistro)
+                .Select(x => new RegistrosListaRes
+                {
+                    IdArticulo = x.IdEconomato,
+                    DescripcionArticulo = x.Economato != null ? (x.Economato.Descripcion ?? "") : "",
+                    CodigoArticulo = UtilFamilia.CodigoEconomato(x.IdEconomato),
+                    Lote = null,
+                    Um = x.Um,
+                    StockDisponible = 0m
+                })
+                .ToListAsync();
+            foreach (var d in datos)
+            {
+                var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerEcoService(_context).CalcularEconomatoAsync(targetSede, d.IdArticulo);
+                d.StockDisponible = mayor.Partes.Where(p => p.IdCompraInsumo == idRegistro).Sum(p => p.Saldo);
+            }
+            return datos;
+        }
+
+        /// <summary>Datos de un registro PT usando el libro mayor (KardexLedgerPtService).</summary>
+        private async Task<List<RegistrosListaRes>> ObtenerDatosRegistroPt(int idRegistro, int targetSede)
+        {
+            var datos = await _context.CompraProductos
+                .Where(x => x.Id == idRegistro)
+                .Select(x => new RegistrosListaRes
+                {
+                    IdArticulo = x.IdProducto,
+                    DescripcionArticulo = x.Producto != null ? (x.Producto.Descripcion ?? "") : "",
+                    CodigoArticulo = UtilFamilia.CodigoProducto(x.IdProducto),
+                    Lote = x.Lote,
+                    Um = x.Um,
+                    StockDisponible = 0m
+                })
+                .ToListAsync();
+            foreach (var d in datos)
+            {
+                var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerPtService(_context).CalcularProductoAsync(targetSede, d.IdArticulo);
+                d.StockDisponible = mayor.Partes.Where(p => p.IdCompraInsumo == idRegistro).Sum(p => p.Saldo);
+            }
+            return datos;
         }
     }
 }
