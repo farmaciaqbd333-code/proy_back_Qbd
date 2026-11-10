@@ -21,6 +21,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
         public async Task<int> Crear(CreateReq request)
         {
+            if (request.IdSedeOrigen > 0 && request.IdSedeOrigen == request.IdSedeDestino)
+                throw new BadRequestException("La sede origen y destino no pueden ser iguales.");
+
             await using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
@@ -209,6 +212,20 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
                 if (notaSalida == null)
                     throw new NotFoundException("Nota salida no encontrada.");
+
+                // Una nota ya recibida no se edita: se borraría lo recibido y el stock creado en destino
+                bool yaRecibida = notaSalida.Estado == "RECIBIDO" || notaSalida.Estado == "RECEPCIONADO" ||
+                    notaSalida.FechaRecepcion != null ||
+                    notaSalida.NotaSalidaInsumos.Any(x => x.CantidadRecibida.HasValue && x.CantidadRecibida.Value > 0) ||
+                    notaSalida.NotaSalidaEmpaques.Any(x => x.CantidadRecibida > 0) ||
+                    notaSalida.NotaSalidaEconomatos.Any(x => x.CantidadRecibida > 0) ||
+                    notaSalida.NotaSalidaProductos.Any(x => x.CantidadRecibida > 0);
+                if (yaRecibida)
+                    throw new BadRequestException(
+                        "La nota de salida ya fue recibida en la sede destino y no se puede editar. Registre una nota de salida de devolución o ajuste la recepción.");
+
+                if (request.IdSedeOrigen > 0 && request.IdSedeOrigen == request.IdSedeDestino)
+                    throw new BadRequestException("La sede origen y destino no pueden ser iguales.");
 
                 // 1. Revertir stock anterior devolviéndolo a la sede origen
                 await RevertirStockDeNotaSalida(notaSalida);
@@ -406,6 +423,29 @@ namespace Proy_back_QBD.Services.NotaSalidaService
 
             int targetSede = idSede > 0 ? idSede : 15;
 
+            if (familia == "MP")
+            {
+                // Stock del registro = saldo del libro mayor (lo mismo que muestran Kardex y lista y lo que se valida al crear)
+                var datosMp = await _context.CompraInsumos
+                    .Where(x => x.Id == idRegistro)
+                    .Select(x => new RegistrosListaRes
+                    {
+                        IdArticulo = x.IdInsumo,
+                        DescripcionArticulo = x.Insumo != null ? x.Insumo.Descripcion : "",
+                        CodigoArticulo = UtilFamilia.CodigoInsumo(x.IdInsumo),
+                        Lote = x.Lote,
+                        Um = (x.Insumo != null && !string.IsNullOrEmpty(x.Insumo.UnidadMedida)) ? x.Insumo.UnidadMedida : (x.Um ?? "G"),
+                        StockDisponible = 0m
+                    })
+                    .ToListAsync();
+                foreach (var d in datosMp)
+                {
+                    var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerMpService(_context).CalcularInsumoAsync(targetSede, d.IdArticulo);
+                    d.StockDisponible = mayor.Partes.Where(p => p.IdCompraInsumo == idRegistro).Sum(p => p.Saldo);
+                }
+                return datosMp;
+            }
+
             return familia switch
             {
                 "MP" => await _context.CompraInsumos
@@ -511,10 +551,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         }).ToList();
 
                 case "MP":
+                    // Stock por registro = saldo del libro mayor en la sede (no la columna StockDisponible)
+                    var mayorSede = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerMpService(_context).CalcularAsync(targetSede, null);
+                    var saldoPorRegistro = mayorSede.Values
+                        .SelectMany(r => r.Partes)
+                        .GroupBy(p => p.IdCompraInsumo)
+                        .ToDictionary(g => g.Key, g => g.Sum(p => p.Saldo));
+                    var idsConMovimiento = saldoPorRegistro.Keys.ToList();
+
                     var mps = await _context.CompraInsumos
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumos)
-                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockInsumos.Any(s => s.IdSede == targetSede))
+                        .Where(w => (w.Compra != null && w.Compra.IdSede == targetSede) || w.StockInsumos.Any(s => s.IdSede == targetSede) || idsConMovimiento.Contains(w.Id))
                         .Select(x => new
                         {
                             x.Id,
@@ -524,9 +572,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             x.Um,
                             x.FechaVencimiento,
                             FechaCompra = x.Compra != null ? (x.Compra.FechaLab ?? x.Compra.FechaFactura) : x.FechaCreacion,
-                            Stock = x.StockInsumos.Where(s => s.IdSede == targetSede).Sum(s => (decimal?)s.StockDisponible)
+                            Stock = (decimal?)0m
                         })
                         .ToListAsync();
+                    mps = mps.Select(x => new
+                    {
+                        x.Id, x.Descripcion, x.Codigo, x.Lote, x.Um, x.FechaVencimiento, x.FechaCompra,
+                        Stock = (decimal?)(saldoPorRegistro.TryGetValue(x.Id, out var sv) ? sv : 0m)
+                    }).ToList();
 
                     return mps
                         .OrderBy(x => (x.Stock ?? 0) > 0 ? 0 : 1)

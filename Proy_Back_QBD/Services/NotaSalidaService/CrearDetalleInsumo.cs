@@ -48,16 +48,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .ThenByDescending(x => x.StockDisponible)
                 .ToListAsync();
 
-            if (!isPI && !stocksOrigen.Any())
-            {
-                stocksOrigen = await _context.StockInsumos
-                    .Include(s => s.ProductoIntermedio)
-                    .Include(s => s.NotaSalidaInsumo)
-                    .Where(x => isPI ? (x.IdProductoIntermedio == item.Registro || (x.ProductoIntermedio != null && x.ProductoIntermedio.Id == item.Registro) || (x.Tipo == "PI" && pi != null && x.NotaSalidaInsumo != null && x.NotaSalidaInsumo.Lote == pi.Lote)) : x.IdCompraInsumo == item.Registro)
-                    .OrderBy(x => x.IdNotaSalidaInsumo != null ? 1 : 0)
-                    .ThenByDescending(x => x.StockDisponible)
-                    .ToListAsync();
-            }
+            // (Antes, si no había fila en la sede origen, se tomaban filas de OTRAS sedes y se les descontaba.)
 
             var stockOrigen = stocksOrigen.FirstOrDefault();
 
@@ -147,8 +138,31 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 cantDescontar);
 
             decimal totalDisponible = stocksOrigen.Sum(s => s.StockDisponible);
+            decimal cantComparar = cantDescontar;
 
-            if (totalDisponible < cantDescontar || totalDisponible <= 0)
+            if (!isPI)
+            {
+                // MP: el disponible del registro en la sede origen es el saldo del libro mayor (misma regla que
+                // Kardex y lista), menos lo que ya va en esta misma nota y aún no se guardó.
+                var idInsumoReg = await _context.CompraInsumos.AsNoTracking()
+                    .Where(c => c.Id == item.Registro)
+                    .Select(c => (int?)c.IdInsumo)
+                    .FirstOrDefaultAsync();
+                if (idInsumoReg.HasValue)
+                {
+                    var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerMpService(_context)
+                        .CalcularInsumoAsync(sedeOrigen, idInsumoReg.Value);
+                    decimal saldoRegistro = mayor.Partes.Where(p => p.IdCompraInsumo == item.Registro).Sum(p => p.Saldo);
+                    decimal enEstaNota = _context.ChangeTracker.Entries<NotaSalidaInsumo>()
+                        .Where(e => e.State == EntityState.Added && e.Entity.IdCompraInsumo == item.Registro)
+                        .Sum(e => e.Entity.Cantidad);
+                    totalDisponible = Math.Max(0m, saldoRegistro - enEstaNota);
+                    stockUm = "G";
+                    cantComparar = (itemUm == "KG" || itemUm == "KILOGRAMOS") ? item.Cantidad * 1000m : item.Cantidad;
+                }
+            }
+
+            if (totalDisponible + 0.0005m < cantComparar || totalDisponible <= 0)
             {
                 decimal dispFriendly = (stockUm == "G" && (itemUm == "KG" || itemUm == "KILOGRAMOS"))
                     ? Math.Round(totalDisponible / 1000m, 3)
