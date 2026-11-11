@@ -138,12 +138,42 @@ namespace Proy_back_QBD.Data
 
                         -- Tipo de producto de cada ítem (FM, FMVET, OFI, PT...)
                         ALTER TABLE cotizaciones_detalle ADD COLUMN IF NOT EXISTS tipo_producto VARCHAR(20) NULL;
+
+                        -- Pedido en que se convirtió la cotización
+                        ALTER TABLE cotizaciones ADD COLUMN IF NOT EXISTS pedido_id INT NULL;
+
                     ");
                     Console.WriteLine("--> Base de datos: tablas de cotizaciones verificadas/creadas.");
                 }
                 catch (Exception exCot)
                 {
                     Console.WriteLine($"DB Auto-migration error (cotizaciones): {exCot.Message}");
+                }
+                try
+                {
+                    // Cotizaciones convertidas antes de guardar el pedido: se enlazan con el pedido
+                    // del mismo paciente y sede creado más cerca de la cotización (máximo 1 día)
+                    int enlazadas = db.Database.ExecuteSqlRaw(@"
+                        UPDATE cotizaciones c
+                        SET pedido_id = (
+                            SELECT p.id
+                            FROM pedidos p
+                            LEFT JOIN pacientes pa ON pa.id = p.paciente_id
+                            LEFT JOIN personas pe ON pe.id = pa.persona_id
+                            WHERE p.sede_id = c.sede_id
+                              AND (p.paciente_id = c.paciente_id OR pe.dni = c.ruc_dni)
+                              AND p.fecha_creacion BETWEEN c.fecha_creacion - INTERVAL '1 day' AND c.fecha_creacion + INTERVAL '1 day'
+                              AND NOT EXISTS (SELECT 1 FROM cotizaciones o WHERE o.pedido_id = p.id)
+                            ORDER BY ABS(EXTRACT(EPOCH FROM (p.fecha_creacion - c.fecha_creacion)))
+                            LIMIT 1
+                        )
+                        WHERE c.estado = 'Convertido' AND c.pedido_id IS NULL;
+                    ");
+                    if (enlazadas > 0) Console.WriteLine($"--> Cotizaciones convertidas enlazadas con su pedido: {enlazadas}");
+                }
+                catch (Exception exCotPed)
+                {
+                    Console.WriteLine($"DB Auto-migration error (cotizaciones.pedido_id): {exCotPed.Message}");
                 }
 
                 try

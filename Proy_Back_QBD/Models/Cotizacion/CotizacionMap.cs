@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Proy_back_QBD.Models;
 
 namespace Proy_back_QBD.Profiles
@@ -22,7 +22,8 @@ namespace Proy_back_QBD.Profiles
                 .ForMember(dest => dest.Detalles, opt => opt.Ignore())
                 .ForMember(dest => dest.Adelanto, opt => opt.Ignore())
                 .ForMember(dest => dest.AdelantoMedioPago, opt => opt.Ignore())
-                .ForMember(dest => dest.AdelantoFecha, opt => opt.Ignore());
+                .ForMember(dest => dest.AdelantoFecha, opt => opt.Ignore())
+                .ForMember(dest => dest.PedidoId, opt => opt.Ignore());
 
             CreateMap<CotizacionDetalleReq, CotizacionDetalle>();
         }

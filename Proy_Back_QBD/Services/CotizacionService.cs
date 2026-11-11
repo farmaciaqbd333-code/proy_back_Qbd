@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -258,12 +258,13 @@ namespace Proy_back_QBD.Services
             cotizacion.AdelantoMedioPago = string.IsNullOrWhiteSpace(medioPago) ? "Efectivo" : medioPago.Trim();
         }
 
-        public async Task<bool> CambiarEstado(int id, string nuevoEstado, int usuarioId)
+        public async Task<bool> CambiarEstado(int id, string nuevoEstado, int usuarioId, int? pedidoId = null)
         {
             var cotizacion = await _context.Cotizaciones.FindAsync(id);
             if (cotizacion == null) return false;
 
             cotizacion.Estado = nuevoEstado;
+            if (pedidoId.HasValue && pedidoId.Value > 0) cotizacion.PedidoId = pedidoId.Value;
             cotizacion.ModificadorId = usuarioId;
             cotizacion.FechaModificacion = DateTime.Now;
 

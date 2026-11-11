@@ -63,6 +63,8 @@ namespace Proy_back_QBD.Models
     public class CotizacionEstadoReq
     {
         public string Estado { get; set; } = string.Empty;
+        /// <summary>Al pasar a "Convertido": el pedido que se creó.</summary>
+        public int? PedidoId { get; set; }
     }
 
     public class CotizacionCpeReq

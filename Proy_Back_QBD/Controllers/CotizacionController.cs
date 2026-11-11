@@ -113,7 +113,7 @@ namespace Proy_back_QBD.Controllers
             }
 
             int usuarioId = UsuarioActual(headerUserId);
-            var success = await _cotizacionService.CambiarEstado(id, request.Estado, usuarioId);
+            var success = await _cotizacionService.CambiarEstado(id, request.Estado, usuarioId, request.PedidoId);
 
             if (!success)
             {

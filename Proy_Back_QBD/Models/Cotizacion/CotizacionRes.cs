@@ -39,6 +39,8 @@ namespace Proy_back_QBD.Models
         public decimal Adelanto { get; set; }
         public string? AdelantoMedioPago { get; set; }
         public DateTime? AdelantoFecha { get; set; }
+        /// <summary>Pedido en que se convirtió (null si no se convirtió o es anterior a este dato).</summary>
+        public int? PedidoId { get; set; }
         /// <summary>Total - Adelanto.</summary>
         public decimal Saldo { get; set; }
         public int CreadorId { get; set; }

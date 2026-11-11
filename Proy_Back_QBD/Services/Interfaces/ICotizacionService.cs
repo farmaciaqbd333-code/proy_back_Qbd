@@ -12,7 +12,7 @@ namespace Proy_back_QBD.Services.Interfaces
         Task<string> ObtenerSiguienteNumero(int? sedeId);
         Task<CotizacionRes?> Crear(CotizacionCreateReq request, int usuarioId);
         Task<CotizacionRes?> Actualizar(int id, CotizacionUpdateReq request, int usuarioId);
-        Task<bool> CambiarEstado(int id, string nuevoEstado, int usuarioId);
+        Task<bool> CambiarEstado(int id, string nuevoEstado, int usuarioId, int? pedidoId = null);
         Task<bool> AsignarCpe(int id, string cpe, int usuarioId);
         Task<bool> MarcarEnviado(int id, bool enviado, int usuarioId);
         Task<bool> Eliminar(int id);

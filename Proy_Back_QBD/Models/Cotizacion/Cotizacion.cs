@@ -113,6 +113,10 @@ namespace Proy_back_QBD.Models
         [Column("adelanto_fecha")]
         public DateTime? AdelantoFecha { get; set; }
 
+        /// <summary>Pedido en que se convirtió la cotización (su número es "P" + id).</summary>
+        [Column("pedido_id")]
+        public int? PedidoId { get; set; }
+
         [Column("creador_id")]
         public int CreadorId { get; set; }
 
