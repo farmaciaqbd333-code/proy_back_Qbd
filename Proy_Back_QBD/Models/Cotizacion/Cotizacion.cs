@@ -101,6 +101,18 @@ namespace Proy_back_QBD.Models
         [Column("observaciones")]
         public string? Observaciones { get; set; }
 
+        /// <summary>Adelanto que dejó el cliente al cotizar. Al convertir en pedido pasa a ser un cobro del pedido.</summary>
+        [Column("adelanto")]
+        public decimal Adelanto { get; set; } = 0;
+
+        /// <summary>Medio de pago del adelanto (Efectivo, Yape, Plin, Transferencia, Tarjeta...).</summary>
+        [Column("adelanto_medio_pago")]
+        public string? AdelantoMedioPago { get; set; }
+
+        /// <summary>Cuándo se registró (o cambió) el adelanto.</summary>
+        [Column("adelanto_fecha")]
+        public DateTime? AdelantoFecha { get; set; }
+
         [Column("creador_id")]
         public int CreadorId { get; set; }
 
