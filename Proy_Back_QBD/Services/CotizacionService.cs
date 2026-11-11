@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Services.Interfaces;
+using proy_back_Qbd.Exceptions;
 
 namespace Proy_back_QBD.Services
 {
@@ -150,6 +151,8 @@ namespace Proy_back_QBD.Services
                 cotizacion.Igv = Math.Round(baseImponible - cotizacion.OpGravada, 2);
             }
 
+            AplicarAdelanto(cotizacion, request.Adelanto, request.AdelantoMedioPago);
+
             _context.Cotizaciones.Add(cotizacion);
             await _context.SaveChangesAsync();
 
@@ -190,6 +193,15 @@ namespace Proy_back_QBD.Services
             cotizacion.ValidezDias = request.ValidezDias;
             cotizacion.FormaPago = request.FormaPago;
             cotizacion.Observaciones = request.Observaciones;
+            // Una cotización ya convertida en pedido conserva su adelanto: ya pasó a ser un cobro del pedido
+            if (!string.Equals(cotizacion.Estado, "Convertido", StringComparison.OrdinalIgnoreCase))
+            {
+                AplicarAdelanto(cotizacion, request.Adelanto, request.AdelantoMedioPago);
+            }
+            else if (cotizacion.Adelanto > cotizacion.Total)
+            {
+                throw new BadRequestException("El total no puede ser menor al adelanto ya cobrado.");
+            }
             cotizacion.ModificadorId = usuarioId;
             cotizacion.FechaModificacion = DateTime.Now;
 
@@ -216,6 +228,34 @@ namespace Proy_back_QBD.Services
             await _context.SaveChangesAsync();
 
             return await ObtenerPorId(id);
+        }
+
+        /// <summary>
+        /// Valida y guarda el adelanto: no negativo, no mayor al total, con medio de pago.
+        /// La fecha del adelanto se actualiza solo cuando cambia el monto.
+        /// </summary>
+        private static void AplicarAdelanto(Cotizacion cotizacion, decimal adelanto, string? medioPago)
+        {
+            adelanto = Math.Round(adelanto, 2);
+            if (adelanto < 0)
+                throw new BadRequestException("El adelanto no puede ser negativo.");
+            if (adelanto > Math.Round(cotizacion.Total, 2))
+                throw new BadRequestException($"El adelanto (S/ {adelanto:0.00}) no puede ser mayor al total de la cotización (S/ {cotizacion.Total:0.00}).");
+
+            if (adelanto == 0)
+            {
+                cotizacion.Adelanto = 0;
+                cotizacion.AdelantoMedioPago = null;
+                cotizacion.AdelantoFecha = null;
+                return;
+            }
+
+            if (adelanto != cotizacion.Adelanto || cotizacion.AdelantoFecha == null)
+            {
+                cotizacion.AdelantoFecha = DateTime.Now;
+            }
+            cotizacion.Adelanto = adelanto;
+            cotizacion.AdelantoMedioPago = string.IsNullOrWhiteSpace(medioPago) ? "Efectivo" : medioPago.Trim();
         }
 
         public async Task<bool> CambiarEstado(int id, string nuevoEstado, int usuarioId)

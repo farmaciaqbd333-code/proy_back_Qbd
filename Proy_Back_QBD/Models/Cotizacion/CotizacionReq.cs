@@ -31,6 +31,9 @@ namespace Proy_back_QBD.Models
         public int ValidezDias { get; set; } = 15;
         public string? FormaPago { get; set; } = "Al Contado";
         public string? Observaciones { get; set; }
+        /// <summary>Adelanto del cliente (0 si no dejó). No puede superar el total.</summary>
+        public decimal Adelanto { get; set; } = 0;
+        public string? AdelantoMedioPago { get; set; }
         public List<CotizacionDetalleReq> Detalles { get; set; } = new();
     }
 

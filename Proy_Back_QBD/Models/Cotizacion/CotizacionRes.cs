@@ -36,6 +36,11 @@ namespace Proy_back_QBD.Models
         public int ValidezDias { get; set; }
         public string? FormaPago { get; set; }
         public string? Observaciones { get; set; }
+        public decimal Adelanto { get; set; }
+        public string? AdelantoMedioPago { get; set; }
+        public DateTime? AdelantoFecha { get; set; }
+        /// <summary>Total - Adelanto.</summary>
+        public decimal Saldo { get; set; }
         public int CreadorId { get; set; }
         public string? UsuarioCreador { get; set; }
         public DateTime FechaCreacion { get; set; }
