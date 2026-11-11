@@ -110,8 +110,10 @@ namespace Proy_back_QBD.Services
             var cotizacion = _mapper.Map<Cotizacion>(request);
             cotizacion.CreadorId = usuarioId;
             cotizacion.ModificadorId = usuarioId;
-            cotizacion.FechaCreacion = DateTime.Now;
-            cotizacion.FechaModificacion = DateTime.Now;
+            // Hora de Lima aunque el servidor esté en otra zona horaria
+            var ahoraLima = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("America/Lima"));
+            cotizacion.FechaCreacion = ahoraLima;
+            cotizacion.FechaModificacion = ahoraLima;
 
             if (request.Fecha.HasValue)
             {
