@@ -263,6 +263,30 @@ namespace Proy_back_QBD.Services
             return response;
         }
 
+        /// <summary>Actualiza solo las imágenes del pedido; no toca estado, recibo ni el resto de la cabecera.</summary>
+        public async Task<Pedido?> ActImagenes(int id, int sedeId, PedidoImagenesReq request)
+        {
+            Pedido? pedido = await _context.Pedidos
+                .FirstOrDefaultAsync(a => a.Id == id && a.SedeId == sedeId);
+            if (pedido == null) return null;
+
+            static string? Limpia(string? v) => string.IsNullOrWhiteSpace(v) ? null : v.Trim();
+            pedido.Img1 = Limpia(request.Img1);
+            pedido.Img2 = Limpia(request.Img2);
+            pedido.Img3 = Limpia(request.Img3);
+            pedido.Img4 = Limpia(request.Img4);
+            pedido.Img5 = Limpia(request.Img5);
+            pedido.Img6 = Limpia(request.Img6);
+            if (request.ModificadorId.HasValue && request.ModificadorId.Value > 0)
+            {
+                pedido.ModificadorId = request.ModificadorId.Value;
+            }
+            pedido.FechaModificacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return pedido;
+        }
+
         public async Task<Pedido?> ActComprobante(int id, int sedeId, string? comprobante)
         {
             Pedido? pedido = await _context.Pedidos

@@ -26,6 +26,17 @@ namespace Proy_back_QBD.Dto.Request
     {
         public string? Estado { get; set; }
     }
+    /// <summary>Solo las imágenes del pedido (hasta 6 URLs). Una vacía o null se quita.</summary>
+    public class PedidoImagenesReq
+    {
+        public string? Img1 { get; set; }
+        public string? Img2 { get; set; }
+        public string? Img3 { get; set; }
+        public string? Img4 { get; set; }
+        public string? Img5 { get; set; }
+        public string? Img6 { get; set; }
+        public int? ModificadorId { get; set; }
+    }
     public class PedidoUpdateReq
     {
         public int PacienteId { get; set; }
