@@ -9,6 +9,7 @@ namespace Proy_back_QBD.Services
     {
         Task<PedidoCreateRes?> Crear(PedidoCreateReq request);
         Task<PedidoUpdateResponse?> Actualizar(int id, int sedeId, PedidoUpdateReq request);
+        Task<Pedido?> ActImagenes(int id, int sedeId, PedidoImagenesReq request);
         Task<Pedido?> ActComprobante(int id, int sedeId, string? boleta);
         Task<string?> ActEstado(int id, int sedeId, string estado);
         Task<List<PedidoFindAllResponse?>> Listar(int sedeId);

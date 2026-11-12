@@ -64,6 +64,22 @@ public class PedidoController : ControllerBase
 
         return Ok(response);
     }
+    /// <summary>Actualiza solo las imágenes del pedido (img1..img6).</summary>
+    [HttpPatch("imagenes/{id}/{sedeId}")]
+    [SwaggerResponse(200, "Imágenes actualizadas", typeof(Pedido))]
+    public async Task<IActionResult> ActualizarImagenes(int id, int sedeId, [FromBody] PedidoImagenesReq request)
+    {
+        if (request == null)
+        {
+            return BadRequest("Datos incorrectos");
+        }
+        Pedido? response = await _pedidoService.ActImagenes(id, sedeId, request);
+        if (response == null)
+        {
+            return NotFound(new { message = "No se encontró el pedido." });
+        }
+        return Ok(new { id = response.Id, img1 = response.Img1, img2 = response.Img2, img3 = response.Img3, img4 = response.Img4, img5 = response.Img5, img6 = response.Img6 });
+    }
     [HttpPatch("estado/{id}/{sedeId}")]
     public async Task<IActionResult> ActualizarEstado(int id, int sedeId, string estado)
     {
