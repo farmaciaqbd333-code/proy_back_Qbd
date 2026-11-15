@@ -267,15 +267,10 @@ namespace Proy_back_QBD.Data
                         um = 'G'
                     WHERE UPPER(um) IN ('KG', 'KILOGRAMOS', 'KGS');
 
-                    UPDATE stock_insumo si
-                    SET stock_disponible = si.stock_disponible - (ci.cantidad_recibida * 999)
-                    FROM compra_insumo ci
-                    WHERE ci.id = si.id_compra_insumo
-                      AND UPPER(ci.um) IN ('KG', 'KGS', 'KILOGRAMO', 'KILOGRAMOS')
-                      AND si.stock_disponible >= 10000
-                      AND ci.cantidad_recibida IS NOT NULL
-                      AND ci.cantidad_recibida > 0
-                      AND si.stock_disponible >= (ci.cantidad_recibida * 999);
+                    -- QUITADO: el UPDATE de stock_insumo que restaba (cantidad_recibida * 999).
+                    -- No era idempotente: la condición seguía cumpliéndose después de restar,
+                    -- así que volvía a descontar stock en CADA arranque del servidor.
+                    -- Si hace falta corregir stocks en KG, hacerlo con un script manual de una sola vez.
                 ");
                 Console.WriteLine("--> Base de datos: Columnas lote y registro verificadas/creadas correctamente.");
             }
