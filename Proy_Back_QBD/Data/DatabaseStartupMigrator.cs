@@ -227,20 +227,8 @@ namespace Proy_back_QBD.Data
                         CREATE INDEX IF NOT EXISTS idx_lpav_categoria ON lista_precios_av(categoria);
                     ");
 
-                    if (!db.ListaPrecios.Any())
-                    {
-                        using var recurso = typeof(DatabaseStartupMigrator).Assembly.GetManifestResourceStream("lista_precios_av.sql");
-                        if (recurso != null)
-                        {
-                            using var lector = new StreamReader(recurso);
-                            db.Database.ExecuteSqlRaw(lector.ReadToEnd());
-                            Console.WriteLine($"--> Base de datos: lista de precios PREC. AV cargada ({db.ListaPrecios.Count()} productos).");
-                        }
-                        else
-                        {
-                            Console.WriteLine("DB Auto-migration: no se encontró el recurso lista_precios_av.sql");
-                        }
-                    }
+                    // QUITADO: la carga automática de datos (SQL/lista_precios_av.sql) cuando la tabla estaba vacía.
+                    // El arranque solo crea la estructura; la lista de precios se llena a mano desde el sistema.
                 }
                 catch (Exception exLp)
                 {
