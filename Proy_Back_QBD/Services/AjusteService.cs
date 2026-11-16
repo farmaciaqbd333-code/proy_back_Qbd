@@ -1,14 +1,14 @@
-using proy_back_Qbd.Models.ProductoIntermedio;
-using Microsoft.EntityFrameworkCore;
-using proy_back_Qbd.Exceptions;
-using proy_back_Qbd.Models;
-using proy_back_Qbd.Models.Ajuste;
-using proy_back_Qbd.Models.Ajuste.request;
-using proy_back_Qbd.Models.Ajuste.response;
-using proy_back_Qbd.Util;
-using proy_back_Qbd.Util.Familias;
-using Proy_back_QBD.Data;
-using Proy_back_QBD.Services;
+using proy_back_Qbd.Models.ProductoIntermedio;
+using Microsoft.EntityFrameworkCore;
+using proy_back_Qbd.Exceptions;
+using proy_back_Qbd.Models;
+using proy_back_Qbd.Models.Ajuste;
+using proy_back_Qbd.Models.Ajuste.request;
+using proy_back_Qbd.Models.Ajuste.response;
+using proy_back_Qbd.Util;
+using proy_back_Qbd.Util.Familias;
+using Proy_back_QBD.Data;
+using Proy_back_QBD.Services;
 using Proy_back_QBD.Service.AjusteService.Familias;
 
 namespace Proy_back_QBD.Service.AjusteService
@@ -33,11 +33,11 @@ namespace Proy_back_QBD.Service.AjusteService
 
         public async Task<List<TablaAjustesRes>> ListaAjustes(string familia, int idSede)
         {
-            if (idSede <= 0)
-            {
-                var centralSede = await _context.Sedes.FirstOrDefaultAsync(s => s.Nombre.ToUpper().Contains("CENTRAL") || s.Id == 15);
-                idSede = centralSede?.Id ?? 15;
-            }
+            if (idSede <= 0)
+            {
+                var centralSede = await _context.Sedes.FirstOrDefaultAsync(s => s.Nombre.ToUpper().Contains("CENTRAL") || s.Id == 15);
+                idSede = centralSede?.Id ?? 15;
+            }
 
             return await Estrategia(familia, "Familia no Apta").Listar(idSede);
         }
