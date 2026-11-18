@@ -181,8 +181,11 @@ namespace proy_back_Qbd.Services.Kardex
                         CantidadIngresada = entradasCompra,
                         CantidadSolicitada = esKg ? compraInsumo.CantidadSolicitada * 1000m : compraInsumo.CantidadSolicitada,
                         Salidas = salidasCompra,
-                        Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
-                        TieneAjuste = tieneAjuste,
+                        // Ajuste = lo que el libro mayor aplicó a este lote (igual que ME). Antes solo se mostraba si
+                        // el ajuste estaba ligado a esta fila de stock, y en sedes que reciben por nota salía 0
+                        // aunque el stock sí lo incluía.
+                        Ajuste = totalAjuste != 0 ? totalAjuste : (tieneAjuste ? 0m : (decimal?)null),
+                        TieneAjuste = tieneAjuste || totalAjuste != 0,
                         Baja = parteCompra?.Baja ?? 0m,
                         Saldo = saldoCompra,
                         StockDisponible = saldoCompra,
@@ -233,8 +236,10 @@ namespace proy_back_Qbd.Services.Kardex
                         CantidadIngresada = cantRecibida,
                         CantidadSolicitada = nsi.Cantidad,
                         Salidas = salidasNS,
-                        Ajuste = tieneAjusteNS ? totalAjusteNS : (decimal?)null,
-                        TieneAjuste = tieneAjusteNS,
+                        // Ajuste = lo que el libro mayor aplicó a este lote (los conteos se registran por registro,
+                        // no por nota, así que no siempre están ligados a esta fila de stock)
+                        Ajuste = totalAjusteNS != 0 ? totalAjusteNS : (tieneAjusteNS ? 0m : (decimal?)null),
+                        TieneAjuste = tieneAjusteNS || totalAjusteNS != 0,
                         Baja = parteNS?.Baja ?? 0m,
                         Saldo = saldoNS,
                         StockDisponible = saldoNS,

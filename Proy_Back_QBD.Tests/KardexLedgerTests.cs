@@ -146,6 +146,38 @@ public class KardexLedgerTests
         Assert.Equal(750m, r.Stock); // 450 contado + 300 que llegaron después
     }
 
+    // Caso real (Bisabolol, Tacna): un registro con dos ingresos por nota de salida; las salidas dejaron
+    // una parte en negativo. Antes el conteo solo movía una parte y la negativa seguía restando.
+    private static (LedgerParte A, LedgerParte B, LedgerConteo Conteo, LedgerResultado R) RegistroConParteNegativa(string vence)
+    {
+        var a = new LedgerParte { IdCompraInsumo = 1, IdNotaSalidaInsumo = 135, FechaIngreso = DateTime.Parse("2026-01-25"), FechaVencimiento = DateTime.Parse(vence), Entradas = 100m };
+        var b = new LedgerParte { IdCompraInsumo = 1, IdNotaSalidaInsumo = 142, FechaIngreso = DateTime.Parse("2026-02-08"), FechaVencimiento = DateTime.Parse(vence), Entradas = 100m };
+        var salidas = new[] { Salida(100m, "2026-02-01", idCompra: 1), Salida(208.2734m, "2026-03-01", idCompra: 1) };
+        var conteo = new LedgerConteo { Id = 20, IdCompraInsumo = 1, IdNotaSalidaInsumo = 135, Fecha = DateTime.Parse("2026-04-01"), StockContado = 500m };
+        var r = KardexLedger.Calcular(new[] { a, b }, salidas, new[] { conteo }, Hoy);
+        return (a, b, conteo, r);
+    }
+
+    [Fact]
+    public void Conteo_cuadra_las_partes_negativas_del_registro_y_el_saldo_es_lo_contado()
+    {
+        var (a, b, conteo, r) = RegistroConParteNegativa(vence: "2028-01-01");
+
+        Assert.Equal(-108.2734m, conteo.StockSistema);
+        Assert.Equal(608.2734m, conteo.Diferencia);
+        Assert.Equal(500m, r.Stock);
+        Assert.True(a.Saldo >= 0 && b.Saldo >= 0, "ninguna parte del registro debe quedar en negativo tras el conteo");
+    }
+
+    [Fact]
+    public void Conteo_sobre_registro_vencido_con_parte_negativa_da_de_baja_lo_contado_y_saldo_cero()
+    {
+        var (a, b, _, r) = RegistroConParteNegativa(vence: "2026-09-07"); // vencido antes de Hoy
+
+        Assert.Equal(500m, a.Baja + b.Baja);
+        Assert.Equal(0m, r.Stock); // antes quedaba en -108.2734
+    }
+
     [Fact]
     public void Conteo_sobre_lote_vencido_pasa_a_baja()
     {

@@ -40,6 +40,11 @@ public class ProdTermController : ControllerBase
             return BadRequest("Datos incorrectos");
         }
         ProdTerm? response = await _prodTermService.Actualizar(id, sedeId, request);
+        if (response == null)
+        {
+            // Antes respondía 200 vacío y el front creía que se había guardado
+            return NotFound(new { message = $"No se encontró el producto terminado {id} en la sede {sedeId}." });
+        }
 
         return Ok(response);
     }

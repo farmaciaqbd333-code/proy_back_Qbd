@@ -151,18 +151,33 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
                         continue; // el cargador crea una parte para cada registro con ajuste; aquí no debería pasar
                     }
                     var sistema = partesReg.Sum(p => p.DisponibleEn(c.Fecha));
-                    var diferencia = c.StockContado - sistema;
                     var destino = (c.IdNotaSalidaInsumo.HasValue && c.IdNotaSalidaInsumo.Value > 0
                             ? partesReg.FirstOrDefault(p => p.IdNotaSalidaInsumo == c.IdNotaSalidaInsumo)
                             : partesReg.FirstOrDefault(p => p.IdNotaSalidaInsumo == null))
                         ?? partesReg[0];
-                    destino.Ajustes += diferencia;
+
+                    // Lo contado manda para TODO el registro: las otras partes que quedaron en negativo
+                    // (se consumió de ellas más de lo que ingresó) se cuadran en 0, y el resto va al destino.
+                    // Antes solo se movía el destino: si el registro tenía dos ingresos (p. ej. dos notas de
+                    // salida) la parte negativa seguía restando y el saldo no llegaba a lo contado.
+                    foreach (var otra in partesReg)
+                    {
+                        if (ReferenceEquals(otra, destino)) continue;
+                        var disponibleOtra = otra.DisponibleEn(c.Fecha);
+                        if (disponibleOtra < 0) otra.Ajustes += -disponibleOtra;
+                    }
+                    var restante = c.StockContado - partesReg.Sum(p => p.DisponibleEn(c.Fecha));
+                    destino.Ajustes += restante;
+
+                    var diferencia = c.StockContado - sistema;
                     c.StockSistema = sistema;
                     c.Diferencia = diferencia;
                 }
             }
 
-            // Bajas por vencimiento
+            // Bajas por vencimiento: un lote vencido ya no se puede usar, así que lo que le queda pasa a BAJA
+            // y deja de contar como stock disponible. La cantidad física que quedó se ve como BAJA (Vencido)
+            // en Gestión de Inv./Ajuste para retirarla.
             foreach (var p in partes)
             {
                 if (p.FechaVencimiento.HasValue && p.FechaVencimiento.Value < ahora && p.Disponible > 0)

@@ -5,6 +5,7 @@ using Proy_back_QBD.Dto.Request;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Request;
+using proy_back_Qbd.Exceptions;
 
 namespace Proy_back_QBD.Services
 {
@@ -69,6 +70,18 @@ namespace Proy_back_QBD.Services
 
         public async Task<ProdTerm?> Crear(ProdTermCreateReq request)
         {
+            // Validar ANTES de insertar: antes se insertaba primero y, si el pedido no existía en esa sede o el
+            // producto no existía, la clave foránea fallaba con un 500 genérico ("Ocurrió un error inesperado").
+            bool pedidoExiste = await _context.Pedidos.AnyAsync(p => p.Id == request.PedidoId && p.SedeId == request.SedeId);
+            if (!pedidoExiste)
+            {
+                throw new NotFoundException($"El pedido {request.PedidoId} no existe en la sede {request.SedeId}. Recargue el pedido e intente nuevamente.");
+            }
+            if (request.ProductoId.HasValue && !await _context.Productos.AnyAsync(p => p.Id == request.ProductoId.Value))
+            {
+                throw new BadRequestException($"El producto {request.ProductoId} no existe en el catálogo. Selecciónelo nuevamente.");
+            }
+
             ProdTerm prodTerm = _mapper.Map<ProdTerm>(request);
             prodTerm.ModificadorId = prodTerm.CreadorId;
             prodTerm.Estado = "TERMINADO";

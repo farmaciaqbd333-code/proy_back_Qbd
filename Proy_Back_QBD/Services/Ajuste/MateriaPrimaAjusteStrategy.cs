@@ -27,13 +27,11 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
 
         public async Task<List<TablaAjustesRes>> Listar(int idSede)
         {
+            // Solo lectura y solo lo que se usa (Insumo para la descripción). Antes también se cargaban
+            // StockInsumos→AjusteInsumos y NotaSalidaInsumos→NotaSalida, que no se usaban y multiplicaban las filas.
             var compras = await _context.CompraInsumos
+                .AsNoTracking()
                 .Include(ci => ci.Insumo)
-                .Include(ci => ci.Compra)
-                .Include(ci => ci.StockInsumos)
-                    .ThenInclude(si => si.AjusteInsumos)
-                .Include(ci => ci.NotaSalidaInsumos)
-                    .ThenInclude(nsi => nsi.NotaSalida)
                 .Where(w =>
                     (w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) ||
                     w.NotaSalidaInsumos.Any(nsi =>
@@ -48,6 +46,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
             var compraIds = compras.Select(c => c.Id).ToList();
 
             var ajustesInsumoQuery = await _context.AjusteInsumos
+                .AsNoTracking()
                 .Include(a => a.StockInsumo)
                 .Where(a =>
                     (a.StockInsumo != null && a.StockInsumo.IdCompraInsumo.HasValue && compraIds.Contains(a.StockInsumo.IdCompraInsumo.Value) && (idSede == 0 || a.StockInsumo.IdSede == idSede)) ||

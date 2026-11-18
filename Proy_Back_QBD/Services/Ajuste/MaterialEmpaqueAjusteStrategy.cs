@@ -28,13 +28,11 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
 
         public async Task<List<TablaAjustesRes>> Listar(int idSede)
         {
+            // Solo lectura y solo lo que se usa (Empaque para la descripción). Antes también se cargaban
+            // StockEmpaques→AjusteEmpaques y NotaSalidaEmpaques→NotaSalida, que no se usaban y multiplicaban las filas.
             var compras = await _context.CompraEmpaques
+                .AsNoTracking()
                 .Include(ce => ce.Empaque)
-                .Include(ce => ce.Compra)
-                .Include(ce => ce.StockEmpaques)
-                    .ThenInclude(se => se.AjusteEmpaques)
-                .Include(ce => ce.NotaSalidaEmpaques)
-                    .ThenInclude(nse => nse.NotaSalida)
                 .Where(w =>
                     (w.Compra != null && w.Compra.IdSede == idSede && (idSede == 15 || w.Compra.FechaLab != null)) ||
                     w.NotaSalidaEmpaques.Any(nse =>
@@ -49,6 +47,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
             var compraEmpaqueIds = compras.Select(c => c.Id).ToList();
 
             var ajustesEmpaqueQuery = await _context.AjusteEmpaques
+                .AsNoTracking()
                 .Include(a => a.StockEmpaque)
                 .Where(a =>
                     (a.StockEmpaque != null && compraEmpaqueIds.Contains(a.StockEmpaque.IdCompraEmpaque) && (idSede == 0 || a.StockEmpaque.IdSede == idSede)) ||
@@ -68,20 +67,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
 
             foreach (var s in compras)
             {
-                decimal entradasLote = 0m;
-                if (s.Compra != null && s.Compra.IdSede == idSede && (idSede == 15 || s.Compra.FechaLab != null))
-                {
-                    entradasLote += (s.CantidadRecibida.HasValue && s.CantidadRecibida.Value > 0 ? s.CantidadRecibida.Value : s.CantidadSolicitada);
-                }
-                entradasLote += s.NotaSalidaEmpaques
-                    .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeDestino == idSede && (nse.NotaSalida.Estado == "RECIBIDO" || nse.NotaSalida.Estado == "RECEPCIONADO" || nse.NotaSalida.FechaRecepcion != null || (nse.CantidadRecibida > 0)))
-                    .Sum(nse => (nse.CantidadRecibida > 0 ? nse.CantidadRecibida : nse.Cantidad));
-
-                decimal salidasNS = s.NotaSalidaEmpaques
-                    .Where(nse => nse.NotaSalida != null && nse.NotaSalida.IdSedeOrigen == idSede)
-                    .Sum(nse => nse.Cantidad);
-
-                var stockSede = s.StockEmpaques.Where(w => w.IdSede == idSede).ToList();
+                // (Se quitaron entradasLote, salidasNS y stockSede: se calculaban pero no se usaban; el saldo sale del libro mayor)
                 var ajustesDeCompra = ajustesPorCompraEmpaque.ContainsKey(s.Id) ? ajustesPorCompraEmpaque[s.Id] : new List<AjusteEmpaque>();
                 var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
