@@ -10,8 +10,9 @@ namespace Proy_back_QBD.Services.NotaSalidaService
     /// <summary>
     /// Stock de un Producto Intermedio (registro PI) en una sede, calculado igual que el KARDEX:
     ///  1) Su propio stock (elaborado en esa sede): filas con IdProductoIntermedio = PI y sin nota de salida.
-    ///  2) Lo recibido por Nota de Salida en esa sede con el mismo lote. Si varios registros PI del mismo
-    ///     producto comparten lote, lo recibido se asigna a uno solo (el de menor Id), como en el kardex.
+    ///  2) Lo recibido por Nota de Salida en esa sede cuya línea indica este PI (id_producto_intermedio).
+    ///     Las líneas antiguas sin PI se resuelven por lote: si varios registros PI del mismo producto
+    ///     comparten lote, lo recibido se asigna a uno solo (el de menor Id), como en el kardex.
     /// Antes se sumaba cualquier fila con ese lote (de cualquier producto, registro o sede de destino),
     /// por eso un registro con 15 g aparecía con 194 g.
     /// </summary>
@@ -36,35 +37,43 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                             && s.IdNotaSalidaInsumo == null)
                 .ToListAsync();
 
-            // 2) Recibido por Nota de Salida (mismo lote, mismo producto)
+            // 2) Recibido por Nota de Salida en esta sede
+            IQueryable<StockInsumo> RecibidasEnSede() => _context.StockInsumos
+                .Include(s => s.ProductoIntermedio)
+                .Include(s => s.NotaSalidaInsumo)
+                    .ThenInclude(n => n!.NotaSalida)
+                .Where(s => s.IdSede == idSede
+                            && s.IdNotaSalidaInsumo != null
+                            && s.NotaSalidaInsumo != null
+                            && s.NotaSalidaInsumo.IdCompraInsumo == null
+                            && s.NotaSalidaInsumo.NotaSalida != null
+                            && s.NotaSalidaInsumo.NotaSalida.IdSedeDestino == idSede
+                            && (EstadosRecibidos.Contains(s.NotaSalidaInsumo.NotaSalida.Estado)
+                                || s.NotaSalidaInsumo.NotaSalida.FechaRecepcion != null
+                                || (s.NotaSalidaInsumo.CantidadRecibida.HasValue && s.NotaSalidaInsumo.CantidadRecibida.Value > 0)));
+
+            // 2a) Líneas que indican el PI exacto
+            var recibidasPorId = await RecibidasEnSede()
+                .Where(s => s.NotaSalidaInsumo!.IdProductoIntermedio == pi.Id)
+                .ToListAsync();
+            filas.AddRange(recibidasPorId.Where(r => filas.All(f => f.Id != r.Id)));
+
+            // 2b) Líneas antiguas sin PI: por lote, asignadas al registro "dueño" del lote (como el kardex)
             var lote = (pi.Lote ?? "").Trim().ToUpper();
             if (lote.Length > 0)
             {
-                // Registro PI "dueño" del lote para este producto (como el kardex)
                 var idDueno = await _context.ProductosIntermedios.AsNoTracking()
                     .Where(p => p.IdInsumo == pi.IdInsumo && p.Lote != null && p.Lote.Trim().ToUpper() == lote)
                     .MinAsync(p => (int?)p.Id);
 
                 if (idDueno == pi.Id)
                 {
-                    var recibidas = await _context.StockInsumos
-                        .Include(s => s.ProductoIntermedio)
-                        .Include(s => s.NotaSalidaInsumo)
-                            .ThenInclude(n => n!.NotaSalida)
-                        .Where(s => s.IdSede == idSede
-                                    && s.IdNotaSalidaInsumo != null
-                                    && s.NotaSalidaInsumo != null
-                                    && s.NotaSalidaInsumo.IdCompraInsumo == null
+                    var recibidasPorLote = await RecibidasEnSede()
+                        .Where(s => s.NotaSalidaInsumo!.IdProductoIntermedio == null
                                     && s.NotaSalidaInsumo.Lote != null
-                                    && s.NotaSalidaInsumo.Lote.Trim().ToUpper() == lote
-                                    && s.NotaSalidaInsumo.NotaSalida != null
-                                    && s.NotaSalidaInsumo.NotaSalida.IdSedeDestino == idSede
-                                    && (EstadosRecibidos.Contains(s.NotaSalidaInsumo.NotaSalida.Estado)
-                                        || s.NotaSalidaInsumo.NotaSalida.FechaRecepcion != null
-                                        || (s.NotaSalidaInsumo.CantidadRecibida.HasValue && s.NotaSalidaInsumo.CantidadRecibida.Value > 0)))
+                                    && s.NotaSalidaInsumo.Lote.Trim().ToUpper() == lote)
                         .ToListAsync();
-
-                    filas.AddRange(recibidas.Where(r => filas.All(f => f.Id != r.Id)));
+                    filas.AddRange(recibidasPorLote.Where(r => filas.All(f => f.Id != r.Id)));
                 }
             }
 
@@ -99,20 +108,28 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .ToListAsync();
             foreach (var p in propios) resultado[p.Id] += p.Total;
 
-            // 2) Recibido por Nota de Salida en esta sede, por lote
-            var recibidas = await _context.StockInsumos.AsNoTracking()
+            // 2) Recibido por Nota de Salida en esta sede (con su PI exacto, o con lote si es una línea antigua)
+            var recibidasTodas = await _context.StockInsumos.AsNoTracking()
                 .Where(s => s.IdSede == idSede
                             && s.IdNotaSalidaInsumo != null
                             && s.NotaSalidaInsumo != null
                             && s.NotaSalidaInsumo.IdCompraInsumo == null
-                            && s.NotaSalidaInsumo.Lote != null
+                            && (s.NotaSalidaInsumo.IdProductoIntermedio != null || s.NotaSalidaInsumo.Lote != null)
                             && s.NotaSalidaInsumo.NotaSalida != null
                             && s.NotaSalidaInsumo.NotaSalida.IdSedeDestino == idSede
                             && (EstadosRecibidos.Contains(s.NotaSalidaInsumo.NotaSalida.Estado)
                                 || s.NotaSalidaInsumo.NotaSalida.FechaRecepcion != null
                                 || (s.NotaSalidaInsumo.CantidadRecibida.HasValue && s.NotaSalidaInsumo.CantidadRecibida.Value > 0)))
-                .Select(s => new { s.Id, s.StockDisponible, Lote = s.NotaSalidaInsumo!.Lote! })
+                .Select(s => new { s.Id, s.StockDisponible, IdPi = s.NotaSalidaInsumo!.IdProductoIntermedio, Lote = s.NotaSalidaInsumo!.Lote ?? "" })
                 .ToListAsync();
+            if (recibidasTodas.Count == 0) return resultado;
+
+            // 2a) Líneas con el PI exacto
+            foreach (var r in recibidasTodas.Where(r => r.IdPi.HasValue && resultado.ContainsKey(r.IdPi.Value)))
+                resultado[r.IdPi!.Value] += r.StockDisponible;
+
+            // 2b) Líneas antiguas sin PI: por lote
+            var recibidas = recibidasTodas.Where(r => !r.IdPi.HasValue && r.Lote.Trim().Length > 0).ToList();
             if (recibidas.Count == 0) return resultado;
 
             var lotes = recibidas.Select(r => r.Lote.Trim().ToUpper()).Distinct().ToList();

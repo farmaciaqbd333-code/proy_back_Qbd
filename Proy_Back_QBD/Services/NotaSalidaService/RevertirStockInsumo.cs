@@ -46,8 +46,24 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                                 .FirstOrDefaultAsync();
                         }
                     }
+                    else if (nsi.IdProductoIntermedio.HasValue)
+                    {
+                        // Línea de PI con su producto intermedio exacto
+                        int idPi = nsi.IdProductoIntermedio.Value;
+                        stockOrigen = await _context.StockInsumos
+                            .Include(s => s.ProductoIntermedio)
+                            .Where(x => x.IdProductoIntermedio == idPi && (x.IdSede == sedeOrigen || x.IdSede == 0))
+                            .OrderBy(x => x.Id)
+                            .FirstOrDefaultAsync()
+                            ?? await _context.StockInsumos
+                                .Include(s => s.ProductoIntermedio)
+                                .Where(x => x.IdProductoIntermedio == idPi)
+                                .OrderBy(x => x.Id)
+                                .FirstOrDefaultAsync();
+                    }
                     else if (!string.IsNullOrEmpty(nsi.Lote))
                     {
+                        // Líneas antiguas de PI sin id: respaldo por lote
                         stockOrigen = await _context.StockInsumos
                             .Include(s => s.ProductoIntermedio)
                             .Where(x => (x.ProductoIntermedio != null && x.ProductoIntermedio.Lote == nsi.Lote) && (x.IdSede == sedeOrigen || x.IdSede == 0))

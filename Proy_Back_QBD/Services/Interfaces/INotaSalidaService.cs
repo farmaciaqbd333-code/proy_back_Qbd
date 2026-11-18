@@ -18,5 +18,9 @@ namespace proy_back_Qbd.Services.Interfaces.INotaSalidaService
         Task Confirmar(ConfirmarReq request);
         Task<List<RegistrosRes>> ObtenerRegistrosXFamilia(ObtenerRegistroReq request);
         Task ActualizarObservacion(int idNotaSalida, string observacion);
+        /// <summary>Líneas de PI sin producto intermedio asignado (ambiguas o sin coincidencia por lote).</summary>
+        Task<List<LineaPiSinAsignarRes>> ObtenerLineasPiSinAsignar();
+        /// <summary>Asigna a mano el producto intermedio exacto de una línea de PI.</summary>
+        Task AsignarProductoIntermedio(int idNotaSalidaInsumo, int idProductoIntermedio);
     }
 }

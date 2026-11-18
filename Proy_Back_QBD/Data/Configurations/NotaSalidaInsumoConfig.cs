@@ -49,6 +49,15 @@ public class NotaSalidaInsumoConfiguration : IEntityTypeConfiguration<NotaSalida
         builder.Property(e => e.CantidadRecibida)
             .HasColumnName("cantidad_recibida");
 
+        builder.Property(e => e.IdProductoIntermedio)
+            .HasColumnName("id_producto_intermedio");
+
+        // Si se borra el PI, la línea conserva el lote y queda sin id (no se borra la nota)
+        builder.HasOne(e => e.ProductoIntermedio)
+            .WithMany()
+            .HasForeignKey(e => e.IdProductoIntermedio)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(e => e.NotaSalida)
             .WithMany(wm => wm.NotaSalidaInsumos)
             .HasForeignKey(e => e.IdNotaSalida)

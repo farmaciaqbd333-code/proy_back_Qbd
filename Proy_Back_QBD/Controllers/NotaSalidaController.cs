@@ -100,6 +100,25 @@ namespace proy_back_Qbd.Controllers
             var resultado = await _serviceNotaSalida.ObtenerRegistrosXFamilia(request);
             return Ok(resultado);
         }
+        /// <summary>
+        /// Líneas de PI sin producto intermedio asignado, con los PI candidatos por lote.
+        /// </summary>
+        [HttpGet("pi-sin-asignar")]
+        public async Task<ActionResult<List<LineaPiSinAsignarRes>>> ListarPiSinAsignar()
+        {
+            return Ok(await _serviceNotaSalida.ObtenerLineasPiSinAsignar());
+        }
+
+        /// <summary>
+        /// Asigna el producto intermedio exacto a una línea de PI de nota de salida.
+        /// </summary>
+        [HttpPut("insumo/{idNotaSalidaInsumo}/producto-intermedio/{idProductoIntermedio}")]
+        public async Task<IActionResult> AsignarProductoIntermedio(int idNotaSalidaInsumo, int idProductoIntermedio)
+        {
+            await _serviceNotaSalida.AsignarProductoIntermedio(idNotaSalidaInsumo, idProductoIntermedio);
+            return Ok(new { mensaje = "Producto intermedio asignado a la línea." });
+        }
+
         [HttpPost("confirmar")]
         public async Task<IActionResult> Confirmar([FromBody] ConfirmarReq request)
         {

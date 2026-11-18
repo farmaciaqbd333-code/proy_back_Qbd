@@ -95,12 +95,14 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
             var allPIs = await _context.ProductosIntermedios
                 .Include(p => p.Insumo)
                 .AsNoTracking()
-                .Where(p => !string.IsNullOrEmpty(p.Lote))
                 .ToListAsync();
 
             var piByLote = allPIs
+                .Where(p => !string.IsNullOrEmpty(p.Lote))
                 .GroupBy(p => p.Lote!.Trim().ToUpper())
                 .ToDictionary(g => g.Key, g => g.First());
+            // PI exacto de la línea; el lote queda de respaldo para líneas antiguas
+            var piById = allPIs.ToDictionary(p => p.Id);
 
             var notasSalidaDestinoPI = await _context.NotaSalidaInsumos.AsNoTracking()
                 .Include(nsi => nsi.NotaSalida)
@@ -122,9 +124,10 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
 
             foreach (var nsi in notasSalidaDestinoPI)
             {
-                if (string.IsNullOrEmpty(nsi.Lote)) continue;
-                var key = nsi.Lote.Trim().ToUpper();
-                if (!piByLote.TryGetValue(key, out var piRef)) continue;
+                ProductoIntermedio? piRef = null;
+                if (nsi.IdProductoIntermedio.HasValue) piById.TryGetValue(nsi.IdProductoIntermedio.Value, out piRef);
+                if (piRef == null && !string.IsNullOrEmpty(nsi.Lote)) piByLote.TryGetValue(nsi.Lote.Trim().ToUpper(), out piRef);
+                if (piRef == null) continue;
 
                 stockNSDict.TryGetValue(nsi.Id, out var stockNS);
 

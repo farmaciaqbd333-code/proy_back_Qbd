@@ -194,9 +194,11 @@ namespace Proy_back_QBD.Services.NotaSalidaService
             {
                 IdNotaSalida = idNotaSalida,
                 IdCompraInsumo = isPI ? null : item.Registro,
+                // PI: el producto intermedio exacto (antes solo quedaba el lote y se deducía comparando textos)
+                IdProductoIntermedio = isPI ? (pi?.Id ?? stockOrigen.IdProductoIntermedio) : null,
                 Cantidad = cantidadAGuardar,
                 Um = umAGuardar,
-                Lote = isPI ? (stockOrigen.ProductoIntermedio?.Lote ?? stockOrigen.IdProductoIntermedio?.ToString() ?? stockOrigen.NotaSalidaInsumo?.Lote ?? pi?.Lote) : null,
+                Lote = isPI ? (pi?.Lote ?? stockOrigen.ProductoIntermedio?.Lote ?? stockOrigen.NotaSalidaInsumo?.Lote) : null,
                 IdCreador = request.IdCreador,
                 PaqueteNotaSalidaInsumos = item.Paquetes?.Select(p =>
                 {

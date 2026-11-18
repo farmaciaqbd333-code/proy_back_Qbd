@@ -704,7 +704,7 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumo)
                         .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede)
-                                    || _context.StockInsumos.Any(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == w.Id || (s.NotaSalidaInsumo != null && s.NotaSalidaInsumo.Lote == w.Lote)) && s.StockDisponible > 0))
+                                    || _context.StockInsumos.Any(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == w.Id || (s.NotaSalidaInsumo != null && (s.NotaSalidaInsumo.IdProductoIntermedio == w.Id || (s.NotaSalidaInsumo.IdProductoIntermedio == null && s.NotaSalidaInsumo.Lote == w.Lote)))) && s.StockDisponible > 0))
                         .Select(x => new
                         {
                             x.Id,
@@ -773,6 +773,14 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 var relatedStock = item.StockInsumo ?? stockInsumosList.FirstOrDefault(s => s.IdNotaSalidaInsumo == item.Id);
                 var pi = relatedStock?.ProductoIntermedio;
                 bool isPI = pi != null || (!item.IdCompraInsumo.HasValue);
+
+                if (isPI && pi == null && item.IdProductoIntermedio.HasValue)
+                {
+                    pi = await _context.ProductosIntermedios
+                        .AsNoTracking()
+                        .Include(p => p.Insumo)
+                        .FirstOrDefaultAsync(p => p.Id == item.IdProductoIntermedio.Value);
+                }
 
                 if (isPI && pi == null && !string.IsNullOrEmpty(item.Lote))
                 {

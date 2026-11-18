@@ -346,12 +346,15 @@ namespace proy_back_Qbd.Services.Kardex
 
             // 2. Transferencias recibidas por Nota de Salida en esta sede
             var lotesDelInsumo = await _context.ProductosIntermedios.AsNoTracking()
-                .Where(p => p.IdInsumo == idInsumo && !string.IsNullOrEmpty(p.Lote))
+                .Where(p => p.IdInsumo == idInsumo)
                 .ToListAsync();
 
             var loteDict = lotesDelInsumo
+                .Where(p => !string.IsNullOrEmpty(p.Lote))
                 .GroupBy(p => p.Lote!.Trim().ToUpper())
                 .ToDictionary(g => g.Key, g => g.First());
+            // PI exacto de la línea de nota de salida; el lote queda de respaldo para líneas antiguas
+            var piPorId = lotesDelInsumo.ToDictionary(p => p.Id);
 
             var notasSalidaDestino = await _context.NotaSalidaInsumos.AsNoTracking()
                 .Include(nsi => nsi.NotaSalida)
@@ -365,9 +368,10 @@ namespace proy_back_Qbd.Services.Kardex
 
             foreach (var nsi in notasSalidaDestino)
             {
-                if (string.IsNullOrEmpty(nsi.Lote)) continue;
-                var key = nsi.Lote.Trim().ToUpper();
-                if (!loteDict.TryGetValue(key, out var piRef)) continue;
+                proy_back_Qbd.Models.ProductoIntermedio.ProductoIntermedio? piRef = null;
+                if (nsi.IdProductoIntermedio.HasValue) piPorId.TryGetValue(nsi.IdProductoIntermedio.Value, out piRef);
+                if (piRef == null && !string.IsNullOrEmpty(nsi.Lote)) loteDict.TryGetValue(nsi.Lote.Trim().ToUpper(), out piRef);
+                if (piRef == null) continue;
 
                 var stockNS = await _context.StockInsumos.AsNoTracking()
                     .Include(s => s.AjusteInsumos)

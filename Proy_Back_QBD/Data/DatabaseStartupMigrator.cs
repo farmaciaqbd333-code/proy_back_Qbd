@@ -189,6 +189,53 @@ namespace Proy_back_QBD.Data
                 {
                     Console.WriteLine($"DB Auto-migration error (índices): {exIdx.Message}");
                 }
+
+                try
+                {
+                    // Notas de salida de PI: cada línea apunta al producto intermedio exacto
+                    // (antes solo se guardaba el lote y el PI se deducía comparando textos).
+                    db.Database.ExecuteSqlRaw(@"
+                        ALTER TABLE nota_salida_insumo ADD COLUMN IF NOT EXISTS id_producto_intermedio INT NULL;
+                        DO $$
+                        BEGIN
+                            IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_nota_salida_insumo_producto_intermedio') THEN
+                                ALTER TABLE nota_salida_insumo
+                                    ADD CONSTRAINT fk_nota_salida_insumo_producto_intermedio
+                                    FOREIGN KEY (id_producto_intermedio) REFERENCES producto_intermedio(id) ON DELETE SET NULL;
+                            END IF;
+                        END $$;
+                        CREATE INDEX IF NOT EXISTS idx_nota_salida_insumo_pi ON nota_salida_insumo(id_producto_intermedio);
+                    ");
+
+                    // Relleno de líneas antiguas de PI: solo si su lote coincide con UN único PI.
+                    // Las ambiguas quedan vacías (ver GET /api/notaSalida/pi-sin-asignar).
+                    // Idempotente: solo toca líneas que aún no tienen PI.
+                    int rellenadas = db.Database.ExecuteSqlRaw(@"
+                        WITH candidatos AS (
+                            SELECT nsi.id AS nsi_id, p.id AS pi_id
+                            FROM nota_salida_insumo nsi
+                            JOIN producto_intermedio p ON UPPER(TRIM(p.lote)) = UPPER(TRIM(nsi.lote))
+                            WHERE nsi.id_compra_insumo IS NULL
+                              AND nsi.id_producto_intermedio IS NULL
+                              AND nsi.lote IS NOT NULL AND TRIM(nsi.lote) <> ''
+                        ),
+                        unicos AS (
+                            SELECT nsi_id, MIN(pi_id) AS pi_id
+                            FROM candidatos
+                            GROUP BY nsi_id
+                            HAVING COUNT(DISTINCT pi_id) = 1
+                        )
+                        UPDATE nota_salida_insumo t
+                        SET id_producto_intermedio = u.pi_id
+                        FROM unicos u
+                        WHERE t.id = u.nsi_id;
+                    ");
+                    Console.WriteLine($"--> Notas de salida PI: columna id_producto_intermedio verificada; líneas antiguas completadas ahora: {rellenadas}");
+                }
+                catch (Exception exNsPi)
+                {
+                    Console.WriteLine($"DB Auto-migration error (nota_salida_insumo.id_producto_intermedio): {exNsPi.Message}");
+                }
                 try
                 {
                     // Lista de precios (Excel PREC. AV): UNA SOLA TABLA (lista_precios_av) con las listas S, A, B y C.

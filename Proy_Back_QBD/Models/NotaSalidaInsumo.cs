@@ -23,8 +23,14 @@ namespace proy_back_Qbd.Models
         public int? IdModificador { get; set; }
         public DateTimeOffset? FechaModificacion { get; set; }
         public int? IdCompraInsumo { get; set; }
+        /// <summary>
+        /// Producto intermedio exacto que sale en esta línea (solo líneas de PI).
+        /// Las líneas antiguas pueden tenerlo vacío: para ellas se usa el lote como respaldo.
+        /// </summary>
+        public int? IdProductoIntermedio { get; set; }
 
         public Usuario? Creador { get; set; }
+        public proy_back_Qbd.Models.ProductoIntermedio.ProductoIntermedio? ProductoIntermedio { get; set; }
         public CompraInsumos? CompraInsumos { get; set; }
         public StockInsumo? StockInsumo { get; set; }
         public NotaSalida? NotaSalida { get; set; }

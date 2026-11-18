@@ -273,12 +273,15 @@ namespace proy_back_Qbd.Services.Kardex
             {
                 // 1. Obtener lotes y referencias del producto intermedio
                 var lotesDelInsumo = await _context.ProductosIntermedios.AsNoTracking()
-                    .Where(p => p.IdInsumo == idInsumo && !string.IsNullOrEmpty(p.Lote))
+                    .Where(p => p.IdInsumo == idInsumo)
                     .ToListAsync();
 
                 var loteDict = lotesDelInsumo
+                    .Where(p => !string.IsNullOrEmpty(p.Lote))
                     .GroupBy(p => p.Lote!.Trim().ToUpper())
                     .ToDictionary(g => g.Key, g => g.First());
+                // PI exacto de la línea de nota de salida; el lote queda de respaldo para líneas antiguas
+                var piPorId = lotesDelInsumo.ToDictionary(p => p.Id);
 
                 // 2. Lotes disponibles en esta sede para rastreo FIFO
                 var elaboraciones = await _context.ProductosIntermedios
@@ -306,9 +309,10 @@ namespace proy_back_Qbd.Services.Kardex
 
                 foreach (var nsi in notasSalidaRecibidas)
                 {
-                    if (string.IsNullOrEmpty(nsi.Lote)) continue;
-                    var key = nsi.Lote.Trim().ToUpper();
-                    if (!loteDict.TryGetValue(key, out var piRef)) continue;
+                    proy_back_Qbd.Models.ProductoIntermedio.ProductoIntermedio? piRef = null;
+                    if (nsi.IdProductoIntermedio.HasValue) piPorId.TryGetValue(nsi.IdProductoIntermedio.Value, out piRef);
+                    if (piRef == null && !string.IsNullOrEmpty(nsi.Lote)) loteDict.TryGetValue(nsi.Lote.Trim().ToUpper(), out piRef);
+                    if (piRef == null) continue;
 
                     decimal cant = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
                         ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
@@ -667,17 +671,24 @@ namespace proy_back_Qbd.Services.Kardex
                             si.StockDisponible > 0 &&
                             si.IdNotaSalidaInsumo.HasValue &&
                             si.NotaSalidaInsumo != null &&
-                            !string.IsNullOrEmpty(si.NotaSalidaInsumo.Lote))
+                            (si.NotaSalidaInsumo.IdProductoIntermedio.HasValue || !string.IsNullOrEmpty(si.NotaSalidaInsumo.Lote)))
                         .AsNoTracking()
                         .ToListAsync();
 
                     foreach (var sns in nsVencidos)
                     {
                         var loteKey = (sns.NotaSalidaInsumo?.Lote ?? "").Trim().ToUpper();
-                        var piRef = await _context.ProductosIntermedios
-                            .Include(p => p.Insumo)
-                            .Include(p => p.Sede)
-                            .FirstOrDefaultAsync(p => p.Lote == loteKey && (p.IdInsumo == idInsumo || p.Id == idInsumo));
+                        var idPiLinea = sns.NotaSalidaInsumo?.IdProductoIntermedio;
+                        // PI exacto de la línea; el lote solo para líneas antiguas sin PI
+                        var piRef = idPiLinea.HasValue
+                            ? await _context.ProductosIntermedios
+                                .Include(p => p.Insumo)
+                                .Include(p => p.Sede)
+                                .FirstOrDefaultAsync(p => p.Id == idPiLinea.Value && (p.IdInsumo == idInsumo || p.Id == idInsumo))
+                            : await _context.ProductosIntermedios
+                                .Include(p => p.Insumo)
+                                .Include(p => p.Sede)
+                                .FirstOrDefaultAsync(p => p.Lote == loteKey && (p.IdInsumo == idInsumo || p.Id == idInsumo));
 
                         if (piRef != null && piRef.FechaVencimiento.HasValue && piRef.FechaVencimiento.Value < ahora)
                         {

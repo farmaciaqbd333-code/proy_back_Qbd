@@ -46,6 +46,8 @@ namespace proy_back_Qbd.Services.Kardex.Stock
                 .Where(p => !string.IsNullOrEmpty(p.Lote))
                 .GroupBy(p => p.Lote!.Trim().ToUpper())
                 .ToDictionary(g => g.Key, g => g.First());
+            // PI exacto de la línea de nota de salida; el lote queda de respaldo para líneas antiguas
+            var piById = allPIs.ToDictionary(p => p.Id);
 
             var notasSalidaDestino = await _context.NotaSalidaInsumos.AsNoTracking()
                 .Include(nsi => nsi.NotaSalida)
@@ -165,7 +167,7 @@ namespace proy_back_Qbd.Services.Kardex.Stock
                     si.StockDisponible > 0 &&
                     si.IdNotaSalidaInsumo.HasValue &&
                     si.NotaSalidaInsumo != null &&
-                    !string.IsNullOrEmpty(si.NotaSalidaInsumo.Lote))
+                    (si.NotaSalidaInsumo.IdProductoIntermedio.HasValue || !string.IsNullOrEmpty(si.NotaSalidaInsumo.Lote)))
                 .ToListAsync();
 
             var bajasNSTotales = new Dictionary<int, decimal>();
@@ -174,7 +176,10 @@ namespace proy_back_Qbd.Services.Kardex.Stock
                 foreach (var sns in bajasNS)
                 {
                     var loteKey = (sns.NotaSalidaInsumo?.Lote ?? "").Trim().ToUpper();
-                    if (piByLote.TryGetValue(loteKey, out var piMatch))
+                    var idPiLinea = sns.NotaSalidaInsumo?.IdProductoIntermedio;
+                    var piMatch = idPiLinea.HasValue && piById.TryGetValue(idPiLinea.Value, out var porId) ? porId
+                        : (piByLote.TryGetValue(loteKey, out var porLote) ? porLote : null);
+                    if (piMatch != null)
                     {
                         if (piMatch.FechaVencimiento.HasValue && piMatch.FechaVencimiento.Value < ahora)
                         {
@@ -202,7 +207,11 @@ namespace proy_back_Qbd.Services.Kardex.Stock
                 foreach (var nsi in notasSalidaDestino)
                 {
                     int idInsumoItem = 0;
-                    if (!string.IsNullOrEmpty(nsi.Lote))
+                    if (nsi.IdProductoIntermedio.HasValue && piById.TryGetValue(nsi.IdProductoIntermedio.Value, out var piLinea))
+                    {
+                        idInsumoItem = piLinea.IdInsumo;
+                    }
+                    else if (!string.IsNullOrEmpty(nsi.Lote))
                     {
                         var key = nsi.Lote.Trim().ToUpper();
                         if (piByLote.TryGetValue(key, out var foundPi))
@@ -223,7 +232,11 @@ namespace proy_back_Qbd.Services.Kardex.Stock
                 foreach (var nsi in notasSalidaOrigen)
                 {
                     int idInsumoItem = 0;
-                    if (!string.IsNullOrEmpty(nsi.Lote))
+                    if (nsi.IdProductoIntermedio.HasValue && piById.TryGetValue(nsi.IdProductoIntermedio.Value, out var piLinea))
+                    {
+                        idInsumoItem = piLinea.IdInsumo;
+                    }
+                    else if (!string.IsNullOrEmpty(nsi.Lote))
                     {
                         var key = nsi.Lote.Trim().ToUpper();
                         if (piByLote.TryGetValue(key, out var foundPi))

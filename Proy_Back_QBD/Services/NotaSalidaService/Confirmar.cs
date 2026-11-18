@@ -109,10 +109,18 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     StockInsumo? stockOrigenReembolso = null;
                     if (isPI)
                     {
-                        stockOrigenReembolso = await _context.StockInsumos
-                            .Include(x => x.ProductoIntermedio)
-                            .FirstOrDefaultAsync(x => x.Tipo == "PI" && x.IdSede == idSedeOrigen &&
-                                (x.ProductoIntermedio != null && x.ProductoIntermedio.Lote == nsInsumo!.Lote));
+                        // Por el PI exacto de la línea; el lote solo para líneas antiguas sin PI asignado
+                        int? idPi = nsInsumo?.IdProductoIntermedio;
+                        stockOrigenReembolso = idPi.HasValue
+                            ? await _context.StockInsumos
+                                .Include(x => x.ProductoIntermedio)
+                                .Where(x => x.Tipo == "PI" && x.IdSede == idSedeOrigen && x.IdProductoIntermedio == idPi.Value)
+                                .OrderBy(x => x.Id)
+                                .FirstOrDefaultAsync()
+                            : await _context.StockInsumos
+                                .Include(x => x.ProductoIntermedio)
+                                .FirstOrDefaultAsync(x => x.Tipo == "PI" && x.IdSede == idSedeOrigen &&
+                                    (x.ProductoIntermedio != null && x.ProductoIntermedio.Lote == nsInsumo!.Lote));
                     }
                     else if (nsInsumo?.IdCompraInsumo.HasValue == true)
                     {
