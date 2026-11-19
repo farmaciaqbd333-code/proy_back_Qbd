@@ -375,6 +375,12 @@ namespace proy_back_Qbd.Services.Kardex
                 {
                     fila.TipoOrigen = "Ajuste";
                 }
+                else
+                {
+                    // Lote elaborado en la sede. Sin TipoOrigen el front lo mostraba como COMPRA.
+                    fila.TipoOrigen = "Elaboración PI";
+                    fila.DocumentoOrigen = pi?.Lote;
+                }
                 resultado.Add(fila);
             }
 
