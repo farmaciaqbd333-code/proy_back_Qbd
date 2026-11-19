@@ -62,6 +62,7 @@ public class KardexLedgerPiTests
         Assert.Equal(42000m, lote.Salidas);
         Assert.Equal("PI-25022601", lote.Lote);
         Assert.Equal(740, lote.IdCompra);
+        Assert.Equal("Elaboración PI", lote.TipoOrigen); // antes salía sin origen y el front lo mostraba como COMPRA
         Assert.Equal(fila.Stock, detalle.Sum(d => d.Saldo));
     }
 
