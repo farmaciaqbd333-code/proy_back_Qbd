@@ -65,7 +65,8 @@ builder.Logging.AddConsole();
 
 // ===================== Servicios =====================
 builder.Services.AddApplicationServices();
-builder.Services.AddControllers()
+// Quién crea/modifica sale siempre del token, no del front (ver Security/UsuarioDeSesionFilter)
+builder.Services.AddControllers(options => options.Filters.Add<Proy_back_QBD.Security.UsuarioDeSesionFilter>())
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
