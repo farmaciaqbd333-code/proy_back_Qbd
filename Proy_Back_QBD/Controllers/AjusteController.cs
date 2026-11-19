@@ -11,6 +11,7 @@ using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
+using proy_back_Qbd.Services.Ajuste;
 
 namespace proy_back_Qbd.Controllers
 {
@@ -22,6 +23,25 @@ namespace proy_back_Qbd.Controllers
         public AjusteController(IAjusteService _ajusteService)
         {
             this._ajusteService = _ajusteService;
+        }
+
+        /// <summary>
+        /// Ajuste masivo de materia prima (MP, no PI): deja cada insumo con <paramref name="objetivo"/> en cada sede
+        /// (lote vigente más reciente = objetivo, demás lotes vigentes = 0; vencidos no se tocan).
+        /// SIN <paramref name="confirmar"/> solo SIMULA y devuelve lo que cambiaría. Para aplicar, confirmar=AJUSTAR-MP.
+        /// </summary>
+        [HttpPost("mp-masivo")]
+        public async Task<IActionResult> AjusteMasivoMp(
+            [FromServices] AjusteMasivoMpService servicio,
+            [FromQuery] decimal objetivo = 1000,
+            [FromQuery] int? idSede = null,
+            [FromQuery] bool detalle = false,
+            [FromQuery] int idCreador = 1,
+            [FromQuery] string? confirmar = null)
+        {
+            bool aplicar = string.Equals(confirmar, AjusteMasivoMpService.CONFIRMACION, StringComparison.Ordinal);
+            var res = await servicio.Ejecutar(objetivo, aplicar, idCreador, idSede, detalle);
+            return Ok(res);
         }
 
         [HttpGet("lista")]
