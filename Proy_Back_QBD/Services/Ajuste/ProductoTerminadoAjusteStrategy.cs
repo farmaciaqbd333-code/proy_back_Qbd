@@ -6,6 +6,7 @@ using proy_back_Qbd.Models.Ajuste;
 using proy_back_Qbd.Models.Ajuste.request;
 using proy_back_Qbd.Models.Ajuste.response;
 using proy_back_Qbd.Util;
+using proy_back_Qbd.Services.Kardex.Ledger;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
@@ -59,6 +60,9 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 .GroupBy(a => (a.StockProducto != null && a.StockProducto.IdCompraProducto > 0) ? a.StockProducto.IdCompraProducto : a.IdStockProducto)
                 .ToDictionary(g => g.Key, g => g.ToList());
 
+            // Saldo por registro = libro mayor (misma regla que kardex, lista y nota de salida)
+            var mayor = await new KardexLedgerPtService(_context).CalcularAsync(idSede, null);
+
             var resultado = new List<TablaAjustesRes>();
 
             foreach (var s in compras)
@@ -80,25 +84,12 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 var ajustesDeCompra = ajustesPorCompraPt.ContainsKey(s.Id) ? ajustesPorCompraPt[s.Id] : new List<AjusteProducto>();
                 var ultimoAjuste = ajustesDeCompra.FirstOrDefault();
 
-                decimal saldo = 0m;
-                string observacionAjuste = "";
-
-                if (ultimoAjuste != null)
-                {
-                    saldo = ultimoAjuste.StockNuevo;
-                    observacionAjuste = ultimoAjuste.Observacion ?? "";
-                }
-                else if (stockSede.Any())
-                {
-                    saldo = stockSede.Sum(sp => sp.StockDisponible);
-                }
-                else
-                {
-                    saldo = entradasLote - salidasNS;
-                }
-
-                if (saldo < 0) saldo = 0;
-
+                var partesReg = mayor.TryGetValue(s.IdProducto, out var mm)
+                    ? mm.Partes.Where(p => p.IdCompraInsumo == s.Id).ToList()
+                    : new List<LedgerParte>();
+                decimal saldo = partesReg.Sum(p => p.Saldo);
+                decimal baja = partesReg.Sum(p => p.Baja);
+                string observacionAjuste = ultimoAjuste?.Observacion ?? "";
                 resultado.Add(new TablaAjustesRes
                 {
                     Codigo = UtilFamilia.CodigoInsumo(s.IdProducto),
@@ -107,6 +98,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Descripcion = s.Producto?.Descripcion ?? "",
                     Lote = s.Lote ?? "",
                     Saldo = saldo,
+                    Baja = baja,
                     FechaFabricacion = s.FechaFabricacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Clasificacion = "PT",

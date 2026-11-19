@@ -6,6 +6,7 @@ using proy_back_Qbd.Models.Ajuste;
 using proy_back_Qbd.Models.Ajuste.request;
 using proy_back_Qbd.Models.Ajuste.response;
 using proy_back_Qbd.Util;
+using proy_back_Qbd.Services.Kardex.Ledger;
 using proy_back_Qbd.Util.Familias;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
@@ -27,6 +28,12 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
         public async Task<List<TablaAjustesRes>> Listar(int idSede)
         {
             var resultado = new List<TablaAjustesRes>();
+
+            // Saldo por registro = libro mayor de PI (misma regla que el kardex, la lista de stock y la nota de salida).
+            // Antes salía de la columna StockDisponible y no cuadraba con el kardex.
+            var mayor = await new KardexLedgerPiService(_context).CalcularAsync(idSede, null);
+            List<LedgerParte> PartesDe(int idInsumo) =>
+                mayor.PorInsumo.TryGetValue(idInsumo, out var m) ? m.Partes : new List<LedgerParte>();
 
             // 1. Elaboraciones directas en esta sede
             var piList = await _context.ProductosIntermedios
@@ -61,20 +68,11 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 var ajustesDePI = ajustesPorPI.ContainsKey(s.Id) ? ajustesPorPI[s.Id] : (s.StockInsumo?.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>());
                 var ultimoAjuste = ajustesDePI.FirstOrDefault();
 
-                decimal saldo = 0m;
-                string observacionAjuste = "";
-
-                if (ultimoAjuste != null)
-                {
-                    saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : ultimoAjuste.StockNuevo;
-                    observacionAjuste = ultimoAjuste.Observacion ?? "";
-                }
-                else
-                {
-                    saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : cantIngresada;
-                }
-
-                if (saldo < 0) saldo = 0;
+                // Lote elaborado: su parte de elaboración (y los ajustes sobre ella), sin las notas de salida recibidas
+                var partesPi = PartesDe(s.IdInsumo).Where(p => p.IdCompraInsumo == s.Id && p.IdNotaSalidaInsumo == null).ToList();
+                decimal saldo = partesPi.Sum(p => p.Saldo);
+                decimal baja = partesPi.Sum(p => p.Baja);
+                string observacionAjuste = ultimoAjuste?.Observacion ?? "";
 
                 resultado.Add(new TablaAjustesRes
                 {
@@ -84,6 +82,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Descripcion = s.Insumo?.Descripcion ?? "",
                     Lote = s.Lote ?? "",
                     Saldo = saldo,
+                    Baja = baja,
                     FechaFabricacion = s.FechaEmision ?? s.FechaCreacion,
                     FechaVencimiento = s.FechaVencimiento,
                     Clasificacion = "PI",
@@ -95,12 +94,14 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
             var allPIs = await _context.ProductosIntermedios
                 .Include(p => p.Insumo)
                 .AsNoTracking()
-                .Where(p => !string.IsNullOrEmpty(p.Lote))
                 .ToListAsync();
 
-            var piByLote = allPIs
-                .GroupBy(p => p.Lote!.Trim().ToUpper())
-                .ToDictionary(g => g.Key, g => g.First());
+            var piById = allPIs.ToDictionary(p => p.Id);
+            // Lote (PI) de cada línea de nota de salida recibida: el mismo que le asignó el libro mayor
+            var piDeNs = mayor.PorInsumo.Values.SelectMany(r => r.Partes)
+                .Where(p => p.IdNotaSalidaInsumo.HasValue && p.IdCompraInsumo > 0)
+                .GroupBy(p => p.IdNotaSalidaInsumo!.Value)
+                .ToDictionary(g => g.Key, g => g.First().IdCompraInsumo);
 
             var notasSalidaDestinoPI = await _context.NotaSalidaInsumos.AsNoTracking()
                 .Include(nsi => nsi.NotaSalida)
@@ -122,10 +123,8 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
 
             foreach (var nsi in notasSalidaDestinoPI)
             {
-                if (string.IsNullOrEmpty(nsi.Lote)) continue;
-                var key = nsi.Lote.Trim().ToUpper();
-                if (!piByLote.TryGetValue(key, out var piRef)) continue;
-
+                ProductoIntermedio? piRef = piDeNs.TryGetValue(nsi.Id, out var idPi) && piById.TryGetValue(idPi, out var pr) ? pr : null;
+                if (piRef == null) continue;
                 stockNSDict.TryGetValue(nsi.Id, out var stockNS);
 
                 decimal cantRecibida = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
@@ -134,20 +133,10 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                 var ajustesNS = stockNS?.AjusteInsumos?.OrderByDescending(a => a.FechaCreacion).ToList() ?? new List<AjusteInsumo>();
                 var ultimoAjusteNS = ajustesNS.FirstOrDefault();
 
-                decimal saldo = 0m;
-                string observacionAjuste = "";
-
-                if (ultimoAjusteNS != null)
-                {
-                    saldo = stockNS != null ? stockNS.StockDisponible : ultimoAjusteNS.StockNuevo;
-                    observacionAjuste = ultimoAjusteNS.Observacion ?? "";
-                }
-                else
-                {
-                    saldo = stockNS != null ? stockNS.StockDisponible : cantRecibida;
-                }
-
-                if (saldo < 0) saldo = 0;
+                var partesNs = PartesDe(piRef.IdInsumo).Where(p => p.IdNotaSalidaInsumo == nsi.Id).ToList();
+                decimal saldo = partesNs.Sum(p => p.Saldo);
+                decimal baja = partesNs.Sum(p => p.Baja);
+                string observacionAjuste = ultimoAjusteNS?.Observacion ?? "";
 
                 DateTime? fechaFab = piRef.FechaEmision ?? piRef.FechaCreacion;
                 DateTime? fechaVcto = piRef.FechaVencimiento;
@@ -160,6 +149,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Descripcion = piRef.Insumo?.Descripcion ?? "",
                     Lote = nsi.Lote ?? piRef.Lote ?? "",
                     Saldo = saldo,
+                    Baja = baja,
                     FechaFabricacion = fechaFab,
                     FechaVencimiento = fechaVcto,
                     Clasificacion = "PI",
@@ -184,7 +174,9 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
             foreach (var ci in comprasPI)
             {
                 var stockSede = ci.StockInsumos.Where(si => si.IdSede == idSede).ToList();
-                decimal saldo = stockSede.Any() ? stockSede.Sum(si => si.StockDisponible) : (ci.CantidadRecibida ?? ci.CantidadSolicitada);
+                var partesCompra = PartesDe(ci.IdInsumo).Where(p => p.IdCompraInsumo == -ci.Id).ToList();
+                decimal saldo = partesCompra.Sum(p => p.Saldo);
+                decimal baja = partesCompra.Sum(p => p.Baja);
                 var ultimoAjuste = stockSede.SelectMany(s => s.AjusteInsumos).OrderByDescending(a => a.FechaCreacion).FirstOrDefault();
 
                 resultado.Add(new TablaAjustesRes
@@ -195,6 +187,7 @@ namespace Proy_back_QBD.Service.AjusteService.Familias
                     Descripcion = ci.Insumo?.Descripcion ?? "",
                     Lote = ci.Lote ?? "",
                     Saldo = saldo,
+                    Baja = baja,
                     FechaFabricacion = ci.FechaFabricacion,
                     FechaVencimiento = ci.FechaVencimiento,
                     Clasificacion = "PI",
