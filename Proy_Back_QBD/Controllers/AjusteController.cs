@@ -80,6 +80,9 @@ namespace proy_back_Qbd.Controllers
         {
             if (request == null) return BadRequest(new { message = "El cuerpo de la solicitud no puede ser nulo o tiene formato JSON inválido." });
             if (request.ListaAjustes == null || request.ListaAjustes.Count == 0) return BadRequest(new { message = "La lista de ajustes está vacía." });
+            // El ajuste queda a nombre del usuario de la sesión (token), no del id que mande el front
+            var idUsuarioToken = JwtTokens.UsuarioId(User);
+            if (idUsuarioToken > 0) request.IdCreador = idUsuarioToken;
             await _ajusteService.RegistrarAjuste(request);
             return Ok(new
             {
