@@ -46,6 +46,16 @@ namespace proy_back_Qbd.Services.Ajuste
         public List<AjusteMasivoSedeRes> Sedes { get; set; } = new();
     }
 
+    public class RevertirMasivoRes
+    {
+        public bool Simulacion { get; set; }
+        public int IdSede { get; set; }
+        public string Sede { get; set; } = "";
+        public int AjustesQuitados { get; set; }
+        public int Insumos { get; set; }
+        public int Lotes { get; set; }
+    }
+
     /// <summary>
     /// Lleva el stock de cada insumo MP (no PI) a un valor objetivo en cada sede, con ajustes (conteos físicos)
     /// normales: el lote vigente más reciente queda en el objetivo y los demás lotes vigentes en 0.
@@ -59,6 +69,58 @@ namespace proy_back_Qbd.Services.Ajuste
         public AjusteMasivoMpService(ApiContext context)
         {
             _context = context;
+        }
+
+        public const string OBSERVACION = "Ajuste masivo MP a ";
+        public const string CONFIRMACION_REVERTIR = "REVERTIR-MP";
+
+        /// <summary>
+        /// Deshace el ajuste masivo de MP en una sede: borra los ajustes con observación "Ajuste masivo MP a ..."
+        /// de esa sede y devuelve StockDisponible al valor anterior. Como el stock sale del libro mayor,
+        /// cada lote vuelve a su saldo según movimientos (incluidos los posteriores al ajuste).
+        /// </summary>
+        public async Task<RevertirMasivoRes> Revertir(int idSede, bool aplicar)
+        {
+            var sede = await _context.Sedes.AsNoTracking().Where(s => s.Id == idSede).Select(s => s.Nombre).FirstOrDefaultAsync();
+            if (sede == null) throw new BadRequestException("La sede no existe.");
+
+            var ajustes = await _context.AjusteInsumos
+                .Include(a => a.StockInsumo)
+                    .ThenInclude(si => si!.CompraInsumo)
+                .Where(a => a.StockInsumo != null && a.StockInsumo.IdSede == idSede &&
+                            a.Observacion != null && a.Observacion.StartsWith(OBSERVACION))
+                .OrderByDescending(a => a.FechaCreacion).ThenByDescending(a => a.Id)
+                .ToListAsync();
+
+            var res = new RevertirMasivoRes
+            {
+                Simulacion = !aplicar,
+                IdSede = idSede,
+                Sede = sede,
+                AjustesQuitados = ajustes.Count,
+                Lotes = ajustes.Select(a => a.IdStockInsumo).Distinct().Count(),
+                Insumos = ajustes.Where(a => a.StockInsumo?.CompraInsumo != null).Select(a => a.StockInsumo!.CompraInsumo!.IdInsumo).Distinct().Count()
+            };
+            if (!aplicar || ajustes.Count == 0) return res;
+
+            await using var tx = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                // Del más nuevo al más antiguo: cada fila de stock termina con el valor previo al primer ajuste masivo
+                foreach (var a in ajustes)
+                {
+                    if (a.StockInsumo != null) a.StockInsumo.StockDisponible = a.StockAnterior;
+                }
+                _context.AjusteInsumos.RemoveRange(ajustes);
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
+            return res;
         }
 
         public async Task<AjusteMasivoRes> Ejecutar(decimal objetivo, bool aplicar, int idCreador, int? soloSede = null, bool incluirDetalle = false)
@@ -136,7 +198,7 @@ namespace proy_back_Qbd.Services.Ajuste
                                 StockAnterior = Math.Round(c.Saldo, 3),
                                 StockNuevo = c.Nuevo,
                                 Ajuste = Math.Round(c.Nuevo - c.Saldo, 3),
-                                Observacion = $"Ajuste masivo MP a {objetivo:0.###}"
+                                Observacion = $"{OBSERVACION}{objetivo:0.###}"
                             });
                             if (incluirDetalle)
                             {

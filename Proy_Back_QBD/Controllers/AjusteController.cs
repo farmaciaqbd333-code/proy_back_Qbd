@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using proy_back_Qbd.Models.Ajuste.request;
@@ -11,6 +12,7 @@ using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
+using Proy_back_QBD.Security;
 using proy_back_Qbd.Services.Ajuste;
 
 namespace proy_back_Qbd.Controllers
@@ -31,6 +33,7 @@ namespace proy_back_Qbd.Controllers
         /// SIN <paramref name="confirmar"/> solo SIMULA y devuelve lo que cambiaría. Para aplicar, confirmar=AJUSTAR-MP.
         /// </summary>
         [HttpPost("mp-masivo")]
+        [Authorize(Roles = Roles.SoloAdmin)] // Solo el administrador
         public async Task<IActionResult> AjusteMasivoMp(
             [FromServices] AjusteMasivoMpService servicio,
             [FromQuery] decimal objetivo = 1000,
@@ -42,6 +45,20 @@ namespace proy_back_Qbd.Controllers
             bool aplicar = string.Equals(confirmar, AjusteMasivoMpService.CONFIRMACION, StringComparison.Ordinal);
             var res = await servicio.Ejecutar(objetivo, aplicar, idCreador, idSede, detalle);
             return Ok(res);
+        }
+
+        /// <summary>
+        /// Deshace el ajuste masivo de MP en una sede. Sin confirmar=REVERTIR-MP solo simula.
+        /// </summary>
+        [HttpPost("mp-masivo/revertir")]
+        [Authorize(Roles = Roles.SoloAdmin)] // Solo el administrador
+        public async Task<IActionResult> RevertirAjusteMasivoMp(
+            [FromServices] AjusteMasivoMpService servicio,
+            [FromQuery] int idSede,
+            [FromQuery] string? confirmar = null)
+        {
+            bool aplicar = string.Equals(confirmar, AjusteMasivoMpService.CONFIRMACION_REVERTIR, StringComparison.Ordinal);
+            return Ok(await servicio.Revertir(idSede, aplicar));
         }
 
         [HttpGet("lista")]
