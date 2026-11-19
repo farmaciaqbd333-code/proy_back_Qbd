@@ -57,7 +57,7 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
                     cp.FechaCreacion,
                     EsCompraSede = cp.Compra != null && cp.Compra.IdSede == idSede,
                     FechaCompra = cp.Compra != null ? (cp.Compra.FechaLab ?? cp.Compra.FechaFactura ?? (DateTime?)cp.Compra.FechaCreacion) : null,
-                    Recibidas = cp.NotaSalidaProductos == null ? new List<object>().Select(x => new { Id = 0, Cantidad = 0m, CantidadRecibida = 0m, Fecha = (DateTime?)null }) :
+                    Recibidas = // en una consulta la colección nunca es null (y la constante no se puede traducir a SQL)
                         cp.NotaSalidaProductos
                             .Where(n => n.NotaSalida != null && n.NotaSalida.IdSedeDestino == idSede &&
                                 (n.NotaSalida.Estado == "RECIBIDO" || n.NotaSalida.Estado == "RECEPCIONADO" || n.NotaSalida.FechaRecepcion != null || n.CantidadRecibida > 0))

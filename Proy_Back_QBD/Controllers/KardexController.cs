@@ -73,6 +73,13 @@ namespace proy_back_Qbd.Controllers
 
             return Ok(resultado);
         }
+        [HttpGet("detalle-economato/{economatoId}")]
+        public async Task<IActionResult> ObtenerDetalleEconomato(int economatoId, [FromQuery] int idSede)
+        {
+            var resultado = await _detalle.ObtenerDetalleEconomato(economatoId, idSede);
+
+            return Ok(resultado);
+        }
         [HttpGet("vencidos")]
         public async Task<IActionResult> ObtenerVencidos(string familia, int idSede)
         {

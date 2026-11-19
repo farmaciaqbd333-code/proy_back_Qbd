@@ -534,121 +534,140 @@ namespace proy_back_Qbd.Services.Kardex
         }
         public async Task<List<DetalleInsumoRes>> ObtenerDetallePT(int idProducto, int idSede)
         {
-            var compras = await _context.CompraProductos
-                .Include(w => w.Compra)
-                .Include(w => w.StockProductoTerminados)
-                    .ThenInclude(sp => sp.AjusteProductos)
-                .Include(w => w.NotaSalidaProductos)
-                    .ThenInclude(nsp => nsp.NotaSalida)
-                        .ThenInclude(ns => ns!.SedeOrigen)
-                .Where(w => w.IdProducto == idProducto)
-                .ToListAsync();
-
-            var compraPtIds = compras.Select(c => c.Id).ToList();
-            var ajustesPtQuery = await _context.AjusteProductoTerminados
-                .Include(a => a.StockProducto)
-                .Where(a =>
-                    (a.StockProducto != null && compraPtIds.Contains(a.StockProducto.IdCompraProducto) && (idSede == 0 || a.StockProducto.IdSede == idSede)) ||
-                    compraPtIds.Contains(a.IdStockProducto)
-                )
-                .OrderByDescending(a => a.FechaCreacion)
-                .ToListAsync();
-
-            var ajustesPorPt = ajustesPtQuery
-                .GroupBy(a => (a.StockProducto != null && a.StockProducto.IdCompraProducto > 0) ? a.StockProducto.IdCompraProducto : a.IdStockProducto)
-                .ToDictionary(g => g.Key, g => g.ToList());
+            // Saldo de cada lote: libro mayor de PT (misma regla que la lista de stock PT)
+            var mayor = await new KardexLedgerPtService(_context).CalcularProductoAsync(idSede, idProducto);
+            var idsCompra = mayor.Partes.Select(p => p.IdCompraInsumo).Distinct().ToList();
+            var compras = await _context.CompraProductos.AsNoTracking()
+                .Where(c => idsCompra.Contains(c.Id))
+                .Select(c => new
+                {
+                    c.Id, c.Lote, c.FechaFabricacion, c.FechaVencimiento, c.Observacion,
+                    IdCompra = c.Compra != null ? (int?)c.Compra.Id : null,
+                    Serie = c.Compra != null ? c.Compra.SerieComprobante : null,
+                    Numero = c.Compra != null ? c.Compra.NumeroComprobante : null,
+                    CodFac = c.Compra != null ? c.Compra.CodFacQBD : null,
+                    Proveedor = c.Compra != null && c.Compra.Proveedor != null ? c.Compra.Proveedor.Datos : null,
+                    Sede = c.Compra != null && c.Compra.Sede != null ? c.Compra.Sede.Nombre : null
+                })
+                .ToDictionaryAsync(c => c.Id);
+            var idsNs = mayor.Partes.Where(p => p.IdNotaSalidaInsumo.HasValue).Select(p => p.IdNotaSalidaInsumo!.Value).ToList();
+            var notas = await _context.NotaSalidaProductos.AsNoTracking()
+                .Where(n => idsNs.Contains(n.Id))
+                .Select(n => new
+                {
+                    n.Id, n.Observacion, n.IdNotaSalida,
+                    ObsNota = n.NotaSalida != null ? n.NotaSalida.Observacion : null,
+                    SedeOrigen = n.NotaSalida != null && n.NotaSalida.SedeOrigen != null ? n.NotaSalida.SedeOrigen.Nombre : null
+                })
+                .ToDictionaryAsync(n => n.Id);
 
             var resultado = new List<DetalleInsumoRes>();
-
-            foreach (var s in compras)
+            foreach (var p in mayor.Partes.OrderBy(x => x.FechaIngreso ?? DateTime.MinValue))
             {
-                bool esCompraEstaSede = s.Compra != null && s.Compra.IdSede == idSede;
-                decimal cantCompra = esCompraEstaSede
-                    ? (s.CantidadRecibida.HasValue && s.CantidadRecibida.Value > 0 ? s.CantidadRecibida.Value : s.CantidadSolicitada)
-                    : 0m;
-
-                var notasSalidaDestino = s.NotaSalidaProductos
-                    .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeDestino == idSede && (nsp.NotaSalida.Estado == "RECIBIDO" || nsp.NotaSalida.Estado == "RECEPCIONADO" || nsp.NotaSalida.FechaRecepcion != null || (nsp.CantidadRecibida > 0)))
-                    .OrderBy(nsp => nsp.NotaSalida != null ? (nsp.NotaSalida.FechaSalida != default ? nsp.NotaSalida.FechaSalida : nsp.NotaSalida.FechaCreacion) : DateTime.MinValue)
-                    .ToList();
-
-                if (cantCompra == 0 && !notasSalidaDestino.Any())
+                compras.TryGetValue(p.IdCompraInsumo, out var c);
+                var ns = p.IdNotaSalidaInsumo.HasValue && notas.TryGetValue(p.IdNotaSalidaInsumo.Value, out var nn) ? nn : null;
+                resultado.Add(new DetalleInsumoRes
                 {
-                    continue;
-                }
-
-                decimal salidasNS = s.NotaSalidaProductos
-                    .Where(nsp => nsp.NotaSalida != null && nsp.NotaSalida.IdSedeOrigen == idSede)
-                    .Sum(nsp => nsp.Cantidad);
-
-                var stockSede = s.StockProductoTerminados.Where(w => w.IdSede == idSede).ToList();
-                var ajustesDePt = ajustesPorPt.ContainsKey(s.Id) ? ajustesPorPt[s.Id] : new List<AjusteProducto>();
-                bool tieneAjuste = ajustesDePt.Any();
-                decimal totalAjuste = ajustesDePt.Sum(a => a.Ajuste);
-
-                if (esCompraEstaSede && cantCompra > 0)
-                {
-                    var stockPrincipal = stockSede.FirstOrDefault(w => w.IdNotaSalidaProducto == null || w.IdNotaSalidaProducto == 0);
-                    decimal saldoCompra = stockPrincipal != null
-                        ? stockPrincipal.StockDisponible
-                        : (tieneAjuste ? ajustesDePt.First().StockNuevo : Math.Max(0m, cantCompra - salidasNS));
-
-                    resultado.Add(new DetalleInsumoRes
-                    {
-                        Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
-                        Lote = s.Lote ?? "",
-                        CantidadIngresada = cantCompra,
-                        Salidas = salidasNS,
-                        Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
-                        TieneAjuste = tieneAjuste,
-                        Saldo = saldoCompra,
-                        StockDisponible = saldoCompra,
-                        FechaCompra = s.Compra != null ? (s.Compra.FechaLab ?? s.Compra.FechaFactura) : null,
-                        FechaFabricacion = s.FechaFabricacion,
-                        FechaVencimiento = s.FechaVencimiento,
-                        Observacion = s.Observacion,
-                        TipoOrigen = "Orden de Compra",
-                        SedeOrigen = s.Compra?.Proveedor?.Datos ?? s.Compra?.Sede?.Nombre ?? "PROVEEDOR",
-                        DocumentoOrigen = s.Compra?.NumeroComprobante ?? s.Compra?.CodFacQBD ?? (s.Compra?.Id != 0 ? $"OC-{s.Compra?.Id}" : ""),
-                        NumeroFactura = (s.Compra?.SerieComprobante ?? "") + (string.IsNullOrEmpty(s.Compra?.SerieComprobante) || string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? "" : "-") + (s.Compra?.NumeroComprobante ?? ""),
-                        IdCompra = s.Id
-                    });
-                }
-
-                foreach (var nsp in notasSalidaDestino)
-                {
-                    decimal cantRecibida = nsp.CantidadRecibida > 0 ? nsp.CantidadRecibida : nsp.Cantidad;
-                    var stockNS = stockSede.FirstOrDefault(w => w.IdNotaSalidaProducto == nsp.Id);
-                    decimal saldoNS = stockNS != null
-                        ? stockNS.StockDisponible
-                        : (!esCompraEstaSede && stockSede.Any() ? stockSede.Sum(sp => sp.StockDisponible) : cantRecibida);
-
-                    decimal salidasDeEsteItem = !esCompraEstaSede ? salidasNS : Math.Max(0m, cantRecibida - saldoNS);
-
-                    resultado.Add(new DetalleInsumoRes
-                    {
-                        Registro = "PT" + Alfanumerico.ConvertToBase36(s.Id),
-                        Lote = s.Lote ?? "",
-                        CantidadIngresada = cantRecibida,
-                        Salidas = salidasDeEsteItem,
-                        Ajuste = null,
-                        TieneAjuste = false,
-                        Saldo = saldoNS,
-                        StockDisponible = saldoNS,
-                        FechaCompra = nsp.NotaSalida != null ? (nsp.NotaSalida.FechaSalida != default ? nsp.NotaSalida.FechaSalida : nsp.NotaSalida.FechaCreacion) : null,
-                        FechaFabricacion = s.FechaFabricacion,
-                        FechaVencimiento = s.FechaVencimiento,
-                        Observacion = !string.IsNullOrEmpty(nsp.Observacion) ? nsp.Observacion : (nsp.NotaSalida?.Observacion ?? s.Observacion ?? ""),
-                        TipoOrigen = "Nota de Salida",
-                        SedeOrigen = nsp.NotaSalida?.SedeOrigen?.Nombre ?? "SEDE ORIGEN",
-                        DocumentoOrigen = nsp.NotaSalida != null ? $"NT{nsp.NotaSalida.Id}" : (nsp.IdNotaSalida != 0 ? $"NT{nsp.IdNotaSalida}" : "NOTA SALIDA"),
-                        NumeroFactura = (!string.IsNullOrEmpty(s.Compra?.SerieComprobante) && !string.IsNullOrEmpty(s.Compra?.NumeroComprobante)) ? $"{s.Compra.SerieComprobante}-{s.Compra.NumeroComprobante}" : (!string.IsNullOrEmpty(s.Compra?.NumeroComprobante) ? s.Compra.NumeroComprobante : s.Compra?.CodFacQBD),
-                        IdCompra = s.Id
-                    });
-                }
+                    Registro = "PT" + Alfanumerico.ConvertToBase36(p.IdCompraInsumo),
+                    Lote = c?.Lote ?? "",
+                    CantidadIngresada = p.Entradas,
+                    Salidas = p.Salidas,
+                    Ajuste = p.Ajustes != 0 ? p.Ajustes : (decimal?)null,
+                    TieneAjuste = p.Ajustes != 0,
+                    Baja = p.Baja,
+                    Saldo = p.Saldo,
+                    StockDisponible = p.Saldo,
+                    FechaCompra = p.FechaIngreso,
+                    FechaFabricacion = c?.FechaFabricacion,
+                    FechaVencimiento = p.FechaVencimiento ?? c?.FechaVencimiento,
+                    Observacion = ns != null ? (!string.IsNullOrEmpty(ns.Observacion) ? ns.Observacion : (ns.ObsNota ?? c?.Observacion ?? "")) : c?.Observacion,
+                    TipoOrigen = ns != null ? "Nota de Salida" : (p.Entradas > 0 ? "Orden de Compra" : "Ajuste"),
+                    SedeOrigen = ns != null ? (ns.SedeOrigen ?? "SEDE ORIGEN") : (c?.Proveedor ?? c?.Sede ?? "PROVEEDOR"),
+                    DocumentoOrigen = ns != null ? $"NT{ns.IdNotaSalida}" : (c?.Numero ?? c?.CodFac ?? (c?.IdCompra != null ? $"OC-{c.IdCompra}" : "")),
+                    NumeroFactura = ExtraerNumeroFactura(c?.Serie, c?.Numero, c?.CodFac),
+                    IdCompra = p.IdCompraInsumo
+                });
             }
-
+            AgregarSinLote(resultado, mayor);
             return resultado;
+        }
+
+        public async Task<List<DetalleInsumoRes>> ObtenerDetalleEconomato(int idEconomato, int idSede)
+        {
+            // Saldo de cada lote: libro mayor de ECO (misma regla que la lista de stock ECO)
+            var mayor = await new KardexLedgerEcoService(_context).CalcularEconomatoAsync(idSede, idEconomato);
+            var idsCompra = mayor.Partes.Select(p => p.IdCompraInsumo).Distinct().ToList();
+            var compras = await _context.CompraEconomatos.AsNoTracking()
+                .Where(c => idsCompra.Contains(c.Id))
+                .Select(c => new
+                {
+                    c.Id, c.Observacion, c.Um,
+                    IdCompra = c.Compra != null ? (int?)c.Compra.Id : null,
+                    Serie = c.Compra != null ? c.Compra.SerieComprobante : null,
+                    Numero = c.Compra != null ? c.Compra.NumeroComprobante : null,
+                    CodFac = c.Compra != null ? c.Compra.CodFacQBD : null,
+                    Proveedor = c.Compra != null && c.Compra.Proveedor != null ? c.Compra.Proveedor.Datos : null,
+                    Sede = c.Compra != null && c.Compra.Sede != null ? c.Compra.Sede.Nombre : null
+                })
+                .ToDictionaryAsync(c => c.Id);
+            var idsNs = mayor.Partes.Where(p => p.IdNotaSalidaInsumo.HasValue).Select(p => p.IdNotaSalidaInsumo!.Value).ToList();
+            var notas = await _context.NotaSalidaEconomatos.AsNoTracking()
+                .Where(n => idsNs.Contains(n.Id))
+                .Select(n => new
+                {
+                    n.Id, n.IdNotaSalida,
+                    ObsNota = n.NotaSalida != null ? n.NotaSalida.Observacion : null,
+                    SedeOrigen = n.NotaSalida != null && n.NotaSalida.SedeOrigen != null ? n.NotaSalida.SedeOrigen.Nombre : null
+                })
+                .ToDictionaryAsync(n => n.Id);
+
+            var resultado = new List<DetalleInsumoRes>();
+            foreach (var p in mayor.Partes.OrderBy(x => x.FechaIngreso ?? DateTime.MinValue))
+            {
+                compras.TryGetValue(p.IdCompraInsumo, out var c);
+                var ns = p.IdNotaSalidaInsumo.HasValue && notas.TryGetValue(p.IdNotaSalidaInsumo.Value, out var nn) ? nn : null;
+                resultado.Add(new DetalleInsumoRes
+                {
+                    Registro = "ECO" + Alfanumerico.ConvertToBase36(p.IdCompraInsumo),
+                    Lote = "",
+                    CantidadIngresada = p.Entradas,
+                    Salidas = p.Salidas,
+                    Ajuste = p.Ajustes != 0 ? p.Ajustes : (decimal?)null,
+                    TieneAjuste = p.Ajustes != 0,
+                    Baja = p.Baja,
+                    Saldo = p.Saldo,
+                    StockDisponible = p.Saldo,
+                    Um = c?.Um,
+                    FechaCompra = p.FechaIngreso,
+                    FechaVencimiento = p.FechaVencimiento,
+                    Observacion = ns?.ObsNota ?? c?.Observacion ?? "",
+                    TipoOrigen = ns != null ? "Nota de Salida" : (p.Entradas > 0 ? "Orden de Compra" : "Ajuste"),
+                    SedeOrigen = ns != null ? (ns.SedeOrigen ?? "SEDE ORIGEN") : (c?.Proveedor ?? c?.Sede ?? "PROVEEDOR"),
+                    DocumentoOrigen = ns != null ? $"NT{ns.IdNotaSalida}" : (c?.Numero ?? c?.CodFac ?? (c?.IdCompra != null ? $"OC-{c.IdCompra}" : "")),
+                    NumeroFactura = ExtraerNumeroFactura(c?.Serie, c?.Numero, c?.CodFac),
+                    IdCompra = p.IdCompraInsumo
+                });
+            }
+            AgregarSinLote(resultado, mayor);
+            return resultado;
+        }
+
+        /// <summary>Salidas sin ningún lote en la sede: se muestran para que el total cuadre con la lista.</summary>
+        private static void AgregarSinLote(List<DetalleInsumoRes> resultado, LedgerResultado mayor)
+        {
+            if (mayor.SalidasSinLote <= 0) return;
+            resultado.Add(new DetalleInsumoRes
+            {
+                Registro = "-",
+                Lote = "SIN LOTE",
+                CantidadIngresada = 0m,
+                Salidas = mayor.SalidasSinLote,
+                Baja = 0m,
+                Saldo = -mayor.SalidasSinLote,
+                StockDisponible = -mayor.SalidasSinLote,
+                TipoOrigen = "Sin lote",
+                Observacion = "Salidas sin lote de ingreso en esta sede"
+            });
         }
 
         private static string? ExtraerNumeroFactura(string? serie, string? numero, string? codFac)

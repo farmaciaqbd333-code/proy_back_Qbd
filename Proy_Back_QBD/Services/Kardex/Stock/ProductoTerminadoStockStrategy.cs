@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using proy_back_Qbd.Exceptions;
 using proy_back_Qbd.Models;
 using proy_back_Qbd.Models.Kardex;
+using proy_back_Qbd.Services.Kardex.Ledger;
 using proy_back_Qbd.Services.Interfaces;
 using proy_back_Qbd.Util;
 using proy_back_Qbd.Util.Familias;
@@ -30,27 +31,31 @@ namespace proy_back_Qbd.Services.Kardex.Stock
 
         public async Task<List<StockRes>> ObtenerStock(int idSede)
         {
-            return await _context.Productos.AsNoTracking()
-                .GroupBy(g => new { g.Id })
-                .Select(s => new StockRes()
+            // Stock = libro mayor por lote (misma regla que el kardex por lote, ajustes y nota de salida)
+            var mayor = await new KardexLedgerPtService(_context).CalcularAsync(idSede, null);
+
+            var lista = await _context.Productos.AsNoTracking()
+                .Select(p => new StockRes()
                 {
-                    Codigo = s.Key.Id + "",
-                    Descripcion = s.Select(s => s.Descripcion).FirstOrDefault() ?? "",
+                    Codigo = p.Id + "",
+                    Descripcion = p.Descripcion ?? "",
                     Um = "UND",
-                    Entradas =
-                        s.Sum(x => x.CompraProductos!.Where(w => w.Compra.IdSede == idSede).Sum(ci => ci.CantidadRecibida ?? ci.CantidadSolicitada)) +
-                        s.Sum(x => x.CompraProductos.Sum(x2 => x2.NotaSalidaProductos.Where(w => w.NotaSalida != null && w.NotaSalida.IdSedeDestino == idSede && (w.NotaSalida.Estado == "RECIBIDO" || w.NotaSalida.Estado == "RECEPCIONADO" || w.NotaSalida.FechaRecepcion != null || w.CantidadRecibida > 0)).Sum(x3 => x3.CantidadRecibida > 0 ? x3.CantidadRecibida : x3.Cantidad))),
-                    Salidas =
-                        s.Sum(x => x.CompraProductos.Sum(s2 => s2.NotaSalidaProductos.Where(w => w.NotaSalida.IdSedeOrigen == idSede).Sum(s3 => s3.Cantidad))),
-                    Ajustes =
-                        s.Sum(x => x.CompraProductos.Where(w => w.Compra.IdSede == idSede).Sum(cp => cp.StockProductoTerminados.Sum(sp => sp.AjusteProductos.Sum(a => a.Ajuste)))),
-                    Baja = s.Sum(x => x.CompraProductos
-                        .Where(cp => cp.FechaVencimiento < DateTime.UtcNow)
-                        .Sum(cp => cp.StockProductoTerminados.Where(w => w.IdSede == idSede).Sum(sp => sp.StockDisponible))),
                     Tipo = null,
-                    CodigoUbicacion = s.Select(s => s.ProductoSedes.Where(w => w.IdSite == idSede).Select(s => s.Location).FirstOrDefault()).FirstOrDefault(),
-                    Limite = s.Select(s => s.ProductoSedes.Where(w => w.IdSite == idSede).Select(s => s.Limite).FirstOrDefault()).FirstOrDefault()
+                    CodigoUbicacion = p.ProductoSedes.Where(w => w.IdSite == idSede).Select(x => x.Location).FirstOrDefault(),
+                    Limite = p.ProductoSedes.Where(w => w.IdSite == idSede).Select(x => x.Limite).FirstOrDefault()
                 }).ToListAsync();
+
+            foreach (var item in lista)
+            {
+                LedgerResultado? m = int.TryParse(item.Codigo, out var id) && mayor.TryGetValue(id, out var r) ? r : null;
+                item.Entradas = m?.TotalEntradas ?? 0m;
+                item.Salidas = m?.TotalSalidas ?? 0m;
+                item.Ajustes = m?.TotalAjustes ?? 0m;
+                item.Baja = m?.TotalBaja ?? 0m;
+                item.Stock = m?.Stock ?? 0m;
+                item.Saldo = item.Stock;
+            }
+            return lista;
         }
     }
 }
