@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using proy_back_Qbd.Models.Ajuste.request;
@@ -11,6 +12,7 @@ using proy_back_Qbd.Models.Kardex;
 using proy_back_Qbd.Services.Interfaces;
 using Proy_back_QBD.Data;
 using Proy_back_QBD.Services;
+using Proy_back_QBD.Security;
 using proy_back_Qbd.Services.Ajuste;
 
 namespace proy_back_Qbd.Controllers
@@ -31,6 +33,7 @@ namespace proy_back_Qbd.Controllers
         /// SIN <paramref name="confirmar"/> solo SIMULA y devuelve lo que cambiaría. Para aplicar, confirmar=AJUSTAR-MP.
         /// </summary>
         [HttpPost("mp-masivo")]
+        [Authorize(Roles = Roles.SoloAdmin)] // Solo el administrador
         public async Task<IActionResult> AjusteMasivoMp(
             [FromServices] AjusteMasivoMpService servicio,
             [FromQuery] decimal objetivo = 1000,
