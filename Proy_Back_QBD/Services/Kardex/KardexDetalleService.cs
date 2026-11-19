@@ -297,109 +297,100 @@ namespace proy_back_Qbd.Services.Kardex
         }
         public async Task<List<DetalleInsumoRes>> ObtenerDetallePI(int idInsumo, int idSede)
         {
+            // Saldo de cada lote: libro mayor de PI (misma regla que la lista de stock PI y que MP)
+            var calc = await new KardexLedgerPiService(_context).CalcularAsync(idSede, new[] { idInsumo });
+            var mayor = calc.PorInsumo.TryGetValue(idInsumo, out var m) ? m : new LedgerResultado();
             var resultado = new List<DetalleInsumoRes>();
+            if (mayor.Partes.Count == 0 && mayor.SalidasSinLote <= 0) return resultado;
 
-            // 1. Elaboraciones directas en esta sede
-            var piList = await _context.ProductosIntermedios
-                .Include(pi => pi.StockInsumo)
-                    .ThenInclude(si => si.AjusteInsumos)
-                .Where(w => w.IdInsumo == idInsumo && w.IdSede == idSede)
-                .OrderByDescending(o => o.FechaCreacion)
-                .ThenByDescending(o => o.Id)
-                .ToListAsync();
+            // Observación del último ajuste de cada lote
+            var idsAjuste = mayor.Conteos.Select(c => c.Id).ToList();
+            var obsAjuste = await _context.AjusteInsumos.AsNoTracking()
+                .Where(a => idsAjuste.Contains(a.Id))
+                .Select(a => new { a.Id, a.Observacion })
+                .ToDictionaryAsync(a => a.Id, a => a.Observacion);
+            string? ObservacionDe(LedgerParte p) => mayor.Conteos
+                .Where(c => c.IdCompraInsumo == p.IdCompraInsumo && c.IdNotaSalidaInsumo == p.IdNotaSalidaInsumo)
+                .OrderByDescending(c => c.Fecha)
+                .Select(c => obsAjuste.TryGetValue(c.Id, out var o) ? o : null)
+                .FirstOrDefault(o => !string.IsNullOrEmpty(o));
 
-            foreach (var s in piList)
-            {
-                decimal cantIngresada = (s.TipoUso == "PI-FMG" || s.Um == "UND")
-                    ? (s.LoteEstandar ?? 0)
-                    : (s.LoteEstTotal ?? s.LoteEstandar ?? 0);
-
-                var ajustesDePI = s.StockInsumo?.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>();
-                bool tieneAjuste = ajustesDePI.Any();
-                decimal totalAjuste = ajustesDePI.Sum(a => a.Ajuste);
-
-                decimal saldo = s.StockInsumo != null ? s.StockInsumo.StockDisponible : cantIngresada;
-                decimal salidas = Math.Max(0m, cantIngresada - saldo + totalAjuste);
-
-                resultado.Add(new DetalleInsumoRes
+            // Notas de salida recibidas (para CUO y sede de origen)
+            var idsNs = mayor.Partes.Where(p => p.IdNotaSalidaInsumo.HasValue).Select(p => p.IdNotaSalidaInsumo!.Value).Distinct().ToList();
+            var notas = await _context.NotaSalidaInsumos.AsNoTracking()
+                .Where(n => idsNs.Contains(n.Id))
+                .Select(n => new
                 {
-                    Registro = "PI" + Alfanumerico.ConvertToBase36(s.Id),
-                    Lote = s.Lote ?? "",
-                    CantidadIngresada = cantIngresada,
-                    Salidas = salidas,
-                    Ajuste = tieneAjuste ? totalAjuste : (decimal?)null,
+                    n.Id, n.Lote, n.Observacion,
+                    IdNota = n.NotaSalida != null ? (int?)n.NotaSalida.Id : null,
+                    SedeOrigen = n.NotaSalida != null && n.NotaSalida.SedeOrigen != null ? n.NotaSalida.SedeOrigen.Nombre : null
+                })
+                .ToDictionaryAsync(n => n.Id);
+
+            // Compras del insumo (lotes comprados)
+            var idsCompra = mayor.Partes.Where(p => p.IdCompraInsumo < 0).Select(p => -p.IdCompraInsumo).Distinct().ToList();
+            var compras = await _context.CompraInsumos.AsNoTracking()
+                .Where(c => idsCompra.Contains(c.Id))
+                .Select(c => new { c.Id, c.Lote, c.FechaFabricacion, c.FechaVencimiento, c.Observacion, IdCompra = c.Compra != null ? (int?)c.Compra.Id : null })
+                .ToDictionaryAsync(c => c.Id);
+
+            foreach (var p in mayor.Partes.OrderByDescending(x => x.FechaIngreso ?? DateTime.MinValue))
+            {
+                bool esCompra = p.IdCompraInsumo < 0;
+                calc.Lotes.TryGetValue(p.IdCompraInsumo, out var pi);
+                var compra = esCompra && compras.TryGetValue(-p.IdCompraInsumo, out var cc) ? cc : null;
+                var ns = p.IdNotaSalidaInsumo.HasValue && notas.TryGetValue(p.IdNotaSalidaInsumo.Value, out var nn) ? nn : null;
+                bool tieneAjuste = mayor.Conteos.Any(c => c.IdCompraInsumo == p.IdCompraInsumo && c.IdNotaSalidaInsumo == p.IdNotaSalidaInsumo);
+
+                var fila = new DetalleInsumoRes
+                {
+                    Registro = KardexLedgerPiService.Registro(p.IdCompraInsumo),
+                    Lote = ns?.Lote ?? compra?.Lote ?? pi?.Lote ?? "",
+                    CantidadIngresada = p.Entradas,
+                    Salidas = p.Salidas,
+                    Ajuste = tieneAjuste ? p.Ajustes : (decimal?)null,
                     TieneAjuste = tieneAjuste,
-                    Saldo = saldo,
-                    StockDisponible = saldo,
-                    FechaCompra = s.FechaCreacion,
-                    FechaFabricacion = s.FechaCreacion,
-                    FechaVencimiento = s.FechaVencimiento,
-                    Observacion = s.StockInsumo?.AjusteInsumos?.FirstOrDefault()?.Observacion ?? "",
-                    IdCompra = s.Id
-                });
+                    Baja = p.Baja,
+                    Saldo = p.Saldo,
+                    StockDisponible = p.Saldo,
+                    FechaCompra = p.FechaIngreso,
+                    FechaFabricacion = compra?.FechaFabricacion ?? pi?.FechaEmision ?? pi?.FechaCreacion,
+                    FechaVencimiento = p.FechaVencimiento ?? compra?.FechaVencimiento ?? pi?.FechaVencimiento,
+                    Observacion = ObservacionDe(p) ?? ns?.Observacion ?? compra?.Observacion ?? "",
+                    IdCompra = esCompra ? -p.IdCompraInsumo : p.IdCompraInsumo
+                };
+                if (ns != null)
+                {
+                    fila.TipoOrigen = "Nota de Salida";
+                    fila.SedeOrigen = ns.SedeOrigen ?? "CENTRAL";
+                    fila.CUO = ns.IdNota.HasValue ? $"NT{ns.IdNota}" : null;
+                    fila.DocumentoOrigen = fila.CUO;
+                }
+                else if (esCompra)
+                {
+                    fila.TipoOrigen = "Orden de Compra";
+                    fila.DocumentoOrigen = compra?.IdCompra != null ? $"OC{compra.IdCompra}" : null;
+                }
+                else if (p.Entradas == 0 && tieneAjuste)
+                {
+                    fila.TipoOrigen = "Ajuste";
+                }
+                resultado.Add(fila);
             }
 
-            // 2. Transferencias recibidas por Nota de Salida en esta sede
-            var lotesDelInsumo = await _context.ProductosIntermedios.AsNoTracking()
-                .Where(p => p.IdInsumo == idInsumo && !string.IsNullOrEmpty(p.Lote))
-                .ToListAsync();
-
-            var loteDict = lotesDelInsumo
-                .GroupBy(p => p.Lote!.Trim().ToUpper())
-                .ToDictionary(g => g.Key, g => g.First());
-
-            var notasSalidaDestino = await _context.NotaSalidaInsumos.AsNoTracking()
-                .Include(nsi => nsi.NotaSalida)
-                    .ThenInclude(ns => ns!.SedeOrigen)
-                .Where(nsi => !nsi.IdCompraInsumo.HasValue &&
-                              nsi.NotaSalida != null &&
-                              nsi.NotaSalida.IdSedeDestino == idSede &&
-                              (nsi.NotaSalida.Estado == "RECIBIDO" || nsi.NotaSalida.Estado == "RECEPCIONADO" || nsi.NotaSalida.FechaRecepcion != null || (nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0)))
-                .OrderByDescending(nsi => nsi.NotaSalida!.FechaRecepcion ?? nsi.NotaSalida!.FechaSalida)
-                .ToListAsync();
-
-            foreach (var nsi in notasSalidaDestino)
+            if (mayor.SalidasSinLote > 0)
             {
-                if (string.IsNullOrEmpty(nsi.Lote)) continue;
-                var key = nsi.Lote.Trim().ToUpper();
-                if (!loteDict.TryGetValue(key, out var piRef)) continue;
-
-                var stockNS = await _context.StockInsumos.AsNoTracking()
-                    .Include(s => s.AjusteInsumos)
-                    .FirstOrDefaultAsync(s => s.IdSede == idSede && s.IdNotaSalidaInsumo == nsi.Id);
-
-                decimal cantRecibida = ((nsi.Um == "KG" || nsi.Um == "KILOGRAMOS" || nsi.Um == "Kg") ? 1000m : 1m) *
-                    ((nsi.CantidadRecibida.HasValue && nsi.CantidadRecibida.Value > 0) ? nsi.CantidadRecibida.Value : nsi.Cantidad);
-
-                var ajustesNS = stockNS?.AjusteInsumos?.ToList() ?? new List<AjusteInsumo>();
-                bool tieneAjusteNS = ajustesNS.Any();
-                decimal totalAjusteNS = tieneAjusteNS ? ajustesNS.Sum(a => a.Ajuste) : 0m;
-
-                decimal saldo = stockNS != null ? stockNS.StockDisponible : cantRecibida;
-                decimal salidas = Math.Max(0m, cantRecibida - saldo + totalAjusteNS);
-
-                DateTime? fechaNS = nsi.NotaSalida != null
-                    ? (nsi.NotaSalida.FechaRecepcion ?? (nsi.NotaSalida.FechaSalida != default ? nsi.NotaSalida.FechaSalida : nsi.NotaSalida.FechaCreacion))
-                    : null;
-
                 resultado.Add(new DetalleInsumoRes
                 {
-                    Registro = "PI" + Alfanumerico.ConvertToBase36(piRef.Id),
-                    Lote = nsi.Lote ?? piRef.Lote ?? "",
-                    CantidadIngresada = cantRecibida,
-                    Salidas = salidas,
-                    Ajuste = tieneAjusteNS ? totalAjusteNS : (decimal?)null,
-                    TieneAjuste = tieneAjusteNS,
-                    Saldo = saldo,
-                    StockDisponible = saldo,
-                    FechaCompra = fechaNS ?? piRef.FechaCreacion,
-                    FechaFabricacion = piRef.FechaEmision ?? piRef.FechaCreacion,
-                    FechaVencimiento = piRef.FechaVencimiento,
-                    Observacion = nsi.Observacion ?? stockNS?.AjusteInsumos?.FirstOrDefault()?.Observacion ?? "",
-                    IdCompra = piRef.Id,
-                    CUO = nsi.NotaSalida != null ? $"NT{nsi.NotaSalida.Id}" : null,
-                    TipoOrigen = "Nota de Salida",
-                    SedeOrigen = nsi.NotaSalida?.SedeOrigen?.Nombre ?? "CENTRAL"
+                    Registro = "-",
+                    Lote = "SIN LOTE",
+                    CantidadIngresada = 0m,
+                    Salidas = mayor.SalidasSinLote,
+                    Baja = 0m,
+                    Saldo = -mayor.SalidasSinLote,
+                    StockDisponible = -mayor.SalidasSinLote,
+                    TipoOrigen = "Sin lote",
+                    Observacion = "Salidas sin lote de ingreso en esta sede"
                 });
             }
 
