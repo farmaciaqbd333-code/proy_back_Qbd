@@ -64,6 +64,11 @@ public class KardexLedgerPiTests
         Assert.Equal(740, lote.IdCompra);
         Assert.Equal("Elaboración PI", lote.TipoOrigen); // antes salía sin origen y el front lo mostraba como COMPRA
         Assert.Equal(fila.Stock, detalle.Sum(d => d.Saldo));
+
+        // Gestión de Inv./Ajuste: mismo saldo por registro (antes salía de StockDisponible = 60,000)
+        var ajuste = await new Proy_back_QBD.Service.AjusteService.Familias.ProductoIntermedioAjusteStrategy(ctx).Listar(15);
+        var regAjuste = Assert.Single(ajuste);
+        Assert.Equal(19000m, regAjuste.Saldo);
     }
 
     /// <summary>Sin base real: no abre la conexión y cada consulta devuelve 0 filas. Si EF no puede traducir, falla antes.</summary>
@@ -120,6 +125,9 @@ public class KardexLedgerPiTests
         var detalle = new KardexDetalleService(ctx, null!, NullLogger<KardexDetalleService>.Instance);
         await detalle.ObtenerDetallePT(1, 15);
         await detalle.ObtenerDetalleEconomato(1, 15);
+        await new Proy_back_QBD.Service.AjusteService.Familias.ProductoTerminadoAjusteStrategy(ctx).Listar(15);
+        await new Proy_back_QBD.Service.AjusteService.Familias.EconomatoAjusteStrategy(ctx).Listar(15);
+        await new Proy_back_QBD.Service.AjusteService.Familias.ProductoIntermedioAjusteStrategy(ctx).Listar(15);
 
         Assert.NotEmpty(filas.Sql);
     }
