@@ -142,6 +142,7 @@ namespace Proy_back_QBD.DependencyInjection
 
             // Kardex: un servicio por responsabilidad y una estrategia de stock por familia
             services.AddScoped<KardexLedgerMpService>();
+            services.AddScoped<proy_back_Qbd.Services.Ajuste.AjusteMasivoMpService>();
             services.AddScoped<IKardexStockService, KardexStockService>();
             services.AddScoped<IKardexDetalleService, KardexDetalleService>();
             services.AddScoped<IKardexMovimientoService, KardexMovimientoService>();
