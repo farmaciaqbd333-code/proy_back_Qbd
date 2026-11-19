@@ -105,4 +105,21 @@ public class KardexLedgerPiTests
 
         Assert.True(filas.Sql.Count >= 7);
     }
+
+    [Fact]
+    public async Task PtYEco_ListaYDetalle_SeTraducenASqlDePostgres()
+    {
+        var filas = new SinFilas();
+        using var ctx = new ApiContext(new DbContextOptionsBuilder<ApiContext>()
+            .UseNpgsql("Host=127.0.0.1;Port=1;Database=x;Username=x;Password=x")
+            .AddInterceptors(new SinBase(), filas).Options);
+
+        await new ProductoTerminadoStockStrategy(ctx, NullLogger<ProductoTerminadoStockStrategy>.Instance).ObtenerStock(15);
+        await new EconomatoStockStrategy(ctx, NullLogger<EconomatoStockStrategy>.Instance).ObtenerStock(15);
+        var detalle = new KardexDetalleService(ctx, null!, NullLogger<KardexDetalleService>.Instance);
+        await detalle.ObtenerDetallePT(1, 15);
+        await detalle.ObtenerDetalleEconomato(1, 15);
+
+        Assert.NotEmpty(filas.Sql);
+    }
 }
