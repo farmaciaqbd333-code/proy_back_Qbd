@@ -47,6 +47,20 @@ namespace proy_back_Qbd.Controllers
             return Ok(res);
         }
 
+        /// <summary>
+        /// Deshace el ajuste masivo de MP en una sede. Sin confirmar=REVERTIR-MP solo simula.
+        /// </summary>
+        [HttpPost("mp-masivo/revertir")]
+        [Authorize(Roles = Roles.SoloAdmin)] // Solo el administrador
+        public async Task<IActionResult> RevertirAjusteMasivoMp(
+            [FromServices] AjusteMasivoMpService servicio,
+            [FromQuery] int idSede,
+            [FromQuery] string? confirmar = null)
+        {
+            bool aplicar = string.Equals(confirmar, AjusteMasivoMpService.CONFIRMACION_REVERTIR, StringComparison.Ordinal);
+            return Ok(await servicio.Revertir(idSede, aplicar));
+        }
+
         [HttpGet("lista")]
         public async Task<IActionResult> ListarAjustes(string familia, int idSede)
         {
