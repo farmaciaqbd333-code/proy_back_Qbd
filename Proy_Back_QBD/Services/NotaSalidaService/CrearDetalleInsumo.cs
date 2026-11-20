@@ -86,6 +86,25 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         await _context.SaveChangesAsync();
                     }
                 }
+                else if (pi != null)
+                {
+                    // PI con saldo en el libro mayor pero sin fila de stock en la sede: se crea la fila con ese saldo
+                    decimal saldoPi = await ObtenerStockPI(pi.Id, sedeOrigen);
+                    if (saldoPi > 0)
+                    {
+                        stockOrigen = new StockInsumo
+                        {
+                            IdProductoIntermedio = pi.Id,
+                            IdSede = sedeOrigen,
+                            Tipo = "PI",
+                            StockDisponible = saldoPi,
+                            UnidadMedida = string.IsNullOrWhiteSpace(pi.Um) ? "G" : pi.Um
+                        };
+                        _context.StockInsumos.Add(stockOrigen);
+                        await _context.SaveChangesAsync();
+                        stocksOrigen = new List<StockInsumo> { stockOrigen };
+                    }
+                }
             }
 
             if (stockOrigen == null)
@@ -160,6 +179,17 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                     stockUm = "G";
                     cantComparar = (itemUm == "KG" || itemUm == "KILOGRAMOS") ? item.Cantidad * 1000m : item.Cantidad;
                 }
+            }
+
+            else
+            {
+                // PI: el disponible del registro es el saldo del libro mayor de PI (lo que muestra el kardex),
+                // menos lo que ya va en esta misma nota y aún no se guardó. Antes era la suma de StockDisponible.
+                decimal saldoRegistro = await ObtenerStockPI(item.Registro, sedeOrigen);
+                decimal enEstaNota = _context.ChangeTracker.Entries<NotaSalidaInsumo>()
+                    .Where(e => e.State == EntityState.Added && e.Entity.IdCompraInsumo == null && e.Entity.IdProductoIntermedio == item.Registro)
+                    .Sum(e => e.Entity.Cantidad);
+                totalDisponible = Math.Max(0m, saldoRegistro - enEstaNota);
             }
 
             if (totalDisponible + 0.0005m < cantComparar || totalDisponible <= 0)

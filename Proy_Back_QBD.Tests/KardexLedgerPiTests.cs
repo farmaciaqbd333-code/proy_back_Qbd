@@ -69,6 +69,13 @@ public class KardexLedgerPiTests
         var ajuste = await new Proy_back_QBD.Service.AjusteService.Familias.ProductoIntermedioAjusteStrategy(ctx).Listar(15);
         var regAjuste = Assert.Single(ajuste);
         Assert.Equal(19000m, regAjuste.Saldo);
+
+        // Nota de salida: stock del registro y lista de registros con el mismo saldo (antes StockDisponible = 60,000)
+        var ns = new Proy_back_QBD.Services.NotaSalidaService.NotaSalidaService(ctx, NullLogger<Proy_back_QBD.Services.NotaSalidaService.NotaSalidaService>.Instance);
+        var datos = await ns.ObtenerDatosXRegistro("PI" + proy_back_Qbd.Util.Alfanumerico.ConvertToBase36(740), 15);
+        Assert.Equal(19000m, Assert.Single(datos).StockDisponible);
+        var registros = await ns.ObtenerRegistrosXFamilia(new proy_back_Qbd.Dto.NotaSalida.ObtenerRegistroReq { IdSede = 15, Familia = "PI" });
+        Assert.Equal(19000m, registros.Single(r => r.IdRegistro == 740).StockDisponible);
     }
 
     /// <summary>Sin base real: no abre la conexión y cada consulta devuelve 0 filas. Si EF no puede traducir, falla antes.</summary>
@@ -108,6 +115,9 @@ public class KardexLedgerPiTests
         await new KardexLedgerPiService(ctx).CalcularAsync(15, new[] { 110 });
         await new ProductoIntermedioStockStrategy(ctx, NullLogger<ProductoIntermedioStockStrategy>.Instance).ObtenerStock(15);
         await new KardexDetalleService(ctx, null!, NullLogger<KardexDetalleService>.Instance).ObtenerDetallePI(110, 15);
+        var ns = new Proy_back_QBD.Services.NotaSalidaService.NotaSalidaService(ctx, NullLogger<Proy_back_QBD.Services.NotaSalidaService.NotaSalidaService>.Instance);
+        await ns.ObtenerDatosXRegistro("PIKK", 15);
+        await ns.ObtenerRegistrosXFamilia(new proy_back_Qbd.Dto.NotaSalida.ObtenerRegistroReq { IdSede = 15, Familia = "PI" });
 
         Assert.True(filas.Sql.Count >= 7);
     }

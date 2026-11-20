@@ -700,10 +700,13 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         }).ToList();
 
                 case "PI":
+                    // Registros con movimientos en la sede según el libro mayor (aunque la columna de stock diga 0)
+                    var saldosPi = await SaldosPIPorRegistro(targetSede);
+                    var idsPiConMovimiento = saldosPi.Keys.ToList();
                     var pis = await _context.ProductosIntermedios
                         .Include(i => i.Insumo)
                         .Include(i => i.StockInsumo)
-                        .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede)
+                        .Where(w => w.IdSede == targetSede || (w.StockInsumo != null && w.StockInsumo.IdSede == targetSede) || idsPiConMovimiento.Contains(w.Id)
                                     || _context.StockInsumos.Any(s => s.IdSede == targetSede && s.Tipo == "PI" && (s.IdProductoIntermedio == w.Id || (s.NotaSalidaInsumo != null && (s.NotaSalidaInsumo.IdProductoIntermedio == w.Id || (s.NotaSalidaInsumo.IdProductoIntermedio == null && s.NotaSalidaInsumo.Lote == w.Lote)))) && s.StockDisponible > 0))
                         .Select(x => new
                         {
@@ -719,7 +722,8 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                         .ToListAsync();
 
                     // Stock por registro calculado igual que el kardex (ver NotaSalidaService.StockPI.cs)
-                    var stockPorPI = await ObtenerStockPIMasivo(pis.Select(x => (x.Id, x.IdInsumo, x.Lote)).ToList(), targetSede);
+                    var stockPorPI = pis.Select(x => x.Id).Distinct()
+                        .ToDictionary(id => id, id => saldosPi.TryGetValue(id, out var sp) ? sp : 0m);
 
                     return pis
                         .GroupBy(x => x.Id).Select(g => g.First())

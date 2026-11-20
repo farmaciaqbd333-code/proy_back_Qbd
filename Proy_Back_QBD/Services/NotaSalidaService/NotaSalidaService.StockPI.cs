@@ -84,73 +84,34 @@ namespace Proy_back_QBD.Services.NotaSalidaService
                 .ToList();
         }
 
+        /// <summary>
+        /// Stock de un registro PI en la sede = saldo del libro mayor de PI (lo mismo que muestran el kardex,
+        /// la lista de stock y Gestión de Inv./Ajuste). Antes se sumaba la columna StockDisponible y no cuadraba
+        /// con el kardex (p. ej. 8,000 en la nota de salida y 10,000 en el kardex).
+        /// </summary>
         private async Task<decimal> ObtenerStockPI(int idProductoIntermedio, int idSede)
         {
-            var filas = await ObtenerFilasStockPI(idProductoIntermedio, idSede);
-            return filas.Sum(s => s.StockDisponible);
+            var idInsumo = await _context.ProductosIntermedios.AsNoTracking()
+                .Where(p => p.Id == idProductoIntermedio)
+                .Select(p => (int?)p.IdInsumo)
+                .FirstOrDefaultAsync();
+            if (!idInsumo.HasValue) return 0m;
+            var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerPiService(_context)
+                .CalcularAsync(idSede, new[] { idInsumo.Value });
+            return mayor.PorInsumo.TryGetValue(idInsumo.Value, out var m)
+                ? m.Partes.Where(p => p.IdCompraInsumo == idProductoIntermedio).Sum(p => p.Saldo)
+                : 0m;
         }
 
-        /// <summary>
-        /// Mismo cálculo que ObtenerStockPI, pero para muchos registros a la vez con solo 3 consultas
-        /// (la lista de registros de la Nota de Salida tiene cientos de PI).
-        /// </summary>
-        private async Task<Dictionary<int, decimal>> ObtenerStockPIMasivo(List<(int Id, int IdInsumo, string? Lote)> pis, int idSede)
+        /// <summary>Saldo de cada registro PI (por id) con stock calculado en la sede, según el libro mayor.</summary>
+        private async Task<Dictionary<int, decimal>> SaldosPIPorRegistro(int idSede)
         {
-            var resultado = pis.Select(p => p.Id).Distinct().ToDictionary(id => id, _ => 0m);
-            if (resultado.Count == 0) return resultado;
-            var ids = resultado.Keys.ToList();
-
-            // 1) Stock propio de cada registro
-            var propios = await _context.StockInsumos.AsNoTracking()
-                .Where(s => s.IdSede == idSede && s.IdProductoIntermedio != null && ids.Contains(s.IdProductoIntermedio.Value) && s.IdNotaSalidaInsumo == null)
-                .GroupBy(s => s.IdProductoIntermedio!.Value)
-                .Select(g => new { Id = g.Key, Total = g.Sum(s => s.StockDisponible) })
-                .ToListAsync();
-            foreach (var p in propios) resultado[p.Id] += p.Total;
-
-            // 2) Recibido por Nota de Salida en esta sede (con su PI exacto, o con lote si es una línea antigua)
-            var recibidasTodas = await _context.StockInsumos.AsNoTracking()
-                .Where(s => s.IdSede == idSede
-                            && s.IdNotaSalidaInsumo != null
-                            && s.NotaSalidaInsumo != null
-                            && s.NotaSalidaInsumo.IdCompraInsumo == null
-                            && (s.NotaSalidaInsumo.IdProductoIntermedio != null || s.NotaSalidaInsumo.Lote != null)
-                            && s.NotaSalidaInsumo.NotaSalida != null
-                            && s.NotaSalidaInsumo.NotaSalida.IdSedeDestino == idSede
-                            && (EstadosRecibidos.Contains(s.NotaSalidaInsumo.NotaSalida.Estado)
-                                || s.NotaSalidaInsumo.NotaSalida.FechaRecepcion != null
-                                || (s.NotaSalidaInsumo.CantidadRecibida.HasValue && s.NotaSalidaInsumo.CantidadRecibida.Value > 0)))
-                .Select(s => new { s.Id, s.StockDisponible, IdPi = s.NotaSalidaInsumo!.IdProductoIntermedio, Lote = s.NotaSalidaInsumo!.Lote ?? "" })
-                .ToListAsync();
-            if (recibidasTodas.Count == 0) return resultado;
-
-            // 2a) Líneas con el PI exacto
-            foreach (var r in recibidasTodas.Where(r => r.IdPi.HasValue && resultado.ContainsKey(r.IdPi.Value)))
-                resultado[r.IdPi!.Value] += r.StockDisponible;
-
-            // 2b) Líneas antiguas sin PI: por lote
-            var recibidas = recibidasTodas.Where(r => !r.IdPi.HasValue && r.Lote.Trim().Length > 0).ToList();
-            if (recibidas.Count == 0) return resultado;
-
-            var lotes = recibidas.Select(r => r.Lote.Trim().ToUpper()).Distinct().ToList();
-
-            // Dueño de cada (producto, lote) = registro PI de menor Id, como el kardex
-            var pisConLote = await _context.ProductosIntermedios.AsNoTracking()
-                .Where(p => p.Lote != null && lotes.Contains(p.Lote.Trim().ToUpper()))
-                .Select(p => new { p.Id, p.IdInsumo, Lote = p.Lote! })
-                .ToListAsync();
-            var duenos = pisConLote
-                .GroupBy(p => (p.IdInsumo, Lote: p.Lote.Trim().ToUpper()))
-                .Select(g => g.Min(p => p.Id))
-                .Where(resultado.ContainsKey)
-                .ToList();
-
-            foreach (var idDueno in duenos)
-            {
-                var lote = pisConLote.First(p => p.Id == idDueno).Lote.Trim().ToUpper();
-                resultado[idDueno] += recibidas.Where(r => r.Lote.Trim().ToUpper() == lote).Sum(r => r.StockDisponible);
-            }
-            return resultado;
+            var mayor = await new proy_back_Qbd.Services.Kardex.Ledger.KardexLedgerPiService(_context).CalcularAsync(idSede, null);
+            return mayor.PorInsumo.Values
+                .SelectMany(r => r.Partes)
+                .Where(p => p.IdCompraInsumo > 0)
+                .GroupBy(p => p.IdCompraInsumo)
+                .ToDictionary(g => g.Key, g => g.Sum(p => p.Saldo));
         }
 
         /// <summary>Datos de un registro PI para la Nota de Salida, con el stock del kardex.</summary>
