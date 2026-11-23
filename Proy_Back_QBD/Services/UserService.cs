@@ -126,7 +126,10 @@ namespace Proy_back_QBD.Services
                 .ToListAsync();
         }
 
-        public async Task<List<UsuarioListaRes>?> Listar()
+        public Task<List<UsuarioListaRes>?> Listar() => Listar(EstadoTurno.AhoraLima());
+
+        /// <param name="ahoraLima">Hora de Lima con la que se calcula el estado de turno (se pasa en los tests).</param>
+        public async Task<List<UsuarioListaRes>?> Listar(DateTime ahoraLima)
         {
             List<UsuarioListaRes>? response = await _context.Usuarios
             .Where(a => a.TipoId != 1)
@@ -158,7 +161,29 @@ namespace Proy_back_QBD.Services
                 }
             })
             .ToListAsync();
+
+            await CompletarEstadoTurno(response, ahoraLima);
             return response;
+        }
+
+        /// <summary>Calcula ACTIVO / INACTIVO / BAJA con el horario y las entradas marcadas hoy y ayer.</summary>
+        private async Task CompletarEstadoTurno(List<UsuarioListaRes> usuarios, DateTime ahoraLima)
+        {
+            // fecha_creacion está en UTC: desde el inicio de ayer en Lima
+            DateTime desdeUtc = DateOnly.FromDateTime(ahoraLima).AddDays(-1).ToDateTime(TimeOnly.MinValue) - EstadoTurno.DesfaseLima;
+            var entradas = await _context.Asistencias
+                .Where(a => a.Tipo != null && a.Tipo.ToLower() == "entrada" && a.FechaCreacion >= desdeUtc)
+                .Select(a => new { a.CreadorId, a.FechaCreacion })
+                .ToListAsync();
+            var diasPorUsuario = entradas
+                .GroupBy(a => a.CreadorId)
+                .ToDictionary(g => g.Key, g => (IReadOnlyCollection<DateOnly>)g.Select(a => EstadoTurno.DiaLima(a.FechaCreacion)).ToHashSet());
+
+            foreach (UsuarioListaRes u in usuarios)
+            {
+                IReadOnlyCollection<DateOnly> dias = u.Id != null && diasPorUsuario.TryGetValue(u.Id.Value, out var d) ? d : Array.Empty<DateOnly>();
+                u.EstadoTurno = EstadoTurno.Calcular(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
+            }
         }
         public async Task<UsuarioByIdRes?> ObtenerById(int id)
         {
