@@ -42,18 +42,18 @@ public class AsistenciaController : ControllerBase
             int? sede = await _asistenciaService.ObtenerSedeParaMarcar(request.CreadorId);
             if (sede == null)
             {
-                return BadRequest("Colaborador no disponible para marcar");
+                return BadRequest("Ese colaborador está inactivo o no existe: no se le puede marcar asistencia");
             }
             if (!EsPropioOMismaSede(request.CreadorId, sede.Value))
             {
-                return Forbid();
+                return StatusCode(403, "Solo puedes marcar asistencia de personas de tu misma sede");
             }
             request.SedeId = sede;
         }
         Asistencia? response = await _asistenciaService.Crear(request);
         if (response == null)
         {
-            return BadRequest("Error al crear la asistencia");
+            return BadRequest("No se pudo registrar la marca: tipo de marca no válido o colaborador sin datos");
         }
         return Ok(response);
     }
