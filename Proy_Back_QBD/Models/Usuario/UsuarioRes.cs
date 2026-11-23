@@ -55,6 +55,12 @@ namespace Proy_back_QBD.Dto.Response
         public string? EstadoTurno { get; set; }
         /// <summary>Si está INACTIVO: "sin horario cargado", "sin entrada hoy" o "fuera de horario".</summary>
         public string? MotivoTurno { get; set; }
+        /// <summary>TRABAJANDO (marcó entrada y no salida), SALIO o SIN_MARCAR.</summary>
+        public string? AsistenciaHoy { get; set; }
+        /// <summary>Hora (HH:mm, Lima) de la entrada del turno en curso.</summary>
+        public string? HoraEntradaHoy { get; set; }
+        /// <summary>Hora (HH:mm, Lima) de la salida, si ya la marcó.</summary>
+        public string? HoraSalidaHoy { get; set; }
     }
     public class UsuarioByIdRes
     {

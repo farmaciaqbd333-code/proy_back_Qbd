@@ -59,6 +59,43 @@ namespace Proy_back_QBD.Services
             return false;
         }
 
+        // ===== Asistencia del día (columna ASISTENCIA de Control de Usuarios) =====
+        public const string Trabajando = "TRABAJANDO";
+        public const string Salio = "SALIO";
+        public const string SinMarcar = "SIN_MARCAR";
+
+        /// <summary>Una entrada de hace más de esto ya no cuenta como turno en curso.</summary>
+        public static readonly TimeSpan VigenciaEntrada = TimeSpan.FromHours(20);
+
+        public sealed record AsistenciaDelDia(string Estado, DateTime? Entrada, DateTime? Salida);
+
+        /// <summary>
+        /// TRABAJANDO: marcó su entrada (en las últimas 20 h) y todavía no su salida.
+        /// SALIO: después de esa entrada marcó su salida. SIN_MARCAR: no tiene entrada reciente.
+        /// Las horas van en hora de Lima.
+        /// </summary>
+        public static AsistenciaDelDia AsistenciaHoy(
+            IEnumerable<DateTime> entradasLima,
+            IEnumerable<DateTime> salidasLima,
+            DateTime ahoraLima)
+        {
+            DateTime? entrada = entradasLima
+                .Where(e => e <= ahoraLima && ahoraLima - e <= VigenciaEntrada)
+                .DefaultIfEmpty()
+                .Max();
+            if (entrada == null || entrada == default(DateTime))
+            {
+                return new AsistenciaDelDia(SinMarcar, null, null);
+            }
+            DateTime? salida = salidasLima
+                .Where(s => s >= entrada && s <= ahoraLima)
+                .DefaultIfEmpty()
+                .Max();
+            return salida == null || salida == default(DateTime)
+                ? new AsistenciaDelDia(Trabajando, entrada, null)
+                : new AsistenciaDelDia(Salio, entrada, salida);
+        }
+
         public const string MotivoSinHorario = "sin horario cargado";
         public const string MotivoSinEntrada = "sin entrada hoy";
         public const string MotivoFueraDeHorario = "fuera de horario";

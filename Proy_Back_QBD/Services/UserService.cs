@@ -190,10 +190,14 @@ namespace Proy_back_QBD.Services
         {
             // fecha_creacion está en UTC: desde el inicio de ayer en Lima
             DateTime desdeUtc = DateOnly.FromDateTime(ahoraLima).AddDays(-1).ToDateTime(TimeOnly.MinValue) - EstadoTurno.DesfaseLima;
-            var entradas = await _context.Asistencias
-                .Where(a => a.Tipo != null && a.Tipo.ToLower() == "entrada" && a.FechaCreacion >= desdeUtc)
-                .Select(a => new { a.CreadorId, a.FechaCreacion })
+            var marcas = await _context.Asistencias
+                .Where(a => a.Tipo != null && (a.Tipo.ToLower() == "entrada" || a.Tipo.ToLower() == "salida") && a.FechaCreacion >= desdeUtc)
+                .Select(a => new { a.CreadorId, a.FechaCreacion, EsEntrada = a.Tipo!.ToLower() == "entrada" })
                 .ToListAsync();
+            var entradas = marcas.Where(m => m.EsEntrada).ToList();
+            var marcasPorUsuario = marcas
+                .GroupBy(m => m.CreadorId)
+                .ToDictionary(g => g.Key, g => g.Select(m => (Lima: m.FechaCreacion.Add(EstadoTurno.DesfaseLima), m.EsEntrada)).ToList());
             var diasPorUsuario = entradas
                 .GroupBy(a => a.CreadorId)
                 .ToDictionary(g => g.Key, g => (IReadOnlyCollection<DateOnly>)g.Select(a => EstadoTurno.DiaLima(a.FechaCreacion)).ToHashSet());
@@ -203,6 +207,15 @@ namespace Proy_back_QBD.Services
                 IReadOnlyCollection<DateOnly> dias = u.Id != null && diasPorUsuario.TryGetValue(u.Id.Value, out var d) ? d : Array.Empty<DateOnly>();
                 u.EstadoTurno = EstadoTurno.Calcular(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
                 u.MotivoTurno = EstadoTurno.Motivo(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
+
+                var propias = u.Id != null && marcasPorUsuario.TryGetValue(u.Id.Value, out var m) ? m : new();
+                var hoy = EstadoTurno.AsistenciaHoy(
+                    propias.Where(x => x.EsEntrada).Select(x => x.Lima),
+                    propias.Where(x => !x.EsEntrada).Select(x => x.Lima),
+                    ahoraLima);
+                u.AsistenciaHoy = hoy.Estado;
+                u.HoraEntradaHoy = hoy.Entrada?.ToString("HH:mm");
+                u.HoraSalidaHoy = hoy.Salida?.ToString("HH:mm");
             }
         }
         public async Task<UsuarioByIdRes?> ObtenerById(int id)

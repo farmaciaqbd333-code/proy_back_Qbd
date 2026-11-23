@@ -169,6 +169,33 @@ public class EstadoTurnoTests
     }
 
     [Fact]
+    public void AsistenciaHoy_TrabajandoSalioYSinMarcar()
+    {
+        var entrada = A(8, 55);
+        var trabajando = EstadoTurno.AsistenciaHoy(new[] { entrada }, Array.Empty<DateTime>(), A(11, 0));
+        Assert.Equal(EstadoTurno.Trabajando, trabajando.Estado);
+        Assert.Equal(entrada, trabajando.Entrada);
+
+        var salio = EstadoTurno.AsistenciaHoy(new[] { entrada }, new[] { A(13, 2) }, A(14, 0));
+        Assert.Equal(EstadoTurno.Salio, salio.Estado);
+        Assert.Equal(A(13, 2), salio.Salida);
+
+        Assert.Equal(EstadoTurno.SinMarcar, EstadoTurno.AsistenciaHoy(Array.Empty<DateTime>(), Array.Empty<DateTime>(), A(11, 0)).Estado);
+    }
+
+    [Fact]
+    public void AsistenciaHoy_SalidaViejaNoCuentaYEntradaDeAyerVencida()
+    {
+        // La salida de ayer no cierra la entrada de hoy
+        var hoy = EstadoTurno.AsistenciaHoy(new[] { A(9, 0, -1), A(9, 0) }, new[] { A(13, 0, -1) }, A(10, 0));
+        Assert.Equal(EstadoTurno.Trabajando, hoy.Estado);
+        // Entrada de hace más de 20 h: ya no está trabajando
+        Assert.Equal(EstadoTurno.SinMarcar, EstadoTurno.AsistenciaHoy(new[] { A(9, 0, -1) }, Array.Empty<DateTime>(), A(10, 0)).Estado);
+        // Turno de noche: entró 22:00 de ayer, a las 02:00 sigue trabajando
+        Assert.Equal(EstadoTurno.Trabajando, EstadoTurno.AsistenciaHoy(new[] { A(22, 0, -1) }, Array.Empty<DateTime>(), A(2, 0)).Estado);
+    }
+
+    [Fact]
     public void Motivo_NuloSiEstaActivoODeBaja()
     {
         Assert.Null(EstadoTurno.Motivo(true, Roles.AsesorVentas, Entrada, Salida, MarcoHoy, A(10, 0)));
