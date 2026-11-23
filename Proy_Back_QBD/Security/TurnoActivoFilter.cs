@@ -86,11 +86,12 @@ namespace Proy_back_QBD.Security
 
             if (estado == EstadoTurno.Baja)
                 return "Tu usuario está dado de BAJA: no puedes registrar ni modificar datos.";
-            if (usuario.HorarioEntrada == null || usuario.HorarioSalida == null)
-                return "Tu usuario no tiene horario cargado y figura INACTIVO: pide al administrador que registre tu horario.";
-            if (!dias.Contains(hoy) && !dias.Contains(hoy.AddDays(-1)))
-                return "Estás INACTIVO: marca tu ENTRADA en Mi asistencia para poder registrar o modificar datos.";
-            return "Estás INACTIVO: estás fuera de tu horario de trabajo, no puedes registrar ni modificar datos.";
+            return EstadoTurno.Motivo(usuario.Estado, usuario.TipoId, usuario.HorarioEntrada, usuario.HorarioSalida, dias, ahoraLima) switch
+            {
+                EstadoTurno.MotivoSinHorario => "Tu usuario no tiene horario cargado y figura INACTIVO: pide al administrador que registre tu horario.",
+                EstadoTurno.MotivoSinEntrada => "Estás INACTIVO: marca tu ENTRADA en Mi asistencia para poder registrar o modificar datos.",
+                _ => "Estás INACTIVO: estás fuera de tu horario de trabajo, no puedes registrar ni modificar datos."
+            };
         }
     }
 }

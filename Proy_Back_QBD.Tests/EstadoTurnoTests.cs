@@ -126,5 +126,23 @@ public class EstadoTurnoTests
         Assert.Equal(EstadoTurno.Activo, lista!.Single(u => u.Id == 1).EstadoTurno);
         Assert.Equal(EstadoTurno.Inactivo, lista.Single(u => u.Id == 2).EstadoTurno);
         Assert.Equal(EstadoTurno.Baja, lista.Single(u => u.Id == 3).EstadoTurno);
+        Assert.Null(lista.Single(u => u.Id == 1).MotivoTurno);
+        Assert.Equal(EstadoTurno.MotivoSinEntrada, lista.Single(u => u.Id == 2).MotivoTurno);
+        Assert.Null(lista.Single(u => u.Id == 3).MotivoTurno);
+    }
+
+    [Fact]
+    public void Motivo_SinEntradaFueraDeHorarioYSinHorario()
+    {
+        Assert.Equal(EstadoTurno.MotivoSinEntrada, EstadoTurno.Motivo(true, Roles.AsesorVentas, Entrada, Salida, SinMarcas, A(10, 0)));
+        Assert.Equal(EstadoTurno.MotivoFueraDeHorario, EstadoTurno.Motivo(true, Roles.AsesorVentas, Entrada, Salida, MarcoHoy, A(20, 0)));
+        Assert.Equal(EstadoTurno.MotivoSinHorario, EstadoTurno.Motivo(true, Roles.AsesorVentas, null, null, MarcoHoy, A(10, 0)));
+    }
+
+    [Fact]
+    public void Motivo_NuloSiEstaActivoODeBaja()
+    {
+        Assert.Null(EstadoTurno.Motivo(true, Roles.AsesorVentas, Entrada, Salida, MarcoHoy, A(10, 0)));
+        Assert.Null(EstadoTurno.Motivo(false, Roles.AsesorVentas, Entrada, Salida, SinMarcas, A(10, 0)));
     }
 }

@@ -53,6 +53,8 @@ namespace Proy_back_QBD.Dto.Response
         public bool? Estado { get; set; }
         /// <summary>ACTIVO / INACTIVO / BAJA, calculado en vivo con el horario y la asistencia del día.</summary>
         public string? EstadoTurno { get; set; }
+        /// <summary>Si está INACTIVO: "sin horario cargado", "sin entrada hoy" o "fuera de horario".</summary>
+        public string? MotivoTurno { get; set; }
     }
     public class UsuarioByIdRes
     {
