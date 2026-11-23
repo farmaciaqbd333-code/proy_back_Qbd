@@ -158,7 +158,8 @@ public class AsistenciaPermisosTests
         var marca = await controlador.CrearAsistencia(new AsistenciaCreateReq { Tipo = "entrada", CreadorId = 8 });
         var consulta = await controlador.ObtenerAsistenciaByCodigo(8, new AsistenciaByIdReq { Año = 2026, Mes = 9 }, 8);
 
-        Assert.IsType<ForbidResult>(marca);
+        // Marcar por alguien de otra sede: 403 con el motivo (antes un Forbid vacío)
+        Assert.Equal(403, Assert.IsType<ObjectResult>(marca).StatusCode);
         Assert.IsType<ForbidResult>(consulta);
         Assert.Null(servicio.Creada);
         Assert.Null(servicio.IdConsultado);

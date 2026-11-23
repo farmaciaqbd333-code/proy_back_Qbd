@@ -25,8 +25,97 @@ namespace Proy_back_QBD.Services
 
         public static DateTime AhoraLima() => DateTime.UtcNow.Add(DesfaseLima);
 
-        /// <summary>Día de Lima en que se registró una marca (fecha_creacion se guarda en UTC).</summary>
-        public static DateOnly DiaLima(DateTime fechaCreacionUtc) => DateOnly.FromDateTime(fechaCreacionUtc.Add(DesfaseLima));
+        /// <summary>
+        /// Pasa una fecha de la base a hora de Lima según cómo llega:
+        /// - Utc: se le restan 5 h.
+        /// - Local: se convierte desde la zona del servidor (en producción ya es Lima: TZ=America/Lima).
+        /// - Unspecified: ya está en hora de Lima (así la entrega Npgsql en este servidor).
+        /// fecha_creacion de asistencias llega en hora de Lima: igual que hora_marcada.
+        /// </summary>
+        public static DateTime ALima(DateTime fecha) => fecha.Kind switch
+        {
+            DateTimeKind.Utc => DateTime.SpecifyKind(fecha.Add(DesfaseLima), DateTimeKind.Unspecified),
+            DateTimeKind.Local => DateTime.SpecifyKind(fecha.ToUniversalTime().Add(DesfaseLima), DateTimeKind.Unspecified),
+            _ => fecha
+        };
+
+        /// <summary>Día de Lima en que se registró una marca.</summary>
+        public static DateOnly DiaLima(DateTime fechaCreacion) => DateOnly.FromDateTime(ALima(fechaCreacion));
+
+        /// <summary>
+        /// Desde cuándo traer marcas para el turno de hoy y el de ayer: inicio de anteayer en Lima,
+        /// como instante UTC (así Npgsql lo compara bien venga la columna como venga).
+        /// </summary>
+        public static DateTime DesdeParaConsulta(DateTime ahoraLima) =>
+            DateTime.SpecifyKind(ahoraLima.Date.AddDays(-2) - DesfaseLima, DateTimeKind.Utc);
+
+        /// <summary>
+        /// Puede iniciar sesión: el administrador siempre; los demás solo de su entrada − 30 min
+        /// a su salida + 30 min (turno de hoy o el de ayer si cruza la medianoche). Sin horario, no.
+        /// </summary>
+        public static bool PuedeIngresar(int? tipoId, TimeOnly? horarioEntrada, TimeOnly? horarioSalida, DateTime ahoraLima)
+        {
+            if (tipoId == Roles.Admin)
+            {
+                return true;
+            }
+            if (horarioEntrada == null || horarioSalida == null)
+            {
+                return false;
+            }
+            DateOnly hoy = DateOnly.FromDateTime(ahoraLima);
+            foreach (DateOnly dia in new[] { hoy, hoy.AddDays(-1) })
+            {
+                DateTime entrada = dia.ToDateTime(horarioEntrada.Value);
+                DateTime salida = dia.ToDateTime(horarioSalida.Value);
+                if (salida <= entrada)
+                {
+                    salida = salida.AddDays(1);
+                }
+                if (ahoraLima >= entrada - Margen && ahoraLima <= salida + Margen)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // ===== Asistencia del día (columna ASISTENCIA de Control de Usuarios) =====
+        public const string Trabajando = "TRABAJANDO";
+        public const string Salio = "SALIO";
+        public const string SinMarcar = "SIN_MARCAR";
+
+        /// <summary>Una entrada de hace más de esto ya no cuenta como turno en curso.</summary>
+        public static readonly TimeSpan VigenciaEntrada = TimeSpan.FromHours(20);
+
+        public sealed record AsistenciaDelDia(string Estado, DateTime? Entrada, DateTime? Salida);
+
+        /// <summary>
+        /// TRABAJANDO: marcó su entrada (en las últimas 20 h) y todavía no su salida.
+        /// SALIO: después de esa entrada marcó su salida. SIN_MARCAR: no tiene entrada reciente.
+        /// Las horas van en hora de Lima.
+        /// </summary>
+        public static AsistenciaDelDia AsistenciaHoy(
+            IEnumerable<DateTime> entradasLima,
+            IEnumerable<DateTime> salidasLima,
+            DateTime ahoraLima)
+        {
+            DateTime? entrada = entradasLima
+                .Where(e => e <= ahoraLima && ahoraLima - e <= VigenciaEntrada)
+                .DefaultIfEmpty()
+                .Max();
+            if (entrada == null || entrada == default(DateTime))
+            {
+                return new AsistenciaDelDia(SinMarcar, null, null);
+            }
+            DateTime? salida = salidasLima
+                .Where(s => s >= entrada && s <= ahoraLima)
+                .DefaultIfEmpty()
+                .Max();
+            return salida == null || salida == default(DateTime)
+                ? new AsistenciaDelDia(Trabajando, entrada, null)
+                : new AsistenciaDelDia(Salio, entrada, salida);
+        }
 
         public const string MotivoSinHorario = "sin horario cargado";
         public const string MotivoSinEntrada = "sin entrada hoy";

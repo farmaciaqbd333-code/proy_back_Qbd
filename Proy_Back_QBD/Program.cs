@@ -67,8 +67,11 @@ builder.Logging.AddConsole();
 builder.Services.AddApplicationServices();
 // Quién crea/modifica sale siempre del token, no del front (ver Security/UsuarioDeSesionFilter)
 // Usuario INACTIVO (fuera de turno o sin entrada marcada) no registra ni modifica (ver Security/TurnoActivoFilter)
+// Fuera de su horario de ingreso (entrada −30 / salida +30) se cierra la sesión (ver Security/HorarioIngresoFilter)
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers(options =>
 {
+    options.Filters.Add<Proy_back_QBD.Security.HorarioIngresoFilter>();
     options.Filters.Add<Proy_back_QBD.Security.UsuarioDeSesionFilter>();
     options.Filters.Add<Proy_back_QBD.Security.TurnoActivoFilter>();
 })

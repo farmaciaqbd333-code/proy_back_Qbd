@@ -126,6 +126,25 @@ namespace Proy_back_QBD.Services
                 .ToListAsync();
         }
 
+        public async Task<string?> BloqueoDeIngreso(int usuarioId, DateTime ahoraLima)
+        {
+            var u = await _context.Usuarios
+                .Where(a => a.Id == usuarioId)
+                .Select(a => new { a.TipoId, a.HorarioEntrada, a.HorarioSalida })
+                .FirstOrDefaultAsync();
+            if (u == null || EstadoTurno.PuedeIngresar(u.TipoId, u.HorarioEntrada, u.HorarioSalida, ahoraLima))
+            {
+                return null;
+            }
+            if (u.HorarioEntrada == null || u.HorarioSalida == null)
+            {
+                return "Tu usuario no tiene horario cargado: no puedes ingresar. Pide al administrador que registre tu horario.";
+            }
+            string desde = u.HorarioEntrada.Value.Add(-EstadoTurno.Margen).ToString("HH:mm");
+            string hasta = u.HorarioSalida.Value.Add(EstadoTurno.Margen).ToString("HH:mm");
+            return $"Fuera de tu horario: solo puedes ingresar de {desde} a {hasta} (30 min antes de tu entrada y 30 min después de tu salida).";
+        }
+
         public Task<List<UsuarioListaRes>?> Listar() => Listar(EstadoTurno.AhoraLima());
 
         /// <param name="ahoraLima">Hora de Lima con la que se calcula el estado de turno (se pasa en los tests).</param>
@@ -170,11 +189,15 @@ namespace Proy_back_QBD.Services
         private async Task CompletarEstadoTurno(List<UsuarioListaRes> usuarios, DateTime ahoraLima)
         {
             // fecha_creacion está en UTC: desde el inicio de ayer en Lima
-            DateTime desdeUtc = DateOnly.FromDateTime(ahoraLima).AddDays(-1).ToDateTime(TimeOnly.MinValue) - EstadoTurno.DesfaseLima;
-            var entradas = await _context.Asistencias
-                .Where(a => a.Tipo != null && a.Tipo.ToLower() == "entrada" && a.FechaCreacion >= desdeUtc)
-                .Select(a => new { a.CreadorId, a.FechaCreacion })
+            DateTime desdeUtc = EstadoTurno.DesdeParaConsulta(ahoraLima);
+            var marcas = await _context.Asistencias
+                .Where(a => a.Tipo != null && (a.Tipo.ToLower() == "entrada" || a.Tipo.ToLower() == "salida") && a.FechaCreacion >= desdeUtc)
+                .Select(a => new { a.CreadorId, a.FechaCreacion, EsEntrada = a.Tipo!.ToLower() == "entrada" })
                 .ToListAsync();
+            var entradas = marcas.Where(m => m.EsEntrada).ToList();
+            var marcasPorUsuario = marcas
+                .GroupBy(m => m.CreadorId)
+                .ToDictionary(g => g.Key, g => g.Select(m => (Lima: EstadoTurno.ALima(m.FechaCreacion), m.EsEntrada)).ToList());
             var diasPorUsuario = entradas
                 .GroupBy(a => a.CreadorId)
                 .ToDictionary(g => g.Key, g => (IReadOnlyCollection<DateOnly>)g.Select(a => EstadoTurno.DiaLima(a.FechaCreacion)).ToHashSet());
@@ -184,6 +207,15 @@ namespace Proy_back_QBD.Services
                 IReadOnlyCollection<DateOnly> dias = u.Id != null && diasPorUsuario.TryGetValue(u.Id.Value, out var d) ? d : Array.Empty<DateOnly>();
                 u.EstadoTurno = EstadoTurno.Calcular(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
                 u.MotivoTurno = EstadoTurno.Motivo(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
+
+                var propias = u.Id != null && marcasPorUsuario.TryGetValue(u.Id.Value, out var m) ? m : new();
+                var hoy = EstadoTurno.AsistenciaHoy(
+                    propias.Where(x => x.EsEntrada).Select(x => x.Lima),
+                    propias.Where(x => !x.EsEntrada).Select(x => x.Lima),
+                    ahoraLima);
+                u.AsistenciaHoy = hoy.Estado;
+                u.HoraEntradaHoy = hoy.Entrada?.ToString("HH:mm");
+                u.HoraSalidaHoy = hoy.Salida?.ToString("HH:mm");
             }
         }
         public async Task<UsuarioByIdRes?> ObtenerById(int id)
