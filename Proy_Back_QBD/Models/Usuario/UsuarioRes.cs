@@ -49,7 +49,10 @@ namespace Proy_back_QBD.Dto.Response
         public string? TipoUsuario { get; set; }
         public int? TipoUsuarioId { get; set; }
         public string? Codigo { get; set; }
+        /// <summary>false = dado de baja a mano (no puede iniciar sesión).</summary>
         public bool? Estado { get; set; }
+        /// <summary>ACTIVO / INACTIVO / BAJA, calculado en vivo con el horario y la asistencia del día.</summary>
+        public string? EstadoTurno { get; set; }
     }
     public class UsuarioByIdRes
     {
