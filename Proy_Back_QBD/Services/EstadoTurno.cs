@@ -28,6 +28,36 @@ namespace Proy_back_QBD.Services
         /// <summary>Día de Lima en que se registró una marca (fecha_creacion se guarda en UTC).</summary>
         public static DateOnly DiaLima(DateTime fechaCreacionUtc) => DateOnly.FromDateTime(fechaCreacionUtc.Add(DesfaseLima));
 
+        public const string MotivoSinHorario = "sin horario cargado";
+        public const string MotivoSinEntrada = "sin entrada hoy";
+        public const string MotivoFueraDeHorario = "fuera de horario";
+
+        /// <summary>
+        /// Por qué un usuario sale INACTIVO (null si está ACTIVO o de BAJA):
+        /// sin horario cargado, sin entrada marcada (hoy ni ayer) o fuera de su horario.
+        /// </summary>
+        public static string? Motivo(
+            bool estadoManual,
+            int? tipoId,
+            TimeOnly? horarioEntrada,
+            TimeOnly? horarioSalida,
+            IReadOnlyCollection<DateOnly> diasConEntrada,
+            DateTime ahoraLima)
+        {
+            if (Calcular(estadoManual, tipoId, horarioEntrada, horarioSalida, diasConEntrada, ahoraLima) != Inactivo)
+            {
+                return null;
+            }
+            if (horarioEntrada == null || horarioSalida == null)
+            {
+                return MotivoSinHorario;
+            }
+            DateOnly hoy = DateOnly.FromDateTime(ahoraLima);
+            return diasConEntrada.Contains(hoy) || diasConEntrada.Contains(hoy.AddDays(-1))
+                ? MotivoFueraDeHorario
+                : MotivoSinEntrada;
+        }
+
         /// <param name="estadoManual">Columna usuarios.estado: false = dado de baja.</param>
         /// <param name="diasConEntrada">Días (de Lima) en que el usuario marcó su entrada.</param>
         /// <param name="ahoraLima">Fecha y hora actual en Lima.</param>

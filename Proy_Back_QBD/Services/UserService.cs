@@ -183,6 +183,7 @@ namespace Proy_back_QBD.Services
             {
                 IReadOnlyCollection<DateOnly> dias = u.Id != null && diasPorUsuario.TryGetValue(u.Id.Value, out var d) ? d : Array.Empty<DateOnly>();
                 u.EstadoTurno = EstadoTurno.Calcular(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
+                u.MotivoTurno = EstadoTurno.Motivo(u.Estado ?? true, u.TipoUsuarioId, u.HorarioEntrada, u.HorarioSalida, dias, ahoraLima);
             }
         }
         public async Task<UsuarioByIdRes?> ObtenerById(int id)
