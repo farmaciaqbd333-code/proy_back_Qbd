@@ -73,7 +73,7 @@ namespace Proy_back_QBD.Security
 
             DateTime ahoraLima = EstadoTurno.AhoraLima();
             DateOnly hoy = DateOnly.FromDateTime(ahoraLima);
-            DateTime desdeUtc = hoy.AddDays(-1).ToDateTime(TimeOnly.MinValue) - EstadoTurno.DesfaseLima;
+            DateTime desdeUtc = EstadoTurno.DesdeParaConsulta(ahoraLima);
             var dias = (await _context.Asistencias
                     .Where(a => a.CreadorId == idUsuario && a.Tipo != null && a.Tipo.ToLower() == "entrada" && a.FechaCreacion >= desdeUtc)
                     .Select(a => a.FechaCreacion)

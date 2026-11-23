@@ -96,7 +96,10 @@ public class EstadoTurnoTests
     public void DiaLima_ConvierteDesdeUtc()
     {
         // 03:00 UTC del 24 = 22:00 del 23 en Lima
-        Assert.Equal(Hoy, EstadoTurno.DiaLima(new DateTime(2026, 11, 24, 3, 0, 0)));
+        Assert.Equal(Hoy, EstadoTurno.DiaLima(new DateTime(2026, 11, 24, 3, 0, 0, DateTimeKind.Utc)));
+        // Como llega de la base en este servidor (sin zona): ya es hora de Lima, no se resta nada
+        Assert.Equal(new DateOnly(2026, 11, 24), EstadoTurno.DiaLima(new DateTime(2026, 11, 24, 3, 7, 0)));
+        Assert.Equal(new DateTime(2026, 11, 23, 15, 0, 15), EstadoTurno.ALima(new DateTime(2026, 11, 23, 15, 0, 15)));
     }
 
     [Fact]
@@ -115,9 +118,9 @@ public class EstadoTurnoTests
             Persona = new Persona { Id = id, NombreCompleto = "PERSONA " + id },
         };
         contexto.Usuarios.AddRange(Nuevo(1, true), Nuevo(2, true), Nuevo(3, false));
-        // Usuario 1 marcó su entrada hoy a las 08:55 de Lima (13:55 UTC); los demás no
-        contexto.Asistencias.Add(new Asistencia { Id = 1, CreadorId = 1, ModificadorId = 1, SedeId = 1, Tipo = "entrada", FechaCreacion = new DateTime(2026, 11, 23, 13, 55, 0) });
-        contexto.Asistencias.Add(new Asistencia { Id = 2, CreadorId = 3, ModificadorId = 3, SedeId = 1, Tipo = "entrada", FechaCreacion = new DateTime(2026, 11, 23, 13, 55, 0) });
+        // Usuario 1 marcó su entrada hoy a las 08:55 (fecha_creacion llega en hora de Lima); los demás no
+        contexto.Asistencias.Add(new Asistencia { Id = 1, CreadorId = 1, ModificadorId = 1, SedeId = 1, Tipo = "entrada", FechaCreacion = new DateTime(2026, 11, 23, 8, 55, 0) });
+        contexto.Asistencias.Add(new Asistencia { Id = 2, CreadorId = 3, ModificadorId = 3, SedeId = 1, Tipo = "entrada", FechaCreacion = new DateTime(2026, 11, 23, 8, 55, 0) });
         await contexto.SaveChangesAsync();
 
         var servicio = new UserService(contexto, null!);

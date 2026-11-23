@@ -25,8 +25,29 @@ namespace Proy_back_QBD.Services
 
         public static DateTime AhoraLima() => DateTime.UtcNow.Add(DesfaseLima);
 
-        /// <summary>Día de Lima en que se registró una marca (fecha_creacion se guarda en UTC).</summary>
-        public static DateOnly DiaLima(DateTime fechaCreacionUtc) => DateOnly.FromDateTime(fechaCreacionUtc.Add(DesfaseLima));
+        /// <summary>
+        /// Pasa una fecha de la base a hora de Lima según cómo llega:
+        /// - Utc: se le restan 5 h.
+        /// - Local: se convierte desde la zona del servidor (en producción ya es Lima: TZ=America/Lima).
+        /// - Unspecified: ya está en hora de Lima (así la entrega Npgsql en este servidor).
+        /// fecha_creacion de asistencias llega en hora de Lima: igual que hora_marcada.
+        /// </summary>
+        public static DateTime ALima(DateTime fecha) => fecha.Kind switch
+        {
+            DateTimeKind.Utc => DateTime.SpecifyKind(fecha.Add(DesfaseLima), DateTimeKind.Unspecified),
+            DateTimeKind.Local => DateTime.SpecifyKind(fecha.ToUniversalTime().Add(DesfaseLima), DateTimeKind.Unspecified),
+            _ => fecha
+        };
+
+        /// <summary>Día de Lima en que se registró una marca.</summary>
+        public static DateOnly DiaLima(DateTime fechaCreacion) => DateOnly.FromDateTime(ALima(fechaCreacion));
+
+        /// <summary>
+        /// Desde cuándo traer marcas para el turno de hoy y el de ayer: inicio de anteayer en Lima,
+        /// como instante UTC (así Npgsql lo compara bien venga la columna como venga).
+        /// </summary>
+        public static DateTime DesdeParaConsulta(DateTime ahoraLima) =>
+            DateTime.SpecifyKind(ahoraLima.Date.AddDays(-2) - DesfaseLima, DateTimeKind.Utc);
 
         /// <summary>
         /// Puede iniciar sesión: el administrador siempre; los demás solo de su entrada − 30 min

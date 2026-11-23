@@ -189,7 +189,7 @@ namespace Proy_back_QBD.Services
         private async Task CompletarEstadoTurno(List<UsuarioListaRes> usuarios, DateTime ahoraLima)
         {
             // fecha_creacion está en UTC: desde el inicio de ayer en Lima
-            DateTime desdeUtc = DateOnly.FromDateTime(ahoraLima).AddDays(-1).ToDateTime(TimeOnly.MinValue) - EstadoTurno.DesfaseLima;
+            DateTime desdeUtc = EstadoTurno.DesdeParaConsulta(ahoraLima);
             var marcas = await _context.Asistencias
                 .Where(a => a.Tipo != null && (a.Tipo.ToLower() == "entrada" || a.Tipo.ToLower() == "salida") && a.FechaCreacion >= desdeUtc)
                 .Select(a => new { a.CreadorId, a.FechaCreacion, EsEntrada = a.Tipo!.ToLower() == "entrada" })
@@ -197,7 +197,7 @@ namespace Proy_back_QBD.Services
             var entradas = marcas.Where(m => m.EsEntrada).ToList();
             var marcasPorUsuario = marcas
                 .GroupBy(m => m.CreadorId)
-                .ToDictionary(g => g.Key, g => g.Select(m => (Lima: m.FechaCreacion.Add(EstadoTurno.DesfaseLima), m.EsEntrada)).ToList());
+                .ToDictionary(g => g.Key, g => g.Select(m => (Lima: EstadoTurno.ALima(m.FechaCreacion), m.EsEntrada)).ToList());
             var diasPorUsuario = entradas
                 .GroupBy(a => a.CreadorId)
                 .ToDictionary(g => g.Key, g => (IReadOnlyCollection<DateOnly>)g.Select(a => EstadoTurno.DiaLima(a.FechaCreacion)).ToHashSet());
