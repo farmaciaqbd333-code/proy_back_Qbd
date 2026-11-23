@@ -165,17 +165,15 @@ namespace Proy_back_QBD.Services
                   ) // Si no es ni "entrada" ni "salida", devuelve el valor por defecto
                   ) // Si no es ni "entrada" ni "salida", devuelve el valor por defecto
                   )).FirstOrDefaultAsync();
-            if (horaAsignada == null)
-            {
-                return null;
-            }
+            // Sin horario cargado para ese tipo, la marca igual se guarda (sin calcular atraso ni extra)
+            bool tieneHorario = horaAsignada != null;
             TimeSpan diferencia;
             DateTime horaAsignada2 = DateTime.Today.Add(horaAsignada.GetValueOrDefault().ToTimeSpan());
             DateTime horaMarcada = DateTime.Now;
             Asistencia asistencia = _mapper.Map<Asistencia>(request);
             diferencia = (horaAsignada2 - horaMarcada).Duration();
             Debug.WriteLine(diferencia);
-            if (tipoAsistencia.Trim().ToUpper().Equals("ENTRADA") && horaMarcada > horaAsignada2)
+            if (tieneHorario && tipoAsistencia.Trim().ToUpper().Equals("ENTRADA") && horaMarcada > horaAsignada2)
             {
                 asistencia.TiempoAtraso = diferencia;
             }
@@ -184,7 +182,7 @@ namespace Proy_back_QBD.Services
                 asistencia.TiempoAtraso = null;
             }
 
-            if (tipoAsistencia.Trim().ToUpper().Equals("SALIDA") && horaMarcada > horaAsignada2)
+            if (tieneHorario && tipoAsistencia.Trim().ToUpper().Equals("SALIDA") && horaMarcada > horaAsignada2)
             {
                 asistencia.TiempoExtra = diferencia;
             }
