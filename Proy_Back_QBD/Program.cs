@@ -66,7 +66,12 @@ builder.Logging.AddConsole();
 // ===================== Servicios =====================
 builder.Services.AddApplicationServices();
 // Quién crea/modifica sale siempre del token, no del front (ver Security/UsuarioDeSesionFilter)
-builder.Services.AddControllers(options => options.Filters.Add<Proy_back_QBD.Security.UsuarioDeSesionFilter>())
+// Usuario INACTIVO (fuera de turno o sin entrada marcada) no registra ni modifica (ver Security/TurnoActivoFilter)
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<Proy_back_QBD.Security.UsuarioDeSesionFilter>();
+    options.Filters.Add<Proy_back_QBD.Security.TurnoActivoFilter>();
+})
     .AddJsonOptions(options =>
     {
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
