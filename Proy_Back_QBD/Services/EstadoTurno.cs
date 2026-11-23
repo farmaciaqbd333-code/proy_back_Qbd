@@ -28,6 +28,37 @@ namespace Proy_back_QBD.Services
         /// <summary>Día de Lima en que se registró una marca (fecha_creacion se guarda en UTC).</summary>
         public static DateOnly DiaLima(DateTime fechaCreacionUtc) => DateOnly.FromDateTime(fechaCreacionUtc.Add(DesfaseLima));
 
+        /// <summary>
+        /// Puede iniciar sesión: el administrador siempre; los demás solo de su entrada − 30 min
+        /// a su salida + 30 min (turno de hoy o el de ayer si cruza la medianoche). Sin horario, no.
+        /// </summary>
+        public static bool PuedeIngresar(int? tipoId, TimeOnly? horarioEntrada, TimeOnly? horarioSalida, DateTime ahoraLima)
+        {
+            if (tipoId == Roles.Admin)
+            {
+                return true;
+            }
+            if (horarioEntrada == null || horarioSalida == null)
+            {
+                return false;
+            }
+            DateOnly hoy = DateOnly.FromDateTime(ahoraLima);
+            foreach (DateOnly dia in new[] { hoy, hoy.AddDays(-1) })
+            {
+                DateTime entrada = dia.ToDateTime(horarioEntrada.Value);
+                DateTime salida = dia.ToDateTime(horarioSalida.Value);
+                if (salida <= entrada)
+                {
+                    salida = salida.AddDays(1);
+                }
+                if (ahoraLima >= entrada - Margen && ahoraLima <= salida + Margen)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public const string MotivoSinHorario = "sin horario cargado";
         public const string MotivoSinEntrada = "sin entrada hoy";
         public const string MotivoFueraDeHorario = "fuera de horario";

@@ -8,6 +8,8 @@ namespace Proy_back_QBD.Services
     public interface IUserService
     {
         Task<UsuarioLoginDataRes?> ValidarLogin(string usuario, string contrasena);
+        /// <summary>Mensaje si el usuario no puede iniciar sesión a esta hora; null si puede.</summary>
+        Task<string?> BloqueoDeIngreso(int usuarioId, DateTime ahoraLima);
         Task<Usuario?> Crear(UsuarioCreateReq request);
         Task<Usuario?> Eliminar(int id); 
         Task<Usuario?> Actualizar(int id, UsuarioUpdateReq request);

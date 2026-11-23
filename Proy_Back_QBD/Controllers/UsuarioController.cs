@@ -47,6 +47,13 @@ public class UsuarioController : ControllerBase
             return Unauthorized(new { message = "Código o contraseña incorrectos." });
         }
 
+        // Solo se ingresa de la entrada − 30 min a la salida + 30 min (el administrador, siempre)
+        string? bloqueo = await _userService.BloqueoDeIngreso(usuario.Id ?? 0, EstadoTurno.AhoraLima());
+        if (bloqueo != null)
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { codigo = "FUERA_DE_HORARIO_INGRESO", message = bloqueo });
+        }
+
         var (token, expira) = _tokenService.Generar(usuario);
 
         // Mismos campos de siempre + token (el frontend existente sigue funcionando)

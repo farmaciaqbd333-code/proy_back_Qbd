@@ -139,6 +139,35 @@ public class EstadoTurnoTests
         Assert.Equal(EstadoTurno.MotivoSinHorario, EstadoTurno.Motivo(true, Roles.AsesorVentas, null, null, MarcoHoy, A(10, 0)));
     }
 
+    [Theory]
+    [InlineData(8, 30, true)]    // 30 min antes de la entrada
+    [InlineData(11, 0, true)]
+    [InlineData(13, 30, true)]   // 30 min después de la salida
+    [InlineData(8, 29, false)]
+    [InlineData(13, 31, false)]
+    [InlineData(22, 0, false)]
+    public void PuedeIngresar_SoloDentroDelHorarioConMargen(int hora, int minuto, bool esperado)
+    {
+        Assert.Equal(esperado, EstadoTurno.PuedeIngresar(Roles.Supervisor, Entrada, Salida, A(hora, minuto)));
+    }
+
+    [Fact]
+    public void PuedeIngresar_AdminSiempreYSinHorarioNunca()
+    {
+        Assert.True(EstadoTurno.PuedeIngresar(Roles.Admin, null, null, A(3, 0)));
+        Assert.False(EstadoTurno.PuedeIngresar(Roles.AsesorVentas, null, null, A(10, 0)));
+    }
+
+    [Fact]
+    public void PuedeIngresar_TurnoQueCruzaMedianoche()
+    {
+        var entrada = new TimeOnly(22, 0);
+        var salida = new TimeOnly(6, 0);
+        Assert.True(EstadoTurno.PuedeIngresar(Roles.AsesorVentas, entrada, salida, A(2, 0)));    // madrugada, turno de ayer
+        Assert.True(EstadoTurno.PuedeIngresar(Roles.AsesorVentas, entrada, salida, A(21, 30)));  // 30 min antes de entrar
+        Assert.False(EstadoTurno.PuedeIngresar(Roles.AsesorVentas, entrada, salida, A(12, 0)));
+    }
+
     [Fact]
     public void Motivo_NuloSiEstaActivoODeBaja()
     {

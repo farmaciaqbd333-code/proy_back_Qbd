@@ -126,6 +126,25 @@ namespace Proy_back_QBD.Services
                 .ToListAsync();
         }
 
+        public async Task<string?> BloqueoDeIngreso(int usuarioId, DateTime ahoraLima)
+        {
+            var u = await _context.Usuarios
+                .Where(a => a.Id == usuarioId)
+                .Select(a => new { a.TipoId, a.HorarioEntrada, a.HorarioSalida })
+                .FirstOrDefaultAsync();
+            if (u == null || EstadoTurno.PuedeIngresar(u.TipoId, u.HorarioEntrada, u.HorarioSalida, ahoraLima))
+            {
+                return null;
+            }
+            if (u.HorarioEntrada == null || u.HorarioSalida == null)
+            {
+                return "Tu usuario no tiene horario cargado: no puedes ingresar. Pide al administrador que registre tu horario.";
+            }
+            string desde = u.HorarioEntrada.Value.Add(-EstadoTurno.Margen).ToString("HH:mm");
+            string hasta = u.HorarioSalida.Value.Add(EstadoTurno.Margen).ToString("HH:mm");
+            return $"Fuera de tu horario: solo puedes ingresar de {desde} a {hasta} (30 min antes de tu entrada y 30 min después de tu salida).";
+        }
+
         public Task<List<UsuarioListaRes>?> Listar() => Listar(EstadoTurno.AhoraLima());
 
         /// <param name="ahoraLima">Hora de Lima con la que se calcula el estado de turno (se pasa en los tests).</param>
