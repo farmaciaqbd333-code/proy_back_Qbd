@@ -122,6 +122,15 @@ namespace Proy_back_QBD.Services
 
             laboratorio.ModificadorId = laboratorio.CreadorId;
 
+            // Insumos guardados sin registro de laboratorio (quedaban de un MODIFICAR): se reemplazan
+            var sueltos = await _context.FormulasCC
+                .Where(w => w.FormulaId == request.Lab.FormulaId && w.SedeId == request.Lab.SedeId)
+                .ToListAsync();
+            if (sueltos.Count > 0)
+            {
+                _context.FormulasCC.RemoveRange(sueltos);
+            }
+
             foreach (var item in request.Ins)
             {
                 var formulaCC = _Mappers.Map<FormulaCC>(item);

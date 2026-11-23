@@ -27,6 +27,8 @@ namespace Proy_back_QBD.Models
         public string UnidadMedida { get; set; }
         public decimal CostoTotal { get; set; }
         public List<FormulaCCLabSubRes> insumos { get; set; }
+        /// <summary>true si la fórmula ya tiene su registro de laboratorio (REG-) en esta sede.</summary>
+        public bool RegistradoLab { get; set; }
         public int? EmpaqueId { get; set; }
         public string? Procedimiento { get; set; }
         public string? Diagnostico { get; set; }

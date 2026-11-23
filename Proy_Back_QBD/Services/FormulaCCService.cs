@@ -24,6 +24,9 @@ namespace Proy_back_QBD.Services
             _logger = logger;
         }
 
+        public const string SinRegistroLab =
+            "Esta fórmula todavía no está registrada en laboratorio. Use REGISTRAR para registrarla.";
+
         public async Task<string?> Actualizar(
     int formulaId,
     int sedeId,
@@ -69,6 +72,15 @@ namespace Proy_back_QBD.Services
                         formulaId);
 
                     return "Variable Duplicada";
+                }
+
+                // Sin registro de laboratorio no se modifica: hay que REGISTRAR primero
+                // (antes se guardaban los insumos solos y la fórmula quedaba "registrada" sin REG-)
+                bool tieneLaboratorio = await _context.Laboratorios
+                    .AnyAsync(x => x.Id == formulaId && x.SedeId == sedeId);
+                if (!tieneLaboratorio)
+                {
+                    return SinRegistroLab;
                 }
 
                 // Buscar registros existentes
@@ -231,6 +243,7 @@ namespace Proy_back_QBD.Services
                     Procedimiento = s.Laboratorio != null ? s.Laboratorio.Procedimiento : null,
                     Diagnostico = s.Diagnostico ?? "",
                     ZonaAplicacion = s.ZonaAplicacion ?? "",
+                    RegistradoLab = _context.Laboratorios.Any(l => l.Id == s.Id && l.SedeId == sedeId),
                     insumos = new List<FormulaCCLabSubRes>()
                 })
                 .FirstOrDefaultAsync();

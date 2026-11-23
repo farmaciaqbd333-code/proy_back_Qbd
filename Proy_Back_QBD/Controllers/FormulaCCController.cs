@@ -40,6 +40,10 @@ public class FormulaCCController : ControllerBase
         {
             return NotFound();
         }
+        if (response == FormulaCCService.SinRegistroLab)
+        {
+            return BadRequest(response);
+        }
         return Ok(response);
     }
 
