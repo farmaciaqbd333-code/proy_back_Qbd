@@ -157,6 +157,7 @@ namespace Proy_back_QBD.DependencyInjection
             services.AddScoped<IAsistenciaService, AsistenciaService>();
             services.AddScoped<IPacienteService, PacienteService>();
             services.AddScoped<IMedicoService, MedicoService>();
+            services.AddScoped<Proy_back_QBD.Services.AppMedico.IAppMedicoService, Proy_back_QBD.Services.AppMedico.AppMedicoService>();
             services.AddScoped<IPedidoService, PedidoService>();
             services.AddScoped<IFormulaService, FormulaService>();
             services.AddScoped<IFormulaRService, FormulaRService>();

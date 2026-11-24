@@ -31,6 +31,8 @@
   <ItemGroup>
     <!-- Datos iniciales de la lista de precios (se cargan solos al arrancar si la tabla está vacía) -->
     <EmbeddedResource Include="SQL\lista_precios_av.sql" LogicalName="lista_precios_av.sql" />
+    <!-- Tablas de la app de médicos (se crean solas al arrancar, ver DatabaseStartupMigrator) -->
+    <EmbeddedResource Include="SQL\app_medico.sql" LogicalName="app_medico.sql" />
   </ItemGroup>
 
 </Project>
