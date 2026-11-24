@@ -75,6 +75,12 @@ namespace Proy_back_QBD.DependencyInjection
                         NameClaimType = "sub",
                         RoleClaimType = JwtTokens.ClaimRol,
                     };
+                })
+                // App de médicos: misma clave, otra audiencia (ver Security/AppMedicoTokens)
+                .AddJwtBearer(AppMedicoTokens.Esquema, options =>
+                {
+                    options.MapInboundClaims = false;
+                    options.TokenValidationParameters = AppMedicoTokens.Validacion(secret);
                 });
 
             services.AddAuthorization(options =>
@@ -82,6 +88,10 @@ namespace Proy_back_QBD.DependencyInjection
                 options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
+                options.AddPolicy(AppMedicoTokens.Politica, p => p
+                    .AddAuthenticationSchemes(AppMedicoTokens.Esquema)
+                    .RequireAuthenticatedUser()
+                    .RequireClaim(AppMedicoTokens.ClaimTipo, AppMedicoTokens.TipoMedico));
             });
 
             return services;

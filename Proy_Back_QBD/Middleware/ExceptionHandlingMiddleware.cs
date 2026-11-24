@@ -38,6 +38,7 @@ namespace Proy_back_QBD.Middleware
                 {
                     BadRequestException => (StatusCodes.Status400BadRequest, ex.Message),
                     NotFoundException => (StatusCodes.Status404NotFound, ex.Message),
+                    Proy_back_QBD.Services.AppMedico.NoAutorizadoException => (StatusCodes.Status401Unauthorized, ex.Message),
                     _ => (StatusCodes.Status500InternalServerError, "Ocurrió un error inesperado. Intente nuevamente."),
                 };
 

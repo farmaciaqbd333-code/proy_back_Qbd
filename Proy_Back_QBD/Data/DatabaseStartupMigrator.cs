@@ -281,6 +281,16 @@ namespace Proy_back_QBD.Data
                 {
                     Console.WriteLine($"DB Auto-migration error (lista_precios_av): {exLp.Message}");
                 }
+                try
+                {
+                    // App de médicos: acceso (CMP + contraseña BCrypt), favoritos y pedidos. Solo estructura, idempotente.
+                    db.Database.ExecuteSqlRaw(LeerSqlEmbebido("app_medico.sql"));
+                    Console.WriteLine("--> Base de datos: tablas de la app de médicos verificadas/creadas.");
+                }
+                catch (Exception exApp)
+                {
+                    Console.WriteLine($"DB Auto-migration error (app de médicos): {exApp.Message}");
+                }
                 db.Database.ExecuteSqlRaw(@"
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;
@@ -314,6 +324,15 @@ namespace Proy_back_QBD.Data
                 Console.WriteLine($"DB Auto-migration error: {ex.Message}");
             }
             }
+        }
+
+        /// <summary>Lee un script SQL embebido en el ensamblado (ver EmbeddedResource en el .csproj).</summary>
+        internal static string LeerSqlEmbebido(string nombre)
+        {
+            using var stream = typeof(DatabaseStartupMigrator).Assembly.GetManifestResourceStream(nombre)
+                ?? throw new InvalidOperationException($"No se encontró el recurso {nombre}.");
+            using var lector = new StreamReader(stream);
+            return lector.ReadToEnd();
         }
     }
 }
