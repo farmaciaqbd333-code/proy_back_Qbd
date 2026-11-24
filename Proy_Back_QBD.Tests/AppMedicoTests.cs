@@ -429,4 +429,17 @@ public class AppMedicoTests
         Assert.Contains(filas.Sql, q => q.Contains("pedidos_medico") && q.Contains("sedes"));
         Assert.Contains(filas.Sql, q => q.Contains("medico_acceso"));
     }
+
+    [Fact]
+    public void SqlDeArranque_SinFkHaciaTablasAntiguas_YSeparadoPorSentencias()
+    {
+        var sentencias = DatabaseStartupMigrator.SentenciasSql(DatabaseStartupMigrator.LeerSqlEmbebido("app_medico.sql"));
+
+        foreach (var tabla in new[] { "medico_acceso", "medico_producto_favorito", "pedidos_medico", "pedidos_medico_detalle" })
+            Assert.Contains(sentencias, s => s.StartsWith($"CREATE TABLE IF NOT EXISTS {tabla} ("));
+        // Un FK a medicos/sedes/pedidos/usuarios/lista_precios_av hacía fallar la creación en producción
+        foreach (var antigua in new[] { "medicos(", "sedes(", "pedidos(", "usuarios(", "lista_precios_av(" })
+            Assert.DoesNotContain(sentencias, s => s.Contains($"REFERENCES {antigua}"));
+        Assert.All(sentencias, s => Assert.DoesNotContain("--", s));
+    }
 }

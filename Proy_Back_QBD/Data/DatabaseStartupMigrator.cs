@@ -284,8 +284,24 @@ namespace Proy_back_QBD.Data
                 try
                 {
                     // App de médicos: acceso (CMP + contraseña BCrypt), favoritos y pedidos. Solo estructura, idempotente.
-                    db.Database.ExecuteSqlRaw(LeerSqlEmbebido("app_medico.sql"));
-                    Console.WriteLine("--> Base de datos: tablas de la app de médicos verificadas/creadas.");
+                    // Cada sentencia va sola: si una falla (p. ej. un índice) las demás tablas igual se crean.
+                    int errores = 0;
+                    foreach (var sentencia in SentenciasSql(LeerSqlEmbebido("app_medico.sql")))
+                    {
+                        try
+                        {
+                            db.Database.ExecuteSqlRaw(sentencia);
+                        }
+                        catch (Exception exSent)
+                        {
+                            errores++;
+                            var inicio = sentencia.Length > 80 ? sentencia[..80] : sentencia;
+                            Console.WriteLine($"DB Auto-migration error (app de médicos) en \"{inicio}\": {exSent.Message}");
+                        }
+                    }
+                    Console.WriteLine(errores == 0
+                        ? "--> Base de datos: tablas de la app de médicos verificadas/creadas."
+                        : $"--> Base de datos: app de médicos con {errores} sentencia(s) con error (ver arriba).");
                 }
                 catch (Exception exApp)
                 {
@@ -327,7 +343,21 @@ namespace Proy_back_QBD.Data
         }
 
         /// <summary>Lee un script SQL embebido en el ensamblado (ver EmbeddedResource en el .csproj).</summary>
-        internal static string LeerSqlEmbebido(string nombre)
+        /// <summary>
+        /// Separa un script en sentencias por ';' quitando los comentarios de línea (--).
+        /// Solo para scripts simples (sin ';' dentro de textos ni bloques DO/funciones).
+        /// </summary>
+        public static List<string> SentenciasSql(string script)
+        {
+            var sinComentarios = string.Join("\n", script.Replace("\r", "").Split('\n')
+                .Select(l => { var i = l.IndexOf("--", StringComparison.Ordinal); return i >= 0 ? l[..i] : l; }));
+            return sinComentarios.Split(';')
+                .Select(s => s.Trim())
+                .Where(s => s.Length > 0)
+                .ToList();
+        }
+
+        public static string LeerSqlEmbebido(string nombre)
         {
             using var stream = typeof(DatabaseStartupMigrator).Assembly.GetManifestResourceStream(nombre)
                 ?? throw new InvalidOperationException($"No se encontró el recurso {nombre}.");
