@@ -100,21 +100,29 @@ namespace Proy_back_QBD.Services
             IEnumerable<DateTime> salidasLima,
             DateTime ahoraLima)
         {
-            DateTime? entrada = entradasLima
-                .Where(e => e <= ahoraLima && ahoraLima - e <= VigenciaEntrada)
-                .DefaultIfEmpty()
-                .Max();
-            if (entrada == null || entrada == default(DateTime))
+            var vigentes = entradasLima.Where(e => e <= ahoraLima && ahoraLima - e <= VigenciaEntrada).ToList();
+            if (vigentes.Count == 0)
             {
                 return new AsistenciaDelDia(SinMarcar, null, null);
             }
-            DateTime? salida = salidasLima
-                .Where(s => s >= entrada && s <= ahoraLima)
+            DateTime ultima = vigentes.Max();
+            var salidas = salidasLima.ToList();
+
+            // Hora que se muestra: la PRIMERA entrada del turno en curso (como el reporte de asistencia).
+            // Si marcó la entrada dos veces (08:55 y 09:00), el turno empezó a las 08:55; antes se mostraba la última.
+            // El turno empieza después de la última salida anterior a la última entrada.
+            DateTime? salidaPrevia = salidas.Where(s => s < ultima).DefaultIfEmpty().Max();
+            DateTime primera = vigentes
+                .Where(e => salidaPrevia == null || salidaPrevia == default(DateTime) || e > salidaPrevia)
+                .Min();
+
+            DateTime? salida = salidas
+                .Where(s => s >= ultima && s <= ahoraLima)
                 .DefaultIfEmpty()
                 .Max();
             return salida == null || salida == default(DateTime)
-                ? new AsistenciaDelDia(Trabajando, entrada, null)
-                : new AsistenciaDelDia(Salio, entrada, salida);
+                ? new AsistenciaDelDia(Trabajando, primera, null)
+                : new AsistenciaDelDia(Salio, primera, salida);
         }
 
         public const string MotivoSinHorario = "sin horario cargado";

@@ -199,6 +199,26 @@ public class EstadoTurnoTests
     }
 
     [Fact]
+    public void AsistenciaHoy_MuestraLaPrimeraEntradaDelTurno()
+    {
+        // Marcó la entrada dos veces: "trabajando desde" es la primera (08:55), no la segunda (09:00)
+        var dos = EstadoTurno.AsistenciaHoy(new[] { A(8, 55), A(9, 0) }, Array.Empty<DateTime>(), A(11, 0));
+        Assert.Equal(EstadoTurno.Trabajando, dos.Estado);
+        Assert.Equal(A(8, 55), dos.Entrada);
+
+        // Salió y volvió a entrar: el turno en curso empieza en la nueva entrada
+        var volvio = EstadoTurno.AsistenciaHoy(new[] { A(8, 55), A(15, 0) }, new[] { A(13, 0) }, A(16, 0));
+        Assert.Equal(EstadoTurno.Trabajando, volvio.Estado);
+        Assert.Equal(A(15, 0), volvio.Entrada);
+
+        // Ya salió: se muestra la primera entrada del turno y su salida
+        var salio = EstadoTurno.AsistenciaHoy(new[] { A(8, 55), A(9, 0) }, new[] { A(19, 6) }, A(20, 0));
+        Assert.Equal(EstadoTurno.Salio, salio.Estado);
+        Assert.Equal(A(8, 55), salio.Entrada);
+        Assert.Equal(A(19, 6), salio.Salida);
+    }
+
+    [Fact]
     public void Motivo_NuloSiEstaActivoODeBaja()
     {
         Assert.Null(EstadoTurno.Motivo(true, Roles.AsesorVentas, Entrada, Salida, MarcoHoy, A(10, 0)));
