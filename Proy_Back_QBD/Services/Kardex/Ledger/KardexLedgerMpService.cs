@@ -53,6 +53,12 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
             return factor * (cantidadRecibida.HasValue && cantidadRecibida.Value > 0 ? cantidadRecibida.Value : cantidad);
         }
 
+        /// <summary>
+        /// Regla de stock para fórmulas magistrales: solo descuentan las líneas que tienen al menos un registro (lote)
+        /// elegido en RegistrosLote. Las líneas sin registro no afectan el stock.
+        /// </summary>
+        public static bool EsSalidaFormulaConRegistro(int registrosElegidos) => registrosElegidos > 0;
+
         private static List<(int IdCompra, decimal Cantidad)> ParsearReparto(string? valor)
         {
             var lista = new List<(int, decimal)>();
@@ -319,13 +325,19 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
                     Fecha = fecha,
                     Usuario = f.UsuarioLab ?? f.UsuarioFormula ?? "ADMIN"
                 };
+                var reparto = ParsearReparto(f.RegistrosLote);
+                // Línea de fórmula SIN registro (no se eligió lote): no afecta el stock. Son fórmulas que se
+                // prepararon con insumo que no estaba registrado en la sede (p. ej. LIMA antes de recibir NT).
+                if (!EsSalidaFormulaConRegistro(reparto.Count)) continue;
+
                 decimal explicito = 0m;
-                foreach (var (idCompra, cant) in ParsearReparto(f.RegistrosLote))
+                foreach (var (idCompra, cant) in reparto)
                 {
                     explicito += cant;
                     var info = Copia(modelo); info.Cantidad = cant;
                     AgregarSalida(f.InsumoId, new LedgerSalida { IdCompraInsumo = idCompra, Cantidad = cant, Fecha = fecha, Info = info });
                 }
+                // Si se eligió registro pero no cubre todo (redondeo), el resto sigue saliendo por FIFO.
                 var resto = f.CantidadL - explicito;
                 if (resto > 0)
                 {

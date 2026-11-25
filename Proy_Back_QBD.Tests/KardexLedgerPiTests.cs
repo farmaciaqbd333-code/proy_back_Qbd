@@ -78,6 +78,27 @@ public class KardexLedgerPiTests
         Assert.Equal(19000m, registros.Single(r => r.IdRegistro == 740).StockDisponible);
     }
 
+    /// <summary>
+    /// Caso real (LIMA, ÁCIDO BÓRICO): fórmulas guardadas sin registro (lote) daban stock -427.1 sin ningún ingreso.
+    /// Regla: la línea de fórmula sin registro no afecta el stock; con registro sí.
+    /// </summary>
+    [Fact]
+    public async Task LedgerMp_FormulaSinRegistro_NoAfectaStock()
+    {
+        using var ctx = Memoria();
+        ctx.Usuarios.Add(new Usuario { Id = 1, Codigo = "T", Contrasena = "x" });
+        ctx.Formulas.Add(new Formula { Id = 1, SedeId = 13, GPorMl = "", CreadorId = 1, ModificadorId = 1 });
+        ctx.Formulas.Add(new Formula { Id = 2, SedeId = 13, GPorMl = "", CreadorId = 1, ModificadorId = 1 });
+        ctx.FormulasCC.Add(new FormulaCC { FormulaId = 1, InsumoId = 147, SedeId = 13, Variable = "A", CantidadU = 1, CantidadL = 427.1m, CreadorId = 1, ModificadorId = 1 });
+        ctx.FormulasCC.Add(new FormulaCC { FormulaId = 2, InsumoId = 147, SedeId = 13, Variable = "A", CantidadU = 1, CantidadL = 10m, RegistrosLote = "MPA735:10", CreadorId = 1, ModificadorId = 1 });
+        await ctx.SaveChangesAsync();
+
+        var r = await new KardexLedgerMpService(ctx).CalcularInsumoAsync(13, 147);
+        Assert.Equal(-10m, r.Stock);       // solo la línea con registro
+        Assert.Equal(10m, r.TotalSalidas);
+        Assert.Single(r.Salidas);
+    }
+
     /// <summary>Sin base real: no abre la conexión y cada consulta devuelve 0 filas. Si EF no puede traducir, falla antes.</summary>
     private sealed class SinBase : Microsoft.EntityFrameworkCore.Diagnostics.DbConnectionInterceptor
     {

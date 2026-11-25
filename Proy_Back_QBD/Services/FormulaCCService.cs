@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Proy_back_QBD.Data;
+using Proy_back_QBD.Util;
 using Proy_back_QBD.Dto.Request;
 using Proy_back_QBD.Dto.Response;
 using Proy_back_QBD.Models;
@@ -126,6 +127,7 @@ namespace Proy_back_QBD.Services
 
                     formulaM.FormulaId = formulaId;
                     formulaM.SedeId = sedeId;
+                    FormulaRegistros.ConservarRegistros(formulaM, formulasCC);
 
                     _context.FormulasCC.Add(formulaM);
                 }

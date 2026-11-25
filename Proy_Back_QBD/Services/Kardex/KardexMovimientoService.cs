@@ -71,22 +71,8 @@ namespace proy_back_Qbd.Services.Kardex
                     ?? (s.Formula != null && s.Formula.Creador != null ? s.Formula.Creador.Codigo : "ADMIN");
 
                 var reparto = ParsearRegistrosLote(s.RegistrosLote);
-                if (reparto.Count == 0)
-                {
-                    salidas.Add(new SalidaInsumoRes
-                    {
-                        TipoSalida = tipoSalida,
-                        RegistroDestino = regDestino,
-                        DescripcionDestino = descDestino,
-                        LoteInsumo = loteFormula,
-                        RegistroLoteInsumo = "",
-                        Cantidad = s.CantidadL,
-                        Um = um,
-                        Fecha = fecha,
-                        Usuario = usuario
-                    });
-                    continue;
-                }
+                // Línea de fórmula sin registro (lote) elegido: no afecta el stock (misma regla que el libro mayor).
+                if (reparto.Count == 0) continue;
 
                 foreach (var (registro, cantidad) in reparto)
                 {

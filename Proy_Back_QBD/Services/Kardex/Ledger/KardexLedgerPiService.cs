@@ -343,8 +343,11 @@ namespace proy_back_Qbd.Services.Kardex.Ledger
             foreach (var f in formulas)
             {
                 var fecha = f.FechaLab ?? f.FechaFormula ?? f.FechaCreacion;
+                var reparto = ParsearReparto(f.RegistrosLote);
+                // Misma regla que MP: la línea de fórmula sin registro (lote) elegido no afecta el stock.
+                if (!KardexLedgerMpService.EsSalidaFormulaConRegistro(reparto.Count)) continue;
                 decimal explicito = 0m;
-                foreach (var (clave, cant) in ParsearReparto(f.RegistrosLote))
+                foreach (var (clave, cant) in reparto)
                 {
                     explicito += cant;
                     AgregarSalida(f.InsumoId, clave, cant, fecha);

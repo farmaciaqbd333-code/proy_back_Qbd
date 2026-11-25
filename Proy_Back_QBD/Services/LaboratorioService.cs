@@ -6,6 +6,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Proy_back_QBD.Data;
+using Proy_back_QBD.Util;
 using Proy_back_QBD.Dto.Productos;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Services.Interfaces;
@@ -138,6 +139,7 @@ namespace Proy_back_QBD.Services
                 formulaCC.FormulaId = request.Lab.FormulaId;
                 formulaCC.SedeId = request.Lab.SedeId;
                 formulaCC.ModificadorId = formulaCC.CreadorId;
+                FormulaRegistros.ConservarRegistros(formulaCC, sueltos);
 
                 await _repositoryLaboritorio.RegistrarFormulaCC(formulaCC);
             }
@@ -186,6 +188,7 @@ namespace Proy_back_QBD.Services
                 formulaCC.FormulaId = request.Lab.FormulaId;
                 formulaCC.SedeId = request.Lab.SedeId;
                 formulaCC.ModificadorId = item.CreadorId;
+                FormulaRegistros.ConservarRegistros(formulaCC, formulasExistentes);
 
                 _context.FormulasCC.Add(formulaCC);
             }
