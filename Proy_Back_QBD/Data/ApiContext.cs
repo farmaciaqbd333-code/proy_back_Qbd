@@ -78,6 +78,7 @@ namespace Proy_back_QBD.Data
         // App de médicos
         public DbSet<Proy_back_QBD.Models.AppMedico.MedicoAcceso> MedicoAccesos { get; set; }
         public DbSet<Proy_back_QBD.Models.AppMedico.MedicoProductoFavorito> MedicoProductoFavoritos { get; set; }
+        public DbSet<Proy_back_QBD.Models.AppMedico.MedicoProductoAsignado> MedicoProductoAsignados { get; set; }
         public DbSet<Proy_back_QBD.Models.AppMedico.PedidoMedico> PedidosMedico { get; set; }
         public DbSet<Proy_back_QBD.Models.AppMedico.PedidoMedicoDetalle> PedidosMedicoDetalle { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

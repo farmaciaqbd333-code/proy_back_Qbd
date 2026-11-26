@@ -45,3 +45,34 @@ namespace Proy_back_QBD.Dto.ListaPrecios
     /// <summary>Resultado de la importación desde Excel.</summary>
     public record ListaPrecioImportRes(int Creados, int Actualizados, int SinCambios, List<string> Errores, string Message);
 }
+
+namespace Proy_back_QBD.Dto.ListaPrecios
+{
+    /// <summary>Médico del directorio (todas las sedes) para el selector de Lista de Precios.</summary>
+    public class MedicoAsignableRes
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string? Cmp { get; set; }
+        public int SedeId { get; set; }
+        public string? Sede { get; set; }
+        public string? Especialidad { get; set; }
+    }
+
+    /// <summary>Médico asignado a un producto de la Lista de Precios.</summary>
+    public class ProductoMedicoRes
+    {
+        public int ProductoId { get; set; }
+        public int MedicoId { get; set; }
+        public string Nombre { get; set; } = "";
+        public string? Cmp { get; set; }
+        public string? Sede { get; set; }
+        public DateTime FechaCreacion { get; set; }
+    }
+
+    /// <summary>Médicos a asignar a un producto (se agregan a los que ya tenga).</summary>
+    public class ProductoMedicosAsignarReq
+    {
+        public List<int> MedicoIds { get; set; } = new();
+    }
+}

@@ -78,6 +78,36 @@ namespace Proy_back_QBD.Models.AppMedico
     }
 
     /// <summary>
+    /// Producto de la Lista de Precios asignado a un médico por el personal QBD (pantalla Lista de Precios).
+    /// A diferencia de <see cref="MedicoProductoFavorito"/> (lo marca el médico), esta la decide QBD.
+    /// <see cref="MedicoId"/> es la fila de <c>medicos</c> elegida; <see cref="Cmp"/> (normalizado) permite
+    /// reconocer al mismo médico en las otras sedes. Tabla: SQL/medico_producto_asignado.sql.
+    /// </summary>
+    [Table("medico_producto_asignado")]
+    public class MedicoProductoAsignado
+    {
+        [Key]
+        [Column("id")]
+        public int Id { get; set; }
+
+        [Column("lista_precio_id")]
+        public int ListaPrecioId { get; set; }
+
+        [Column("medico_id")]
+        public int MedicoId { get; set; }
+
+        [Column("cmp")]
+        public string? Cmp { get; set; }
+
+        [Column("fecha_creacion")]
+        public DateTime FechaCreacion { get; set; }
+
+        /// <summary>Usuario del sistema que hizo la asignación (sale del token).</summary>
+        [Column("creador_id")]
+        public int? CreadorId { get; set; }
+    }
+
+    /// <summary>
     /// Pedido hecho por un médico desde la app. Es una SOLICITUD: el personal la revisa en
     /// "Pedidos de médicos" y la atiende. No es un <see cref="Pedido"/> de Gestión de Pedidos
     /// (ese exige paciente registrado, recibo, cobros y fórmulas).

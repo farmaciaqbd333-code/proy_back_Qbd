@@ -33,6 +33,8 @@
     <EmbeddedResource Include="SQL\lista_precios_av.sql" LogicalName="lista_precios_av.sql" />
     <!-- Tablas de la app de médicos (se crean solas al arrancar, ver DatabaseStartupMigrator) -->
     <EmbeddedResource Include="SQL\app_medico.sql" LogicalName="app_medico.sql" />
+    <!-- Productos asignados a médicos desde Lista de Precios (se crea sola al arrancar) -->
+    <EmbeddedResource Include="SQL\medico_producto_asignado.sql" LogicalName="medico_producto_asignado.sql" />
   </ItemGroup>
 
 </Project>

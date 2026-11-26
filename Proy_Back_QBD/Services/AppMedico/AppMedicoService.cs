@@ -18,7 +18,7 @@ namespace Proy_back_QBD.Services.AppMedico
         Task<MedicoLoginRes> Login(MedicoLoginReq request);
         Task<MedicoPerfilRes> Perfil(SesionMedico sesion);
         Task<MedicoLoginRes> CambiarContrasena(SesionMedico sesion, MedicoCambiarContrasenaReq request);
-        Task<CatalogoRes> Catalogo(SesionMedico sesion, string? search, string? especialidad, string? categoria, bool soloFavoritos, int pagina, int tamano);
+        Task<CatalogoRes> Catalogo(SesionMedico sesion, string? search, string? especialidad, string? categoria, bool soloFavoritos, int pagina, int tamano, bool soloAsignados = false);
         Task<List<string>> EspecialidadesCatalogo(SesionMedico sesion);
         Task MarcarFavorito(SesionMedico sesion, int productoId, bool favorito);
         Task<List<MedicoSedeRes>> Sedes(SesionMedico sesion);
@@ -185,7 +185,7 @@ namespace Proy_back_QBD.Services.AppMedico
         // ===================== Catálogo =====================
 
         public async Task<CatalogoRes> Catalogo(SesionMedico sesion, string? search, string? especialidad, string? categoria,
-            bool soloFavoritos, int pagina, int tamano)
+            bool soloFavoritos, int pagina, int tamano, bool soloAsignados = false)
         {
             var acceso = await Sesion(sesion);
             pagina = Math.Max(1, pagina);
@@ -193,8 +193,17 @@ namespace Proy_back_QBD.Services.AppMedico
 
             var favoritos = (await _context.Set<MedicoProductoFavorito>().AsNoTracking()
                 .Where(f => f.Cmp == acceso.Cmp).Select(f => f.ListaPrecioId).ToListAsync()).ToHashSet();
+            var asignados = await ProductosAsignados(acceso.Cmp);
 
-            var query = AppMedicoConsultas.Catalogo(_context, search, especialidad, categoria, soloFavoritos ? favoritos : null);
+            HashSet<int>? soloIds = null;
+            if (soloFavoritos) soloIds = new HashSet<int>(favoritos);
+            if (soloAsignados)
+            {
+                if (soloIds == null) soloIds = new HashSet<int>(asignados);
+                else soloIds.IntersectWith(asignados);
+            }
+
+            var query = AppMedicoConsultas.Catalogo(_context, search, especialidad, categoria, soloIds);
 
             int total = await query.CountAsync();
             var filas = await query.OrderBy(p => p.Producto).ThenBy(p => p.Id)
@@ -205,11 +214,23 @@ namespace Proy_back_QBD.Services.AppMedico
                 Total = total,
                 Pagina = pagina,
                 TamanoPagina = tamano,
-                Items = filas.Select(p => AItem(p, favoritos.Contains(p.Id))).ToList(),
+                Items = filas.Select(p => AItem(p, favoritos.Contains(p.Id), asignados.Contains(p.Id))).ToList(),
             };
         }
 
-        private static CatalogoItemRes AItem(ListaPrecio p, bool favorito) => new()
+        /// <summary>
+        /// Productos que QBD le asignó al médico desde Lista de Precios: por su CMP o por cualquiera
+        /// de sus filas del directorio (una por sede).
+        /// </summary>
+        private async Task<HashSet<int>> ProductosAsignados(string cmpNormal)
+        {
+            var filaIds = (await FilasDelCmp(cmpNormal)).Select(f => f.Id).ToList();
+            return (await _context.Set<MedicoProductoAsignado>().AsNoTracking()
+                .Where(a => a.Cmp == cmpNormal || filaIds.Contains(a.MedicoId))
+                .Select(a => a.ListaPrecioId).Distinct().ToListAsync()).ToHashSet();
+        }
+
+        private static CatalogoItemRes AItem(ListaPrecio p, bool favorito, bool asignado = false) => new()
         {
             Id = p.Id,
             Codigo = p.CodigoA,
@@ -224,6 +245,7 @@ namespace Proy_back_QBD.Services.AppMedico
                 .Where(e => !string.IsNullOrWhiteSpace(e)).Select(e => e!.Trim()).ToList(),
             Precio = p.PrecioA, // el médico ve la Lista A (MED)
             Favorito = favorito,
+            Asignado = asignado,
         };
 
         public async Task<List<string>> EspecialidadesCatalogo(SesionMedico sesion)

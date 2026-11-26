@@ -22,6 +22,16 @@ namespace Proy_back_QBD.Data.Configurations
         }
     }
 
+    public class MedicoProductoAsignadoConfig : IEntityTypeConfiguration<MedicoProductoAsignado>
+    {
+        public void Configure(EntityTypeBuilder<MedicoProductoAsignado> b)
+        {
+            b.HasIndex(a => new { a.ListaPrecioId, a.MedicoId }).IsUnique();
+            b.HasIndex(a => a.MedicoId);
+            b.HasIndex(a => a.Cmp);
+        }
+    }
+
     public class PedidoMedicoConfig : IEntityTypeConfiguration<PedidoMedico>
     {
         public void Configure(EntityTypeBuilder<PedidoMedico> b)

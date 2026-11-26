@@ -8,6 +8,7 @@ using Proy_back_QBD.Dto.AppMedico;
 using Proy_back_QBD.Models;
 using Proy_back_QBD.Models.AppMedico;
 using Proy_back_QBD.Security;
+using Proy_back_QBD.Services;
 using Proy_back_QBD.Services.AppMedico;
 using Xunit;
 
@@ -258,6 +259,64 @@ public class AppMedicoTests
         Assert.Empty((await s.Catalogo(sesion, null, null, null, true, 1, 50)).Items);
     }
 
+    // ===================== Productos asignados (Lista de Precios → Médicos) =====================
+
+    [Fact]
+    public async Task Asignacion_DirectorioDeTodasLasSedes_AsignarYQuitar()
+    {
+        using var ctx = await Datos();
+        var pm = new ProductoMedicoService(ctx);
+
+        var directorio = await pm.MedicosAsignables();
+        Assert.Equal(new[] { 10, 11, 20, 30 }, directorio.Select(m => m.Id).OrderBy(i => i));
+        Assert.Equal("PUNO", directorio.Single(m => m.Id == 11).Sede);
+        Assert.Equal("ANA PEREZ", directorio.Single(m => m.Id == 10).Nombre);
+
+        var asignados = await pm.Asignar(1, new[] { 10, 20 }, usuarioId: 5);
+        Assert.Equal(new[] { 10, 20 }, asignados.Select(a => a.MedicoId).OrderBy(i => i));
+        Assert.Equal("91379", ctx.MedicoProductoAsignados.Single(a => a.MedicoId == 10).Cmp);
+        Assert.Equal(5, ctx.MedicoProductoAsignados.Single(a => a.MedicoId == 10).CreadorId);
+
+        // La misma médica en otra sede (mismo CMP) o la misma fila: no se duplica
+        await pm.Asignar(1, new[] { 11, 10 }, usuarioId: 5);
+        Assert.Equal(2, ctx.MedicoProductoAsignados.Count());
+
+        await Assert.ThrowsAsync<NotFoundException>(() => pm.Asignar(1, new[] { 999 }, 5));
+        await Assert.ThrowsAsync<NotFoundException>(() => pm.Asignar(4, new[] { 10 }, 5)); // producto desactivado
+        await Assert.ThrowsAsync<BadRequestException>(() => pm.Asignar(1, Array.Empty<int>(), 5));
+
+        await pm.Asignar(2, new[] { 30 }, 5); // médico sin CMP
+        Assert.Equal(3, (await pm.Asignaciones()).Count);
+
+        var quedan = await pm.Quitar(1, 20);
+        Assert.Equal(new[] { 10 }, quedan.Select(a => a.MedicoId));
+        await Assert.ThrowsAsync<NotFoundException>(() => pm.Quitar(1, 20));
+    }
+
+    [Fact]
+    public async Task Asignacion_LaAppMuestraLosProductosAsignadosPorCmp()
+    {
+        using var ctx = await Datos();
+        var s = Servicio(ctx);
+        var sesion = SesionDe(await EntrarComoPerez(s));
+        var pm = new ProductoMedicoService(ctx);
+
+        // Asignado a su fila de Puno (#11): igual lo ve, porque es el mismo CMP
+        await pm.Asignar(2, new[] { 11 }, 1);
+        await pm.Asignar(3, new[] { 20 }, 1); // de otro médico
+
+        var mios = await s.Catalogo(sesion, null, null, null, false, 1, 50, soloAsignados: true);
+        Assert.Equal(new[] { 2 }, mios.Items.Select(i => i.Id));
+        Assert.True(mios.Items[0].Asignado);
+
+        var todo = await s.Catalogo(sesion, null, null, null, false, 1, 50);
+        Assert.Equal(3, todo.Total); // el catálogo completo sigue igual
+        Assert.Equal(new[] { 2 }, todo.Items.Where(i => i.Asignado).Select(i => i.Id));
+
+        await s.MarcarFavorito(sesion, 1, true);
+        Assert.Empty((await s.Catalogo(sesion, null, null, null, true, 1, 50, soloAsignados: true)).Items);
+    }
+
     // ===================== Pedidos =====================
 
     [Fact]
@@ -422,6 +481,9 @@ public class AppMedicoTests
         // Ejecutadas contra un PostgreSQL simulado (0 filas)
         var s = Servicio(ctx);
         Assert.Empty(await s.ListarPedidos(1, "PENDIENTE", 30));
+        var pm = new ProductoMedicoService(ctx);
+        Assert.Empty(await pm.Asignaciones());
+        Assert.Empty(await pm.MedicosAsignables());
         Assert.Empty(await s.Accesos());
         await Assert.ThrowsAsync<NoAutorizadoException>(() => s.Login(new MedicoLoginReq { Cmp = "91379", Contrasena = "x" }));
         await Assert.ThrowsAsync<NoAutorizadoException>(() => s.Perfil(new SesionMedico(1, 1)));

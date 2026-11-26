@@ -139,6 +139,7 @@ namespace Proy_back_QBD.DependencyInjection
             services.AddScoped<IProveedorService, ProveedorService>();
             services.AddScoped<IFabricanteService, FabricanteService>();
             services.AddScoped<IListaPrecioService, ListaPrecioService>();
+            services.AddScoped<Proy_back_QBD.Services.IProductoMedicoService, Proy_back_QBD.Services.ProductoMedicoService>();
 
             // Kardex: un servicio por responsabilidad y una estrategia de stock por familia
             services.AddScoped<KardexLedgerMpService>();

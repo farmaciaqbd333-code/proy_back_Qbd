@@ -39,12 +39,22 @@ namespace Proy_back_QBD.Controllers
         public async Task<IActionResult> CambiarContrasena([FromBody] MedicoCambiarContrasenaReq request) =>
             Ok(await _service.CambiarContrasena(Sesion, request));
 
-        /// <summary>Catálogo (Lista de Precios) con el precio de la Lista A. Filtros opcionales y paginación.</summary>
+        /// <summary>
+        /// Catálogo (Lista de Precios) con el precio de la Lista A. Filtros opcionales y paginación.
+        /// Cada ítem dice si es favorito del médico y si QBD se lo asignó (<c>asignado</c>);
+        /// <c>soloAsignados=true</c> deja solo los asignados.
+        /// </summary>
         [HttpGet("catalogo")]
         public async Task<IActionResult> Catalogo([FromQuery] string? search, [FromQuery] string? especialidad,
             [FromQuery] string? categoria, [FromQuery] bool soloFavoritos = false,
-            [FromQuery] int pagina = 1, [FromQuery] int tamano = 50) =>
-            Ok(await _service.Catalogo(Sesion, search, especialidad, categoria, soloFavoritos, pagina, tamano));
+            [FromQuery] int pagina = 1, [FromQuery] int tamano = 50, [FromQuery] bool soloAsignados = false) =>
+            Ok(await _service.Catalogo(Sesion, search, especialidad, categoria, soloFavoritos, pagina, tamano, soloAsignados));
+
+        /// <summary>"Mis productos": los productos que QBD le asignó al médico desde Lista de Precios.</summary>
+        [HttpGet("mis-productos")]
+        public async Task<IActionResult> MisProductos([FromQuery] string? search, [FromQuery] string? especialidad,
+            [FromQuery] string? categoria, [FromQuery] int pagina = 1, [FromQuery] int tamano = 200) =>
+            Ok(await _service.Catalogo(Sesion, search, especialidad, categoria, false, pagina, tamano, soloAsignados: true));
 
         /// <summary>Códigos de especialidad usados en el catálogo (DERM, PED, GO...).</summary>
         [HttpGet("catalogo/especialidades")]

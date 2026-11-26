@@ -307,6 +307,17 @@ namespace Proy_back_QBD.Data
                 {
                     Console.WriteLine($"DB Auto-migration error (app de médicos): {exApp.Message}");
                 }
+                try
+                {
+                    // Productos de la Lista de Precios asignados a médicos. Solo estructura, idempotente.
+                    foreach (var sentencia in SentenciasSql(LeerSqlEmbebido("medico_producto_asignado.sql")))
+                        db.Database.ExecuteSqlRaw(sentencia);
+                    Console.WriteLine("--> Base de datos: tabla medico_producto_asignado verificada/creada.");
+                }
+                catch (Exception exAsig)
+                {
+                    Console.WriteLine($"DB Auto-migration error (medico_producto_asignado): {exAsig.Message}");
+                }
                 db.Database.ExecuteSqlRaw(@"
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS lote text;
                     ALTER TABLE IF EXISTS ""formulasR"" ADD COLUMN IF NOT EXISTS registro text;

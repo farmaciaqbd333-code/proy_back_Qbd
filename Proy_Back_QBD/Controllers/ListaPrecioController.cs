@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using proy_back_Qbd.Services.Interfaces;
 using Proy_back_QBD.Dto.ListaPrecios;
 using Proy_back_QBD.Security;
+using Proy_back_QBD.Services;
 
 namespace Proy_back_QBD.Controllers
 {
@@ -14,10 +15,12 @@ namespace Proy_back_QBD.Controllers
     public class ListaPrecioController : ControllerBase
     {
         private readonly IListaPrecioService _listaPrecios;
+        private readonly IProductoMedicoService _productoMedicos;
 
-        public ListaPrecioController(IListaPrecioService listaPrecios)
+        public ListaPrecioController(IListaPrecioService listaPrecios, IProductoMedicoService productoMedicos)
         {
             _listaPrecios = listaPrecios;
+            _productoMedicos = productoMedicos;
         }
 
         /// <summary>
@@ -62,5 +65,34 @@ namespace Proy_back_QBD.Controllers
         [Authorize(Roles = Roles.SoloAdmin)]
         public async Task<IActionResult> Importar([FromBody] ListaPrecioImportReq request) =>
             Ok(await _listaPrecios.Importar(request));
+
+        // ===================== Médicos asignados a cada producto =====================
+
+        /// <summary>Todos los médicos del directorio (todas las sedes, sin filtrar por la sede actual).</summary>
+        [HttpGet("medicos/directorio")]
+        public async Task<IActionResult> MedicosAsignables() =>
+            Ok(await _productoMedicos.MedicosAsignables());
+
+        /// <summary>Todas las asignaciones producto ↔ médico (para mostrarlas en la tabla).</summary>
+        [HttpGet("medicos/asignaciones")]
+        public async Task<IActionResult> Asignaciones() =>
+            Ok(await _productoMedicos.Asignaciones());
+
+        /// <summary>Médicos asignados a un producto.</summary>
+        [HttpGet("{id:int}/medicos")]
+        public async Task<IActionResult> MedicosDelProducto(int id) =>
+            Ok(await _productoMedicos.DelProducto(id));
+
+        /// <summary>Asigna el producto a uno o varios médicos (se suman a los que ya tenga). Solo ADMIN.</summary>
+        [HttpPost("{id:int}/medicos")]
+        [Authorize(Roles = Roles.SoloAdmin)]
+        public async Task<IActionResult> AsignarMedicos(int id, [FromBody] ProductoMedicosAsignarReq request) =>
+            Ok(await _productoMedicos.Asignar(id, request?.MedicoIds ?? new(), JwtTokens.UsuarioId(User)));
+
+        /// <summary>Quita la asignación del producto a un médico. Solo ADMIN.</summary>
+        [HttpDelete("{id:int}/medicos/{medicoId:int}")]
+        [Authorize(Roles = Roles.SoloAdmin)]
+        public async Task<IActionResult> QuitarMedico(int id, int medicoId) =>
+            Ok(await _productoMedicos.Quitar(id, medicoId));
     }
 }

@@ -60,6 +60,8 @@ namespace Proy_back_QBD.Dto.AppMedico
         /// <summary>Precio Lista A (MED). null = "consultar".</summary>
         public decimal? Precio { get; set; }
         public bool Favorito { get; set; }
+        /// <summary>true si QBD le asignó este producto al médico (Lista de Precios → Médicos).</summary>
+        public bool Asignado { get; set; }
     }
 
     public class CatalogoRes
