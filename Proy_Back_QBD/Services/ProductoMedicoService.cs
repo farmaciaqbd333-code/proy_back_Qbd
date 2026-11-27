@@ -42,7 +42,7 @@ namespace Proy_back_QBD.Services
                     Id = m.Id ?? 0,
                     Nombre = m.Persona != null ? (m.Persona.NombreCompleto ?? "") : "",
                     Cmp = m.Cmp,
-                    SedeId = m.SedeId,
+                    SedeId = m.SedeId ?? 0, // 0 = médico sin sede
                     Sede = s != null ? s.Nombre : null,
                     Especialidad = m.Especialidad != null ? m.Especialidad.Nombre : null,
                 }).ToListAsync();

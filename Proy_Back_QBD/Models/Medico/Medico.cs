@@ -34,7 +34,7 @@ namespace Proy_back_QBD.Models
         [Column("modificador_id")]
         public int ModificadorId { get; set; }
         [Column("sede_id")]
-        public int SedeId { get; set; }
+        public int? SedeId { get; set; }  // NULL en algunos médicos de producción
         [NotMapped]
         public Sede? Sede { get; set; }
         [JsonIgnore]

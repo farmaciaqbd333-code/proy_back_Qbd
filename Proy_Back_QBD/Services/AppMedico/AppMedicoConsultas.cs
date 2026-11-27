@@ -20,7 +20,7 @@ namespace Proy_back_QBD.Services.AppMedico
         public static IQueryable<FilaMedicoCmp> FilasDelCmp(ApiContext ctx, string cmpNormal) =>
             ctx.Medicos.AsNoTracking()
                 .Where(m => m.Cmp != null && m.Cmp.EndsWith(cmpNormal))
-                .Select(m => new FilaMedicoCmp(m.Id ?? 0, m.Cmp, m.SedeId,
+                .Select(m => new FilaMedicoCmp(m.Id ?? 0, m.Cmp, m.SedeId ?? 0, // 0 = médico sin sede
                     m.Persona != null ? m.Persona.NombreCompleto : null,
                     m.Especialidad != null ? m.Especialidad.Nombre : null));
 
