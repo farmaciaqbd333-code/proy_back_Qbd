@@ -217,5 +217,20 @@ namespace Proy_back_QBD.Models.AppMedico
 
         public static bool EsValido(string? estado) =>
             estado != null && Todos.Contains(estado.Trim().ToUpperInvariant());
+
+        /// <summary>
+        /// Estado que ve el médico cuando su pedido ya se convirtió en un pedido de Gestión de Pedidos:
+        /// sale del estado de ese pedido (laboratorio, entrega...). Si no se reconoce, se deja <paramref name="actual"/>.
+        /// </summary>
+        public static string DesdePedido(string? estadoPedido, string actual) =>
+            (estadoPedido ?? "").Trim().ToUpperInvariant() switch
+            {
+                "PENDIENTE" => Recibido,
+                "EN PROCESO" => EnProceso,
+                "TERMINADO" or "PT" => Listo,
+                "ENTREGADO" or "SEGUIMIENTO" => Entregado,
+                "DEVUELTO" => Anulado,
+                _ => actual,
+            };
     }
 }

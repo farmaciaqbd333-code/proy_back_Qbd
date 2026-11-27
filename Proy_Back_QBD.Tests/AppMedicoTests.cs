@@ -504,4 +504,84 @@ public class AppMedicoTests
             Assert.DoesNotContain(sentencias, s => s.Contains($"REFERENCES {antigua}"));
         Assert.All(sentencias, s => Assert.DoesNotContain("--", s));
     }
+
+    // ===================== Convertir en pedido de Gestión de Pedidos =====================
+
+    [Theory]
+    [InlineData("PENDIENTE", EstadosPedidoMedico.Recibido)]
+    [InlineData("EN PROCESO", EstadosPedidoMedico.EnProceso)]
+    [InlineData("TERMINADO", EstadosPedidoMedico.Listo)]
+    [InlineData("PT", EstadosPedidoMedico.Listo)]
+    [InlineData("ENTREGADO", EstadosPedidoMedico.Entregado)]
+    [InlineData("SEGUIMIENTO", EstadosPedidoMedico.Entregado)]
+    [InlineData("DEVUELTO", EstadosPedidoMedico.Anulado)]
+    [InlineData("RARO", EstadosPedidoMedico.Recibido)]
+    public void DesdePedido_TraduceElEstadoDelPedidoReal(string real, string esperado) =>
+        Assert.Equal(esperado, EstadosPedidoMedico.DesdePedido(real, EstadosPedidoMedico.Recibido));
+
+    [Fact]
+    public async Task Convertir_ElPacienteEsElMedico_SeRegistraUnaVez_YElEstadoSaleDelPedido()
+    {
+        using var ctx = await Datos();
+        var s = Servicio(ctx);
+        var sesion = SesionDe(await EntrarComoPerez(s));
+        var pm = await s.CrearPedido(sesion, new PedidoMedicoCreateReq { SedeId = 1, Items = { new() { ProductoId = 1, Cantidad = 1 } } });
+
+        // La doctora todavía no es paciente de Central: se registra con su misma persona
+        var p1 = await s.PacienteDelMedico(pm.Id, sedeId: 1, usuarioId: 7);
+        Assert.True(p1.Creado);
+        Assert.Equal("ANA PEREZ", p1.Nombre);
+        var paciente = await ctx.Pacientes.SingleAsync();
+        Assert.Equal(1, paciente.PersonaId);
+        Assert.Equal(1, paciente.SedeId);
+        Assert.Equal(7, paciente.CreadorId);
+
+        // La segunda vez se reutiliza
+        var p2 = await s.PacienteDelMedico(pm.Id, sedeId: 1, usuarioId: 7);
+        Assert.False(p2.Creado);
+        Assert.Equal(p1.PacienteId, p2.PacienteId);
+        Assert.Equal(1, await ctx.Pacientes.CountAsync());
+
+        // Se crea el pedido real y se enlaza: el médico ve el estado del laboratorio
+        ctx.Pedidos.Add(new Pedido { Id = 500, Estado = "PENDIENTE", SedeId = 1, MedicoId = 10, PacienteId = p1.PacienteId, CreadorId = 7, ModificadorId = 7 });
+        await ctx.SaveChangesAsync();
+        var enlazado = await s.CambiarEstado(pm.Id, new PedidoMedicoEstadoReq { Estado = EstadosPedidoMedico.Recibido, PedidoId = 500 }, 7);
+        Assert.Equal(500, enlazado.PedidoId);
+        Assert.Equal(EstadosPedidoMedico.Recibido, enlazado.Estado);
+
+        var real = await ctx.Pedidos.SingleAsync(x => x.Id == 500);
+        real.Estado = "TERMINADO";
+        await ctx.SaveChangesAsync();
+        var visto = await s.MiPedido(sesion, pm.Id);
+        Assert.Equal(EstadosPedidoMedico.Listo, visto.Estado);
+        Assert.Equal("TERMINADO", visto.PedidoEstado);
+
+        // Ya enlazado: no se convierte otra vez ni se cambia el estado a mano
+        await Assert.ThrowsAsync<BadRequestException>(() => s.PacienteDelMedico(pm.Id, 1, 7));
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            s.CambiarEstado(pm.Id, new PedidoMedicoEstadoReq { Estado = EstadosPedidoMedico.EnProceso }, 7));
+
+        // Otro pedido de médico no puede enlazarse al mismo pedido real
+        var otro = await s.CrearPedido(sesion, new PedidoMedicoCreateReq { SedeId = 1, Items = { new() { ProductoId = 2, Cantidad = 1 } } });
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            s.CambiarEstado(otro.Id, new PedidoMedicoEstadoReq { Estado = EstadosPedidoMedico.Recibido, PedidoId = 500 }, 7));
+    }
+
+    [Fact]
+    public async Task Convertir_ReutilizaAlPacienteConElMismoDni()
+    {
+        using var ctx = await Datos();
+        var persona = await ctx.Personas.SingleAsync(p => p.Id == 1);
+        persona.Dni = "40112233";
+        ctx.Personas.Add(new Persona { Id = 9, NombreCompleto = "ANA PEREZ (PACIENTE)", Dni = "40112233" });
+        ctx.Pacientes.Add(new Paciente { Id = 70, PersonaId = 9, SedeId = 1, CreadorId = 1, ModificadorId = 1 });
+        await ctx.SaveChangesAsync();
+        var s = Servicio(ctx);
+        var sesion = SesionDe(await EntrarComoPerez(s));
+        var pm = await s.CrearPedido(sesion, new PedidoMedicoCreateReq { SedeId = 1, Items = { new() { ProductoId = 1, Cantidad = 1 } } });
+
+        var p = await s.PacienteDelMedico(pm.Id, sedeId: 1, usuarioId: 7);
+        Assert.False(p.Creado);
+        Assert.Equal(70, p.PacienteId);
+    }
 }

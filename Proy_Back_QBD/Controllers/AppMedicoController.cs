@@ -145,5 +145,13 @@ namespace Proy_back_QBD.Controllers
         [HttpPatch("pedidos/{id:int}/estado")]
         public async Task<IActionResult> CambiarEstado(int id, [FromBody] PedidoMedicoEstadoReq request) =>
             Ok(await _service.CambiarEstado(id, request, JwtTokens.UsuarioId(User)));
+
+        /// <summary>
+        /// Para convertir el pedido en un pedido de Gestión de Pedidos: devuelve el paciente (el propio médico)
+        /// en la sede indicada, registrándolo si todavía no es paciente de esa sede.
+        /// </summary>
+        [HttpPost("pedidos/{id:int}/paciente")]
+        public async Task<IActionResult> PacienteDelMedico(int id, [FromQuery] int sedeId) =>
+            Ok(await _service.PacienteDelMedico(id, sedeId, JwtTokens.UsuarioId(User)));
     }
 }

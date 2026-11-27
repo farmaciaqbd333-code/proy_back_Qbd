@@ -34,6 +34,7 @@ namespace Proy_back_QBD.Services.AppMedico
         Task<List<PedidoMedicoRes>> ListarPedidos(int? sedeId, string? estado, int? dias);
         Task<int> ContarPendientes(int? sedeId);
         Task<PedidoMedicoRes> CambiarEstado(int id, PedidoMedicoEstadoReq request, int usuarioId);
+        Task<PacienteDelMedicoRes> PacienteDelMedico(int pedidoMedicoId, int sedeId, int usuarioId);
     }
 
     /// <summary>Excepción que el middleware traduce a 401 (sesión del médico no válida).</summary>
@@ -417,6 +418,22 @@ namespace Proy_back_QBD.Services.AppMedico
                 })
                 .ToListAsync();
 
+            // Pedidos ya convertidos: el estado lo da el pedido de Gestión de Pedidos (laboratorio, entrega...)
+            var enlazados = pedidos.Where(p => p.PedidoId is > 0).Select(p => p.PedidoId!.Value).Distinct().ToList();
+            if (enlazados.Count > 0)
+            {
+                var estadosReales = await _context.Pedidos.AsNoTracking()
+                    .Where(x => enlazados.Contains(x.Id))
+                    .Select(x => new { x.Id, x.Estado })
+                    .ToDictionaryAsync(x => x.Id, x => x.Estado);
+                foreach (var p in pedidos)
+                {
+                    if (p.PedidoId is not > 0 || !estadosReales.TryGetValue(p.PedidoId.Value, out var real)) continue;
+                    p.PedidoEstado = real;
+                    p.Estado = EstadosPedidoMedico.DesdePedido(real, p.Estado);
+                }
+            }
+
             if (conDetalles && pedidos.Count > 0)
             {
                 var ids = pedidos.Select(p => p.Id).ToList();
@@ -552,8 +569,13 @@ namespace Proy_back_QBD.Services.AppMedico
                 throw new BadRequestException("Indica el motivo de la anulación (el médico lo verá en la app).");
             if ((request!.Respuesta?.Length ?? 0) > 1000)
                 throw new BadRequestException("El mensaje para el médico no puede pasar de 1000 caracteres.");
+            if (pedido.PedidoId is > 0 && estado != pedido.Estado)
+                throw new BadRequestException($"Este pedido ya es el pedido P{pedido.PedidoId}: su estado avanza desde Gestión de Pedidos.");
             if (request.PedidoId is > 0 && !await _context.Pedidos.AnyAsync(p => p.Id == request.PedidoId))
                 throw new BadRequestException("El N° de pedido de Gestión de Pedidos no existe.");
+            if (request.PedidoId is > 0 && await _context.Set<PedidoMedico>()
+                    .AnyAsync(p => p.PedidoId == request.PedidoId && p.Id != id))
+                throw new BadRequestException($"El pedido P{request.PedidoId} ya está enlazado a otro pedido de médico.");
 
             pedido.Estado = estado!;
             if (request.Respuesta != null) pedido.Respuesta = string.IsNullOrWhiteSpace(request.Respuesta) ? null : request.Respuesta.Trim();
@@ -562,6 +584,57 @@ namespace Proy_back_QBD.Services.AppMedico
             pedido.ModificadorId = usuarioId > 0 ? usuarioId : null;
             await _context.SaveChangesAsync();
             return await Detalle(id);
+        }
+
+        /// <summary>
+        /// El paciente del pedido es el propio médico. Busca al médico como paciente de la sede (misma persona
+        /// o mismo DNI) y, si no existe, lo registra usando su misma persona.
+        /// </summary>
+        public async Task<PacienteDelMedicoRes> PacienteDelMedico(int pedidoMedicoId, int sedeId, int usuarioId)
+        {
+            var pedido = await _context.Set<PedidoMedico>().AsNoTracking().FirstOrDefaultAsync(p => p.Id == pedidoMedicoId)
+                ?? throw new NotFoundException("No se encontró el pedido.");
+            if (pedido.PedidoId is > 0)
+                throw new BadRequestException($"Este pedido ya se convirtió en el pedido P{pedido.PedidoId}.");
+            if (pedido.Estado is EstadosPedidoMedico.Anulado or EstadosPedidoMedico.Entregado)
+                throw new BadRequestException($"El pedido está {pedido.Estado}: no se puede convertir.");
+            if (sedeId <= 0) sedeId = pedido.SedeId ?? 0;
+            if (!await _context.Sedes.AnyAsync(s => s.Id == sedeId))
+                throw new BadRequestException("Elige una sede válida.");
+
+            var medico = await _context.Medicos.AsNoTracking().Include(m => m.Persona)
+                .FirstOrDefaultAsync(m => m.Id == pedido.MedicoId)
+                ?? throw new NotFoundException("El médico del pedido ya no está en el directorio.");
+            if (medico.PersonaId is not > 0 || medico.Persona == null)
+                throw new BadRequestException("El médico no tiene sus datos personales registrados: complétalos en Médicos.");
+
+            var personaId = medico.PersonaId.Value;
+            var dni = medico.Persona.Dni?.Trim();
+            var paciente = await _context.Pacientes.Include(p => p.Persona)
+                .Where(p => p.SedeId == sedeId)
+                .Where(p => p.PersonaId == personaId || (!string.IsNullOrEmpty(dni) && p.Persona != null && p.Persona.Dni == dni))
+                .OrderBy(p => p.PersonaId == personaId ? 0 : 1).ThenBy(p => p.Id)
+                .FirstOrDefaultAsync();
+
+            var creado = false;
+            if (paciente == null)
+            {
+                var autor = usuarioId > 0 ? usuarioId : medico.CreadorId;
+                paciente = new Paciente { PersonaId = personaId, SedeId = sedeId, CreadorId = autor, ModificadorId = autor };
+                _context.Pacientes.Add(paciente);
+                await _context.SaveChangesAsync();
+                creado = true;
+            }
+
+            return new PacienteDelMedicoRes
+            {
+                PacienteId = paciente.Id ?? 0,
+                Dni = dni,
+                Nombre = medico.Persona.NombreCompleto?.Trim(),
+                Creado = creado,
+                MedicoId = pedido.MedicoId,
+                Cmp = pedido.Cmp,
+            };
         }
     }
 }

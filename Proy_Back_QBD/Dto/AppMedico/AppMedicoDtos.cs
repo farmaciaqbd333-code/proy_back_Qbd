@@ -117,6 +117,8 @@ namespace Proy_back_QBD.Dto.AppMedico
         public decimal Total { get; set; }
         public int CantidadItems { get; set; }
         public int? PedidoId { get; set; }
+        /// <summary>Estado del pedido de Gestión de Pedidos enlazado (tal cual; solo para el personal).</summary>
+        public string? PedidoEstado { get; set; }
         // Datos del médico (para la vista del personal)
         public int MedicoId { get; set; }
         public string Cmp { get; set; } = "";
@@ -147,6 +149,18 @@ namespace Proy_back_QBD.Dto.AppMedico
         public bool Activo { get; set; }
         public bool DebeCambiar { get; set; }
         public DateTime? UltimoIngreso { get; set; }
+    }
+
+    /// <summary>Paciente con que se registra el pedido del médico en Gestión de Pedidos: el propio médico.</summary>
+    public class PacienteDelMedicoRes
+    {
+        public int PacienteId { get; set; }
+        public string? Dni { get; set; }
+        public string? Nombre { get; set; }
+        /// <summary>true si se acaba de registrar al médico como paciente de la sede.</summary>
+        public bool Creado { get; set; }
+        public int MedicoId { get; set; }
+        public string Cmp { get; set; } = "";
     }
 
     public class PedidoMedicoEstadoReq
