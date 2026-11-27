@@ -536,17 +536,16 @@ namespace Proy_back_QBD.Services.AppMedico
         {
             var query = _context.Set<PedidoMedico>().AsQueryable();
             if (sedeId is > 0) query = query.Where(p => p.SedeId == sedeId);
-            if (!string.IsNullOrWhiteSpace(estado))
-            {
-                var e = estado.Trim().ToUpperInvariant();
-                query = query.Where(p => p.Estado == e);
-            }
+            var e = string.IsNullOrWhiteSpace(estado) ? null : estado.Trim().ToUpperInvariant();
+            // Los convertidos toman el estado del pedido real: se filtran después de calcularlo
+            if (e != null) query = query.Where(p => p.Estado == e || p.PedidoId != null);
             if (dias is > 0)
             {
                 var desde = Ahora().AddDays(-dias.Value);
                 query = query.Where(p => p.FechaCreacion >= desde);
             }
-            return await Listar(query, conDetalles: true, limite: 500);
+            var lista = await Listar(query, conDetalles: true, limite: 500);
+            return e == null ? lista : lista.Where(p => p.Estado == e).ToList();
         }
 
         public Task<int> ContarPendientes(int? sedeId)
